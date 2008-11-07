@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Document   : basicConfig.xml
+    Created on : December 10, 2007, 3:57 PM
+    Author     : stgreen
+    Description:
+        A configuration file for testing logLevel setting.
+-->
+
+<config>
+    
+    <property name="logLevel" value="INFO"/>
+    
+    <component name="simplewarn" type="com.sun.labs.util.props.SimpleConfigurable">
+        <property name="simple" value="10"/>
+        <property name="logLevel" value="WARNING"/>
+    </component>
+    
+    <component name="simpleglobal" type="com.sun.labs.util.props.SimpleConfigurable">
+        <property name="simple" value="10"/>
+    </component>
+    
+    <component name="simplesevere" type="com.sun.labs.util.props.SimpleConfigurable">
+        <property name="simple" value="10"/>
+        <property name="logLevel" value="SEVERE"/>
+    </component>
+    
+    <component name="simplebad" type="com.sun.labs.util.props.SimpleConfigurable">
+        <property name="simple" value="10"/>
+        <property name="logLevel" value="NOTALEVEL"/>
+    </component>
+</config>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Document   : globalPropertiesTest.xml
+    Created on : November 29, 2007, 4:45 PM
+    Author     : stgreen
+    Description:
+        A configuration file for testing handling of global properties.
+-->
+
+<config>
+    
+    <component name="registerTest" type="com.sun.labs.util.props.SimpleMBConfigurable">
+        <property name="a" value="10"/>
+        <property name="b" value="test"/>
+    </component>
+
+    <component name="listTest" type="com.sun.labs.util.props.SimpleMBConfigurable">
+        <property name="a" value="10"/>
+        <property name="b" value="test"/>
+        <propertylist name="c">
+            <item>baz</item>
+            <item>quux</item>
+        </propertylist>
+    </component>
+
+</config>

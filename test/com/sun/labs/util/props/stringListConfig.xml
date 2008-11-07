@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Document   : globalPropertiesTest.xml
+    Created on : November 29, 2007, 4:45 PM
+    Author     : stgreen
+    Description:
+        A configuration file for testing handling of global properties.
+-->
+
+<config>
+    
+    <component name="listTest" type="com.sun.labs.util.props.StringListConfigurable">
+        <propertylist name="strings">
+            <item>a</item>
+            <item>b</item>
+            <item>c</item>
+        </propertylist>
+    </component>
+
+</config>

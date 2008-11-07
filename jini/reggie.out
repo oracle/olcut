@@ -1,0 +1,17 @@
+.
+Jan 18, 2008 3:04:19 PM com.sun.jini.tool.ClassServer run
+INFO: ClassServer started [[/big/Projects/LabsUtil/jini/lib-dl/], port 4011]
+reggie-dl.jar requested from lur:55620
+jsk-dl.jar requested from lur:49707
+Jan 18, 2008 3:04:19 PM com.sun.jini.reggie.RegistrarImpl init
+INFO: started Reggie: b1203066-2c5e-4e66-991d-d30bffe037a7, [Aura], ConstrainableLookupLocator[[jini://lur/], [null]]
+reggie-dl.jar probed from lur:63771
+reggie-dl.jar requested from lur:49382
+jsk-dl.jar requested from lur:43383
+browser-dl.jar requested from lur:55295
+jsk-dl.jar requested from lur:51926
+browser-dl.jar probed from lur:61399
+browser-dl.jar requested from lur:54366
+reggie-dl.jar probed from lur:60982
+reggie-dl.jar requested from lur:62133
+jsk-dl.jar requested from lur:49896
