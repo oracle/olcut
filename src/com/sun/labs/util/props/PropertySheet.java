@@ -9,12 +9,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import net.jini.core.lease.Lease;
 
@@ -74,6 +75,10 @@ public class PropertySheet implements Cloneable {
     private String instanceName;
 
     public static final String PROP_LOG_LEVEL = "logLevel";
+
+    private Level logLevel;
+
+    private Logger logger;
 
     public PropertySheet(Configurable configurable, String name,
             RawPropertyData rpd, ConfigurationManager ConfigurationManager) {
@@ -155,7 +160,11 @@ public class PropertySheet implements Cloneable {
     }
 
     public Collection<String> getPropertyNames() {
-        return rawProps.keySet();
+        //
+        // Make sure the log level is in the set!
+        Set<String> ps = new HashSet<String>(rawProps.keySet());
+        ps.add("logLevel");
+        return ps;
     }
 
     /**
@@ -719,9 +728,10 @@ public class PropertySheet implements Cloneable {
                 }
                 if(owner instanceof ConfigurableMXBean) {
                     MBeanServer mbs = cm.getMBeanServer();
-                    String on = String.format("%s:type=%s",
+                    String on = String.format("%s:type=%s,name=%s",
                             ownerClass.getPackage().getName(),
-                            ownerClass.getSimpleName());
+                            ownerClass.getSimpleName(),
+                            instanceName);
                     try {
                         ObjectName oname =
                                 new ObjectName(on);
@@ -982,7 +992,9 @@ public class PropertySheet implements Cloneable {
      * @return the logger for this component
      */
     public Logger getLogger() {
-        Logger logger;
+        if(logger != null) {
+            return logger;
+        }
 
         //
         // Get a logger for this particular named instance, if we can.
@@ -992,37 +1004,36 @@ public class PropertySheet implements Cloneable {
             logger = Logger.getLogger(ownerClass.getName());
         }
 
+        //
+        // If there's a log level defined for the component, then we can use that,
+        // otherwise we'll use the global level.  In either case, we need to make
+        // sure that the provided level is a legal level.
+        logLevel = getLogLevel();
+        if(logLevel != null) {
+            logger.setLevel(logLevel);
+        }
+        return logger;
+    }
 
-//
-// If there's a log level defined for the component, then we can use that,
-// otherwise we'll use the global level.  In either case, we need to make
-// sure that the provided level is a legal level.
-        String logLevel = (String) rawProps.get(PROP_LOG_LEVEL);
+    private Level getLogLevel() {
         if(logLevel == null) {
-            logLevel =
-                    cm.getGlobalProperty(ConfigurationManagerUtils.GLOBAL_COMMON_LOGLEVEL);
-            if(logLevel != null) {
+            String lls = (String) rawProps.get(PROP_LOG_LEVEL);
+            if(lls == null) {
+                lls = cm.getGlobalProperty(
+                        ConfigurationManagerUtils.GLOBAL_COMMON_LOGLEVEL);
+            }
+
+            if(lls != null) {
                 try {
-                    logger.setLevel(Level.parse(logLevel));
+                    logLevel = Level.parse(lls);
                 } catch(IllegalArgumentException iae) {
                     throw new PropertyException(instanceName, PROP_LOG_LEVEL,
                             "Globa log level, " +
-                            logLevel + " is not a valid log level");
+                            lls + " is not a valid log level");
                 }
-
             }
-        } else {
-            try {
-                logger.setLevel(Level.parse(logLevel));
-            } catch(IllegalArgumentException iae) {
-                throw new PropertyException(instanceName, PROP_LOG_LEVEL,
-                        "Not a valid log level: " +
-                        rawProps.get(PROP_LOG_LEVEL));
-            }
-
         }
-
-        return logger;
+        return logLevel;
     }
 
     /** Returns the names of registered properties of this PropertySheet object. */
