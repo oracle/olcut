@@ -1,6 +1,5 @@
 package com.sun.labs.util.props;
 
-import java.util.Collection;
 import javax.management.MXBean;
 
 /**
@@ -16,7 +15,11 @@ import javax.management.MXBean;
 public interface ConfigurableMXBean {
 
     /**
-     * Gets the properties that can be configured for this component.
+     * Gets the properties that can be configured for this component.  An implementing
+     * class should only provide the names of the properties that <code>getValue</code>
+     * and <code>setValue</code> can handle, but users of this method cannot expect
+     * that to be the case.
+     * 
      * @return the names of the properties.
      * @see PropertySheet.getPropertyNames
      */

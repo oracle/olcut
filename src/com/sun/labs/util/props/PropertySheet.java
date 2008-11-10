@@ -1031,6 +1031,10 @@ public class PropertySheet implements Cloneable {
                             "Globa log level, " +
                             lls + " is not a valid log level");
                 }
+            }  else {
+                //
+                // When all else fails, choose INFO.
+                logLevel = Level.INFO;
             }
         }
         return logLevel;
