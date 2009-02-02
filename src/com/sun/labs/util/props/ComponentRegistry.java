@@ -572,23 +572,26 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         caches = new HashMap<Class, LookupCache>();
         registrations = new ArrayList<ServiceRegistration>();
 
-        if(System.getSecurityManager() == null) {
+        String securityPolicy = ps.getString(PROP_SECURITY_POLICY);
+
+        //
+        // If there's no security manager, but there's a security policy provided,
+        // then make sure we have a security manager that's going to follow the
+        // policy!
+        if(System.getSecurityManager() == null && securityPolicy != null) {
 
             //
             // If we got a security policy, then install it.
-            String securityPolicy = ps.getString(PROP_SECURITY_POLICY);
             if(securityPolicy != null) {
                 if(!(new File(securityPolicy)).exists()) {
                     throw new PropertyException(ps.getInstanceName(),
                             PROP_SECURITY_POLICY, "Security policy " +
                             securityPolicy + " does not exist");
                 }
+                logger.info("Adding security manager for policy " + securityPolicy);
                 System.setProperty("java.security.policy", securityPolicy);
+                System.setSecurityManager(new RMISecurityManager());
             }
-
-            //
-            // Make sure that we have a security manager.
-            System.setSecurityManager(new RMISecurityManager());
         }
 
         //
