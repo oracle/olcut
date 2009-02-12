@@ -67,8 +67,9 @@ public class LabsLogFormatter extends Formatter {
             }
             String mn = record.getSourceMethodName();
             
-            String msg = String.format("[%tD:%tT] %s %s.%s %s",
-                                       record.getMillis(), 
+            String msg = String.format("[%tD %tT:%tL] %s %s.%s %s",
+                                       record.getMillis(),
+                                       record.getMillis(),
                                        record.getMillis(), 
                                        record.getLevel(),
                                        cn, mn, 
