@@ -4,6 +4,8 @@ import com.sun.jini.config.ConfigUtil;
 import com.sun.jini.tool.ClassServer;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.RMISecurityManager;
 import java.rmi.Remote;
@@ -14,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -638,6 +641,36 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                 throw new PropertyException(ioe, ps.getInstanceName(),
                         PROP_CS_PORT,
                         "Unable to start class server");
+            }
+        }
+
+        //
+        // If we were given a registry host, but it looks like a URL, then
+        // read a set of properties from the URL and get the registryHost
+        // property to use for the name.  This indirection allows us to
+        // get a registry host when we're deploying Web apps some place like
+        // EC2 that doesn't do multicast and doesn't provide for custom
+        // name resolution.
+        if(registryHost != null && !registryHost.equals("")) {
+            try {
+                URL u = new URL(registryHost);
+                Properties props = new Properties();
+                props.load(u.openStream());
+                registryHost = props.getProperty(PROP_REGISTRY_HOST);
+                if(registryHost == null) {
+                    throw new PropertyException(ps.getInstanceName(), PROP_REGISTRY_HOST,
+                            "Properties at URL " + ps.getString(PROP_REGISTRY_HOST) +
+                            " do not include registryHost property");
+                } else {
+                    logger.info("Got registry host: " + registryHost + " from properties");
+                }
+            } catch(MalformedURLException ex) {
+                //
+                // This is OK, it might not actually be a URL!
+            } catch(IOException ioe) {
+                throw new PropertyException(ps.getInstanceName(),
+                        PROP_REGISTRY_HOST,
+                        "Unable to read properties at URL " + ps.getString(PROP_REGISTRY_HOST));
             }
         }
 
