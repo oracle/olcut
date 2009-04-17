@@ -1,5 +1,6 @@
 package com.sun.labs.util.props;
 
+import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -502,10 +503,11 @@ public class PropertySheet implements Cloneable {
         if(propVal == null || propVal instanceof String ||
                 propVal instanceof GlobalProperty) {
             Component configurable = null;
+            PropertySheet ps = null;
 
             try {
                 if(propValues.get(name) != null) {
-                    PropertySheet ps = cm.getPropertySheet(flattenProp(name));
+                    ps = cm.getPropertySheet(flattenProp(name));
                     if(ps != null) {
                         configurable = ps.getOwner(this, cl);
                     }
@@ -551,17 +553,16 @@ public class PropertySheet implements Cloneable {
                             }
                         }
 
-                        configurable =
-                                ConfigurationManager.getInstance(defClass);
+                        configurable = ConfigurationManager.getInstance(defClass);
                         assert configurable != null;
                     }
                 }
-
             } catch(ClassNotFoundException e) {
                 throw new PropertyException(e);
             }
 
             propValues.put(name, configurable);
+            cm.addConfigured(configurable, ps);
         }
         return (Component) propValues.get(name);
     }
@@ -1146,4 +1147,41 @@ public class PropertySheet implements Cloneable {
             }
         }
     }
+
+    protected void save(PrintWriter writer) {
+        writer.printf("\t<component name=\"%s\" type=\"%s\">\n",
+                instanceName,
+                getConfigurableClass().getName());
+
+        for(String propName : getRegisteredProperties()) {
+            String predec = String.format("\t\t<property name=\"%s\"", propName);
+            if(getRawNoReplacement(propName) == null) {
+                continue;
+            }  // if the property was net defined within the xml-file
+
+            switch(getType(propName)) {
+
+                case COMPLIST:
+                case STRINGLIST:
+                    writer.printf("\t\t<propertylist name=\"%s\">\n", propName);
+                    for(Object o : (List) getRawNoReplacement(propName)) {
+                        if(o instanceof Class) {
+                            writer.printf("\t\t\t<type>%s</type>\n", ((Class) o).getName());
+                        } else {
+                            writer.printf("\n\t\t\t<item>%s</item>\n", o);
+                        }
+                    }
+                    writer.println("\n\t\t</propertylist>");
+                    break;
+                default:
+                    writer.printf("\t\t<property name=\"%s\" value=\"%s\"/>\n",
+                            propName,
+                            getRawNoReplacement(propName));
+            }
+        }
+
+        writer.println("\t</component>\n");
+        
+    }
+
 }

@@ -16,15 +16,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 
 /**
  * Manages a set of <code>Configurable</code>s, their parametrization and the relationships between them. Configurations
  * can be specified either by xml or on-the-fly during runtime.
  *
- * @see edu.cmu.sphinx.util.props.Configurable
- * @see edu.cmu.sphinx.util.props.PropertySheet
+ * @see com.sun.labs.util.props.Configurable
+ * @see com.sun.labs.util.props.PropertySheet
  */
 public class ConfigurationManager implements Cloneable {
 
@@ -41,6 +42,8 @@ public class ConfigurationManager implements Cloneable {
             new HashMap<Component,PropertySheet>();
 
     private GlobalProperties globalProperties = new GlobalProperties();
+
+    private GlobalProperties origGlobal;
 
     protected boolean showCreations;
 
@@ -60,6 +63,7 @@ public class ConfigurationManager implements Cloneable {
 
         // we can't config the configuration manager with itself so we
         // do some of these config items manually.
+        origGlobal = new GlobalProperties();
         ConfigurationManagerUtils.applySystemProperties(rawPropertyMap,
                                                         globalProperties);
         GlobalProperty showCreations = globalProperties.get("showCreations");
@@ -79,6 +83,7 @@ public class ConfigurationManager implements Cloneable {
             PropertyException {
         configURLs.add(url);
         SaxLoader saxLoader = new SaxLoader(url, globalProperties);
+        origGlobal = new GlobalProperties(globalProperties);
         rawPropertyMap = saxLoader.load();
 
         ConfigurationManagerUtils.applySystemProperties(rawPropertyMap,
@@ -110,14 +115,13 @@ public class ConfigurationManager implements Cloneable {
         SaxLoader saxLoader = new SaxLoader(url, tgp, rawPropertyMap);
         Map<String, RawPropertyData> trpm = saxLoader.load();
 
-        ConfigurationManagerUtils.applySystemProperties(trpm, tgp);
-
         //
         // Now, add the new global properties to the set for this configuration
         // manager, overriding as necessary.  Then do the same thing for the raw
         // property data.
         for(Map.Entry<String, GlobalProperty> e : tgp.entrySet()) {
             GlobalProperty op = globalProperties.put(e.getKey(), e.getValue());
+            origGlobal.put(e.getKey(), e.getValue());
             if(op != null) {
             //                LogManager.getLogManager().getLogger("")
 //                .warning("Overriding global property: " + e.getKey() +
@@ -133,6 +137,8 @@ public class ConfigurationManager implements Cloneable {
             }
         }
         
+        ConfigurationManagerUtils.applySystemProperties(trpm, tgp);
+
         if(registry == null) {
             setUpRegistry();
         }
@@ -361,6 +367,8 @@ public class ConfigurationManager implements Cloneable {
                 return null;
             }
 
+            logger.finer(String.format("lookup: %s", instanceName));
+
             ret = ps.getOwner(ps);
             
             if(ret instanceof Startable) {
@@ -376,7 +384,7 @@ public class ConfigurationManager implements Cloneable {
             if(ps.isExportable() && registry != null) {
                 registry.register(ret, ps);
             }
-            
+
             configuredComponents.put(ret, ps);
         }
 
@@ -461,6 +469,10 @@ public class ConfigurationManager implements Cloneable {
         if(ps != null && c instanceof Configurable) {
             ((Configurable) c).newProperties(ps);
         }
+    }
+
+    protected void addConfigured(Component c, PropertySheet ps) {
+        configuredComponents.put(c, ps);
     }
 
     /**
@@ -631,8 +643,10 @@ public class ConfigurationManager implements Cloneable {
     public void setGlobalProperty(String propertyName, String value) {
         if(value == null) {
             globalProperties.remove(propertyName);
+            origGlobal.remove(propertyName);
         } else {
             globalProperties.setValue(propertyName, value);
+            origGlobal.setValue(propertyName, value);
         }
 
         // update all component configurations because they might be affected by the change
@@ -845,7 +859,28 @@ public class ConfigurationManager implements Cloneable {
      *                 if an error occurs while writing to the file
      */
     public void save(PrintWriter writer) throws IOException {
-        writer.println(ConfigurationManagerUtils.toXML(this));
+        StringBuffer sb = new StringBuffer();
+        writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
+        writer.println("<!--    Configuration file--> \n\n");
+
+        writer.println("<config>");
+
+        Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
+
+        for(String propName : origGlobal.keySet()) {
+            String propVal = origGlobal.get(propName).toString();
+
+            Matcher matcher = pattern.matcher(propName);
+            propName = matcher.matches() ? matcher.group(1) : propName;
+
+            writer.printf("\t<property name=\"%s\" value=\"%s\"/>\n", propName, propVal);
+        }
+
+        for(PropertySheet ps : configuredComponents.values()) {
+            ps.save(writer);
+        }
+
+        writer.println("</config>");
     }
 }
 
