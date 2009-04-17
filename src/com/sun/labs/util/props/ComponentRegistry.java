@@ -2,6 +2,7 @@ package com.sun.labs.util.props;
 
 import com.sun.jini.config.ConfigUtil;
 import com.sun.jini.tool.ClassServer;
+import com.sun.labs.util.LabsLogFormatter;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.jini.core.discovery.LookupLocator;
@@ -265,6 +267,8 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                     " does not implement java.rmi.Remote, unable to register");
         }
 
+        logger.finer(String.format("Registering %s", ps.getInstanceName()));
+        
         //
         // See what lease time we should use.
         long leaseTime = ps.getLeaseTime();
@@ -308,6 +312,10 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
             // Register the service in all of the registries that we found.
             for(int i = 0; i < regs.length; i++) {
                 ServiceRegistration sr = regs[i].register(si, leaseTime);
+
+                if(logger.isLoggable(Level.FINER)) {
+                    logger.finer(String.format("Registering %s with %s", si, regs[i]));
+                }
 
                 //
                 // Register the lease for renewal.
@@ -686,6 +694,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                 LookupLocator lookup =
                         new LookupLocator(registryHost, registryPort);
                 lookups = new LookupLocator[]{lookup};
+                logger.finer(String.format("Using lookup: %s", lookup));
             }
 
             //
@@ -696,6 +705,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                     null),
                     new LeaseRenewalManager());
             sdm.getDiscoveryManager().addDiscoveryListener(this);
+            logger.finer("Got SDM " + sdm);
         } catch(IOException ioe) {
             throw new PropertyException(ioe, ps.getInstanceName(),
                     "serviceDiscoveryManager",
@@ -811,8 +821,57 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     }
 
     public void discovered(DiscoveryEvent e) {
+        if(logger.isLoggable(Level.ALL.FINER)) {
+            logger.finer(String.format("Discovered %d registrars", e.getRegistrars().length));
+            for(ServiceRegistrar sr : e.getRegistrars()) {
+                logger.finer(String.format(" Registrar %s", sr));
+            }
+        }
     }
 
     public void discarded(DiscoveryEvent e) {
+    }
+
+    /**
+     * A main program that will dump the components registered in a component
+     * registry.  The group to use for discovery should be defined on the command
+     * line using -Dgroup=&lt;groupname&gt.
+     */
+    public static void main(String[] args) throws Exception {
+        //
+        // Use the labs format logging.
+        for(Handler h : Logger.getLogger("").getHandlers()) {
+            h.setLevel(Level.ALL);
+            h.setFormatter(new LabsLogFormatter());
+            try {
+                h.setEncoding("utf-8");
+            } catch(Exception ex) {
+            }
+        }
+        String group = System.getProperty("group");
+        if(group == null) {
+            System.err.println(String.format("System property group must be specified"));
+            return;
+        }
+        URL configURL;
+        if(args.length > 0) {
+            configURL = (new File(args[0])).toURI().toURL();
+        } else {
+            configURL = ComponentRegistry.class.getResource("registryConfig.xml");
+        }
+        ConfigurationManager cm = new ConfigurationManager(configURL);
+        ComponentRegistry cr = cm.getComponentRegistry();
+        if(cr == null) {
+            System.err.println(String.format("No component registry defined in %s", configURL));
+        }
+        Thread.sleep(3000);
+        Map<String,List<String>> m = cr.dumpJiniServices();
+        for(Map.Entry<String, List<String>> e : m.entrySet()) {
+            System.out.println(String.format("Registrar: %s has %d services", e.getKey(), e.getValue().size()));
+            for(String s : e.getValue()) {
+                System.out.println(String.format(" Service: %s", s));
+            }
+        }
+        return;
     }
 }
