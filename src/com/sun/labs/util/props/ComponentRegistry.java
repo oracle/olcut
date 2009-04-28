@@ -545,6 +545,10 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
             return null;
         }
 
+        if(logger.isLoggable(Level.FINER)) {
+            logger.finer(String.format("Got component: %s", si.service));
+        }
+
         //
         // Remember that we looked up the component and add any listener.
         Component component = (Component) si.service;
@@ -599,7 +603,6 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                             PROP_SECURITY_POLICY, "Security policy " +
                             securityPolicy + " does not exist");
                 }
-                logger.info("Adding security manager for policy " + securityPolicy);
                 System.setProperty("java.security.policy", securityPolicy);
                 System.setSecurityManager(new RMISecurityManager());
             }

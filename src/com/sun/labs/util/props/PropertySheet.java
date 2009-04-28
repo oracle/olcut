@@ -703,11 +703,16 @@ public class PropertySheet implements Cloneable {
 
             if(!isInstanciated()) {
 
+                ComponentRegistry registry = cm.getComponentRegistry();
                 //
                 // See if we should do a lookup in a service registry.
-                if(cm.getComponentRegistry() != null && 
+                if(registry != null &&
                         !isExportable() && (size() == 0 ||
                         isImportable())) {
+                    if(logger != null && logger.isLoggable(Level.FINER)) {
+                        logger.finer(String.format("Looking up instance %s in registry",
+                                getInstanceName()));
+                    }
                     owner = cm.getComponentRegistry().lookup(this, cl);
                     if(owner != null) {
                         return owner;
@@ -720,8 +725,10 @@ public class PropertySheet implements Cloneable {
                         }
                     }
                 }
-                if(cm.showCreations) {
-                    System.out.println("Creating: " + getInstanceName());
+                if(logger != null && logger.isLoggable(Level.FINER)) {
+                    logger.finer(String.format(
+                            "Creating %s",
+                            getInstanceName()));
                 }
                 owner = ownerClass.newInstance();
                 if(owner instanceof Configurable) {
@@ -744,6 +751,9 @@ public class PropertySheet implements Cloneable {
                                 null,
                                 null);
                     }
+                }
+                if(registry != null && isExportable()) {
+                    registry.register(owner, this);
                 }
             }
         } catch(IllegalAccessException e) {
