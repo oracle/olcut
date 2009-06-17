@@ -47,6 +47,8 @@ public class CommandInterpreter extends Thread {
     private CommandHistory history = new CommandHistory();
     private BufferedReader in;
 
+    private String defaultCommand;
+
     /** 
      * Creates a command interpreter that won't read a stream.
      *
@@ -64,6 +66,14 @@ public class CommandInterpreter extends Thread {
      */
     public void setTrace(boolean trace) {
         this.trace = trace;
+    }
+
+    /**
+     * Sets a default command to be used as a prefix for a string that isn't
+     * a recognized command.
+     */
+    public void setDefaultCommand(String defaultCommand) {
+        this.defaultCommand = defaultCommand;
     }
 
     /**
@@ -531,12 +541,21 @@ public class CommandInterpreter extends Thread {
         System.out.println("----------\n");
     }
 
-    /** 
+    /**
      * Execute the given command.
      *
      *  @param args	command args, args[0] contains name of cmd.
      */
     public String execute(String[] args) {
+        return execute(args, true);
+    }
+
+    /**
+     * Execute the given command.
+     *
+     *  @param args	command args, args[0] contains name of cmd.
+     */
+    private String execute(String[] args, boolean first) {
         String response = "";
 
         CommandInterface ci;
@@ -552,6 +571,13 @@ public class CommandInterpreter extends Thread {
                     ex.printStackTrace();
                 }
             } else {
+                if(first && defaultCommand != null) {
+                    String[] newArgs = new String[args.length+1];
+                    newArgs[0] = defaultCommand;
+                    System.arraycopy(args, 0, newArgs, 1,
+                                     args.length);
+                    return execute(args, false);
+                }
                 response = "ERR  CMD_NOT_FOUND";
             }
 
@@ -581,7 +607,7 @@ public class CommandInterpreter extends Thread {
      */
     protected String[] parseMessage(String message) {
         int tokenType;
-        List words = new ArrayList(20);
+        List<String> words = new ArrayList<String>();
         StreamTokenizer st = new StreamTokenizer(new StringReader(message));
 
         st.resetSyntax();
@@ -653,6 +679,9 @@ public class CommandInterpreter extends Thread {
      */
     private String getInputLine() throws IOException {
         String message = in.readLine();
+        if(in == null) {
+            return null;
+        }
         boolean justPush = false;
         boolean echo = false;
         boolean error = false;
