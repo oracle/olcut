@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.regex.PatternSyntaxException;
 import java.io.BufferedReader;
-import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
 import java.io.IOException;
@@ -46,6 +45,7 @@ public class CommandInterpreter extends Thread {
     private boolean trace = false;
     private CommandHistory history = new CommandHistory();
     private BufferedReader in;
+    public PrintStream out;
 
     /** 
      * Creates a command interpreter that won't read a stream.
@@ -55,6 +55,7 @@ public class CommandInterpreter extends Thread {
         commandList = new HashMap();
         addStandardCommands();
         in = new BufferedReader(new InputStreamReader(System.in));
+        out = System.out;
     }
 
     /**
@@ -164,7 +165,7 @@ public class CommandInterpreter extends Thread {
                 public String execute(CommandInterpreter ci, String[] args) {
                     StringBuffer b = new StringBuffer(80);
 
-                    System.out.println("arg length is " + args.length);
+                    out.println("arg length is " + args.length);
                     for (int i = 0; i < args.length; i++) {
                         b.append(args[i]);
                         b.append("\n");
@@ -317,7 +318,7 @@ public class CommandInterpreter extends Thread {
                     try {
                         String[] subargs = new String[args.length - 2];
                         System.arraycopy(args, 2, subargs, 0, subargs.length);
-                        PrintStream oldOut = System.out;
+                        PrintStream oldOut = out;
                         PrintStream newOut = new PrintStream(args[1]);
                         System.setOut(newOut);
                         putResponse(CommandInterpreter.this.execute(subargs));
@@ -518,8 +519,16 @@ public class CommandInterpreter extends Thread {
      */
     public synchronized void putResponse(String response) {
         if (response != null && response.length() > 0) {
-            System.out.println(response);
+            out.println(response);
         }
+    }
+
+    public PrintStream getOutput() {
+        return out;
+    }
+    
+    public void setOutput(PrintStream out) {
+        this.out = out;
     }
 
     /**
@@ -528,7 +537,7 @@ public class CommandInterpreter extends Thread {
      */
     protected void onExit() {
         execute("on_exit");
-        System.out.println("----------\n");
+        out.println("----------\n");
     }
 
     /** 
@@ -549,7 +558,7 @@ public class CommandInterpreter extends Thread {
                     response = ci.execute(this, args);
                 } catch (Exception ex) {
                     response = "ERR command exception " + ex.getMessage();
-                    ex.printStackTrace();
+                    ex.printStackTrace(out);
                 }
             } else {
                 response = "ERR  CMD_NOT_FOUND";
@@ -568,7 +577,7 @@ public class CommandInterpreter extends Thread {
      */
     public String execute(String cmdString) {
         if (trace) {
-            System.out.println("Execute: " + cmdString);
+            out.println("Execute: " + cmdString);
         }
         return execute(parseMessage(cmdString));
     }
@@ -599,7 +608,7 @@ public class CommandInterpreter extends Thread {
                 } else if (tokenType == '\'' || tokenType == '"') {
                     words.add(st.sval);
                 } else if (tokenType == StreamTokenizer.TT_NUMBER) {
-                    System.out.println("Unexpected numeric token!");
+                    out.println("Unexpected numeric token!");
                 } else {
                     break;
                 }
@@ -620,8 +629,8 @@ public class CommandInterpreter extends Thread {
                     break;
                 } else {
                     if (trace) {
-                        System.out.println("\n----------");
-                        System.out.println("In : " + message);
+                        out.println("\n----------");
+                        out.println("In : " + message);
                     }
                     message = message.trim();
                     if (message.length() > 0) {
@@ -629,7 +638,7 @@ public class CommandInterpreter extends Thread {
                     }
                 }
             } catch (IOException e) {
-                System.out.println("Exception: CommandInterpreter.run()");
+                out.println("Exception: CommandInterpreter.run()");
                 break;
             }
         }
@@ -725,7 +734,7 @@ public class CommandInterpreter extends Thread {
      */
     private void printPrompt() {
         if (prompt != null) {
-            System.out.print(prompt);
+            out.print(prompt);
         }
     }
 
