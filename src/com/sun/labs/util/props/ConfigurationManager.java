@@ -351,7 +351,8 @@ public class ConfigurationManager implements Cloneable {
         //
         // We'll also try a lookup if one is suggested by the importable attribute
         // for a component.
-        if(registry != null && !ps.isExportable() && (ps.size() == 0 || ps.isImportable())) {
+        if(registry != null && !ps.isExportable() &&
+                ((ps.size() == 0 && ps.implementsRemote()) || ps.isImportable())) {
             ret = registry.lookup(ps, cl);
         }
 

@@ -56,6 +56,8 @@ public class PropertySheet implements Cloneable {
 
     private boolean importable;
 
+    private boolean implementsRemote;
+
     /**
      * The time to lease this object.
      */
@@ -96,6 +98,14 @@ public class PropertySheet implements Cloneable {
         importable = rpd.isImportable();
         leaseTime = rpd.getLeaseTime();
         entriesName = rpd.getEntriesName();
+
+        //
+        // Does this class implement remote?
+        for(Class iface : ownerClass.getInterfaces()) {
+            if(iface.equals(java.rmi.Remote.class)) {
+                implementsRemote = true;
+            }
+        }
 
         processAnnotations(this, confClass);
 
@@ -138,6 +148,10 @@ public class PropertySheet implements Cloneable {
 
     public boolean isExportable() {
         return exportable;
+    }
+
+    public boolean implementsRemote() {
+        return implementsRemote;
     }
 
     public void setImportable(boolean importable) {
@@ -707,8 +721,8 @@ public class PropertySheet implements Cloneable {
                 //
                 // See if we should do a lookup in a service registry.
                 if(registry != null &&
-                        !isExportable() && (size() == 0 ||
-                        isImportable())) {
+                        !isExportable() && 
+                        ((size() == 0 && implementsRemote) || isImportable())) {
                     if(logger != null && logger.isLoggable(Level.FINER)) {
                         logger.finer(String.format("Looking up instance %s in registry",
                                 getInstanceName()));
@@ -717,7 +731,7 @@ public class PropertySheet implements Cloneable {
                     if(owner != null) {
                         return owner;
                     } else {
-                        if(size() == 0) {
+                        if(size() == 0 && isImportable()) {
                             //
                             // We needed to look something up and no success,
                             // so return null.
