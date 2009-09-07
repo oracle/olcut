@@ -24,7 +24,7 @@
 
 package com.sun.labs.util.service;
 
-import com.sun.labs.util.SimpleLabsLogFormatter;
+import com.sun.labs.util.LabsLogFormatter;
 import com.sun.labs.util.props.ConfigBoolean;
 import com.sun.labs.util.props.ConfigComponentList;
 import com.sun.labs.util.props.Configurable;
@@ -76,6 +76,7 @@ public class ConfigurableServiceStarter implements Configurable {
     @ConfigBoolean(defaultValue = true)
     public static final String PROP_BLOCK_FOR_SHUTDOWN = "blockForShutdown";
 
+    @Override
     public void newProperties(PropertySheet ps) throws PropertyException {
 
         cm = ps.getConfigurationManager();
@@ -148,7 +149,7 @@ public class ConfigurableServiceStarter implements Configurable {
         // Use the labs format logging.
         for(Handler h : rl.getHandlers()) {
             h.setLevel(Level.ALL);
-            h.setFormatter(new SimpleLabsLogFormatter());
+            h.setFormatter(new LabsLogFormatter());
             try {
                 h.setEncoding("utf-8");
             } catch (Exception ex) {
