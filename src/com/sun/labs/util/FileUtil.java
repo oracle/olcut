@@ -58,7 +58,7 @@ public class FileUtil {
         if(!target.isDirectory()) {
             throw new IOException(target + " is not a directory");
         }
-        
+        copyDir(source, target);
     }
     
     private static void copyDir(File sd, File td) throws java.io.IOException {
