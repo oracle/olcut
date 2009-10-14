@@ -17,6 +17,24 @@
         <property name="enum2" value="B"/>
     </component>
     
+    <component name="set1" type="com.sun.labs.util.props.EnumConfigurable">
+        <property name="enum1" value="A"/>
+        <property name="enum2" value="B"/>
+        <propertylist name="enumSet1">
+            <item>A</item>
+            <item>B</item>
+        </propertylist>
+    </component>
+
+    <component name="badset" type="com.sun.labs.util.props.EnumConfigurable">
+        <property name="enum1" value="A"/>
+        <property name="enum2" value="B"/>
+        <propertylist name="enumSet1">
+            <item>A</item>
+            <item>R</item>
+        </propertylist>
+    </component>
+
     <component name="default" type="com.sun.labs.util.props.EnumConfigurable">
         <property name="enum1" value="A"/>
     </component>

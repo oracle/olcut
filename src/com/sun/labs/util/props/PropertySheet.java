@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -312,6 +313,50 @@ public class PropertySheet implements Cloneable {
                         name,
                         String.format("Value %s is not valid for enum %s",
                         configEnum.defaultValue(), configEnum.type()));
+            }
+        }
+        propValues.put(name, ret);
+        return ret;
+    }
+
+    public EnumSet getEnumSet(String name) throws PropertyException {
+        ConfigPropWrapper s4PropWrapper = getProperty(name, ConfigEnumSet.class);
+        ConfigEnumSet configEnumSet = ((ConfigEnumSet) s4PropWrapper.getAnnotation());
+        Object vals = propValues.get(name);
+
+        if(vals != null && vals instanceof EnumSet) {
+            return (EnumSet) vals;
+        }
+        
+        Class enumClass = configEnumSet.type();
+        EnumSet ret = EnumSet.noneOf(enumClass);
+        String[] evs;
+
+        if(vals == null) {
+            evs = configEnumSet.defaultList();
+            if(configEnumSet.mandatory() && evs == null) {
+                throw new InternalConfigurationException(getInstanceName(), name,
+                                                         " requires enum values");
+            }
+        } else {
+            evs = ((List<String>) vals).toArray(new String[0]);
+        }
+
+        //
+        // Parse the values.
+        if(evs != null) {
+            for(String ev : evs) {
+
+                try {
+                    ret.add(Enum.valueOf(enumClass, ev.toUpperCase()));
+                } catch(Exception e) {
+                    throw new InternalConfigurationException(
+                            getInstanceName(),
+                            name,
+                            String.format(
+                            "Value %s is not valid for enum %s",
+                            ev, enumClass.getName()));
+                }
             }
         }
         propValues.put(name, ret);
