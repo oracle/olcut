@@ -688,7 +688,7 @@ public class CommandInterpreter extends Thread {
      */
     private String getInputLine() throws IOException {
         String message = in.readLine();
-        if(in == null) {
+        if(message == null) {
             return null;
         }
         boolean justPush = false;

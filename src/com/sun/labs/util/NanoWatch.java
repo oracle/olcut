@@ -48,6 +48,14 @@ public class NanoWatch extends StopWatch implements Serializable {
         time += lastTime;
     }
 
+    public long getTimeNanos() {
+        return time;
+    }
+
+    public long getLastTimeNanos() {
+        return lastTime;
+    }
+
     /**
      * Gets the time for this nano stop watch in milliseconds.
      * @return the accumulated time for this stop watch in milliseconds.
