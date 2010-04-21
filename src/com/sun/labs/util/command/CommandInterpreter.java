@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.FileReader;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.util.logging.Logger;
 
 /**
  * This class is a command interpreter. It reads strings from an
@@ -48,6 +49,8 @@ public class CommandInterpreter extends Thread {
     public PrintStream out;
 
     private String defaultCommand;
+
+    private static Logger logger = Logger.getLogger(CommandInterpreter.class.getName());
 
     /** 
      * Creates a command interpreter that won't read a stream.
@@ -585,7 +588,7 @@ public class CommandInterpreter extends Thread {
                     newArgs[0] = defaultCommand;
                     System.arraycopy(args, 0, newArgs, 1,
                                      args.length);
-                    return execute(args, false);
+                    return execute(newArgs, false);
                 }
                 response = "ERR  CMD_NOT_FOUND";
             }
