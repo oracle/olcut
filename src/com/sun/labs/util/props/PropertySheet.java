@@ -82,6 +82,7 @@ public class PropertySheet implements Cloneable {
 
     private Level logLevel;
 
+    @SuppressWarnings("NonConstantLogger")
     private Logger logger;
 
     public PropertySheet(Configurable configurable, String name,

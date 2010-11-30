@@ -3,7 +3,6 @@ package com.sun.labs.util;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +16,7 @@ public class TimeSpec {
 
     private static Pattern timepat = Pattern.compile("(?:(\\d+)(d))??(?:(\\d+)(h))??(?:(\\d+)(m))??(?:(\\d+)(s))??(?:(\\d+)(ms))??");
 
-    private static Map<String,TimeUnit> tum;
+    private final static Map<String,TimeUnit> tum;
 
     static {
         tum = new HashMap<String,TimeUnit>();

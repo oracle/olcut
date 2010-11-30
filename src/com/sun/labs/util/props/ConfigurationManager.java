@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,10 +37,13 @@ public class ConfigurationManager implements Cloneable {
             new LinkedHashMap<String, PropertySheet>();
 
     private Map<String, RawPropertyData> rawPropertyMap =
-            new HashMap<String, RawPropertyData>();
+            new LinkedHashMap<String, RawPropertyData>();
     
     private Map<Component,PropertySheet> configuredComponents =
-            new HashMap<Component,PropertySheet>();
+            new LinkedHashMap<Component,PropertySheet>();
+
+    private Map<String,PropertySheet> addedComponents =
+            new LinkedHashMap<String,PropertySheet>();
 
     private GlobalProperties globalProperties = new GlobalProperties();
 
@@ -368,7 +372,9 @@ public class ConfigurationManager implements Cloneable {
                 return null;
             }
 
-            logger.finer(String.format("lookup: %s", instanceName));
+            if(logger.isLoggable(Level.FINER)) {
+                logger.finer(String.format("lookup: %s", instanceName));
+            }
 
             ret = ps.getOwner(ps);
             
@@ -386,7 +392,11 @@ public class ConfigurationManager implements Cloneable {
                 registry.register(ret, ps);
             }
 
+            //
+            // Remember that we configured this component, removing it from the
+            // list of added components if necessary.
             configuredComponents.put(ret, ps);
+            addedComponents.remove(instanceName);
         }
 
         return ret;
@@ -516,7 +526,7 @@ public class ConfigurationManager implements Cloneable {
                                                          this);
         symbolTable.put(name, ps);
         rawPropertyMap.put(name, new RawPropertyData(name, confClass.getName()));
-
+        addedComponents.put(name, ps);
         for(ConfigurationChangeListener changeListener : changeListeners) {
             changeListener.componentAdded(this, ps);
         }
@@ -860,7 +870,7 @@ public class ConfigurationManager implements Cloneable {
      *                 if an error occurs while writing to the file
      */
     public void save(PrintWriter writer) throws IOException {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
         writer.println("<!--    Configuration file--> \n\n");
 
@@ -878,6 +888,10 @@ public class ConfigurationManager implements Cloneable {
         }
 
         for(PropertySheet ps : configuredComponents.values()) {
+            ps.save(writer);
+        }
+
+        for(PropertySheet ps : addedComponents.values()) {
             ps.save(writer);
         }
 

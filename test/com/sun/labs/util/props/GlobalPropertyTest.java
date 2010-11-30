@@ -34,14 +34,14 @@ public class GlobalPropertyTest {
     public void noProperty() throws IOException, PropertyException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfig sc = (StringConfig) cm.lookup("unknown");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("unknown");
     }
 
     @Test(expected=com.sun.labs.util.props.PropertyException.class)
     public void badlyFormed() throws IOException, PropertyException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfig sc = (StringConfig) cm.lookup("badlyformed");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("badlyformed");
     }
 
 
@@ -49,7 +49,7 @@ public class GlobalPropertyTest {
     public void simpleReplacement() throws IOException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfig sc = (StringConfig) cm.lookup("simple");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("simple");
         assertEquals(sc.one, "alpha");
         assertEquals(sc.two, "beta");
         assertEquals(sc.three, "charlie");
@@ -59,7 +59,7 @@ public class GlobalPropertyTest {
     public void compoundReplacement() throws IOException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfig sc = (StringConfig) cm.lookup("compound");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("compound");
         assertEquals(sc.one, "alpha/beta");
         assertEquals(sc.two, "betacharlie");
         assertEquals(sc.three, "charlie:alpha");
@@ -69,7 +69,7 @@ public class GlobalPropertyTest {
     public void nonGlobals() throws IOException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfig sc = (StringConfig) cm.lookup("nonglobal");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("nonglobal");
         assertEquals(sc.one, "${a");
         assertEquals(sc.two, "$b}");
         assertEquals(sc.three, "$c");
@@ -79,7 +79,7 @@ public class GlobalPropertyTest {
     public void recurse() throws IOException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfig sc = (StringConfig) cm.lookup("recurse");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("recurse");
         assertEquals(sc.one, "alpha");
         assertEquals(sc.two, "alpha");
         assertEquals(sc.three, "alpha");
@@ -89,7 +89,7 @@ public class GlobalPropertyTest {
     public void recurse2() throws IOException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfig sc = (StringConfig) cm.lookup("recurse2");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("recurse2");
         assertEquals("alpha/bar", sc.one);
         assertEquals(sc.two, "x");
         assertEquals(sc.three, "y");
@@ -99,7 +99,7 @@ public class GlobalPropertyTest {
     public void compoundRecurse() throws IOException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfig sc = (StringConfig) cm.lookup("compoundrecurse");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("compoundrecurse");
         assertEquals(sc.one, "one beta/alpha");
         assertEquals(sc.two, "two charlie/alpha/beta/alpha");
         assertEquals(sc.three, "three alpha/beta/charlie");
@@ -109,7 +109,7 @@ public class GlobalPropertyTest {
     public void systemProps() throws IOException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfig sc = (StringConfig) cm.lookup("sysprops");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("sysprops");
         assertEquals("/Users/stgreen/Projects/LabsUtil/jini/jsk-all.policy", sc.one);
     }
     
@@ -117,7 +117,7 @@ public class GlobalPropertyTest {
     public void distinguishedProps() throws IOException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfig sc = (StringConfig) cm.lookup("distinguished");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("distinguished");
         assertEquals(ConfigUtil.getHostName(), sc.one);
     }
     

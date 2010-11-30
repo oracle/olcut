@@ -5,12 +5,15 @@
 
 package com.sun.labs.util.props;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * A configurable with a few strings.
  */
-public class StringConfig implements Configurable {
+public class StringConfigurable implements Configurable {
+
+    private Logger logger;
     
     @ConfigString(defaultValue="")
     public static final String PROP_ONE = "one";
@@ -23,6 +26,7 @@ public class StringConfig implements Configurable {
     String three;
 
     public void newProperties(PropertySheet ps) throws PropertyException {
+        logger = ps.getLogger();
         one = ps.getString(PROP_ONE);
         two = ps.getString(PROP_TWO);
         three = ps.getString(PROP_THREE);

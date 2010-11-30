@@ -14,8 +14,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
- * @author stgreen
+ * Tests for time specifications.
  */
 public class TimeSpecTest {
 

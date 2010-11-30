@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.sun.labs.util.props;
 
 import java.io.IOException;
@@ -59,7 +55,7 @@ public class ComponentListTest {
         assertTrue(l.size() == 3);
         for (Configurable c : l) {
             assertNotNull(c);
-            assertEquals(c.getClass(), StringConfig.class);
+            assertEquals(c.getClass(), StringConfigurable.class);
         }
     }
 
@@ -77,7 +73,7 @@ public class ComponentListTest {
             assertNotNull(c);
             if(c.getClass().equals(SimpleConfigurable.class)) {
                 simp++;
-            } else if(c.getClass().equals(StringConfig.class)) {
+            } else if(c.getClass().equals(StringConfigurable.class)) {
                 string++;
             } else {
                 fail("Unknown class: " + c.getClass());
@@ -102,7 +98,7 @@ public class ComponentListTest {
             assertNotNull(c);
             if (c.getClass().equals(SimpleConfigurable.class)) {
                 simp++;
-            } else if (c.getClass().equals(StringConfig.class)) {
+            } else if (c.getClass().equals(StringConfigurable.class)) {
                 string++;
             } else {
                 fail("Unknown class: " + c.getClass());
