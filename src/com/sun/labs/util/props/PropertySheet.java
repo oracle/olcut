@@ -418,20 +418,26 @@ public class PropertySheet implements Cloneable {
             propValues.put(name, s4Integer.defaultValue());
         }
         Object propObject = propValues.get(name);
-        Integer propValue = propObject instanceof Integer ? (Integer) propObject
-                : Integer.decode(flattenProp(name));
+        try {
+            Integer propValue = propObject instanceof Integer
+                    ? (Integer) propObject
+                    : Integer.decode(flattenProp(name));
 
-        int[] range = s4Integer.range();
-        if(range.length != 2) {
-            throw new InternalConfigurationException(getInstanceName(), name,
-                    range +
-                    " is not of expected range type, which is {minValue, maxValue)");
+            int[] range = s4Integer.range();
+            if(range.length != 2) {
+                throw new InternalConfigurationException(getInstanceName(), name,
+                                                         range
+                        + " is not of expected range type, which is {minValue, maxValue)");
+            }
+            if(propValue < range[0] || propValue > range[1]) {
+                throw new InternalConfigurationException(getInstanceName(), name, " is not in range ("
+                        + range + ")");
+            }
+            return propValue;
+        } catch (NumberFormatException ex) {
+            throw new PropertyException(instanceName, name, String.format("%s is not an integer", propObject));
         }
-        if(propValue < range[0] || propValue > range[1]) {
-            throw new InternalConfigurationException(getInstanceName(), name, " is not in range (" +
-                    range + ")");
-        }
-        return propValue;
+
     }
 
     /**
@@ -475,20 +481,26 @@ public class PropertySheet implements Cloneable {
             propValues.put(name, s4Double.defaultValue());
         }
         Object propObject = propValues.get(name);
-        Double propValue =
-                propObject instanceof Double ? (Double) propObject : Double.valueOf(flattenProp(name));
+        try {
+            Double propValue =
+                    propObject instanceof Double ? (Double) propObject : Double.
+                    valueOf(flattenProp(name));
 
-        double[] range = s4Double.range();
-        if(range.length != 2) {
-            throw new InternalConfigurationException(getInstanceName(), name,
-                    range +
-                    " is not of expected range type, which is {minValue, maxValue)");
+            double[] range = s4Double.range();
+            if(range.length != 2) {
+                throw new InternalConfigurationException(getInstanceName(), name,
+                                                         range
+                        + " is not of expected range type, which is {minValue, maxValue)");
+            }
+            if(propValue < range[0] || propValue > range[1]) {
+                throw new InternalConfigurationException(getInstanceName(), name, " is not in range ("
+                        + range + ")");
+            }
+            return propValue;
+        } catch(NumberFormatException ex) {
+            throw new PropertyException(instanceName, name, String.format(
+                    "%s is not a double", propObject));
         }
-        if(propValue < range[0] || propValue > range[1]) {
-            throw new InternalConfigurationException(getInstanceName(), name, " is not in range (" +
-                    range + ")");
-        }
-        return propValue;
     }
 
     /**

@@ -510,7 +510,7 @@ public class ConfigurationManager implements Cloneable {
      *                  instance.
      * @param name      The desired  lookup-name of the configurable
      * @param props     The properties to be used for component configuration
-     * @throws IllegalArgumentException if the there's already a component with the same <code>name</code> registered to
+     * @throws IllegalArgumentException if the there's already a component with the same <code>name</code> that's been instantiated by
      *                                  this configuration manager instance.
      */
     public void addConfigurable(Class<? extends Configurable> confClass,

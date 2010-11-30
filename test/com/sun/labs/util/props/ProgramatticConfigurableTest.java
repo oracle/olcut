@@ -83,6 +83,50 @@ public class ProgramatticConfigurableTest {
     }
 
     /**
+     * Tests adding a configurable with some explicit properties and some
+     * default ones.
+     */
+    @Test
+    public void addPartialStringConfigurable() throws IOException {
+        URL cu = getClass().getResource("stringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(cu);
+        Map<String,Object> m = new HashMap<String, Object>();
+        for(String s : new String[] {"one"}) {
+            m.put(s, s);
+        }
+        cm.addConfigurable(StringConfigurable.class, "c", m);
+        StringConfigurable sc = (StringConfigurable) cm.lookup("c");
+        assertEquals("one", sc.one);
+        assertEquals("", sc.two);
+        assertEquals("", sc.three);
+        m.clear();
+        for(String s : new String[]{"one", "three"}) {
+            m.put(s, s);
+        }
+        cm.addConfigurable(StringConfigurable.class, "d", m);
+        sc = (StringConfigurable) cm.lookup("d");
+        assertEquals("one", sc.one);
+        assertEquals("", sc.two);
+        assertEquals("three", sc.three);
+    }
+
+    /**
+     * Tests adding a configurable with an incorrect property type.
+     */
+    @Test
+    public void addConfigurableWithBadProperty() throws IOException {
+        URL cu = getClass().getResource("basicConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(cu);
+        Map<String,Object> m = new HashMap<String, Object>();
+        m.put("s", "one");
+        m.put("i", "two");
+        cm.addConfigurable(BasicConfigurable.class, "c", m);
+        BasicConfigurable bc = (BasicConfigurable) cm.lookup("c");
+        assertEquals("one", bc.s);
+        assertEquals(new Integer(2), bc.i);
+    }
+
+    /**
      * Tests adding a configurable with an existing name, which should not throw
      * an exception if it the existing configurable hasn't been instantiated.  This
      * is just like overriding one configuration file with another.
