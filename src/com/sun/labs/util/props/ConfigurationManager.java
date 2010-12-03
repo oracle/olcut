@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.rmi.Remote;
 import java.util.ArrayList;
@@ -897,5 +899,96 @@ public class ConfigurationManager implements Cloneable {
 
         writer.println("</config>");
     }
+
+    /**
+     * Imports a configurable component by generating the property sheets
+     * necessary to configure the provided component and puts them into
+     * this configuration manager.  This is useful in situations where you have
+     * a configurable component but you don't have the property sheet that
+     * generated it (e.g., if it was sent over the network.)
+     *
+     * @param configurable the configurable component to import
+     * @param name the unique name to use for the component. This name will be
+     * used to prefix any embedded components.
+     */
+    public void importConfigurable(Configurable configurable,
+                                   String name) {
+        Map<String,Object> m = new LinkedHashMap<String, Object>();
+        Field[] fields = configurable.getClass().getFields();
+        for(Field field : fields) {
+            Annotation[] annotations = field.getAnnotations();
+            for(Annotation annotation : annotations) {
+                if(annotation instanceof ConfigComponent) {
+                    handleComponent(m, name, field, configurable);
+                } else {
+                    Annotation[] superAnnotations = annotation.annotationType().
+                            getAnnotations();
+                    for(Annotation superAnnotation : superAnnotations) {
+                        if(superAnnotation instanceof ConfigProperty) {
+                            handleProperty(m, field, configurable);
+                        }
+                    }
+                }
+            }
+        }
+        addConfigurable(configurable.getClass(), name, m);
+    }
+
+    public void handleComponent(Map<String, Object> m,
+                                String prefix,
+                                Field annotationField,
+                                Configurable configurable) {
+        try {
+            /**
+             * Create the property that references the component
+             */
+            String propName = (String) annotationField.get(null);
+            String embeddedName = String.format("%s-%s", prefix, propName);
+
+            /**
+             * Find the instance of the component in the Configurable parameter
+             */
+            Field[] fields = configurable.getClass().getDeclaredFields();
+            for(Field field : fields) {
+                field.setAccessible(true);
+                if(field.getName().equals(propName)) {
+                    /* get the instance */
+                    Configurable newConf =
+                            (Configurable) field.get(configurable);
+                    System.out.println(newConf.getClass().getName());
+                    importConfigurable(newConf, embeddedName);
+                }
+            }
+            m.put(propName, embeddedName);
+        } catch(IllegalAccessException iae) {
+            System.err.println("Illegal access exception in handleComponent");
+        } catch(IllegalArgumentException arge) {
+            System.err.println("Illegal argument exception in handleComponent");
+        } catch(Exception e) {
+            System.err.println("Exception in handleComponent" + e.getClass().
+                    getName());
+        }
+    }
+
+    /**
+     * Add a simple property to an existing PropertySheet.
+     */
+    public void handleProperty(Map<String, Object> m,
+                               Field annotationField,
+                               Configurable configurable) {
+        try {
+            String propName = (String) annotationField.get(null);
+            Field[] fields = configurable.getClass().getDeclaredFields();
+            for(Field field : fields) {
+                field.setAccessible(true);
+                if(field.getName().equals(propName)) {
+                    m.put(propName, field.get(configurable));
+                }
+            }
+        } catch(Exception e) {
+            System.err.println("Exception in handleProperty" + e.getMessage());
+        }
+    }
+
 }
 

@@ -1,11 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.sun.labs.util.props;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -18,9 +12,11 @@ public class StringConfigurable implements Configurable {
     @ConfigString(defaultValue="")
     public static final String PROP_ONE = "one";
     String one;
+
     @ConfigString(defaultValue="")
     public static final String PROP_TWO = "two";
     String two;
+    
     @ConfigString(defaultValue="")
     public static final String PROP_THREE = "three";
     String three;
