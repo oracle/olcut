@@ -91,4 +91,26 @@ public class ImportConfigTest {
         assertEquals(l1.c.c.c.i, l1n.c.c.c.i);
         assertEquals(l1.c.c.c.d, l1n.c.c.c.d, 0.001);
     }
+
+    @Test
+    public void importSimpleComponentList() throws IOException {
+        URL cu = getClass().getResource("componentListConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ListConfigurable lc1 = (ListConfigurable) cm1.lookup("simple");
+        ConfigurationManager cm2 = new ConfigurationManager();
+        cm2.importConfigurable(lc1, "simple");
+        File f = File.createTempFile("config", ".xml");
+        cm2.save(f);
+        cm2 = new ConfigurationManager(f.toURI().toURL());
+        ListConfigurable lc2 = (ListConfigurable) cm2.lookup("simple");
+        SimpleConfigurable sc1 = (SimpleConfigurable) lc1.list.get(0);
+        SimpleConfigurable sc2 = (SimpleConfigurable) lc2.list.get(0);
+        assertEquals(sc1.simple, sc2.simple);
+
+        StringConfigurable stc1 = (StringConfigurable) lc1.list.get(1);
+        StringConfigurable stc2 = (StringConfigurable) lc2.list.get(1);
+        assertEquals(stc1.one, stc2.one);
+        assertEquals(stc1.two, stc2.two);
+        assertEquals(stc1.three, stc2.three);
+     }
 }

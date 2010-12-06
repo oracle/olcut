@@ -25,13 +25,13 @@
     
     <component name="typed" type="com.sun.labs.util.props.ListConfigurable">
         <propertylist name="list">
-            <type>com.sun.labs.util.props.StringConfig</type>
+            <type>com.sun.labs.util.props.StringConfigurable</type>
         </propertylist>
     </component>
     
     <component name="dualtyped" type="com.sun.labs.util.props.ListConfigurable">
         <propertylist name="list">
-            <type>com.sun.labs.util.props.StringConfig</type>
+            <type>com.sun.labs.util.props.StringConfigurable</type>
             <type>com.sun.labs.util.props.SimpleConfigurable</type>
         </propertylist>
     </component>
@@ -39,7 +39,7 @@
     <component name="combotyped" type="com.sun.labs.util.props.ListConfigurable">
         <propertylist name="list">
             <item>simp</item>
-            <type>com.sun.labs.util.props.StringConfig</type>
+            <type>com.sun.labs.util.props.StringConfigurable</type>
         </propertylist>
     </component>
     
@@ -51,19 +51,19 @@
         <property name="simple" value="20"/>
     </component>
     
-    <component name="strings" type="com.sun.labs.util.props.StringConfig">
+    <component name="strings" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="alpha"/>
         <property name="two" value="beta"/>
         <property name="three" value="charlie"/>
     </component>
 
-    <component name="strings2" type="com.sun.labs.util.props.StringConfig">
+    <component name="strings2" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="one"/>
         <property name="two" value="two"/>
         <property name="three" value="three"/>
     </component>
 
-    <component name="strings3" type="com.sun.labs.util.props.StringConfig">
+    <component name="strings3" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="un"/>
         <property name="two" value="deux"/>
         <property name="three" value="trois"/>

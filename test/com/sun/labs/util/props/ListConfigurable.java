@@ -16,14 +16,14 @@ public class ListConfigurable implements Configurable {
     defaultList={})
     public static final String PROP_LIST = "list";
     
-    List<Configurable> l;
+    List<Configurable> list;
     
     public void newProperties(PropertySheet ps) {
-        l = (List<Configurable>) ps.getComponentList(PROP_LIST);
+        list = (List<Configurable>) ps.getComponentList(PROP_LIST);
     }
     
     public List<Configurable> getList() {
-        return l;
+        return list;
     }
 
 }

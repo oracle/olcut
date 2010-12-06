@@ -900,6 +900,17 @@ public class ConfigurationManager implements Cloneable {
         writer.println("</config>");
     }
 
+    private Field getNamedField(Object o, String fieldName) {
+        Field[] fields = o.getClass().getDeclaredFields();
+        for(Field field : fields) {
+            field.setAccessible(true);
+            if(field.getName().equals(fieldName)) {
+                return field;
+            }
+        }
+        return null;
+    }
+
     /**
      * Imports a configurable component by generating the property sheets
      * necessary to configure the provided component and puts them into
@@ -912,83 +923,143 @@ public class ConfigurationManager implements Cloneable {
      * used to prefix any embedded components.
      */
     public void importConfigurable(Configurable configurable,
-                                   String name) {
-        Map<String,Object> m = new LinkedHashMap<String, Object>();
+                                   String name) throws PropertyException {
+        Map<String, Object> m = new LinkedHashMap<String, Object>();
         Field[] fields = configurable.getClass().getFields();
-        for(Field field : fields) {
-            Annotation[] annotations = field.getAnnotations();
-            for(Annotation annotation : annotations) {
-                if(annotation instanceof ConfigComponent) {
-                    handleComponent(m, name, field, configurable);
-                } else {
-                    Annotation[] superAnnotations = annotation.annotationType().
-                            getAnnotations();
-                    for(Annotation superAnnotation : superAnnotations) {
-                        if(superAnnotation instanceof ConfigProperty) {
-                            handleProperty(m, field, configurable);
+        String propName = null;
+        try {
+            for(Field field : fields) {
+                Annotation[] annotations = field.getAnnotations();
+                for(Annotation annotation : annotations) {
+                    if(annotation instanceof ConfigComponent) {
+
+                        propName = (String) field.get(null);
+
+                        //
+                        // A single component.
+                        m.put(propName, handleComponentImport(name, propName,
+                                                              configurable));
+                    } else if(annotation instanceof ConfigComponentList) {
+                        propName = (String) field.get(null);
+
+                        //
+                        // A list of components.
+                        m.put(propName, handleComponentListImport(name, propName,
+                                                                  configurable));
+                    } else {
+                        Annotation[] superAnnotations = annotation.
+                                annotationType().
+                                getAnnotations();
+                        propName = (String) field.get(null);
+
+                        for(Annotation superAnnotation : superAnnotations) {
+                            if(superAnnotation instanceof ConfigProperty) {
+                                m.put(propName, handlePropertyImport(propName, configurable));
+                            }
                         }
                     }
                 }
             }
+            addConfigurable(configurable.getClass(), name, m);
+        } catch(PropertyException ex) {
+            throw ex;
+        } catch(Exception ex) {
+            throw new PropertyException(ex, null, null,
+                                        String.format("Error importing %s for propName",
+                                        name, propName));
         }
-        addConfigurable(configurable.getClass(), name, m);
     }
 
-    public void handleComponent(Map<String, Object> m,
-                                String prefix,
-                                Field annotationField,
-                                Configurable configurable) {
-        try {
-            /**
-             * Create the property that references the component
-             */
-            String propName = (String) annotationField.get(null);
-            String embeddedName = String.format("%s-%s", prefix, propName);
+    private List<String> handleComponentListImport(String prefix,
+                                                   String propName,
+                                                   Configurable configurable)
+            throws PropertyException {
 
-            /**
-             * Find the instance of the component in the Configurable parameter
-             */
-            Field[] fields = configurable.getClass().getDeclaredFields();
-            for(Field field : fields) {
-                field.setAccessible(true);
-                if(field.getName().equals(propName)) {
-                    /* get the instance */
-                    Configurable newConf =
-                            (Configurable) field.get(configurable);
-                    System.out.println(newConf.getClass().getName());
-                    importConfigurable(newConf, embeddedName);
-                }
+        try {
+            String embeddedName = String.format("%s-%s", prefix, propName);
+            Field field = getNamedField(configurable, propName);
+
+            if(field == null) {
+                throw new PropertyException(null, propName, String.format(
+                        "Property %s has no variable named %s", propName,
+                        propName));
             }
-            m.put(propName, embeddedName);
-        } catch(IllegalAccessException iae) {
-            System.err.println("Illegal access exception in handleComponent");
-        } catch(IllegalArgumentException arge) {
-            System.err.println("Illegal argument exception in handleComponent");
-        } catch(Exception e) {
-            System.err.println("Exception in handleComponent" + e.getClass().
-                    getName());
+
+            List<Component> l = (List<Component>) field.get(configurable);
+            List<String> names = new ArrayList<String>();
+            int i = 0;
+            for(Component c : l) {
+                String np = String.format("%s-%d", embeddedName, i++);
+                names.add(handleComponentImport(propName, np, (Configurable) c));
+            }
+            return names;
+        } catch(PropertyException ex) {
+            throw ex;
+        } catch(Exception ex) {
+            throw new PropertyException(ex, null, propName,
+                                        String.format(
+                    "Error getting component field"));
+        }
+    }
+
+    private String handleComponentImport(String prefix,
+                                         String propName,
+                                         Configurable configurable) throws
+            PropertyException {
+        try {
+            String embeddedName = String.format("%s-%s", prefix, propName);
+            handleComponentImportInternal(propName, embeddedName, configurable);
+            return embeddedName;
+        } catch(Exception ex) {
+            throw new PropertyException(ex, null, propName,
+                                        String.format(
+                    "Error getting component field"));
+        }
+    }
+
+    private void handleComponentImportInternal(String propName,
+                                               String componentName,
+                                               Configurable configurable) {
+
+        try {
+
+            Field field = getNamedField(configurable, propName);
+
+            if(field == null) {
+                throw new PropertyException(null, propName, String.format(
+                        "Property %s has no variable named %s", propName,
+                        propName));
+            }
+            Configurable newConf = (Configurable) field.get(configurable);
+            importConfigurable(newConf, componentName);
+        } catch(PropertyException ex) {
+            throw ex;
+        } catch(Exception ex) {
+            throw new PropertyException(ex, null, propName,
+                                        String.format(
+                    "Error importing component field for property %s", propName));
         }
     }
 
     /**
      * Add a simple property to an existing PropertySheet.
      */
-    public void handleProperty(Map<String, Object> m,
-                               Field annotationField,
-                               Configurable configurable) {
+    private Object handlePropertyImport(String propName,
+                                      Configurable configurable) throws PropertyException {
         try {
-            String propName = (String) annotationField.get(null);
-            Field[] fields = configurable.getClass().getDeclaredFields();
-            for(Field field : fields) {
-                field.setAccessible(true);
-                if(field.getName().equals(propName)) {
-                    m.put(propName, field.get(configurable));
-                }
+            Field field = getNamedField(configurable, propName);
+            if(field == null) {
+                throw new PropertyException(null, propName, String.format(
+                        "Property %s has no variable named %s", propName,
+                        propName));
             }
-        } catch(Exception e) {
-            System.err.println("Exception in handleProperty" + e.getMessage());
+            return field.get(configurable);
+        } catch(PropertyException ex) {
+            throw ex;
+        } catch(Exception ex) {
+            throw new PropertyException(ex, null, propName,
+                                        String.format(
+                    "Error importing property field for property %s", propName));
         }
     }
-
 }
-
