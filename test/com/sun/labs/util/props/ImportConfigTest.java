@@ -93,16 +93,35 @@ public class ImportConfigTest {
     }
 
     @Test
-    public void importSimpleComponentList() throws IOException {
-        URL cu = getClass().getResource("componentListConfig.xml");
+    public void importMultiNonDefaultCombo() throws IOException {
+        URL cu = getClass().getResource("importConfig.xml");
         ConfigurationManager cm1 = new ConfigurationManager(cu);
-        ListConfigurable lc1 = (ListConfigurable) cm1.lookup("simple");
+        L1Configurable l1 = (L1Configurable) cm1.lookup("l1");
         ConfigurationManager cm2 = new ConfigurationManager();
-        cm2.importConfigurable(lc1, "simple");
+        cm2.importConfigurable(l1, "l11");
         File f = File.createTempFile("config", ".xml");
         cm2.save(f);
         cm2 = new ConfigurationManager(f.toURI().toURL());
-        ListConfigurable lc2 = (ListConfigurable) cm2.lookup("simple");
+        L1Configurable l1n = (L1Configurable) cm2.lookup("l11");
+        assertEquals(l1.s, l1n.s);
+        assertEquals(l1.c.s, l1n.c.s);
+        assertEquals(l1.c.c.s, l1n.c.c.s);
+        assertEquals(l1.c.c.c.s, l1n.c.c.c.s);
+        assertEquals(l1.c.c.c.i, l1n.c.c.c.i);
+        assertEquals(l1.c.c.c.d, l1n.c.c.c.d, 0.001);
+    }
+
+    @Test
+    public void importSimpleComponentList() throws IOException {
+        URL cu = getClass().getResource("importConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ListConfigurable lc1 = (ListConfigurable) cm1.lookup("simpleList");
+        ConfigurationManager cm2 = new ConfigurationManager();
+        cm2.importConfigurable(lc1, "simpleList");
+        File f = File.createTempFile("config", ".xml");
+        cm2.save(f);
+        cm2 = new ConfigurationManager(f.toURI().toURL());
+        ListConfigurable lc2 = (ListConfigurable) cm2.lookup("simpleList");
         SimpleConfigurable sc1 = (SimpleConfigurable) lc1.list.get(0);
         SimpleConfigurable sc2 = (SimpleConfigurable) lc2.list.get(0);
         assertEquals(sc1.simple, sc2.simple);
@@ -112,5 +131,63 @@ public class ImportConfigTest {
         assertEquals(stc1.one, stc2.one);
         assertEquals(stc1.two, stc2.two);
         assertEquals(stc1.three, stc2.three);
+    }
+
+    @Test
+    public void importSingleEmbeddedComponentList() throws IOException {
+        URL cu = getClass().getResource("importConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ListConfigurable lc1 = (ListConfigurable) cm1.lookup("singleEmbeddedList");
+        ConfigurationManager cm2 = new ConfigurationManager();
+        cm2.importConfigurable(lc1, "singleEmbeddedList");
+        File f = File.createTempFile("config", ".xml");
+        cm2.save(f);
+        cm2 = new ConfigurationManager(f.toURI().toURL());
+        ListConfigurable lc2 = (ListConfigurable) cm2.lookup("singleEmbeddedList");
+
+        StringConfigurable stc1 = (StringConfigurable) lc1.list.get(0);
+        StringConfigurable stc2 = (StringConfigurable) lc2.list.get(0);
+        assertEquals(stc1.one, stc2.one);
+        assertEquals(stc1.two, stc2.two);
+        assertEquals(stc1.three, stc2.three);
+        L1Configurable l1 = (L1Configurable) lc1.list.get(1);
+        L1Configurable l1n = (L1Configurable) lc2.list.get(1);
+        assertEquals(l1.s, l1n.s);
+        assertEquals(l1.c.s, l1n.c.s);
+        assertEquals(l1.c.c.s, l1n.c.c.s);
+        assertEquals(l1.c.c.c.s, l1n.c.c.c.s);
+        assertEquals(l1.c.c.c.i, l1n.c.c.c.i);
+        assertEquals(l1.c.c.c.d, l1n.c.c.c.d, 0.001);
+     }
+
+    @Test
+    public void importMultiEmbeddedComponentList() throws IOException {
+        URL cu = getClass().getResource("importConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ListConfigurable lc1 = (ListConfigurable) cm1.lookup("multiEmbeddedList");
+        ConfigurationManager cm2 = new ConfigurationManager();
+        cm2.importConfigurable(lc1, "multiEmbeddedList");
+        File f = File.createTempFile("config", ".xml");
+        cm2.save(f);
+        cm2 = new ConfigurationManager(f.toURI().toURL());
+        ListConfigurable lc2 = (ListConfigurable) cm2.lookup("multiEmbeddedList");
+
+        L1Configurable l1 = (L1Configurable) lc1.list.get(0);
+        L1Configurable l1n = (L1Configurable) lc2.list.get(0);
+        assertEquals(l1.s, l1n.s);
+        assertEquals(l1.c.s, l1n.c.s);
+        assertEquals(l1.c.c.s, l1n.c.c.s);
+        assertEquals(l1.c.c.c.s, l1n.c.c.c.s);
+        assertEquals(l1.c.c.c.i, l1n.c.c.c.i);
+        assertEquals(l1.c.c.c.d, l1n.c.c.c.d, 0.001);
+
+        l1 = (L1Configurable) lc1.list.get(1);
+        l1n = (L1Configurable) lc2.list.get(1);
+        assertEquals(l1.s, l1n.s);
+        assertEquals(l1.c.s, l1n.c.s);
+        assertEquals(l1.c.c.s, l1n.c.c.s);
+        assertEquals(l1.c.c.c.s, l1n.c.c.c.s);
+        assertEquals(l1.c.c.c.i, l1n.c.c.c.i);
+        assertEquals(l1.c.c.c.d, l1n.c.c.c.d, 0.001);
      }
 }
