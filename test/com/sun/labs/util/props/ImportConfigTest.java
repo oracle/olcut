@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.sun.labs.util.props;
 
 import java.io.File;
@@ -54,6 +49,34 @@ public class ImportConfigTest {
         assertEquals(sc1.one, sc2.one);
         assertEquals(sc1.two, sc2.two);
         assertEquals(sc1.three, sc2.three);
+    }
+
+    @Test
+    public void importEnum() throws IOException {
+        URL cu = getClass().getResource("enumConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        EnumConfigurable ec1 = (EnumConfigurable) cm1.lookup("both");
+        ConfigurationManager cm2 = new ConfigurationManager();
+        cm2.importConfigurable(ec1, "both");
+        File f = File.createTempFile("config", ".xml");
+        cm2.save(f);
+        cm2 = new ConfigurationManager(f.toURI().toURL());
+        EnumConfigurable ec2 = (EnumConfigurable) cm1.lookup("both");
+        assertEquals(ec1, ec2);
+    }
+
+    @Test
+    public void importEnumNonDefault() throws IOException {
+        URL cu = getClass().getResource("enumConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        EnumConfigurable ec1 = (EnumConfigurable) cm1.lookup("set1");
+        ConfigurationManager cm2 = new ConfigurationManager();
+        cm2.importConfigurable(ec1, "set1");
+        File f = File.createTempFile("config", ".xml");
+        cm2.save(f);
+        cm2 = new ConfigurationManager(f.toURI().toURL());
+        EnumConfigurable ec2 = (EnumConfigurable) cm1.lookup("set1");
+        assertEquals(ec1, ec2);
     }
 
     @Test
@@ -109,6 +132,26 @@ public class ImportConfigTest {
         assertEquals(l1.c.c.c.s, l1n.c.c.c.s);
         assertEquals(l1.c.c.c.i, l1n.c.c.c.i);
         assertEquals(l1.c.c.c.d, l1n.c.c.c.d, 0.001);
+    }
+
+    @Test
+    public void importStringList() throws IOException {
+        URL cu = getClass().getResource("stringListConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        StringListConfigurable sl1 = (StringListConfigurable) cm1.lookup(
+                "listTest");
+        ConfigurationManager cm2 = new ConfigurationManager();
+        cm2.importConfigurable(sl1, "listTest");
+        File f = File.createTempFile("config", ".xml");
+        cm2.save(f);
+
+        cm2 = new ConfigurationManager(f.toURI().toURL());
+        StringListConfigurable sl2 = (StringListConfigurable) cm1.lookup(
+                "listTest");
+
+        for(int i = 0; i < sl1.strings.size(); i++) {
+            assertEquals(sl1.strings.get(i), sl2.strings.get(i));
+        }
     }
 
     @Test

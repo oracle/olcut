@@ -30,7 +30,7 @@ public class PropertySheet implements Cloneable {
 
     public enum PropertyType {
 
-        INT, DOUBLE, BOOL, ENUM, COMP, STRING, STRINGLIST, COMPLIST
+        INT, DOUBLE, BOOL, ENUM, COMP, STRING, STRINGLIST, COMPLIST, ENUMSET;
 
     }
     private Map<String, ConfigPropWrapper> registeredProperties =
@@ -1034,6 +1034,8 @@ public class PropertySheet implements Cloneable {
             return PropertyType.INT;
         } else if(annotation instanceof ConfigEnum) {
             return PropertyType.ENUM;
+        } else if(annotation instanceof ConfigEnumSet) {
+            return PropertyType.ENUM;
         } else if(annotation instanceof ConfigDouble) {
             return PropertyType.DOUBLE;
         } else if(annotation instanceof ConfigBoolean) {
@@ -1236,7 +1238,6 @@ public class PropertySheet implements Cloneable {
                 getConfigurableClass().getName());
 
         for(String propName : getRegisteredProperties()) {
-            String predec = String.format("\t\t<property name=\"%s\"", propName);
             if(getRawNoReplacement(propName) == null) {
                 continue;
             }  // if the property was net defined within the xml-file
@@ -1249,6 +1250,18 @@ public class PropertySheet implements Cloneable {
                     for(Object o : (List) getRawNoReplacement(propName)) {
                         if(o instanceof Class) {
                             writer.printf("\t\t\t<type>%s</type>\n", ((Class) o).getName());
+                        } else {
+                            writer.printf("\n\t\t\t<item>%s</item>\n", o);
+                        }
+                    }
+                    writer.println("\n\t\t</propertylist>");
+                    break;
+                case ENUMSET:
+                    writer.printf("\t\t<propertylist name=\"%s\">\n", propName);
+                    for(Object o : (EnumSet) getRawNoReplacement(propName)) {
+                        if(o instanceof Class) {
+                            writer.printf("\t\t\t<type>%s</type>\n", ((Class) o).
+                                    getName());
                         } else {
                             writer.printf("\n\t\t\t<item>%s</item>\n", o);
                         }
