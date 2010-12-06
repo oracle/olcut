@@ -926,35 +926,41 @@ public class ConfigurationManager implements Cloneable {
                                    String name) throws PropertyException {
         Map<String, Object> m = new LinkedHashMap<String, Object>();
         Field[] fields = configurable.getClass().getFields();
-        String propName = null;
+
+        //
+        // The name of the configuration property for an annotated variable in
+        // the configurable class that we were given.
+        String propertyName = null;
         try {
             for(Field field : fields) {
                 Annotation[] annotations = field.getAnnotations();
                 for(Annotation annotation : annotations) {
                     if(annotation instanceof ConfigComponent) {
 
-                        propName = (String) field.get(null);
+                        propertyName = (String) field.get(null);
 
                         //
                         // A single component.
-                        m.put(propName, handleComponentImport(name, propName,
-                                                              configurable));
+                        m.put(propertyName, importComponent(configurable, propertyName,
+                                                              name));
                     } else if(annotation instanceof ConfigComponentList) {
-                        propName = (String) field.get(null);
+                        propertyName = (String) field.get(null);
 
                         //
                         // A list of components.
-                        m.put(propName, handleComponentListImport(name, propName,
-                                                                  configurable));
+                        m.put(propertyName, importComponentList(configurable, propertyName,
+                                                                  name));
                     } else {
                         Annotation[] superAnnotations = annotation.
                                 annotationType().
                                 getAnnotations();
-                        propName = (String) field.get(null);
+                        propertyName = (String) field.get(null);
 
+                        //
+                        // One of the other configuration types.
                         for(Annotation superAnnotation : superAnnotations) {
                             if(superAnnotation instanceof ConfigProperty) {
-                                m.put(propName, handlePropertyImport(propName, configurable));
+                                m.put(propertyName, importPropertyValue(configurable, propertyName));
                             }
                         }
                     }
@@ -966,100 +972,153 @@ public class ConfigurationManager implements Cloneable {
         } catch(Exception ex) {
             throw new PropertyException(ex, null, null,
                                         String.format("Error importing %s for propName",
-                                        name, propName));
+                                        name, propertyName));
         }
     }
 
-    private List<String> handleComponentListImport(String prefix,
-                                                   String propName,
-                                                   Configurable configurable)
+    /**
+     * Imports a list of configurable components that is a property of another
+     * configurable into this configuration manager.
+     *
+     * @param configurable the configurable that has the list of configurable
+     * components as a property
+     * @param propertyName the name of the property containing the list of
+     * configurable components
+     * @param prefix the prefix to use to name the components in the list
+     * @return a list of the names assigned to the components in the list.
+     * @throws PropertyException if the embedded list of components cannot be
+     * retrieved or if one of the components in the list cannot be imported.
+     */
+    private List<String> importComponentList(Configurable configurable, 
+            String propertyName, String prefix)
             throws PropertyException {
 
         try {
-            String embeddedName = String.format("%s-%s", prefix, propName);
-            Field field = getNamedField(configurable, propName);
+            //
+            // Get the list of configurable components.
+            Field field = getNamedField(configurable, propertyName);
 
             if(field == null) {
-                throw new PropertyException(null, propName, String.format(
-                        "Property %s has no variable named %s", propName,
-                        propName));
+                throw new PropertyException(null, propertyName, String.format(
+                        "Property %s has no variable named %s", propertyName,
+                        propertyName));
             }
 
             List<Component> l = (List<Component>) field.get(configurable);
             List<String> names = new ArrayList<String>();
+            String embeddedName = String.format("%s-%s", prefix, propertyName);
             int i = 0;
             for(Component c : l) {
                 String np = String.format("%s-%d", embeddedName, i++);
-                names.add(handleComponentImport(propName, np, (Configurable) c));
+                importConfigurable((Configurable) c, np);
+                names.add(np);
             }
             return names;
         } catch(PropertyException ex) {
             throw ex;
         } catch(Exception ex) {
-            throw new PropertyException(ex, null, propName,
+            throw new PropertyException(ex, null, propertyName,
                                         String.format(
                     "Error getting component field"));
         }
     }
 
-    private String handleComponentImport(String prefix,
-                                         String propName,
-                                         Configurable configurable) throws
+    /**
+     * Imports a configurable component that is a property of another configurable
+     * component.
+     *
+     * @param configurable the configurable component that has the configurable
+     * component that we want to import as a property.
+     * @param propertyName the name of the property of the provided configurable component
+     * that contains the component to import
+     * @param prefix a prefix to use to specify the component name of the
+     * component that we'll be importing.
+     * @return the name that we used for the component.
+     * @throws PropertyException
+     */
+    private String importComponent(Configurable configurable,
+                                   String propertyName, String prefix) throws
             PropertyException {
         try {
-            String embeddedName = String.format("%s-%s", prefix, propName);
-            handleComponentImportInternal(propName, embeddedName, configurable);
-            return embeddedName;
+            String newComponentName = String.format("%s-%s", prefix,
+                                                    propertyName);
+            importComponentInternal(configurable, propertyName, newComponentName);
+            return newComponentName;
         } catch(Exception ex) {
-            throw new PropertyException(ex, null, propName,
+            throw new PropertyException(ex, null, propertyName,
                                         String.format(
                     "Error getting component field"));
         }
     }
 
-    private void handleComponentImportInternal(String propName,
-                                               String componentName,
-                                               Configurable configurable) {
+    /**
+     * Imports a configurable component that is a property of another configurable
+     * component.
+     *
+     * @param configurable the configurable component that has the configurable
+     * that we want to import as a property.
+     * @param propertyName the name of the property that is associated with with
+     * configurable component that we want to import.
+     * @param componentName the name of the component to be used to uniquely
+     * identify it in the configuration.
+     */
+    private void importComponentInternal(Configurable configurable,
+                                         String propertyName,
+                                         String componentName) throws PropertyException {
 
         try {
 
-            Field field = getNamedField(configurable, propName);
-
+            //
+            // Get the configurable that we actually want to import.
+            Field field = getNamedField(configurable, propertyName);
             if(field == null) {
-                throw new PropertyException(null, propName, String.format(
-                        "Property %s has no variable named %s", propName,
-                        propName));
+                throw new PropertyException(null, propertyName, String.format(
+                        "Property %s has no variable named %s", propertyName,
+                        propertyName));
             }
             Configurable newConf = (Configurable) field.get(configurable);
             importConfigurable(newConf, componentName);
         } catch(PropertyException ex) {
             throw ex;
         } catch(Exception ex) {
-            throw new PropertyException(ex, null, propName,
+            throw new PropertyException(ex, null, propertyName,
                                         String.format(
-                    "Error importing component field for property %s", propName));
+                    "Error importing component field for property %s",
+                    propertyName));
         }
     }
 
     /**
-     * Add a simple property to an existing PropertySheet.
+     * Fetches the value that's associated with a given property name in the
+     * given configurable component.  This method relies on the convention that
+     * a given property name will be stored in the instance variable with that name.
+     * If that is not the case, then a <code>PropertyException</code> will be
+     * thrown
+     *
+     * @param configurable the configurable component from which we want to fetch
+     * a property value.
+     * @param propertyName The name of the property for the configurable component for
+     * which we want to fetch a value.
+     * @return the value for this property name in this configurable component
+     * @throws PropertyException if there is not an appropriately named instance
+     * variable, or if there is some other error accessing the value of the
+     * instance variable.
      */
-    private Object handlePropertyImport(String propName,
-                                      Configurable configurable) throws PropertyException {
+    private Object importPropertyValue(Configurable configurable, String propertyName) throws PropertyException {
         try {
-            Field field = getNamedField(configurable, propName);
+            Field field = getNamedField(configurable, propertyName);
             if(field == null) {
-                throw new PropertyException(null, propName, String.format(
-                        "Property %s has no variable named %s", propName,
-                        propName));
+                throw new PropertyException(null, propertyName, String.format(
+                        "Property %s has no variable named %s", propertyName,
+                        propertyName));
             }
             return field.get(configurable);
         } catch(PropertyException ex) {
             throw ex;
         } catch(Exception ex) {
-            throw new PropertyException(ex, null, propName,
+            throw new PropertyException(ex, null, propertyName,
                                         String.format(
-                    "Error importing property field for property %s", propName));
+                    "Error importing property field for property %s", propertyName));
         }
     }
 }
