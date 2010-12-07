@@ -106,14 +106,6 @@ public class GlobalPropertyTest {
     }
     
     @Test
-    public void systemProps() throws IOException {
-        URL cu = getClass().getResource("globalPropertyConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfigurable sc = (StringConfigurable) cm.lookup("sysprops");
-        assertEquals("/Users/stgreen/Projects/LabsUtil/jini/jsk-all.policy", sc.one);
-    }
-    
-    @Test
     public void distinguishedProps() throws IOException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);

@@ -404,6 +404,15 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
+     * Gets the number of configured (i.e., instantiated components)
+     *
+     * @return the number of instantiated components in this configuration manager.
+     */
+    public int getNumConfigured() {
+       return configuredComponents.size();
+    }
+
+    /**
      * Looks up a component by class.  Any component defined in the configuration
      * file may be returned.
      *

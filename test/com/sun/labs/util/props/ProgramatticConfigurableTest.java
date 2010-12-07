@@ -113,7 +113,7 @@ public class ProgramatticConfigurableTest {
     /**
      * Tests adding a configurable with an incorrect property type.
      */
-    @Test
+    @Test(expected=PropertyException.class)
     public void addConfigurableWithBadProperty() throws IOException {
         URL cu = getClass().getResource("basicConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
@@ -123,7 +123,7 @@ public class ProgramatticConfigurableTest {
         cm.addConfigurable(BasicConfigurable.class, "c", m);
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("c");
         assertEquals("one", bc.s);
-        assertEquals(new Integer(2), bc.i);
+        assertEquals(2, bc.i);
     }
 
     /**

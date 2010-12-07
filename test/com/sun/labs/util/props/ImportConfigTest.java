@@ -19,6 +19,8 @@ public class ImportConfigTest {
     public ImportConfigTest() {
     }
 
+    File f;
+
     @BeforeClass
     public static void setUpClass() throws Exception {
     }
@@ -28,11 +30,14 @@ public class ImportConfigTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
+        f = File.createTempFile("config", ".xml");
+        f.deleteOnExit();
     }
 
     @After
     public void tearDown() {
+        f.delete();
     }
 
     @Test
@@ -42,7 +47,6 @@ public class ImportConfigTest {
         StringConfigurable sc1 = (StringConfigurable) cm1.lookup("b");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(sc1, "a");
-        File f = File.createTempFile("config", ".xml");
         cm2.save(f);
         cm2 = new ConfigurationManager(f.toURI().toURL());
         StringConfigurable sc2 = (StringConfigurable) cm2.lookup("a");
@@ -58,7 +62,6 @@ public class ImportConfigTest {
         EnumConfigurable ec1 = (EnumConfigurable) cm1.lookup("both");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(ec1, "both");
-        File f = File.createTempFile("config", ".xml");
         cm2.save(f);
         cm2 = new ConfigurationManager(f.toURI().toURL());
         EnumConfigurable ec2 = (EnumConfigurable) cm1.lookup("both");
@@ -72,7 +75,6 @@ public class ImportConfigTest {
         EnumConfigurable ec1 = (EnumConfigurable) cm1.lookup("set1");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(ec1, "set1");
-        File f = File.createTempFile("config", ".xml");
         cm2.save(f);
         cm2 = new ConfigurationManager(f.toURI().toURL());
         EnumConfigurable ec2 = (EnumConfigurable) cm1.lookup("set1");
@@ -86,7 +88,6 @@ public class ImportConfigTest {
         ComboConfigurable cc1 = (ComboConfigurable) cm1.lookup("a");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(cc1, "a");
-        File f = File.createTempFile("config", ".xml");
         cm2.save(f);
         cm2 = new ConfigurationManager(f.toURI().toURL());
         ComboConfigurable cc2 = (ComboConfigurable) cm2.lookup("a");
@@ -103,7 +104,6 @@ public class ImportConfigTest {
         L1Configurable l1 = (L1Configurable) cm1.lookup("l1");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(l1, "l1");
-        File f = File.createTempFile("config", ".xml");
         cm2.save(f);
         cm2 = new ConfigurationManager(f.toURI().toURL());
         L1Configurable l1n = (L1Configurable) cm2.lookup("l1");
@@ -122,7 +122,6 @@ public class ImportConfigTest {
         L1Configurable l1 = (L1Configurable) cm1.lookup("l1");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(l1, "l11");
-        File f = File.createTempFile("config", ".xml");
         cm2.save(f);
         cm2 = new ConfigurationManager(f.toURI().toURL());
         L1Configurable l1n = (L1Configurable) cm2.lookup("l11");
@@ -142,9 +141,7 @@ public class ImportConfigTest {
                 "listTest");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(sl1, "listTest");
-        File f = File.createTempFile("config", ".xml");
         cm2.save(f);
-
         cm2 = new ConfigurationManager(f.toURI().toURL());
         StringListConfigurable sl2 = (StringListConfigurable) cm1.lookup(
                 "listTest");
@@ -161,7 +158,6 @@ public class ImportConfigTest {
         ListConfigurable lc1 = (ListConfigurable) cm1.lookup("simpleList");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(lc1, "simpleList");
-        File f = File.createTempFile("config", ".xml");
         cm2.save(f);
         cm2 = new ConfigurationManager(f.toURI().toURL());
         ListConfigurable lc2 = (ListConfigurable) cm2.lookup("simpleList");
@@ -183,7 +179,6 @@ public class ImportConfigTest {
         ListConfigurable lc1 = (ListConfigurable) cm1.lookup("singleEmbeddedList");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(lc1, "singleEmbeddedList");
-        File f = File.createTempFile("config", ".xml");
         cm2.save(f);
         cm2 = new ConfigurationManager(f.toURI().toURL());
         ListConfigurable lc2 = (ListConfigurable) cm2.lookup("singleEmbeddedList");
@@ -210,7 +205,6 @@ public class ImportConfigTest {
         ListConfigurable lc1 = (ListConfigurable) cm1.lookup("multiEmbeddedList");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(lc1, "multiEmbeddedList");
-        File f = File.createTempFile("config", ".xml");
         cm2.save(f);
         cm2 = new ConfigurationManager(f.toURI().toURL());
         ListConfigurable lc2 = (ListConfigurable) cm2.lookup("multiEmbeddedList");

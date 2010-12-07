@@ -98,4 +98,12 @@ public class RemoveTest {
         assertEquals(((Integer) m.get("i")).intValue(), ps.getInt("i"));
         assertEquals((Double) m.get("d"), ps.getDouble("d"), 0.001);
     }
+
+    @Test
+    public void removeUninstantiatedWithEmbeddedComponents() throws IOException {
+        URL cu = getClass().getResource("importConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(cu);
+        PropertySheet ps = cm.getPropertySheet("l1");
+        assertEquals(cm.getNumConfigured(), 0);
+    }
 }

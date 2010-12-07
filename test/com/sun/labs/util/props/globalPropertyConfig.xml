@@ -24,61 +24,61 @@
     
     <property name="home" value="${user.home}/Projects/LabsUtil"/>
 
-    <component name="unknown" type="com.sun.labs.util.props.StringConfig">
+    <component name="unknown" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${d}"/>
         <property name="two" value="${e}"/>
         <property name="three" value="${f}"/>
     </component>
 
-    <component name="badlyformed" type="com.sun.labs.util.props.StringConfig">
+    <component name="badlyformed" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${a${b}}"/>
         <property name="two" value="${b$}"/>
         <property name="three" value="${a c}"/>
     </component>
     
-    <component name="simple" type="com.sun.labs.util.props.StringConfig">
+    <component name="simple" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${a}"/>
         <property name="two" value="${b}"/>
         <property name="three" value="${c}"/>
     </component>
 
-    <component name="compound" type="com.sun.labs.util.props.StringConfig">
+    <component name="compound" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${a}/${b}"/>
         <property name="two" value="${b}${c}"/>
         <property name="three" value="${c}:${a}"/>
     </component>
 
-    <component name="nonglobal" type="com.sun.labs.util.props.StringConfig">
+    <component name="nonglobal" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${a"/>
         <property name="two" value="$b}"/>
         <property name="three" value="$c"/>
     </component>
     
-    <component name="recurse" type="com.sun.labs.util.props.StringConfig">
+    <component name="recurse" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${a}"/>
         <property name="two" value="${aprime}"/>
         <property name="three" value="${adprime}"/>
     </component>
         
-    <component name="recurse2" type="com.sun.labs.util.props.StringConfig">
+    <component name="recurse2" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${foo}"/>
         <property name="two" value="x"/>
         <property name="three" value="y"/>
     </component>
         
-    <component name="compoundrecurse" type="com.sun.labs.util.props.StringConfig">
+    <component name="compoundrecurse" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="one ${b}/${aprime}"/>
         <property name="two" value="two ${c}/${aprime}/${b}/${adprime}"/>
         <property name="three" value="three ${adprime}/${b}/${c}"/>
     </component>
     
-    <component name="sysprops" type="com.sun.labs.util.props.StringConfig">
+    <component name="sysprops" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${home}/jini/jsk-all.policy"/>
         <property name="two" value="two"/>
         <property name="three" value="three"/>
     </component>
     
-    <component name="distinguished" type="com.sun.labs.util.props.StringConfig">
+    <component name="distinguished" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${gp.hostName}"/>
         <property name="two" value="two"/>
         <property name="three" value="three"/>
