@@ -32,4 +32,39 @@ public class BasicConfigurable implements Configurable {
         i = ps.getInt(PROP_I);
         d = ps.getDouble(PROP_D);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) {
+            return false;
+        }
+        if(getClass() != obj.getClass()) {
+            return false;
+        }
+        final BasicConfigurable other = (BasicConfigurable) obj;
+        if((this.s == null) ? (other.s != null) : !this.s.equals(other.s)) {
+            return false;
+        }
+        if(this.i != other.i) {
+            return false;
+        }
+        if(Double.doubleToLongBits(this.d) != Double.doubleToLongBits(other.d)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + (this.s != null ? this.s.hashCode() : 0);
+        hash = 41 * hash + this.i;
+        hash =
+                41 * hash +
+                (int) (Double.doubleToLongBits(this.d) ^
+                (Double.doubleToLongBits(this.d) >>> 32));
+        return hash;
+    }
+    
+    
 }

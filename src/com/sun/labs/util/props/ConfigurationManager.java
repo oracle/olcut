@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -892,12 +893,8 @@ public class ConfigurationManager implements Cloneable {
      *                 if an error occurs while writing to the file
      */
     public void save(File file) throws IOException {
-        FileOutputStream fos = new FileOutputStream(file);
-        PrintWriter writer = new PrintWriter(fos);
-        save(writer);
-        writer.close();
+        save(file, false);
     }
-
     /**
      * Saves the current configuration to the given file
      *
@@ -906,8 +903,36 @@ public class ConfigurationManager implements Cloneable {
      * @throws IOException
      *                 if an error occurs while writing to the file
      */
+    public void save(File file, boolean writeAll) throws IOException {
+        FileOutputStream fos = new FileOutputStream(file);
+        PrintWriter writer = new PrintWriter(fos);
+        save(writer, writeAll);
+        writer.close();
+    }
+    /**
+     * Writes the current configuration to the given writer.  Only components
+     * that have been instantiated or programatically added will be written.
+     *
+     * @param file
+     *                place to save the configuration
+     * @throws IOException
+     *                 if an error occurs while writing to the file
+     */
     public void save(PrintWriter writer) throws IOException {
-        StringBuilder sb = new StringBuilder();
+        save(writer, false);
+    }
+
+    /**
+     * Writes the configuration to the given writer.
+     * 
+     * @param writer the writer to write to
+     * @param writeAll if <code>true</code> all components will be written, 
+     * whether they were instantiated or not.  If <code>false</code>
+     * then only those components that were instantiated or added programatically
+     * will be written.
+     * @throws IOException 
+     */
+    public void save(PrintWriter writer, boolean writeAll) throws IOException {
         writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
         writer.println("<!--    Configuration file--> \n\n");
 
@@ -923,13 +948,28 @@ public class ConfigurationManager implements Cloneable {
 
             writer.printf("\t<property name=\"%s\" value=\"%s\"/>\n", propName, propVal);
         }
-
+        
+        //
+        // A copy of the raw property data that we can use to keep track of what's 
+        // been written.
+        Set<String> allNames = new HashSet<String>(rawPropertyMap.keySet());
         for(PropertySheet ps : configuredComponents.values()) {
             ps.save(writer);
+            allNames.remove(ps.getInstanceName());
         }
 
         for(PropertySheet ps : addedComponents.values()) {
             ps.save(writer);
+            allNames.remove(ps.getInstanceName());
+        }
+        
+        //
+        // If we're supposed to, write the rest of the stuff.
+        if(writeAll) {
+            for(String instanceName : allNames) {
+                PropertySheet ps = getPropertySheet(instanceName);
+                ps.save(writer);
+            }
         }
 
         writer.println("</config>");

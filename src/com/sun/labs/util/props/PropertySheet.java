@@ -1238,9 +1238,12 @@ public class PropertySheet implements Cloneable {
     }
 
     protected void save(PrintWriter writer) {
-        writer.printf("\t<component name=\"%s\" type=\"%s\">\n",
+        writer.printf("\t<component name=\"%s\" type=\"%s\" export=\"%s\" "
+                + "import=\"%s\">\n",
                 instanceName,
-                getConfigurableClass().getName());
+                getConfigurableClass().getName(), 
+                isExportable(),
+                isImportable() );
 
         for(String propName : getRegisteredProperties()) {
             if(getRawNoReplacement(propName) == null) {
