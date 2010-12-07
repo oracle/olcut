@@ -20,7 +20,7 @@ public class BasicConfigurable implements Configurable {
 
     @ConfigInteger(defaultValue=0)
     public static final String PROP_I = "i";
-    Integer i;
+    int i;
 
     @ConfigDouble(defaultValue=0)
     public static final String PROP_D = "d";

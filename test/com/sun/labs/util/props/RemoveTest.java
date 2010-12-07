@@ -48,6 +48,9 @@ public class RemoveTest {
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
+        assertEquals(bc.s, ps.getString("s"));
+        assertEquals(bc.i, ps.getInt("i"));
+        assertEquals(bc.d, ps.getDouble("d"), 0.001);
         BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
         assertNull(nbc);
     }
@@ -58,6 +61,9 @@ public class RemoveTest {
         ConfigurationManager cm = new ConfigurationManager(cu);
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
+        assertEquals("one", ps.getString("s"));
+        assertEquals(2, ps.getInt("i"));
+        assertEquals(3.0, ps.getDouble("d"), 0.001);
         BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
         assertNull(nbc);
     }
