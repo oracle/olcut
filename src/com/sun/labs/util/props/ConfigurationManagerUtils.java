@@ -180,7 +180,7 @@ public class ConfigurationManagerUtils {
         return sb.toString();
     }
 
-    private static String propSheet2XML(String instanceName, PropertySheet ps) {
+    public static String propSheet2XML(String instanceName, PropertySheet ps) {
         StringBuffer sb = new StringBuffer();
         sb.append("\t<component name=\"" + instanceName + "\" type=\"" + ps.getConfigurableClass().
                 getName() + "\">");

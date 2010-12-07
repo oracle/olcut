@@ -5,6 +5,8 @@
 
 package com.sun.labs.util.props;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.io.IOException;
 import java.net.URL;
 import org.junit.After;
@@ -60,4 +62,34 @@ public class RemoveTest {
         assertNull(nbc);
     }
 
+    @Test
+    public void removeProgramaticallyAddedUninstantiated() {
+        ConfigurationManager cm = new ConfigurationManager();
+        Map<String,Object> m = new HashMap<String,Object>();
+        m.put("s", "foo");
+        m.put("i", 7);
+        m.put("d", 2.71);
+        cm.addConfigurable(BasicConfigurable.class, "a", m);
+        PropertySheet ps = cm.removeConfigurable("a");
+        assertNotNull(ps);
+        assertEquals(m.get("s"), ps.getString("s"));
+        assertEquals(((Integer) m.get("i")).intValue(), ps.getInt("i"));
+        assertEquals((Double) m.get("d"), ps.getDouble("d"), 0.001);
+    }
+
+    @Test
+    public void removeProgramaticallyAddedInstantiated() {
+        ConfigurationManager cm = new ConfigurationManager();
+        Map<String, Object> m = new HashMap<String, Object>();
+        m.put("s", "foo");
+        m.put("i", 7);
+        m.put("d", 2.71);
+        cm.addConfigurable(BasicConfigurable.class, "a", m);
+        BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
+        PropertySheet ps = cm.removeConfigurable("a");
+        assertNotNull(ps);
+        assertEquals(m.get("s"), ps.getString("s"));
+        assertEquals(((Integer) m.get("i")).intValue(), ps.getInt("i"));
+        assertEquals((Double) m.get("d"), ps.getDouble("d"), 0.001);
+    }
 }
