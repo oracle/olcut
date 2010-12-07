@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.sun.labs.util.props;
 
 import java.io.IOException;
@@ -25,10 +20,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author stgreen
- */
 public class MBeanTest {
 
     public MBeanTest() {
@@ -50,15 +41,25 @@ public class MBeanTest {
     public void tearDown() {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         try {
-            mbs.unregisterMBean(new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable"));
+            mbs.unregisterMBean(new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable,name=registerTest"));
         } catch(InstanceNotFoundException ex) {
             //
             // This is OK, there might have been a failure in the test.
-            Logger.getLogger("").info("Not found: " + ex);
         } catch(Exception ex) {
             Logger.getLogger("").log(Level.SEVERE, "Exception removing mbean", ex);
         }
 
+        try {
+            mbs.unregisterMBean(
+                    new ObjectName(
+                    "com.sun.labs.util.props:type=SimpleMBConfigurable,name=listTest"));
+        } catch(InstanceNotFoundException ex) {
+            //
+            // This is OK, there might have been a failure in the test.
+        } catch(Exception ex) {
+            Logger.getLogger("").log(Level.SEVERE, "Exception removing mbean",
+                                     ex);
+        }
     }
 
     @Test
@@ -77,8 +78,8 @@ public class MBeanTest {
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("registerTest");
         assertNotNull("Couldn't lookup registerTest", smbc);
 
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        ObjectName oname = new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable");
+        MBeanServer mbs = cm.getMBeanServer();
+        ObjectName oname = new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable,name=registerTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
@@ -93,7 +94,7 @@ public class MBeanTest {
         assertNotNull("Couldn't lookup listTest", smbc);
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        ObjectName oname = new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable");
+        ObjectName oname = new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable,name=listTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
@@ -109,7 +110,7 @@ public class MBeanTest {
         assertNotNull("Couldn't lookup listTest", smbc);
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        ObjectName oname = new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable");
+        ObjectName oname = new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable,name=listTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
@@ -128,7 +129,7 @@ public class MBeanTest {
         assertNotNull("Couldn't lookup listTest", smbc);
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        ObjectName oname = new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable");
+        ObjectName oname = new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable,name=listTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
@@ -148,7 +149,7 @@ public class MBeanTest {
         assertNotNull("Couldn't lookup listTest", smbc);
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        ObjectName oname = new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable");
+        ObjectName oname = new ObjectName("com.sun.labs.util.props:type=SimpleMBConfigurable,name=listTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
