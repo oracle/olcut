@@ -763,6 +763,7 @@ public class PropertySheet implements Cloneable {
     public synchronized Component getOwner(PropertySheet ps) {
         return getOwner(ps, null);
     }
+
     /**
      * Returns the owner of this property sheet. In most cases this will be the configurable instance which was
      * instrumented by this property sheet.
@@ -801,6 +802,10 @@ public class PropertySheet implements Cloneable {
                     logger.finer(String.format(
                             "Creating %s",
                             getInstanceName()));
+                }
+                if(cm.showCreations) {
+                    logger.info(String.format("Creating %s type %s", instanceName,
+                            ownerClass.getName()));
                 }
                 owner = ownerClass.newInstance();
                 if(owner instanceof Configurable) {

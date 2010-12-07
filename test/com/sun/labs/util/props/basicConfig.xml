@@ -9,16 +9,16 @@
     
     <component name="a" type="com.sun.labs.util.props.BasicConfigurable">
         <property name="logLevel" value="FINER"/>
-        <property name="one" value="one"/>
-        <property name="two" value="2"/>
-        <property name="three" value="3.0"/>
+        <property name="s" value="one"/>
+        <property name="i" value="2"/>
+        <property name="d" value="3.0"/>
     </component>
 
     <component name="b" type="com.sun.labs.util.props.BasicConfigurable">
         <property name="logLevel" value="FINER"/>
-        <property name="one" value="two"/>
-        <property name="two" value="3"/>
-        <property name="three" value="6.3"/>
+        <property name="s" value="two"/>
+        <property name="i" value="3"/>
+        <property name="d" value="6.3"/>
     </component>
     
 </config>

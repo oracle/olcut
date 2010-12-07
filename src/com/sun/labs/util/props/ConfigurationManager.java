@@ -72,9 +72,9 @@ public class ConfigurationManager implements Cloneable {
         origGlobal = new GlobalProperties();
         ConfigurationManagerUtils.applySystemProperties(rawPropertyMap,
                                                         globalProperties);
-        GlobalProperty showCreations = globalProperties.get("showCreations");
-        if(showCreations != null) {
-            this.showCreations = "true".equals(showCreations.getValue());
+        GlobalProperty scGlobal = globalProperties.get("showCreations");
+        if(scGlobal != null) {
+            showCreations = "true".equals(scGlobal.getValue());
         }
     }
 
@@ -128,19 +128,9 @@ public class ConfigurationManager implements Cloneable {
         for(Map.Entry<String, GlobalProperty> e : tgp.entrySet()) {
             GlobalProperty op = globalProperties.put(e.getKey(), e.getValue());
             origGlobal.put(e.getKey(), e.getValue());
-            if(op != null) {
-            //                LogManager.getLogManager().getLogger("")
-//                .warning("Overriding global property: " + e.getKey() +
-//                        " old value: " + x + " new value: " + e.getValue());
-            }
         }
         for(Map.Entry<String, RawPropertyData> e : trpm.entrySet()) {
             RawPropertyData opd = rawPropertyMap.put(e.getKey(), e.getValue());
-            if(opd != null) {
-            //                LogManager.getLogManager().getLogger("")
-//                .warning("Overriding component: " + e.getKey() +
-//                        " old value: " + x + " new value: " + e.getValue());
-            }
         }
         
         ConfigurationManagerUtils.applySystemProperties(trpm, tgp);
@@ -212,7 +202,7 @@ public class ConfigurationManager implements Cloneable {
     }
     
     /**
-     * Indeicates whether the given component was looked up in a service
+     * Indicates whether the given component was looked up in a service
      * registrar.
      * 
      * @param c the component to test.
@@ -264,7 +254,6 @@ public class ConfigurationManager implements Cloneable {
                     Class cls = Class.forName(className);
 
                     // now load the property-sheet by using the class annotation
-//                    PropertySheet propertySheet = new PropertySheet(cls, this, rpd.flatten(globalProperties));
                     PropertySheet propertySheet =
                             new PropertySheet(cls,
                                               instanceName, this, rpd);
@@ -309,7 +298,7 @@ public class ConfigurationManager implements Cloneable {
 
     /**
      * Returns all names of configurables registered to this instance. The resulting set includes instantiated and
-     * noninstantiated components.
+     * uninstantiated components.
      *
      * @return all component named registered to this instance of <code>ConfigurationManager</code>
      */
@@ -317,6 +306,16 @@ public class ConfigurationManager implements Cloneable {
         return new ArrayList<String>(rawPropertyMap.keySet());
     }
 
+    /**
+     * Looks up a configurable component by its name, instantiating it if
+     * necessary.
+     *
+     * @param instanceName the name of the component that we want.
+     * @return the instantiated component, or <code>null</code> if no such named
+     * component exists in this configuration.
+     * @throws InternalConfigurationException if there is some error instantiating the
+     * component.
+     */
     public Component lookup(String instanceName)
             throws InternalConfigurationException {
         return lookup(instanceName, null);
@@ -416,7 +415,7 @@ public class ConfigurationManager implements Cloneable {
 
     public Component lookup(Class c, ComponentListener cl) {
         List<Component> comps = lookupAll(c, cl);
-        if(comps.size() == 0) {
+        if(comps.isEmpty()) {
             return null;
         }
         Collections.shuffle(comps);
@@ -484,6 +483,12 @@ public class ConfigurationManager implements Cloneable {
         }
     }
 
+    /**
+     * Adds a component that was configured with a given property sheet to this
+     * configuration manager.
+     * @param c the configurable component
+     * @param ps the property sheet containing the configuration for the component.
+     */
     protected void addConfigured(Component c, PropertySheet ps) {
         configuredComponents.put(c, ps);
     }
@@ -520,6 +525,7 @@ public class ConfigurationManager implements Cloneable {
         if(name == null) {
             name = confClass.getName();
         }
+
         if(symbolTable.containsKey(name)) {
             throw new IllegalArgumentException("tried to override existing component name");
         }
@@ -548,12 +554,22 @@ public class ConfigurationManager implements Cloneable {
         addConfigurable(confClass, instanceName, new HashMap<String, Object>());
     }
 
-    public void renameConfigurable(String oldName, String newName) {
+    /**
+     * Renames a configurable component in this configuration manager.
+     *
+     * @param oldName the old name of the component
+     * @param newName the new name of the component
+     * @throws InternalConfigurationException if there is no component named
+     * <code>oldName</code> in this configuration manager.
+     */
+    public void renameConfigurable(String oldName, String newName)
+    throws InternalConfigurationException {
         PropertySheet ps = getPropertySheet(oldName);
 
         if(ps == null) {
-            throw new RuntimeException("no configurable (to be renamed) named " +
-                                       oldName + " is contained in the CM");
+            throw new InternalConfigurationException(oldName, null,
+                    String.format("No configurable named %s to rename to %s",
+                    oldName, newName));
         }
 
         ConfigurationManagerUtils.renameComponent(this, oldName, newName);
@@ -569,16 +585,26 @@ public class ConfigurationManager implements Cloneable {
         fireRenamedConfigurable(oldName, newName);
     }
 
-    /** Removes a configurable from this configuration manager. */
-    public void removeConfigurable(String name) {
-        assert getComponentNames().contains(name);
+    /**
+     * Removes a configurable from this configuration manager.
+     * @param name the name of the configurable to remove
+     * @return the property sheet associated with the component, or <code>null</code>
+     * if no such component exists.
+     */
+    public PropertySheet removeConfigurable(String name) {
 
-        PropertySheet ps = symbolTable.remove(name);
+        PropertySheet ps = getPropertySheet(name);
+        if(ps == null) {
+            return null;
+        }
+
+        symbolTable.remove(name);
         rawPropertyMap.remove(name);
 
         for(ConfigurationChangeListener changeListener : changeListeners) {
             changeListener.componentRemoved(this, ps);
         }
+        return ps;
     }
 
     public void addSubConfiguration(ConfigurationManager subCM) {
