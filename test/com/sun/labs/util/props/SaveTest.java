@@ -119,4 +119,38 @@ public class SaveTest {
         assertEquals(2.71, bc2.d, 0.01);
     }
 
+    @Test
+    public void saveAllWithInstantiationAndRemoval() throws IOException {
+        URL cu = getClass().getResource("basicConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
+        cm1.removeConfigurable("a");
+        cm1.save(f, true);
+        assertEquals(0, cm1.getNumConfigured());
+        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
+        assertNull(bc2);
+
+        bc1 = (BasicConfigurable) cm1.lookup("b");
+        bc2 = (BasicConfigurable) cm2.lookup("b");
+        assertEquals(bc1, bc2);
+    }
+
+    @Test
+    public void saveAllWithoutInstantiationAndRemoval() throws IOException {
+        URL cu = getClass().getResource("basicConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        cm1.removeConfigurable("a");
+        cm1.save(f, true);
+        assertEquals(0, cm1.getNumConfigured());
+
+        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
+        assertNull(bc2);
+
+        BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("b");
+        bc2 = (BasicConfigurable) cm2.lookup("b");
+        assertEquals(bc1, bc2);
+    }
+
 }

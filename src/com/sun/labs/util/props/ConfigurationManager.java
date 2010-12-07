@@ -284,7 +284,7 @@ public class ConfigurationManager implements Cloneable {
         Collection<String> instanceNames = new ArrayList<String>();
 
         for(PropertySheet ps : symbolTable.values()) {
-            if(!ps.isInstanciated()) {
+            if(!ps.isInstantiated()) {
                 continue;
             }
 
@@ -610,6 +610,12 @@ public class ConfigurationManager implements Cloneable {
 
         symbolTable.remove(name);
         rawPropertyMap.remove(name);
+    
+        //
+        // If this one's been configured, remove it from there too!
+        if(ps.isInstantiated()) {
+            configuredComponents.remove(ps.getOwner());
+        }
 
         for(ConfigurationChangeListener changeListener : changeListeners) {
             changeListener.componentRemoved(this, ps);
@@ -701,7 +707,7 @@ public class ConfigurationManager implements Cloneable {
         // update all component configurations because they might be affected by the change
         for(String instanceName : getInstanceNames(Configurable.class)) {
             PropertySheet ps = getPropertySheet(instanceName);
-            if(ps.isInstanciated()) {
+            if(ps.isInstantiated()) {
                 try {
                     Component comp = ps.getOwner();
                     if(comp instanceof Configurable) {

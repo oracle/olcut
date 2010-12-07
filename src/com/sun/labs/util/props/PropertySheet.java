@@ -736,9 +736,9 @@ public class PropertySheet implements Cloneable {
         this.instanceName = newInstanceName;
     }
 
-    /** Returns true if the owner of this property sheet is already instanciated. */
-    public boolean isInstanciated() {
-        return !(owner == null);
+    /** Returns true if the owner of this property sheet is already instantiated. */
+    public boolean isInstantiated() {
+        return owner != null;
     }
 
     public Class getOwnerClass() {
@@ -774,7 +774,7 @@ public class PropertySheet implements Cloneable {
     public synchronized Component getOwner(PropertySheet ps, ComponentListener cl) {
         try {
 
-            if(!isInstanciated()) {
+            if(!isInstantiated()) {
 
                 ComponentRegistry registry = cm.getComponentRegistry();
                 //
