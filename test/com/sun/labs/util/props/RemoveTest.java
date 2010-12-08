@@ -81,6 +81,8 @@ public class RemoveTest {
         assertEquals(m.get("s"), ps.getString("s"));
         assertEquals(((Integer) m.get("i")).intValue(), ps.getInt("i"));
         assertEquals((Double) m.get("d"), ps.getDouble("d"), 0.001);
+        BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
+        assertNull(bc);
     }
 
     @Test

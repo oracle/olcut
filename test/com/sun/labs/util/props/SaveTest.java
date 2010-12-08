@@ -153,4 +153,26 @@ public class SaveTest {
         assertEquals(bc1, bc2);
     }
 
+    @Test
+    public void removeProgramaticallyAddedUninstantiated() throws IOException {
+        URL cu = getClass().getResource("basicConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        Map<String, Object> m = new HashMap<String, Object>();
+        m.put("s", "foo");
+        m.put("i", 7);
+        m.put("d", 2.71);
+        cm1.addConfigurable(BasicConfigurable.class, "c", m);
+        PropertySheet ps = cm1.removeConfigurable("c");
+        assertNotNull(ps);
+        assertEquals(m.get("s"), ps.getString("s"));
+        assertEquals(((Integer) m.get("i")).intValue(), ps.getInt("i"));
+        assertEquals((Double) m.get("d"), ps.getDouble("d"), 0.001);
+        cm1.save(f, false);
+        BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("c");
+        assertNull(bc1);
+        
+        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("c");
+        assertNull(bc2);
+    }
 }

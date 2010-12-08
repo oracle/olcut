@@ -610,6 +610,7 @@ public class ConfigurationManager implements Cloneable {
 
         symbolTable.remove(name);
         rawPropertyMap.remove(name);
+        addedComponents.remove(name); 
     
         //
         // If this one's been configured, remove it from there too!
