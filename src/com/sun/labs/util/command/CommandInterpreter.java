@@ -457,6 +457,40 @@ public class CommandInterpreter extends Thread {
                 return "report the time it takes to run a command";
             }
         });
+        
+        add("redir", new CommandInterface() {
+
+            @Override
+            public String execute(CommandInterpreter ci, String[] args) throws Exception {
+                if(args.length != 2) {
+                    return "redir <output file>";
+                }
+                out = new PrintStream(args[1]);
+                return "";
+            }
+
+            @Override
+            public String getHelp() {
+                return "redirects the output stream to the given file";
+            }
+        });
+        
+        add("unredir", new CommandInterface() {
+
+            @Override
+            public String execute(CommandInterpreter ci, String[] args) throws Exception {
+                if(out != System.out) {
+                    out.close();
+                }
+                out = System.out;
+                return "";
+            }
+
+            @Override
+            public String getHelp() {
+                return "resets the output to be System.out";
+            }
+        });
     }
 
     /**
@@ -551,6 +585,9 @@ public class CommandInterpreter extends Thread {
     protected void onExit() {
         execute("on_exit");
         out.println("----------\n");
+        if(out != System.out) {
+            out.close();
+        }
     }
 
     /**
