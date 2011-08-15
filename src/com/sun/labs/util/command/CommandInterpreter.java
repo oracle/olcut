@@ -13,7 +13,6 @@ package com.sun.labs.util.command;
 
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Set;
@@ -28,6 +27,10 @@ import java.io.IOException;
 import java.io.FileReader;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 /**
@@ -39,25 +42,35 @@ import java.util.logging.Logger;
  */
 public class CommandInterpreter extends Thread {
 
-    private Map commandList;
+    private Map<String, CommandInterface> commands;
+
+    private Map<String, CommandGroup> commandGroups;
+
     private int totalCommands = 0;
+
     private String prompt;
+
     private boolean done = false;
+
     private boolean trace = false;
+
     private CommandHistory history = new CommandHistory();
+
     private BufferedReader in;
+
     public PrintStream out;
 
     private String defaultCommand;
 
-    private static Logger logger = Logger.getLogger(CommandInterpreter.class.getName());
+    private static final Logger logger = Logger.getLogger(CommandInterpreter.class.getName());
 
     /** 
      * Creates a command interpreter that won't read a stream.
      *
      */
     public CommandInterpreter() {
-        commandList = new HashMap();
+        commands = new TreeMap();
+        commandGroups = new TreeMap();
         addStandardCommands();
         in = new BufferedReader(new InputStreamReader(System.in));
         out = System.out;
@@ -85,7 +98,10 @@ public class CommandInterpreter extends Thread {
      *
      */
     private void addStandardCommands() {
-        add("help", new CommandInterface() {
+
+        addGroup("standard", "Standard commands");
+
+        add("help", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 dumpCommands();
@@ -97,7 +113,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("history", new CommandInterface() {
+        add("history", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 history.dump();
@@ -109,7 +125,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("status", new CommandInterface() {
+        add("status", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 putResponse("Total number of commands: " + totalCommands);
@@ -121,12 +137,12 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("echo", new CommandInterface() {
+        add("echo", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 StringBuffer b = new StringBuffer(80);
 
-                for (int i = 1; i < args.length; i++) {
+                for(int i = 1; i < args.length; i++) {
                     b.append(args[i]);
                     b.append(" ");
                 }
@@ -139,27 +155,27 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("menu", new CommandInterface() {
+        add("menu", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                if (args.length < 2) {
+                if(args.length < 2) {
                     return "usage: menu command-number [args]";
                 } else {
                     try {
                         int which = Integer.parseInt(args[1]);
                         String cmd = getCommandByNumber(which);
-                        if (cmd == null) {
+                        if(cmd == null) {
                             return "can't find that command";
                         } else {
                             String[] subargs = new String[args.length - 1];
-                            if (args.length > 2) {
+                            if(args.length > 2) {
                                 System.arraycopy(args, 2, subargs,
                                         1, subargs.length - 1);
                             }
                             subargs[0] = cmd;
                             return CommandInterpreter.this.execute(subargs);
                         }
-                    } catch (NumberFormatException e) {
+                    } catch(NumberFormatException e) {
                         return "bad number format";
                     }
                 }
@@ -172,14 +188,14 @@ public class CommandInterpreter extends Thread {
 
         addAlias("menu", "m");
 
-        if (false) {
-            add("argtest", new CommandInterface() {
+        if(false) {
+            add("argtest", "standard", new CommandInterface() {
 
                 public String execute(CommandInterpreter ci, String[] args) {
                     StringBuffer b = new StringBuffer(80);
 
                     out.println("arg length is " + args.length);
-                    for (int i = 0; i < args.length; i++) {
+                    for(int i = 0; i < args.length; i++) {
                         b.append(args[i]);
                         b.append("\n");
                     }
@@ -193,7 +209,7 @@ public class CommandInterpreter extends Thread {
             });
         }
 
-        add("quit", new CommandInterface() {
+        add("quit", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 done = true;
@@ -205,7 +221,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("on_exit", new CommandInterface() {
+        add("on_exit", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 return "";
@@ -216,7 +232,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("version", new CommandInterface() {
+        add("version", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 putResponse("Command Interpreter - Version 1.1 ");
@@ -228,7 +244,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("gc", new CommandInterface() {
+        add("gc", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 Runtime.getRuntime().gc();
@@ -240,7 +256,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("memory", new CommandInterface() {
+        add("memory", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 long totalMem = Runtime.getRuntime().totalMemory();
@@ -257,16 +273,16 @@ public class CommandInterpreter extends Thread {
         });
 
 
-        add("delay", new CommandInterface() {
+        add("delay", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                if (args.length == 2) {
+                if(args.length == 2) {
                     try {
                         float seconds = Float.parseFloat(args[1]);
                         Thread.sleep((long) (seconds * 1000));
-                    } catch (NumberFormatException nfe) {
+                    } catch(NumberFormatException nfe) {
                         putResponse("Usage: delay time-in-seconds");
-                    } catch (InterruptedException ie) {
+                    } catch(InterruptedException ie) {
                     }
                 } else {
                     putResponse("Usage: delay time-in-seconds");
@@ -279,10 +295,10 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("alias", new CommandInterface() {
+        add("alias", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                if (args.length == 3) {
+                if(args.length == 3) {
                     String alias = args[1];
                     String cmd = args[2];
                     CommandInterpreter.this.addAlias(cmd, alias);
@@ -297,20 +313,20 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("repeat", new CommandInterface() {
+        add("repeat", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                if (args.length >= 3) {
+                if(args.length >= 3) {
                     try {
                         int count = Integer.parseInt(args[1]);
                         String[] subargs = new String[args.length - 2];
                         System.arraycopy(args, 2, subargs, 0, subargs.length);
 
-                        for (int i = 0; i < count; i++) {
+                        for(int i = 0; i < count; i++) {
                             putResponse(
                                     CommandInterpreter.this.execute(subargs));
                         }
-                    } catch (NumberFormatException nfe) {
+                    } catch(NumberFormatException nfe) {
                         putResponse("Usage: repeat count command args");
                     }
                 } else {
@@ -324,10 +340,10 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("redirect", new CommandInterface() {
+        add("redirect", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                if (args.length >= 3) {
+                if(args.length >= 3) {
                     try {
                         String[] subargs = new String[args.length - 2];
                         System.arraycopy(args, 2, subargs, 0, subargs.length);
@@ -337,7 +353,7 @@ public class CommandInterpreter extends Thread {
                         putResponse(CommandInterpreter.this.execute(subargs));
                         newOut.close();
                         System.setOut(oldOut);
-                    } catch (IOException ioe) {
+                    } catch(IOException ioe) {
                         System.err.println("Can't write to " + args[1] + " " + ioe);
                     }
                 } else {
@@ -351,11 +367,11 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("load", new CommandInterface() {
+        add("load", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                if (args.length == 2) {
-                    if (!load(args[1])) {
+                if(args.length == 2) {
+                    if(!load(args[1])) {
                         putResponse("load: trouble loading " + args[1]);
                     }
                 } else {
@@ -369,16 +385,16 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("chain", new CommandInterface() {
+        add("chain", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                if (args.length > 1) {
+                if(args.length > 1) {
                     String[] subargs = new String[args.length - 1];
                     List commands = new ArrayList(5);
                     int count = 0;
-                    for (int i = 1; i < args.length; i++) {
-                        if (args[i].equals(";")) {
-                            if (count > 0) {
+                    for(int i = 1; i < args.length; i++) {
+                        if(args[i].equals(";")) {
+                            if(count > 0) {
                                 String[] trimmedArgs = new String[count];
                                 System.arraycopy(subargs, 0, trimmedArgs,
                                         0, trimmedArgs.length);
@@ -390,7 +406,7 @@ public class CommandInterpreter extends Thread {
                         }
                     }
 
-                    if (count > 0) {
+                    if(count > 0) {
                         String[] trimmedArgs = new String[count];
                         System.arraycopy(subargs, 0, trimmedArgs,
                                 0, trimmedArgs.length);
@@ -398,7 +414,7 @@ public class CommandInterpreter extends Thread {
                         count = 0;
                     }
 
-                    for (Iterator i = commands.iterator(); i.hasNext();) {
+                    for(Iterator i = commands.iterator(); i.hasNext();) {
                         putResponse(CommandInterpreter.this.execute(
                                 (String[]) i.next()));
                     }
@@ -413,10 +429,10 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("time", new CommandInterface() {
+        add("time", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                if (args.length > 1) {
+                if(args.length > 1) {
                     String[] subargs = new String[args.length - 1];
                     System.arraycopy(args, 1, subargs, 0, subargs.length);
                     long startTime = System.currentTimeMillis();
@@ -438,10 +454,10 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("mstime", new CommandInterface() {
+        add("mstime", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                if (args.length > 1) {
+                if(args.length > 1) {
                     String[] subargs = new String[args.length - 1];
                     System.arraycopy(args, 1, subargs, 0, subargs.length);
                     long startTime = System.nanoTime();
@@ -457,8 +473,8 @@ public class CommandInterpreter extends Thread {
                 return "report the time it takes to run a command";
             }
         });
-        
-        add("redir", new CommandInterface() {
+
+        add("redir", "standard", new CommandInterface() {
 
             @Override
             public String execute(CommandInterpreter ci, String[] args) throws Exception {
@@ -474,8 +490,8 @@ public class CommandInterpreter extends Thread {
                 return "redirects the output stream to the given file";
             }
         });
-        
-        add("unredir", new CommandInterface() {
+
+        add("unredir", "standard", new CommandInterface() {
 
             @Override
             public String execute(CommandInterpreter ci, String[] args) throws Exception {
@@ -500,31 +516,72 @@ public class CommandInterpreter extends Thread {
      *
      */
     private void dumpCommands() {
-        int count = 0;
-        Set unsortedKeys = commandList.keySet();
-        Set sortedKeys = new TreeSet(unsortedKeys);
+        int count = dumpGroup(commandGroups.get("standard"), 0);
+        for(CommandGroup cg : commandGroups.values()) {
+            if(cg.getGroupName().equals("standard")) {
+                continue;
+            }
+            count = dumpGroup(cg, count);
+        }
+    }
 
-        for (Iterator i = sortedKeys.iterator(); i.hasNext();) {
-            String cmdName = (String) i.next();
-            String help = ((CommandInterface) commandList.get(cmdName)).getHelp();
-            putResponse(count + ") " + cmdName + " - " + help);
+    private int dumpGroup(CommandGroup cg, int count) {
+        putResponse(String.format("%s group: %s", cg.getGroupName(), cg.getDescription()));
+        for(String cmdName : cg) {
+            String help = ((CommandInterface) commands.get(cmdName)).getHelp();
+            putResponse(String.format("%3d) %s - %s", count, cmdName, help));
             count++;
         }
+        return count;
     }
 
     private String getCommandByNumber(int which) {
         int count = 0;
-        Set unsortedKeys = commandList.keySet();
-        Set sortedKeys = new TreeSet(unsortedKeys);
-
-        for (Iterator i = sortedKeys.iterator(); i.hasNext();) {
-            String cmdName = (String) i.next();
-            if (count == which) {
+        CommandGroup scg = commandGroups.get("standard");
+        for(String cmdName : scg) {
+            if(count == which) {
                 return cmdName;
             }
-            count++;
+        }
+
+        for(CommandGroup cg : commandGroups.values()) {
+            if(cg.getGroupName().equals("standard")) {
+                continue;
+            }
+            for(String cmdName : cg) {
+                if(count == which) {
+                    return cmdName;
+                }
+                count++;
+            }
         }
         return null;
+    }
+
+    public void addGroup(String groupName, String description) {
+        addGroup(groupName, description, true);
+    }
+
+    public void addGroup(String groupName, String description, boolean keepSorted) {
+        CommandGroup cg = commandGroups.get(groupName);
+        if(cg != null) {
+            return;
+        }
+        commandGroups.put(groupName, new CommandGroup(groupName, description, keepSorted));
+    }
+
+    public void add(String commandName, String groupName, CommandInterface command) {
+        if(groupName == null) {
+            groupName = "ungrouped";
+        }
+        commands.put(commandName, command);
+        CommandGroup cg = commandGroups.get(groupName);
+        if(cg == null) {
+            logger.warning(String.format("Unknown command group name: %s", groupName));
+            cg = new CommandGroup(groupName, "", false);
+            commandGroups.put(groupName, cg);
+        }
+        cg.add(commandName);
     }
 
     /**
@@ -535,7 +592,7 @@ public class CommandInterpreter extends Thread {
      *
      */
     public void add(String name, CommandInterface command) {
-        commandList.put(name, command);
+        add(name, null, command);
     }
 
     /**
@@ -546,7 +603,7 @@ public class CommandInterpreter extends Thread {
      *
      */
     public void addAlias(String command, String alias) {
-        commandList.put(alias, commandList.get(command));
+        commands.put(alias, commands.get(command));
     }
 
     /**
@@ -555,7 +612,7 @@ public class CommandInterpreter extends Thread {
      * @param newCommands 	the new commands to add to this interpreter.
      */
     public void add(Map newCommands) {
-        commandList.putAll(newCommands);
+        commands.putAll(newCommands);
     }
 
     /**
@@ -565,7 +622,7 @@ public class CommandInterpreter extends Thread {
      *
      */
     public synchronized void putResponse(String response) {
-        if (response != null && response.length() > 0) {
+        if(response != null && response.length() > 0) {
             out.println(response);
         }
     }
@@ -573,7 +630,7 @@ public class CommandInterpreter extends Thread {
     public PrintStream getOutput() {
         return out;
     }
-    
+
     public void setOutput(PrintStream out) {
         this.out = out;
     }
@@ -609,22 +666,22 @@ public class CommandInterpreter extends Thread {
 
         CommandInterface ci;
 
-        if (args.length > 0) {
+        if(args.length > 0) {
 
-            ci = (CommandInterface) commandList.get(args[0]);
-            if (ci != null) {
+            ci = (CommandInterface) commands.get(args[0]);
+            if(ci != null) {
                 try {
                     response = ci.execute(this, args);
-                } catch (Exception ex) {
+                } catch(Exception ex) {
                     response = "ERR command exception " + ex.getMessage();
                     ex.printStackTrace(out);
                 }
             } else {
                 if(first && defaultCommand != null) {
-                    String[] newArgs = new String[args.length+1];
+                    String[] newArgs = new String[args.length + 1];
                     newArgs[0] = defaultCommand;
                     System.arraycopy(args, 0, newArgs, 1,
-                                     args.length);
+                            args.length);
                     return execute(newArgs, false);
                 }
                 response = "ERR  CMD_NOT_FOUND";
@@ -642,7 +699,7 @@ public class CommandInterpreter extends Thread {
      *
      */
     public String execute(String cmdString) {
-        if (trace) {
+        if(trace) {
             out.println("Execute: " + cmdString);
         }
         return execute(parseMessage(cmdString));
@@ -666,19 +723,19 @@ public class CommandInterpreter extends Thread {
         st.quoteChar('\"');
         st.commentChar('#');
 
-        while (true) {
+        while(true) {
             try {
                 tokenType = st.nextToken();
-                if (tokenType == StreamTokenizer.TT_WORD) {
+                if(tokenType == StreamTokenizer.TT_WORD) {
                     words.add(st.sval);
-                } else if (tokenType == '\'' || tokenType == '"') {
+                } else if(tokenType == '\'' || tokenType == '"') {
                     words.add(st.sval);
-                } else if (tokenType == StreamTokenizer.TT_NUMBER) {
+                } else if(tokenType == StreamTokenizer.TT_NUMBER) {
                     out.println("Unexpected numeric token!");
                 } else {
                     break;
                 }
-            } catch (IOException e) {
+            } catch(IOException e) {
                 break;
             }
         }
@@ -687,23 +744,23 @@ public class CommandInterpreter extends Thread {
 
     // inherited from thread.
     public void run() {
-        while (!done) {
+        while(!done) {
             try {
                 printPrompt();
                 String message = getInputLine();
-                if (message == null) {
+                if(message == null) {
                     break;
                 } else {
-                    if (trace) {
+                    if(trace) {
                         out.println("\n----------");
                         out.println("In : " + message);
                     }
                     message = message.trim();
-                    if (message.length() > 0) {
+                    if(message.length() > 0) {
                         putResponse(execute(message));
                     }
                 }
-            } catch (IOException e) {
+            } catch(IOException e) {
                 out.println("Exception: CommandInterpreter.run()");
                 break;
             }
@@ -712,8 +769,10 @@ public class CommandInterpreter extends Thread {
     }
     // some history patterns used by getInputLine()
     private static Pattern historyPush = Pattern.compile("(.+):p");
+
     private static Pattern editPattern =
             Pattern.compile("\\^(.+?)\\^(.*?)\\^?");
+
     private static Pattern bbPattern = Pattern.compile("(!!)");
 
     /**
@@ -736,27 +795,27 @@ public class CommandInterpreter extends Thread {
         boolean error = false;
 
         Matcher m = historyPush.matcher(message);
-        if (m.matches()) {
+        if(m.matches()) {
             justPush = true;
             echo = true;
             message = m.group(1);
         }
-        if (message.startsWith("^")) { // line editing ^foo^fum^
+        if(message.startsWith("^")) { // line editing ^foo^fum^
             m = editPattern.matcher(message);
-            if (m.matches()) {
+            if(m.matches()) {
                 String orig = m.group(1);
                 String sub = m.group(2);
                 try {
                     Pattern pat = Pattern.compile(orig);
                     Matcher subMatcher = pat.matcher(history.getLast(0));
-                    if (subMatcher.find()) {
+                    if(subMatcher.find()) {
                         message = subMatcher.replaceFirst(sub);
                         echo = true;
                     } else {
                         error = true;
                         putResponse(message + ": substitution failed");
                     }
-                } catch (PatternSyntaxException pse) {
+                } catch(PatternSyntaxException pse) {
                     error = true;
                     putResponse("Bad regexp: " + pse.getDescription());
                 }
@@ -764,14 +823,14 @@ public class CommandInterpreter extends Thread {
                 error = true;
                 putResponse("bad substitution sytax, use ^old^new^");
             }
-        } else if ((m = bbPattern.matcher(message)).find()) {
+        } else if((m = bbPattern.matcher(message)).find()) {
             message = m.replaceAll(history.getLast(0));
             echo = true;
-        } else if (message.startsWith("!")) {
-            if (message.matches("!\\d+")) {
+        } else if(message.startsWith("!")) {
+            if(message.matches("!\\d+")) {
                 int which = Integer.parseInt(message.substring(1));
                 message = history.get(which);
-            } else if (message.matches("!-\\d+")) {
+            } else if(message.matches("!-\\d+")) {
                 int which = Integer.parseInt(message.substring(2));
                 message = history.getLast(which - 1);
             } else {
@@ -780,15 +839,15 @@ public class CommandInterpreter extends Thread {
             echo = true;
         }
 
-        if (error) {
+        if(error) {
             return "";
         }
 
-        if (message.length() > 0) {
+        if(message.length() > 0) {
             history.add(message);
         }
 
-        if (echo) {
+        if(echo) {
             putResponse(message);
         }
         return justPush ? "" : message;
@@ -802,7 +861,7 @@ public class CommandInterpreter extends Thread {
      * Prints the prompt.
      */
     private void printPrompt() {
-        if (prompt != null) {
+        if(prompt != null) {
             out.print(prompt);
         }
     }
@@ -813,15 +872,15 @@ public class CommandInterpreter extends Thread {
             BufferedReader br = new BufferedReader(fr);
             String inputLine;
 
-            while ((inputLine = br.readLine()) != null) {
+            while((inputLine = br.readLine()) != null) {
                 String response = CommandInterpreter.this.execute(inputLine);
-                if (!response.equals("OK")) {
+                if(!response.equals("OK")) {
                     putResponse(response);
                 }
             }
             fr.close();
             return true;
-        } catch (IOException ioe) {
+        } catch(IOException ioe) {
             return false;
         }
     }
@@ -858,7 +917,7 @@ public class CommandInterpreter extends Thread {
             ci.setPrompt("CI> ");
             ci.run();
             System.out.println("Goodbye!");
-        } catch (Throwable t) {
+        } catch(Throwable t) {
             System.out.println(t);
         }
     }
@@ -883,7 +942,7 @@ public class CommandInterpreter extends Thread {
          * @return the last command executed
          */
         public String getLast(int offset) {
-            if (history.size() > offset) {
+            if(history.size() > offset) {
                 return (String) history.get((history.size() - 1) - offset);
             } else {
                 putResponse("command not found");
@@ -898,7 +957,7 @@ public class CommandInterpreter extends Thread {
          * @return the last command executed
          */
         public String get(int which) {
-            if (history.size() > which) {
+            if(history.size() > which) {
                 return (String) history.get(which);
             } else {
                 putResponse("command not found");
@@ -914,9 +973,9 @@ public class CommandInterpreter extends Thread {
          * @return the last command executed that matches match
          */
         public String findLast(String match) {
-            for (int i = history.size() - 1; i >= 0; i--) {
+            for(int i = history.size() - 1; i >= 0; i--) {
                 String cmd = get(i);
-                if (cmd.startsWith(match)) {
+                if(cmd.startsWith(match)) {
                     return cmd;
                 }
             }
@@ -929,10 +988,54 @@ public class CommandInterpreter extends Thread {
          *
          */
         public void dump() {
-            for (int i = 0; i < history.size(); i++) {
+            for(int i = 0; i < history.size(); i++) {
                 String cmd = get(i);
                 putResponse(i + " " + cmd);
             }
+        }
+    }
+
+    private class CommandGroup implements Iterable<String> {
+
+        private String groupName;
+
+        private String description;
+
+        private Set<String> commands;
+
+        public CommandGroup(String groupName, String description, boolean keepSorted) {
+            this.groupName = groupName;
+            this.description = description;
+            if(keepSorted) {
+                commands = new TreeSet<String>();
+            } else {
+                commands = new LinkedHashSet<String>();
+            }
+        }
+
+        public Set<String> getCommands() {
+            return commands;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getGroupName() {
+            return groupName;
+        }
+
+        public boolean contains(String commandName) {
+            return commands.contains(commandName);
+        }
+
+        public void add(String commandName) {
+            commands.add(commandName);
+        }
+
+        @Override
+        public Iterator<String> iterator() {
+            return commands.iterator();
         }
     }
 }
