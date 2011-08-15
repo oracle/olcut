@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.FileReader;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.SortedSet;
@@ -42,11 +43,15 @@ import java.util.logging.Logger;
  */
 public class CommandInterpreter extends Thread {
 
+    private static final Logger logger = Logger.getLogger(CommandInterpreter.class.getName());
+
     private Map<String, CommandInterface> commands;
 
     private Map<String, CommandGroup> commandGroups;
 
     private int totalCommands = 0;
+    
+    private boolean parseQuotes = true;
 
     private String prompt;
 
@@ -62,8 +67,6 @@ public class CommandInterpreter extends Thread {
 
     private String defaultCommand;
 
-    private static final Logger logger = Logger.getLogger(CommandInterpreter.class.getName());
-
     /** 
      * Creates a command interpreter that won't read a stream.
      *
@@ -74,6 +77,10 @@ public class CommandInterpreter extends Thread {
         addStandardCommands();
         in = new BufferedReader(new InputStreamReader(System.in));
         out = System.out;
+    }
+
+    public void setParseQuotes(boolean parseQuotes) {
+        this.parseQuotes = parseQuotes;
     }
 
     /**
@@ -140,7 +147,7 @@ public class CommandInterpreter extends Thread {
         add("echo", "standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                StringBuffer b = new StringBuffer(80);
+                StringBuilder b = new StringBuilder(80);
 
                 for(int i = 1; i < args.length; i++) {
                     b.append(args[i]);
@@ -152,6 +159,20 @@ public class CommandInterpreter extends Thread {
 
             public String getHelp() {
                 return "display a line of text";
+            }
+        });
+        
+        add("pargs", "standard", new CommandInterface() {
+
+            @Override
+            public String execute(CommandInterpreter ci, String[] args) throws Exception {
+                putResponse(String.format("args: %s", Arrays.toString(args)));
+                return "";
+            }
+
+            @Override
+            public String getHelp() {
+                return "Print the args";
             }
         });
 
@@ -719,9 +740,12 @@ public class CommandInterpreter extends Thread {
         st.resetSyntax();
         st.whitespaceChars(0, ' ');
         st.wordChars('!', 255);
-        st.quoteChar('"');
-        st.quoteChar('\"');
+        
+        if(parseQuotes) {
+            st.quoteChar('"');
+        }
         st.commentChar('#');
+        
 
         while(true) {
             try {
@@ -739,7 +763,7 @@ public class CommandInterpreter extends Thread {
                 break;
             }
         }
-        return (String[]) words.toArray(new String[words.size()]);
+        return words.toArray(new String[0]);
     }
 
     // inherited from thread.
