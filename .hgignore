@@ -4,3 +4,8 @@
 \.rej$
 \.conflict\~$
 \.class$
+nbproject/private
+nbproject/build-impl.xml
+nbproject/genfiles.properties
+lib/nblibraries-private.properties
+
