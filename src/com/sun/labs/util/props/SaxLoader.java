@@ -1,12 +1,12 @@
 /*
- * 
- * Copyright 1999-2004 Carnegie Mellon University.  
- * Portions Copyright 2004 Sun Microsystems, Inc.  
+ *
+ * Copyright 1999-2004 Carnegie Mellon University.
+ * Portions Copyright 2004 Sun Microsystems, Inc.
  * Portions Copyright 2004 Mitsubishi Electric Research Laboratories.
  * All Rights Reserved.  Use is subject to license terms.
- * 
+ *
  * See the file "license.terms" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL 
+ * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
  *
  */
@@ -73,15 +73,15 @@ public class SaxLoader {
      */
     public Map<String, RawPropertyData> load() throws IOException {
         rpdMap = new HashMap<String, RawPropertyData>();
+        InputStream is = null;
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             XMLReader xr = factory.newSAXParser().getXMLReader();
             ConfigHandler handler = new ConfigHandler();
             xr.setContentHandler(handler);
             xr.setErrorHandler(handler);
-            InputStream is = url.openStream();
+            is = url.openStream();
             xr.parse(new InputSource(is));
-            is.close();
         } catch(SAXParseException e) {
             String msg = "Error while parsing line " + e.getLineNumber() +
                     " of " + url + ": " + e.getMessage();
@@ -90,6 +90,10 @@ public class SaxLoader {
             throw new IOException("Problem with XML: " + e);
         } catch(ParserConfigurationException e) {
             throw new IOException(e.getMessage());
+        } finally {
+            if (is != null) {
+                is.close();
+            }
         }
         return rpdMap;
     }
@@ -183,7 +187,7 @@ public class SaxLoader {
                     }
                     rpd = new RawPropertyData(curComponent, curType, null);
                 }
-                
+
                 //
                 // Set the lease time.
                 rpd.setExportable(exportable);
