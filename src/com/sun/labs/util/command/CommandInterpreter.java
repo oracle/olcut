@@ -62,10 +62,25 @@ public class CommandInterpreter extends Thread {
     private CommandHistory history = new CommandHistory();
 
     private BufferedReader in;
+    
+    private boolean inputIsFile;
 
     public PrintStream out;
 
     private String defaultCommand;
+    
+    public CommandInterpreter(String inputFile) throws java.io.IOException {
+        commands = new TreeMap();
+        commandGroups = new TreeMap();
+        addStandardCommands();
+        if(inputFile == null) {
+            in = new BufferedReader(new InputStreamReader(System.in));
+        } else {
+            in = new BufferedReader(new FileReader(inputFile));
+            inputIsFile = true;
+        }
+        out = System.out;
+    }
 
     /** 
      * Creates a command interpreter that won't read a stream.
@@ -723,6 +738,9 @@ public class CommandInterpreter extends Thread {
     public String execute(String cmdString) {
         if(trace) {
             out.println("Execute: " + cmdString);
+        }
+        if(inputIsFile) {
+            out.println(cmdString);
         }
         return execute(parseMessage(cmdString));
     }
