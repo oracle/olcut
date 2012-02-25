@@ -86,7 +86,7 @@ public class StopWatch implements Serializable {
      * @return The number of times that the watch was started and stopped since the last reset.
      * @see #reset()
      */
-    public int getClicks() {
+    public long getClicks() {
         return clicks;
     }
 
@@ -110,7 +110,7 @@ public class StopWatch implements Serializable {
     /**
      * The number of starts and stops since the last reset.
      */
-    protected int clicks;
+    protected long clicks;
 
     /**
      * The last start time.
