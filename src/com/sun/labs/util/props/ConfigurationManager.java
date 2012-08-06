@@ -470,6 +470,27 @@ public class ConfigurationManager implements Cloneable {
     }
     
     /**
+     * Gets a list of all of the component names of the components that have 
+     * a given type.  This will not instantiate the components.
+     * 
+     * @param c the class of the components that we want to look up.
+     */
+    public List<String> listAll(Class c) {
+        List<String> ret = new ArrayList<String>();
+        if (!c.isInterface()) {
+            String className = c.getName();
+            for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
+                if (e.getValue().getClassName().equals(className)
+                        && !e.getValue().isImportable()) {
+                    ret.add(e.getKey());
+                }
+            }
+        }
+
+        return ret;
+    }
+    
+    /**
      * Gets the component registry that is being used to register and lookup
      * components in a service registrar
      * @return the current component registry, or <code>null</code> if there 
