@@ -28,9 +28,7 @@ import java.io.FileReader;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -385,11 +383,10 @@ public class CommandInterpreter extends Thread {
                         String[] subargs = new String[args.length - 2];
                         System.arraycopy(args, 2, subargs, 0, subargs.length);
                         PrintStream oldOut = out;
-                        PrintStream newOut = new PrintStream(args[1]);
-                        System.setOut(newOut);
+                        out = new PrintStream(args[1]);
                         putResponse(CommandInterpreter.this.execute(subargs));
-                        newOut.close();
-                        System.setOut(oldOut);
+                        out.close();
+                        out = oldOut;
                     } catch(IOException ioe) {
                         System.err.println("Can't write to " + args[1] + " " + ioe);
                     }

@@ -88,6 +88,7 @@ public class ConfigurationManager implements Cloneable {
      */
     public ConfigurationManager(URL url) throws IOException,
             PropertyException {
+        
         configURLs.add(url);
         SaxLoader saxLoader = new SaxLoader(url, globalProperties);
         origGlobal = new GlobalProperties(globalProperties);
@@ -477,13 +478,19 @@ public class ConfigurationManager implements Cloneable {
      */
     public List<String> listAll(Class c) {
         List<String> ret = new ArrayList<String>();
-        if (!c.isInterface()) {
-            String className = c.getName();
-            for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
-                if (e.getValue().getClassName().equals(className)
-                        && !e.getValue().isImportable()) {
+        for(Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
+            RawPropertyData rpd = e.getValue();
+            try {
+                Class pclass = Class.forName(rpd.getClassName());
+                try {
+                    pclass.asSubclass(c);
                     ret.add(e.getKey());
+                } catch(ClassCastException ex) {
+                    continue;
                 }
+            } catch(ClassNotFoundException ex) {
+                logger.warning(String.format("Non class %s found in config",
+                                             rpd.getClassName()));
             }
         }
 
