@@ -30,6 +30,10 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -416,6 +420,24 @@ public class CommandInterpreter extends Thread {
 
             public String getHelp() {
                 return "load and execute commands from a file";
+            }
+        });
+
+        add("pload", "Standard", new CommandInterface() {
+
+            public String execute(CommandInterpreter ci, String[] args) {
+                if (args.length == 3) {
+                    if (!pload(args[1], Integer.parseInt(args[2]))) {
+                        putResponse("pload: trouble loading " + args[1]);
+                    }
+                } else {
+                    putResponse("Usage: pload <filename> <numThreads>");
+                }
+                return "";
+            }
+
+            public String getHelp() {
+                return "load and execute commands from a file in parallel";
             }
         });
 
@@ -922,6 +944,48 @@ public class CommandInterpreter extends Thread {
             return true;
         } catch(IOException ioe) {
             return false;
+        }
+    }
+
+    public boolean pload(String filename, int numThreads) {
+        ExecutorService exec = Executors.newFixedThreadPool(numThreads);
+        FileReader fr = null;
+        BufferedReader br = null;
+        try {
+            fr = new FileReader(filename);
+            br = new BufferedReader(fr);
+            String inputLine;
+
+            while ((inputLine = br.readLine()) != null) {
+                final String currLine = inputLine;
+                Callable<Void> cmd = new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        String response =
+                                CommandInterpreter.this.execute(currLine);
+                        if (!response.equals("OK")) {
+                            putResponse(response);
+                        }
+                        return null;
+                    }
+                };
+                exec.submit(cmd);
+            }
+
+            exec.shutdown();
+            exec.awaitTermination(1, TimeUnit.DAYS);
+            return true;
+        } catch (IOException ioe) {
+            return false;
+        } catch (InterruptedException ex) {
+            logger.info("Parallel Load did not shut down properly");
+            return false;
+        } finally {
+            try {
+                br.close();
+                fr.close();
+            } catch (IOException ex) {
+            }
         }
     }
 
