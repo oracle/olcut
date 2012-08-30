@@ -11,30 +11,37 @@
  */
 package com.sun.labs.util.command;
 
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.regex.PatternSyntaxException;
+import com.sun.labs.util.Utilities;
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StreamTokenizer;
-import java.io.IOException;
+import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import jline.Completor;
+import jline.ConsoleReader;
+import jline.FileNameCompletor;
+import jline.History;
+import jline.NullCompletor;
 
 /**
  * This class is a command interpreter. It reads strings from an
@@ -71,6 +78,8 @@ public class CommandInterpreter extends Thread {
 
     private String defaultCommand;
     
+    private ConsoleReader consoleReader = null;
+    
     public CommandInterpreter(String inputFile) throws java.io.IOException {
         commands = new TreeMap();
         commandGroups = new TreeMap();
@@ -92,10 +101,32 @@ public class CommandInterpreter extends Thread {
         commands = new TreeMap();
         commandGroups = new TreeMap();
         addStandardCommands();
-        in = new BufferedReader(new InputStreamReader(System.in));
         out = System.out;
+        try {
+            consoleReader= new ConsoleReader();
+            consoleReader.setBellEnabled(false);
+            String histFile = System.getProperty("user.home")
+                    + File.separator
+                    + ".olcut_history";
+            String main = Utilities.getMainClassName();
+            if (!main.isEmpty()) {
+                histFile += "_" + main;
+            }
+            History history =
+                    new History(new File(histFile));
+            consoleReader.setHistory(history);
+            //consoleReader.setDebug(new PrintWriter(System.out));
+            consoleReader.addCompletor(new MultiCommandArgumentCompletor(consoleReader, commands));
+        } catch (IOException e) {
+            logger.info("Failed to load JLine, falling back to System.in");
+            in = new BufferedReader(new InputStreamReader(System.in));
+        }
     }
 
+    public ConsoleReader getConsoleReader() {
+        return consoleReader;
+    }
+    
     public void setParseQuotes(boolean parseQuotes) {
         this.parseQuotes = parseQuotes;
     }
@@ -334,7 +365,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("alias", "Standard", new CommandInterface() {
+        add("alias", "Standard", new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length == 3) {
@@ -350,9 +381,18 @@ public class CommandInterpreter extends Thread {
             public String getHelp() {
                 return "adds a pseudonym or shorthand term for a command";
             }
+
+            @Override
+            public Completor[] getCompletors() {
+                return new Completor[] {
+                    new NullCompletor(),
+                    new CommandCompletor(commands),
+                    new NullCompletor()
+                };
+            }
         });
 
-        add("repeat", "Standard", new CommandInterface() {
+        add("repeat", "Standard", new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length >= 3) {
@@ -377,9 +417,18 @@ public class CommandInterpreter extends Thread {
             public String getHelp() {
                 return "repeatedly execute a command";
             }
+
+            @Override
+            public Completor[] getCompletors() {
+                return new Completor[] {
+                    new NullCompletor(),
+                    new CommandCompletor(commands),
+                    new NullCompletor()
+                };
+            }
         });
 
-        add("redirect", "Standard", new CommandInterface() {
+        add("redirect", "Standard", new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length >= 3) {
@@ -403,9 +452,18 @@ public class CommandInterpreter extends Thread {
             public String getHelp() {
                 return "redirect command output to a file";
             }
+            
+            @Override
+            public Completor[] getCompletors() {
+                return new Completor[] {
+                    new FileNameCompletor(),
+                    new CommandCompletor(commands),
+                    new NullCompletor()
+                };
+            }
         });
 
-        add("load", "Standard", new CommandInterface() {
+        add("load", "Standard", new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length == 2) {
@@ -421,9 +479,17 @@ public class CommandInterpreter extends Thread {
             public String getHelp() {
                 return "load and execute commands from a file";
             }
+            
+            @Override
+            public Completor[] getCompletors() {
+                return new Completor[] {
+                    new FileNameCompletor(),
+                    new NullCompletor()
+                };
+            }
         });
 
-        add("pload", "Standard", new CommandInterface() {
+        add("pload", "Standard", new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if (args.length == 3) {
@@ -438,6 +504,14 @@ public class CommandInterpreter extends Thread {
 
             public String getHelp() {
                 return "load and execute commands from a file in parallel";
+            }
+
+            @Override
+            public Completor[] getCompletors() {
+                return new Completor[] {
+                    new FileNameCompletor(),
+                    new NullCompletor()
+                };
             }
         });
 
@@ -485,7 +559,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("time", "Standard", new CommandInterface() {
+        add("time", "Standard", new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length > 1) {
@@ -508,9 +582,17 @@ public class CommandInterpreter extends Thread {
             public String getHelp() {
                 return "report the time it takes to run a command";
             }
+
+            @Override
+            public Completor[] getCompletors() {
+                return new Completor[] {
+                    new CommandCompletor(commands),
+                    new NullCompletor()
+                };
+            }
         });
 
-        add("mstime", "Standard", new CommandInterface() {
+        add("mstime", "Standard", new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length > 1) {
@@ -528,9 +610,17 @@ public class CommandInterpreter extends Thread {
             public String getHelp() {
                 return "report the time it takes to run a command";
             }
+
+            @Override
+            public Completor[] getCompletors() {
+                return new Completor[] {
+                    new CommandCompletor(commands),
+                    new NullCompletor()
+                };
+            }
         });
 
-        add("redir", "Standard", new CommandInterface() {
+        add("redir", "Standard", new CompletorCommandInterface() {
 
             @Override
             public String execute(CommandInterpreter ci, String[] args) throws Exception {
@@ -544,6 +634,14 @@ public class CommandInterpreter extends Thread {
             @Override
             public String getHelp() {
                 return "redirects the output stream to the given file";
+            }
+
+            @Override
+            public Completor[] getCompletors() {
+                return new Completor[] {
+                    new FileNameCompletor(),
+                    new NullCompletor()
+                };
             }
         });
 
@@ -848,6 +946,13 @@ public class CommandInterpreter extends Thread {
      * @return the next history line or null if done
      */
     private String getInputLine() throws IOException {
+        if (consoleReader != null) {
+            String message = consoleReader.readLine();
+            //
+            // To support the shell's history list, show this cmd in it
+            history.add(message);
+            return message;
+        }
         String message = in.readLine();
         if(message == null) {
             return null;
@@ -996,7 +1101,12 @@ public class CommandInterpreter extends Thread {
      *
      */
     public void setPrompt(String prompt) {
-        this.prompt = prompt;
+        if (consoleReader != null) {
+            consoleReader.setDefaultPrompt(prompt);
+            this.prompt = "";
+        } else {
+            this.prompt = prompt;
+        }
     }
 
     /**

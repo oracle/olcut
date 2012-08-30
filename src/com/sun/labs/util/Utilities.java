@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import java.text.DecimalFormat;
+import java.util.Collection;
 
 
 /**
@@ -30,6 +31,8 @@ public class Utilities {
     // Unconstructable.
     private Utilities() {}
 
+    private static String mainClassName = null;
+    
     /**
      * Returns a string with the given number of
      * spaces.
@@ -277,6 +280,37 @@ public class Utilities {
             (swapInteger(Float.floatToRawIntBits(floatValue)));
     }
 
+    /**
+     * Gets the name of the Main class that started this process, or returns
+     * an empty string if the main thread has exited.  The name that is
+     * returned does not include the package, so called in a program started
+     * from com.sun.labs.util.command.CommandInterpreter, this method
+     * would return CommandInterpreter.
+     * @return 
+     */
+    public static String getMainClassName() {
+        if (mainClassName != null) {
+            return mainClassName;
+        }
+        
+        Collection<StackTraceElement[]> stacks =
+                Thread.getAllStackTraces().values();
+        for (StackTraceElement[] stack : stacks) {
+            if (stack.length == 0) {
+                continue;
+            }
+            StackTraceElement last = stack[stack.length - 1];
+            if (last.getMethodName().equals("main")) {
+                String name = last.getClassName();
+                String[] comps = name.split("\\.");
+                mainClassName = comps[comps.length - 1];
+            }
+        }
+        if (mainClassName == null) {
+            mainClassName = "";
+        }
+        return mainClassName;
+    }
 }
 
   
