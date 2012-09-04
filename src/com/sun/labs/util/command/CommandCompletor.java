@@ -29,7 +29,10 @@ public class CommandCompletor implements Completor {
      */
     @Override
     public int complete(String buff, int i, List ret) {
-        String prefix = buff.substring(0, i);
+        String prefix = "";
+        if (buff != null) {
+            prefix = buff.substring(0, i);
+        }
         for (String cmd : cmdMap.keySet()) {
             if (cmd.toLowerCase().startsWith(prefix.toLowerCase())) {
                 ret.add(cmd);
