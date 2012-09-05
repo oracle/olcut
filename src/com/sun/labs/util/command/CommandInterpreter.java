@@ -85,7 +85,7 @@ public class CommandInterpreter extends Thread {
         commandGroups = new TreeMap();
         addStandardCommands();
         if(inputFile == null) {
-            in = new BufferedReader(new InputStreamReader(System.in));
+            setupJLine();
         } else {
             in = new BufferedReader(new FileReader(inputFile));
             inputIsFile = true;
@@ -101,7 +101,11 @@ public class CommandInterpreter extends Thread {
         commands = new TreeMap();
         commandGroups = new TreeMap();
         addStandardCommands();
+        setupJLine();
         out = System.out;
+    }
+
+    protected void setupJLine() {
         try {
             consoleReader= new ConsoleReader();
             consoleReader.setBellEnabled(false);
@@ -122,7 +126,7 @@ public class CommandInterpreter extends Thread {
             in = new BufferedReader(new InputStreamReader(System.in));
         }
     }
-
+    
     public ConsoleReader getConsoleReader() {
         return consoleReader;
     }
