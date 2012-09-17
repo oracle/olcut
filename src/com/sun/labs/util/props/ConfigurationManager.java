@@ -653,19 +653,23 @@ public class ConfigurationManager implements Cloneable {
     }
 
     public void addSubConfiguration(ConfigurationManager subCM) {
+        addSubConfiguration(subCM, false);
+    }
+    public void addSubConfiguration(ConfigurationManager subCM, boolean overwrite) {
         Collection<String> compNames = getComponentNames();
 
-        for(String addCompName : subCM.getComponentNames()) {
-            if(compNames.contains(addCompName)) {
-                throw new RuntimeException(addCompName +
-                                           " is already registered to system configuration");
+        if(!overwrite) {
+            for(String addCompName : subCM.getComponentNames()) {
+                if(compNames.contains(addCompName)) {
+                    throw new RuntimeException(addCompName
+                            + " is already registered to system configuration");
+                }
             }
-        }
-
-        for(String globProp : subCM.globalProperties.keySet()) {
-            if(globalProperties.keySet().contains(globProp)) {
-                throw new IllegalArgumentException(globProp +
-                                                   " is already registered as global property");
+            for(String globProp : subCM.globalProperties.keySet()) {
+                if(globalProperties.keySet().contains(globProp)) {
+                    throw new IllegalArgumentException(globProp
+                            + " is already registered as global property");
+                }
             }
         }
 
@@ -676,6 +680,8 @@ public class ConfigurationManager implements Cloneable {
 
         symbolTable.putAll(subCM.symbolTable);
         rawPropertyMap.putAll(subCM.rawPropertyMap);
+        
+        RawPropertyData rpd = rawPropertyMap.get("search_engine");
     }
 
     /** Returns a copy of the map of global properties set for this configuration manager. */
