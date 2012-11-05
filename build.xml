@@ -71,4 +71,13 @@
     nbproject/build-impl.xml file. 
 
     -->
+    
+    <!-- When building a jar, include JLine -->
+    <target name="-pre-jar">
+        <unjar src="${file.reference.jline.jar}" dest="${build.classes.dir}"/>
+    </target>
+
+    <target name="-post-jar">
+        <copy file="${file.reference.jline.license.txt}" todir="${dist.dir}/lib"/>
+    </target>
 </project>
