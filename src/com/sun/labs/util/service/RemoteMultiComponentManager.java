@@ -27,6 +27,7 @@ package com.sun.labs.util.service;
 import com.sun.labs.util.props.Component;
 import com.sun.labs.util.props.ConfigurationManager;
 import com.sun.labs.util.props.PropertyException;
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -34,9 +35,9 @@ import java.util.logging.Logger;
  * A component manager that will handle multiple instances of a given component
  * type and hand them out in a round-robin fashion when requested.
  */
-public class RemoteMultiComponentManager extends RemoteComponentManager {
+public class RemoteMultiComponentManager<T extends Component> extends RemoteComponentManager<T> {
 
-    private Component[] components;
+    private T[] components;
 
     int p;
 
@@ -47,9 +48,9 @@ public class RemoteMultiComponentManager extends RemoteComponentManager {
     }
 
     private synchronized void getComponents() {
-        List<Component> l = cm.lookupAll(clazz, this);
+        List<T> l = (List<T>)cm.lookupAll(clazz, this);
         if(l != null) {
-            components = l.toArray(new Component[0]);
+            components = l.toArray((T[])Array.newInstance(clazz, 0));
         }
     }
     
@@ -59,7 +60,7 @@ public class RemoteMultiComponentManager extends RemoteComponentManager {
      * @throws com.sun.labs.aura.util.AuraException if the component could not
      *   be found after 10 minutes
      */
-    public Component getComponent() {
+    public T getComponent() {
         if(components == null) {
             getComponents();
         }
