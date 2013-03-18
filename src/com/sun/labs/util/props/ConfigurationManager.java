@@ -58,7 +58,7 @@ public class ConfigurationManager implements Cloneable {
 
     private ComponentRegistry registry;
     
-    private Logger logger = Logger.getLogger(getClass().getName());
+    private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
 
     private MBeanServer mbs;
 
