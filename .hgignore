@@ -1,11 +1,14 @@
-\.orig$
+syntax: glob
+
+.cvsignore
+Libraries/nblibraries-private.properties
+genfiles.properties
+dist/
+build/
+private/
+*.orig
 \.orig\..*$
+\.orig$
 \.chg\..*$
 \.rej$
 \.conflict\~$
-\.class$
-nbproject/private
-nbproject/build-impl.xml
-nbproject/genfiles.properties
-lib/nblibraries-private.properties
-
