@@ -295,6 +295,18 @@ public class CommandInterpreter extends Thread {
             }
         });
 
+        add("exit", "Standard", new CommandInterface() {
+
+            public String execute(CommandInterpreter ci, String[] args) {
+                done = true;
+                return "";
+            }
+
+            public String getHelp() {
+                return "exit the shell";
+            }
+        });
+
         add("on_exit", "Standard", new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
