@@ -97,6 +97,29 @@ public class StopWatch implements Serializable {
         time += sw.time;
         clicks += sw.clicks;
     }
+
+    public static String toTimeString(double millis) {
+        if(millis < 1000) {
+            return String.format("%.2fms", millis);
+        }
+
+        double secs = millis / 1000;
+
+        if(secs < 60) {
+            return String.format("%.2fs", secs);
+        }
+
+        double min = secs / 60;
+
+        if(min < 60) {
+            return String.format("%.2fmin", min);
+        }
+
+        double h = min / 60;
+
+        return String.format("%.2fh", h);
+    }
+
     /**
      * The amount of time accumulated on the timer.
      */
