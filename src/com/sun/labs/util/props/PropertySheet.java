@@ -754,17 +754,30 @@ public class PropertySheet implements Cloneable {
     }
 
     /**
-     * Returns the owner of this property sheet. In most cases this will be the configurable instance which was
-     * instrumented by this property sheet.
-     * 
-     * @param ps the property sheet that caused the getOwner call for this property
-     * sheet.
+     * Gets the owner of this property sheet. In most cases this will be the
+     * configurable instance which was instrumented by this property sheet.
+     *
+     * @param ps the property sheet that caused the getOwner call for this
+     * property sheet.
      */
     public synchronized Component getOwner(PropertySheet ps) {
-        return getOwner(ps, null);
+        return getOwner(ps, null, true);
     }
 
     /**
+     * Gets the owner of this property sheet. In most cases this will be the
+     * configurable instance which was instrumented by this property sheet.
+     *
+     * @param ps the property sheet that caused the getOwner call for this
+     * property sheet.
+     * @param reuseComponent if <code>true</code>, a previously configured component
+     * will be returned, if there is one. If <code>false</code> a newly instantiated
+     * and configured component will be returned.
+     */
+    public synchronized Component getOwner(PropertySheet ps, boolean reuseComponent) {
+        return getOwner(ps, null, reuseComponent);
+    }
+        /**
      * Returns the owner of this property sheet. In most cases this will be the configurable instance which was
      * instrumented by this property sheet.
      * 
@@ -772,16 +785,20 @@ public class PropertySheet implements Cloneable {
      * sheet.
      */
     public synchronized Component getOwner(PropertySheet ps, ComponentListener cl) {
+        return getOwner(ps, cl, true);
+    }
+    
+    public synchronized Component getOwner(PropertySheet ps, ComponentListener cl, boolean reuseComponent) {
         try {
 
-            if(!isInstantiated()) {
+            if(!isInstantiated() || !reuseComponent) {
 
                 ComponentRegistry registry = cm.getComponentRegistry();
                 //
                 // See if we should do a lookup in a service registry.
-                if(registry != null &&
-                        !isExportable() && 
-                        ((size() == 0 && implementsRemote) || isImportable())) {
+                if(registry != null
+                        && !isExportable()
+                        && ((size() == 0 && implementsRemote) || isImportable())) {
                     if(logger != null && logger.isLoggable(Level.FINER)) {
                         logger.finer(String.format("Looking up instance %s in registry",
                                 getInstanceName()));
@@ -799,9 +816,7 @@ public class PropertySheet implements Cloneable {
                     }
                 }
                 if(logger != null && logger.isLoggable(Level.FINER)) {
-                    logger.finer(String.format(
-                            "Creating %s",
-                            getInstanceName()));
+                    logger.finer(String.format("Creating %s", getInstanceName()));
                 }
                 if(cm.showCreations) {
                     logger.info(String.format("Creating %s type %s", instanceName,

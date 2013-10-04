@@ -320,7 +320,22 @@ public class ConfigurationManager implements Cloneable {
      */
     public Component lookup(String instanceName)
             throws InternalConfigurationException {
-        return lookup(instanceName, null);
+        return lookup(instanceName, null, true);
+    }
+    
+    /**
+     * Looks up a configurable component by its name, instantiating it if
+     * necessary.
+     *
+     * @param instanceName the name of the component that we want.
+     * @return the instantiated component, or <code>null</code> if no such named
+     * component exists in this configuration.
+     * @throws InternalConfigurationException if there is some error instantiating the
+     * component.
+     */
+    public Component lookup(String instanceName, boolean reuseComponent)
+            throws InternalConfigurationException {
+        return lookup(instanceName, null, reuseComponent);
     }
     
     /**
@@ -329,12 +344,36 @@ public class ConfigurationManager implements Cloneable {
      * If the component does not exist, it will be created.
      *
      * @param instanceName the name of the component
+     * @param cl a listener for this component that is notified when components
+     * are added or removed
      * @return the component, or null if a component was not found.
      * @throws InternalConfigurationException If the requested object could not be properly created, or is not a
      *                                        configurable object, or if an error occured while setting a component
      *                                        property.
      */
     public Component lookup(String instanceName, ComponentListener cl)
+            throws InternalConfigurationException {
+        return lookup(instanceName, null, true);
+    }
+        
+    /**
+     * Looks up a configurable component by name. If a component registry exists
+     * in the current configuration manager, it will be checked for the given
+     * component name. 
+     * 
+     * @param instanceName the name of the component
+     * @param cl a listener for this component that is notified when components
+     * are added or removed
+     * @param reuseComponent if <code>true</code>, then if the component was 
+     * previously created that component will be returned.  If false, then a 
+     * new component will be created regardless of whether it had been created
+     * before.
+     * @return the component, or null if a component was not found.
+     * @throws InternalConfigurationException If the requested object could not be properly created, or is not a
+     *                                        configurable object, or if an error occured while setting a component
+     *                                        property.
+     */
+    public Component lookup(String instanceName, ComponentListener cl, boolean reuseComponent)
             throws InternalConfigurationException {
         // apply all new propeties to the model
         instanceName = getStrippedComponentName(instanceName);
@@ -368,18 +407,11 @@ public class ConfigurationManager implements Cloneable {
         if(ret == null) {
 
 
-            //
-            // Instantiate the component (this may return null if our registry
-            // is screwed up!)
-            if(ps == null) {
-                return null;
-            }
-
             if(logger.isLoggable(Level.FINER)) {
                 logger.finer(String.format("lookup: %s", instanceName));
             }
 
-            ret = ps.getOwner(ps);
+            ret = ps.getOwner(ps, reuseComponent);
             
             if(ret instanceof Startable) {
                 Startable stret = (Startable) ret;
