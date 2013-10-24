@@ -3,6 +3,7 @@ package com.sun.labs.util.props;
 import com.sun.jini.config.ConfigUtil;
 import com.sun.jini.tool.ClassServer;
 import com.sun.labs.util.LabsLogFormatter;
+import com.sun.labs.util.jeri.DebugILFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -22,6 +23,9 @@ import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.jini.config.Configuration;
+import net.jini.config.ConfigurationException;
+import net.jini.config.ConfigurationProvider;
 import net.jini.core.discovery.LookupLocator;
 import net.jini.core.lease.Lease;
 import net.jini.core.lease.UnknownLeaseException;
@@ -35,7 +39,10 @@ import net.jini.discovery.DiscoveryListener;
 import net.jini.discovery.LookupDiscovery;
 import net.jini.discovery.LookupDiscoveryManager;
 import net.jini.export.Exporter;
-import net.jini.jrmp.JrmpExporter;
+import net.jini.jeri.BasicILFactory;
+import net.jini.jeri.BasicJeriExporter;
+import net.jini.jeri.InvocationLayerFactory;
+import net.jini.jeri.tcp.TcpServerEndpoint;
 import net.jini.lease.LeaseListener;
 import net.jini.lease.LeaseRenewalEvent;
 import net.jini.lease.LeaseRenewalManager;
@@ -148,7 +155,25 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      */
     @ConfigString(mandatory = false)
     public static final String PROP_SECURITY_POLICY = "securityPolicy";
+    
+    @ConfigBoolean(defaultValue = false)
+    public static final String PROP_DEBUG_RMI = "debugRMI";
+    
+    boolean debugRMI;
+    
+    @ConfigString(mandatory = false)
+    public static final String PROP_JINI_CONFIG_FILE = "jiniConfigFile";
+    
+    private Configuration jiniConfig;
 
+    @ConfigStringList(defaultList = {})
+    public static final String PROP_DEBUG_METHODS = "debugMethods";
+    
+    @ConfigStringList(defaultList = {})
+    public static final String PROP_DEBUG_REPORT_INTERVALS = "debugReportIntervals";
+    
+    private Map<String,Integer> reportMap = new HashMap();
+    
     /**
      * An HTTP server for our classes.
      */
@@ -373,7 +398,15 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
             if(rem != null) {
                 return rem;
             }
-            Exporter ex = new JrmpExporter();
+            
+            InvocationLayerFactory ilf;
+            if(debugRMI) {
+                ilf = new DebugILFactory();
+                ((DebugILFactory) ilf).setReportMap(reportMap);
+            } else {
+                ilf = new BasicILFactory();
+            }
+            Exporter ex = new BasicJeriExporter(TcpServerEndpoint.getInstance(0), ilf);
             rem = ex.export(r);
             exporters.put(rem, ex);
             exported.put(r, rem);
@@ -561,6 +594,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         return lookedUp.contains(c);
     }
 
+    @Override
     public void newProperties(PropertySheet ps) throws PropertyException {
         cm = ps.getConfigurationManager();
         defaultLeaseTime = ps.getInt(PROP_DEFAULT_LEASE_TIME);
@@ -568,8 +602,33 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         registryPort = ps.getInt(PROP_REGISTRY_PORT);
         lookupWait = ps.getInt(PROP_LOOKUP_WAIT) * 1000;
         lookupTries = ps.getInt(PROP_LOOKUP_TRIES);
+        debugRMI = ps.getBoolean(PROP_DEBUG_RMI);
+        
+        String jc = ps.getString(PROP_JINI_CONFIG_FILE);
+        if(jc != null) {
+            try {
+                jiniConfig = ConfigurationProvider.getInstance(new String[] {jc});
+            } catch(ConfigurationException ex) {
+                throw new PropertyException(ex, ps.getInstanceName(), PROP_JINI_CONFIG_FILE, "Error reading jini config");
+            }
+        }
+        
         logger = ps.getLogger();
-
+        
+        List<String> reportMethods = ps.getStringList(PROP_DEBUG_METHODS);
+        List<String> reportIntervals = ps.getStringList(PROP_DEBUG_REPORT_INTERVALS);
+        if(reportMethods.size() != reportIntervals.size()) {
+            throw new PropertyException(ps.getInstanceName(), PROP_DEBUG_METHODS, "Debug methods and interval lists must be the same length");
+        }
+        for(int i = 0; i < reportMethods.size(); i++) {
+            try {
+                reportMap.put(reportMethods.get(i), Integer.parseInt(reportIntervals.get(i)));
+            } catch (NumberFormatException ex) {
+                throw new PropertyException(ex, ps.getInstanceName(), PROP_DEBUG_METHODS, "Can't parse report interval for " + reportMethods.get(i) +
+                        ": " + reportIntervals.get(i));
+            }
+        }
+        
         //
         // Get the groups that we want to discover.
         String[] groups =

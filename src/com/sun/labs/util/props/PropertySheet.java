@@ -1120,7 +1120,7 @@ public class PropertySheet implements Cloneable {
         return logger;
     }
 
-    private Level getLogLevel() {
+    public Level getLogLevel() {
         if(logLevel == null) {
             String lls = (String) rawProps.get(PROP_LOG_LEVEL);
             if(lls == null) {
