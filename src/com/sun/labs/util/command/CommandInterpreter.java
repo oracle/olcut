@@ -452,7 +452,7 @@ public class CommandInterpreter extends Thread {
                         String[] subargs = new String[args.length - 2];
                         System.arraycopy(args, 2, subargs, 0, subargs.length);
                         PrintStream oldOut = out;
-                        out = new PrintStream(args[1]);
+                        out = new PrintStream(args[1], "utf-8");
                         putResponse(CommandInterpreter.this.execute(subargs));
                         out.close();
                         out = oldOut;
@@ -643,7 +643,7 @@ public class CommandInterpreter extends Thread {
                 if(args.length != 2) {
                     return "redir <output file>";
                 }
-                out = new PrintStream(args[1]);
+                out = new PrintStream(args[1], "utf-8");
                 return "";
             }
 
@@ -920,6 +920,7 @@ public class CommandInterpreter extends Thread {
 
     // inherited from thread.
     public void run() {
+        setDaemon(true);
         while(!done) {
             try {
                 printPrompt();
