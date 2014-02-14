@@ -23,4 +23,12 @@ public interface HelloService extends Component, Remote {
      * @throws RemoteException 
      */
     public String echo(String s) throws RemoteException;
+    
+    /**
+     * Adds two doubles together in a very friendly way.
+     * 
+     * @param d1 the first double
+     * @param d2 the second double
+     */
+    public double add(double d1, double d2) throws RemoteException;
 }

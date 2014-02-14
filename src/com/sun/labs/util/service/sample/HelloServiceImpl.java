@@ -28,6 +28,11 @@ public class HelloServiceImpl extends ConfigurableServiceAdapter implements Hell
     }
 
     @Override
+    public double add(double d1, double d2) {
+        return d1 + d2;
+    }
+
+    @Override
     public void newProperties(PropertySheet ps) throws PropertyException {
         myString = ps.getString(PROP_MY_STRING);
     }
@@ -37,7 +42,6 @@ public class HelloServiceImpl extends ConfigurableServiceAdapter implements Hell
         return "HelloService";
     }
 
-    
     /**
      * @param args the command line arguments
      */

@@ -39,6 +39,11 @@ A configuration file for the hello service.
             <item>${helloGroup}</item>
         </propertylist>
         <property name="securityPolicy" value="${securityPolicy}"/>
+        <property name="csDirs" value="${helloDistDir}:${helloDistDir}/lib"/>
+        <property name="csPort" value="${csPort}"/>
+        <propertylist name="codebaseJars">
+            <item>slcut.jar</item>
+        </propertylist>
     </component>
     
     <!-- 
