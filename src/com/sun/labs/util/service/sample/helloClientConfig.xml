@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+A configuration file for the client of the hello service.
+-->
+
+<config>
+    
+    <!--
+    A global property for the Jini group to use when searching for a service
+    registry. This can be overridden by a system property with the same name
+    provided on the command line.
+    -->
+    <property name="helloGroup" value="hello"/>
+    
+    <!--
+    A global property for the security policy that the component registry 
+    should use. By default, we have a very open security policy.
+    This can be overridden by a system property with the same name
+    provided on the command line.
+    -->
+    <property name="securityPolicy" value="/jini/jsk-all.policy"/>
+
+    
+    <!-- 
+    A component registry that will be used to lookup and register components.
+    The registry (or registries) will be found via multicast. You can explicity 
+    specify a registry host if you know one, but you should always try multicast
+    first!
+    -->
+    <component name="registry" type="com.sun.labs.util.props.ComponentRegistry">
+        <propertylist name="groupList">
+            <item>${helloGroup}</item>
+        </propertylist>
+        <property name="securityPolicy" value="${securityPolicy}"/>
+    </component>
+    
+</config>

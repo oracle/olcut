@@ -27,20 +27,25 @@ package com.sun.labs.util.service;
 import com.sun.labs.util.props.Component;
 
 /**
- * An interface for starting and stopping Aardvark services.
+ * An interface for starting and stopping configurable services.
  * 
- * @see AardvarkServiceStarter
+ * @see ConfigurableServiceStarter
  */
-public interface ConfigurableService extends Component {
-    
+public interface ConfigurableService extends Component, Runnable {
     /**
-     * Starts the service.
+     * Gets the name of the service.
      */
-    public void start();
-    
+    public String getServiceName();
+
+    /**
+     * Tells the service about the starter that started it.
+     * @param starter the starter
+     */
+    public void setStarter(ConfigurableServiceStarter starter);
+
     /**
      * Stops the service.
      */
     public void stop();
-
+    
 }

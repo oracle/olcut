@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.rmi.Remote;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -495,9 +496,7 @@ public class ConfigurationManager implements Cloneable {
         // given type.
         if(registry != null) {
             Component[] reg = registry.lookup(c, Integer.MAX_VALUE, cl);
-            for(Component m : reg) {
-                ret.add(m);
-            }
+            ret.addAll(Arrays.asList(reg));
         }
         return ret;
     }
