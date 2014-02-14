@@ -679,7 +679,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                         "Unknown host setting hostName");
             }
         }
-
+        
         //
         // Construct a codebase.
         int csPort = ps.getInt(PROP_CS_PORT);
@@ -697,10 +697,10 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
             sb.append(explicitCB);
             System.setProperty("java.rmi.server.codebase", sb.toString());
         }
-
+        
         //
         // We may want to start a class server for the things registered by
-        // this component registry. We'll do this if the directories to server
+        // this component registry. We'll do this if the directories to serve
         // are not empty.
         String csDirs = ps.getString(PROP_CS_DIRS);
         if(!csDirs.equals("")) {
