@@ -12,5 +12,5 @@ java -cp $INSTALLDIR'/lib/*':~/Projects/olcut/work/dist/slcut.jar \
     -DauraGroup=$JINI_GROUP \
     -DjiniDir=$INSTALLDIR \
     com.sun.jini.start.ServiceStarter \
-    $INSTALLDIR/nobrowse.config
+    $INSTALLDIR/browse.config
  
