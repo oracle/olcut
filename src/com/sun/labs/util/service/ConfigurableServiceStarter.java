@@ -41,7 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A class that will start and stop an aardvark service.  The configuration for
+ * A class that will start and stop a configurable service.  The configuration for
  * this class will point to a configuration that can be used to create 
  * and start the service.
  */
@@ -164,7 +164,7 @@ public class ConfigurableServiceStarter implements Configurable {
             if (cu == null) {
                 cu = (new File(configFile)).toURI().toURL();
             }
-            ConfigurationManager cm = new ConfigurationManager(cu);
+            final ConfigurationManager cm = new ConfigurationManager(cu);
             starter = (ConfigurableServiceStarter) cm.lookup(args[1]);
 
             if (starter == null) {
@@ -179,6 +179,7 @@ public class ConfigurableServiceStarter implements Configurable {
                 @Override
                 public void run() {
                     starter.stopServices();
+                    cm.shutdown();
                 }
             });
 
