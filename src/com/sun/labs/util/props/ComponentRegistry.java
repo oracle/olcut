@@ -147,6 +147,12 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      */
     @ConfigStringList(defaultList = {})
     public static final String PROP_CODEBASE_JARS = "codebaseJars";
+    
+    /**
+     * A property for some extra paths to be served via the class server.
+     */
+    @ConfigStringList(defaultList = {})
+    public static final String PROP_CODEBASE_PATHS = "codebasePaths";
 
     /**
      * A configuration property for the name of the security policy file to use.
@@ -683,19 +689,41 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         //
         // Construct a codebase.
         int csPort = ps.getInt(PROP_CS_PORT);
-        List<String> cbjars = ps.getStringList(PROP_CODEBASE_JARS);
+        List<String> cbJars = ps.getStringList(PROP_CODEBASE_JARS);
+        List<String> cbPaths = ps.getStringList(PROP_CODEBASE_PATHS);
         String explicitCB = ps.getString(PROP_CODEBASE);
-        if(cbjars.size() > 0 || explicitCB != null) {
+        if(!cbJars.isEmpty() || !cbPaths.isEmpty() || explicitCB != null) {
             StringBuilder sb = new StringBuilder();
-            for(String jar : cbjars) {
+            
+            //
+            // Add URIs for the jar files specified in the properties.
+            for(String jar : cbJars) {
                 sb.append(String.format("http://%s:%d/%s ", hostName, csPort,
                         jar));
             }
-
+            
             //
-            // Add any explicit codebase settings.      
-            sb.append(explicitCB);
+            // Add URIs for the paths specified in the properties.
+            for(String path : cbPaths) {
+                sb.append(String.format("http://%s:%d/%s ", hostName, csPort,
+                        path));
+            }
+            
+            //
+            // Add any explicit codebase settings.     
+            if(explicitCB != null) {
+                sb.append(explicitCB);
+            }
+            
+            //
+            // Set the codebase for RMI.
             System.setProperty("java.rmi.server.codebase", sb.toString());
+        } else {
+            //
+            // No explicit codebase?  Give a URI for the top of the class
+            // server.
+            System.setProperty("java.rmi.server.codebase",
+                    String.format("http://%s:%d/", hostName, csPort));
         }
         
         //
