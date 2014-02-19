@@ -321,6 +321,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
             // see if any get discovered.
             ServiceRegistrar[] regs = null;
             for(int i = 0; i < lookupTries; i++) {
+                logger.finest(String.format("Lookup try %d", i));
                 regs = sdm.getDiscoveryManager().getRegistrars();
                 if(regs.length > 0) {
                     break;
@@ -337,6 +338,8 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
             if(regs == null) {
                 throw new PropertyException("registry", "serviceRegistrar",
                         "No registrars discovered");
+            } else {
+                logger.fine(String.format("Got %d registries", regs.length));
             }
 
             //
