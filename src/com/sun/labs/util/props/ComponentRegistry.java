@@ -535,7 +535,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         if(sdm == null) {
             return null;
         }
-
+        
         //
         // See if we have a lookup cache for this type.  If not, make one and 
         // add it to the map.
@@ -555,9 +555,10 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                 caches.put(c, cache);
             } catch(RemoteException ex) {
                 logger.log(Level.SEVERE, "Error creating lookup cache for " + c, ex);
+                return null;
             }
         }
-
+        
         //
         // OK, here we go.  We're going to sleep wait while we do a few lookups.
         // There's no blocking calls to lookup in the cache, but we need the 
@@ -914,7 +915,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     }
 
     public void discovered(DiscoveryEvent e) {
-        if(logger.isLoggable(Level.ALL.FINER)) {
+        if(logger.isLoggable(Level.FINER)) {
             logger.finer(String.format("Discovered %d registrars", e.getRegistrars().length));
             for(ServiceRegistrar sr : e.getRegistrars()) {
                 logger.finer(String.format(" Registrar %s", sr));
