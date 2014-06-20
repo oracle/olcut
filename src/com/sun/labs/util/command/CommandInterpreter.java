@@ -63,6 +63,8 @@ public class CommandInterpreter extends Thread {
     private boolean parseQuotes = true;
 
     private String prompt;
+    
+    private String rawArguments;
 
     private boolean done = false;
 
@@ -915,12 +917,16 @@ public class CommandInterpreter extends Thread {
                 break;
             }
         }
+        rawArguments = message.substring(words.get(0).length()).trim();
         return words.toArray(new String[0]);
+    }
+
+    public String getRawArguments() {
+        return rawArguments;
     }
 
     // inherited from thread.
     public void run() {
-        setDaemon(true);
         while(!done) {
             try {
                 printPrompt();
