@@ -14,7 +14,9 @@ import java.lang.annotation.RetentionPolicy;
 @ConfigProperty
 public @interface ConfigFile {
 
-    String fileName();
+    public static final String DEFAULT_VALUE = "/:::\\;";
+    
+    String defaultValue() default DEFAULT_VALUE;
 
     boolean mandatory() default true;
     
@@ -25,5 +27,4 @@ public @interface ConfigFile {
     boolean canWrite() default true;
     
     boolean isDirectory() default false;
-    
 }

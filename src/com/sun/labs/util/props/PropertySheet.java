@@ -241,9 +241,6 @@ public class PropertySheet implements Cloneable {
                             name, "mandatory property is not set!");
                 }
             }
-            //            else if(!isDefDefined)
-//                throw new InternalConfigurationException(getInstanceName(), name, "no default value for non-mandatory property");
-
             propValues.put(name, isDefDefined ? s4String.defaultValue() : null);
         }
 
@@ -384,30 +381,36 @@ public class PropertySheet implements Cloneable {
         ConfigFile configFile = ((ConfigFile) s4PropWrapper.getAnnotation());
         Object val = propValues.get(propName);
 
-        if (val != null) {
-            if(val instanceof File) {
-                return (File) val;
-            } else {
-                throw new PropertyException(instanceName, propName, "Non-file property: " + val.getClass());
+        if (val == null) {
+            boolean isDefined = !configFile.defaultValue().equals(ConfigString.NOT_DEFINED);
+
+            if (configFile.mandatory()) {
+                if (!isDefined) {
+                    throw new InternalConfigurationException(getInstanceName(),
+                            propName, "mandatory property is not set!");
+                }
             }
+            
+            String fileName = flattenProp(propName);
+            if (fileName == null) {
+                throw new PropertyException(instanceName, propName, "Must specify file name");
+            }
+            File f = new File(fileName);
+            if (configFile.canRead() && !f.canRead()) {
+                throw new PropertyException(instanceName, propName, "Can't read file: " + f);
+            }
+            if (configFile.canWrite() && !f.canWrite()) {
+                throw new PropertyException(instanceName, propName, "Can't write file: " + f);
+            }
+            if (configFile.isDirectory() && !f.isDirectory()) {
+                throw new PropertyException(instanceName, propName, f + "is not a directory" + f);
+            }
+
+            propValues.put(propName, f);
+            return f;
+        } else {
+            return (File) val;
         }
-        
-        String fileName = configFile.fileName();
-        if(fileName == null) {
-            throw new PropertyException(instanceName, propName, "Must specify file name");
-        }
-        File f = new File(fileName);
-        if(configFile.canRead() && !f.canRead()) {
-            throw new PropertyException(instanceName, propName, "Can't read file: " + f);
-        }
-        if(configFile.canWrite() && !f.canWrite()) {
-            throw new PropertyException(instanceName, propName, "Can't write file: " + f);
-        }
-        if(configFile.isDirectory() && !f.isDirectory()) {
-            throw new PropertyException(instanceName, propName, f + "is not a directory" + f);
-        }
-        
-        return f;
     }
 
     private String flattenProp(String name) {
