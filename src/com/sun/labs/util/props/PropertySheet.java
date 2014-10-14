@@ -1,5 +1,6 @@
 package com.sun.labs.util.props;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -376,6 +377,37 @@ public class PropertySheet implements Cloneable {
         }
         propValues.put(name, ret);
         return ret;
+    }
+    
+    public File getFile(String propName) throws PropertyException {
+        ConfigPropWrapper s4PropWrapper = getProperty(propName, ConfigFile.class);
+        ConfigFile configFile = ((ConfigFile) s4PropWrapper.getAnnotation());
+        Object val = propValues.get(propName);
+
+        if (val != null) {
+            if(val instanceof File) {
+                return (File) val;
+            } else {
+                throw new PropertyException(instanceName, propName, "Non-file property: " + val.getClass());
+            }
+        }
+        
+        String fileName = configFile.fileName();
+        if(fileName == null) {
+            throw new PropertyException(instanceName, propName, "Must specify file name");
+        }
+        File f = new File(fileName);
+        if(configFile.canRead() && !f.canRead()) {
+            throw new PropertyException(instanceName, propName, "Can't read file: " + f);
+        }
+        if(configFile.canWrite() && !f.canWrite()) {
+            throw new PropertyException(instanceName, propName, "Can't write file: " + f);
+        }
+        if(configFile.isDirectory() && !f.isDirectory()) {
+            throw new PropertyException(instanceName, propName, f + "is not a directory" + f);
+        }
+        
+        return f;
     }
 
     private String flattenProp(String name) {
