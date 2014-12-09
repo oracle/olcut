@@ -381,7 +381,10 @@ public class PropertySheet implements Cloneable {
         ConfigFile configFile = ((ConfigFile) s4PropWrapper.getAnnotation());
         Object val = propValues.get(propName);
 
-        if (val == null) {
+        //
+        // Val will initially have the bare string from the config file.
+        // We should change it into a File.
+        if (val == null || val instanceof String) {
             boolean isDefined = !configFile.defaultValue().equals(ConfigString.NOT_DEFINED);
 
             if (configFile.mandatory()) {
@@ -392,20 +395,23 @@ public class PropertySheet implements Cloneable {
             }
             
             String fileName = flattenProp(propName);
+            File f = null;
             if (fileName == null) {
-                throw new PropertyException(instanceName, propName, "Must specify file name");
+                if (configFile.mandatory()) {
+                    throw new PropertyException(instanceName, propName, "Must specify file name");
+                }
+            } else {
+                f = new File(fileName);
+                if (configFile.canRead() && !f.canRead()) {
+                    throw new PropertyException(instanceName, propName, "Can't read file: " + f);
+                }
+                if (configFile.canWrite() && !f.canWrite()) {
+                    throw new PropertyException(instanceName, propName, "Can't write file: " + f);
+                }
+                if (configFile.isDirectory() && !f.isDirectory()) {
+                    throw new PropertyException(instanceName, propName, f + "is not a directory" + f);
+                }
             }
-            File f = new File(fileName);
-            if (configFile.canRead() && !f.canRead()) {
-                throw new PropertyException(instanceName, propName, "Can't read file: " + f);
-            }
-            if (configFile.canWrite() && !f.canWrite()) {
-                throw new PropertyException(instanceName, propName, "Can't write file: " + f);
-            }
-            if (configFile.isDirectory() && !f.isDirectory()) {
-                throw new PropertyException(instanceName, propName, f + "is not a directory" + f);
-            }
-
             propValues.put(propName, f);
             return f;
         } else {
