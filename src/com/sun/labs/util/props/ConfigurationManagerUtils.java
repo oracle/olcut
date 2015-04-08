@@ -504,8 +504,7 @@ public class ConfigurationManagerUtils {
         assert interfaceClass.isInterface();
 
         Class<?> superClass = aClass.getSuperclass();
-        if(superClass != null && isImplementingInterface(superClass,
-                interfaceClass)) {
+        if(superClass != null && isImplementingInterface(superClass, interfaceClass)) {
             return true;
         }
 

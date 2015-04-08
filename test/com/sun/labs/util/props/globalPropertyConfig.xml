@@ -23,7 +23,9 @@
     <property name="foo" value="${a}/bar"/>
     
     <property name="home" value="${user.home}/Projects/LabsUtil"/>
-
+    
+    <property name="apath" value="/tmp/${a}"/>
+    
     <component name="unknown" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${d}"/>
         <property name="two" value="${e}"/>
@@ -63,6 +65,12 @@
     <component name="recurse2" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="${foo}"/>
         <property name="two" value="x"/>
+        <property name="three" value="y"/>
+    </component>
+        
+    <component name="recurse3" type="com.sun.labs.util.props.StringConfigurable">
+        <property name="one" value="${apath}"/>
+        <property name="two" value="${apath}/bpath"/>
         <property name="three" value="y"/>
     </component>
         

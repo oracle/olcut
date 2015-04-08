@@ -731,15 +731,7 @@ public class ConfigurationManager implements Cloneable {
         if(globProp == null) {
             return null;
         }
-        String ret = globProp.toString();
-        while(ret != null && GlobalProperty.isGlobalProperty(ret)) {
-            globProp = globalProperties.get(GlobalProperty.getPropertyName(ret));
-            if(globProp == null) {
-                return null;
-            }
-            ret = globProp.toString();
-        }
-        return ret;
+        return globalProperties.replaceGlobalProperties("_global", propertyName, globProp.toString());
     }
 
     public GlobalProperty getGloPropReference(String propertyName) {
