@@ -96,6 +96,17 @@ public class GlobalPropertyTest {
     }
     
     @Test
+    public void recurse3() throws IOException {
+        URL cu = getClass().getResource("globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(cu);
+        StringConfigurable sc = (StringConfigurable) cm.lookup("recurse3");
+        assertEquals("/tmp/alpha", sc.one);
+        assertEquals(sc.two, "/tmp/alpha/bpath");
+        assertEquals(sc.three, "y");
+        assertEquals("/tmp/alpha", cm.getGlobalProperty("apath"));
+    }
+    
+    @Test
     public void compoundRecurse() throws IOException {
         URL cu = getClass().getResource("globalPropertyConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
