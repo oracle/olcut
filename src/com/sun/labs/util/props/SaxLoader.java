@@ -12,23 +12,35 @@
  */
 package com.sun.labs.util.props;
 
-import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
-
+import java.io.File;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /** Loads configuration from an XML file */
 public class SaxLoader {
 
-    private URL url;
+    private URL curURL;
+
+    private Queue<URL> urlQueue;
 
     private Map<String, RawPropertyData> rpdMap;
 
@@ -41,9 +53,6 @@ public class SaxLoader {
      *
      * @param url              the location to load
      * @param globalProperties the map of global properties
-     * @param existingRPD the map of existing raw property data from previously
-     * loaded configuration files, which we might want when overriding elements
-     * in the configuration file that we're loading.
      */
     public SaxLoader(URL url, GlobalProperties globalProperties) {
         this(url, globalProperties, null);
@@ -60,7 +69,8 @@ public class SaxLoader {
      */
     public SaxLoader(URL url, GlobalProperties globalProperties,
                       Map<String, RawPropertyData> existingRPD) {
-        this.url = url;
+        this.urlQueue = new LinkedList<URL>();
+        this.urlQueue.add(url);
         this.globalProperties = globalProperties;
         this.existingRPD = existingRPD;
     }
@@ -80,11 +90,15 @@ public class SaxLoader {
             ConfigHandler handler = new ConfigHandler();
             xr.setContentHandler(handler);
             xr.setErrorHandler(handler);
-            is = url.openStream();
-            xr.parse(new InputSource(is));
+            while (!urlQueue.isEmpty()) {
+                curURL = urlQueue.poll();
+                is = curURL.openStream();
+                xr.parse(new InputSource(is));
+                is.close();
+            }
         } catch(SAXParseException e) {
             String msg = "Error while parsing line " + e.getLineNumber() +
-                    " of " + url + ": " + e.getMessage();
+                    " of " + curURL + ": " + e.getMessage();
             throw new IOException(msg);
         } catch(SAXException e) {
             throw new IOException("Problem with XML: " + e);
@@ -227,6 +241,29 @@ public class SaxLoader {
                                                 locator);
                 }
                 curItem = new StringBuilder();
+            } else if (qName.equals("file")) {
+                String name = attributes.getValue("name");
+                String value = attributes.getValue("value");
+                if(attributes.getLength() != 2 || name == null || value == null) {
+                    throw new SAXParseException("file element must only have " +
+                                                "'name' and 'value' attributes",
+                                                locator);
+                }
+                if(rpd == null) {
+                    // we are not in a component so add this to the processing queue
+                    try {
+                        URL newURL = SaxLoader.class.getResource(value);
+                        if(newURL == null) {
+                            newURL = (new File(value)).toURI().toURL();
+                        }
+                        urlQueue.add(newURL);
+                    } catch (MalformedURLException ex) {
+                        throw new SAXParseException("Incorrectly formatted file element " + name + " with value " + value,locator,ex);
+                    }
+                } else {
+                    throw new SAXParseException("File element found inside a component: " + name,
+                                                locator);
+                }
             } else {
                 throw new SAXParseException("Unknown element '" + qName + "'",
                                             locator);
