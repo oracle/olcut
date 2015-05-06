@@ -1,15 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.sun.labs.util.command;
 
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import jline.ArgumentCompletor;
 import jline.Completor;
 import jline.ConsoleReader;
@@ -24,6 +19,8 @@ import jline.ConsoleReader;
 class MultiCommandArgumentCompletor extends ArgumentCompletor {
 
     protected Map<String,CommandInterface> cmdMap;
+    
+    protected Deque<LayeredCommandInterpreter> interpreters;
     
     protected Map<String,Completor[]> compMap;
     
@@ -47,10 +44,12 @@ class MultiCommandArgumentCompletor extends ArgumentCompletor {
      *               to check for added commands
      */
     public MultiCommandArgumentCompletor(ConsoleReader reader,
-                                         Map<String,CommandInterface> cmdMap) {
+                                         Map<String,CommandInterface> cmdMap, 
+                                         Deque<LayeredCommandInterpreter> interpreters) {
         super((Completor)null);
         this.reader = reader;
         this.cmdMap = cmdMap;
+        this.interpreters = interpreters;
         compMap = new HashMap<String,Completor[]>();
         setStrict(false);
     }
@@ -60,16 +59,26 @@ class MultiCommandArgumentCompletor extends ArgumentCompletor {
      * command we don't already have a completor for.
      */
     protected void updateCompletors() {
-        Set<String> commands = cmdMap.keySet();
-        for (String command : commands) {
-            if (!compMap.containsKey(command)) {
-                CommandInterface ci = cmdMap.get(command);
+        updateCompletors(null, cmdMap);
+        for(LayeredCommandInterpreter lci : interpreters) {
+            updateCompletors(lci.getLayerTag(), lci.getCommands());
+        }
+    }
+    
+    protected void updateCompletors(String layerTag, Map<String, CommandInterface> commands) {
+        for (String command : commands.keySet()) {
+            String lCommand = command;
+            if(layerTag != null) {
+                lCommand = command + "." + layerTag;
+            }
+            if (!compMap.containsKey(lCommand)) {
+                CommandInterface ci = commands.get(command);
                 if (ci instanceof CompletorCommandInterface) {
-                    CompletorCommandInterface cci =
-                            (CompletorCommandInterface)ci;
-                    compMap.put(command, cci.getCompletors());
+                    CompletorCommandInterface cci
+                            = (CompletorCommandInterface) ci;
+                    compMap.put(lCommand, cci.getCompletors());
                 } else {
-                    compMap.put(command, null);
+                    compMap.put(lCommand, null);
                 }
             }
         }
@@ -97,7 +106,7 @@ class MultiCommandArgumentCompletor extends ArgumentCompletor {
         updateCompletors();
         Completor[] completors;
         if (list.getCursorArgumentIndex() == 0) {
-            comp = new CommandCompletor(cmdMap);
+            comp = new CommandCompletor(cmdMap, interpreters);
             completors = new Completor[] {comp};
         } else {
             //
