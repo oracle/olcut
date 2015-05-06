@@ -22,8 +22,10 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,11 +55,24 @@ import jline.NullCompletor;
 public class CommandInterpreter extends Thread {
 
     private static final Logger logger = Logger.getLogger(CommandInterpreter.class.getName());
+    
+    /**
+     * Commands for this interpreter.
+     */
+    protected Map<String, CommandInterface> commands = new TreeMap();
 
-    private Map<String, CommandInterface> commands;
+    /**
+     * Groups for this interpreter.
+     */
+    protected Map<String, CommandGroup> commandGroups = new TreeMap();
 
-    private Map<String, CommandGroup> commandGroups;
-
+    /**
+     * Commands from interpreters that were layered on top of this one. If 
+     * interpreters have been layered on top of this one, they will be consulted
+     * first for commands.
+     */
+    private Deque<LayeredCommandInterpreter> interpreters = new LinkedList<LayeredCommandInterpreter>();
+    
     private int totalCommands = 0;
     
     private boolean parseQuotes = true;
@@ -82,9 +97,9 @@ public class CommandInterpreter extends Thread {
     
     private ConsoleReader consoleReader = null;
     
+    private Pattern layeredCommandPattern = Pattern.compile("(.*)\\.([^.]*)");
+    
     public CommandInterpreter(String inputFile) throws java.io.IOException {
-        commands = new TreeMap();
-        commandGroups = new TreeMap();
         addStandardCommands();
         if(inputFile == null) {
             setupJLine();
@@ -100,8 +115,6 @@ public class CommandInterpreter extends Thread {
      *
      */
     public CommandInterpreter() {
-        commands = new TreeMap();
-        commandGroups = new TreeMap();
         addStandardCommands();
         setupJLine();
         out = System.out;
@@ -122,7 +135,7 @@ public class CommandInterpreter extends Thread {
                     new History(new File(histFile));
             consoleReader.setHistory(history);
             //consoleReader.setDebug(new PrintWriter(System.out));
-            consoleReader.addCompletor(new MultiCommandArgumentCompletor(consoleReader, commands));
+            consoleReader.addCompletor(new MultiCommandArgumentCompletor(consoleReader, commands, interpreters));
         } catch (IOException e) {
             logger.info("Failed to load JLine, falling back to System.in");
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -404,7 +417,7 @@ public class CommandInterpreter extends Thread {
             public Completor[] getCompletors() {
                 return new Completor[] {
                     new NullCompletor(),
-                    new CommandCompletor(commands),
+                    new CommandCompletor(commands, interpreters),
                     new NullCompletor()
                 };
             }
@@ -440,7 +453,7 @@ public class CommandInterpreter extends Thread {
             public Completor[] getCompletors() {
                 return new Completor[] {
                     new NullCompletor(),
-                    new CommandCompletor(commands),
+                    new CommandCompletor(commands, interpreters),
                     new NullCompletor()
                 };
             }
@@ -475,7 +488,7 @@ public class CommandInterpreter extends Thread {
             public Completor[] getCompletors() {
                 return new Completor[] {
                     new FileNameCompletor(),
-                    new CommandCompletor(commands),
+                    new CommandCompletor(commands, interpreters),
                     new NullCompletor()
                 };
             }
@@ -604,7 +617,7 @@ public class CommandInterpreter extends Thread {
             @Override
             public Completor[] getCompletors() {
                 return new Completor[] {
-                    new CommandCompletor(commands),
+                    new CommandCompletor(commands, interpreters),
                     new NullCompletor()
                 };
             }
@@ -632,7 +645,7 @@ public class CommandInterpreter extends Thread {
             @Override
             public Completor[] getCompletors() {
                 return new Completor[] {
-                    new CommandCompletor(commands),
+                    new CommandCompletor(commands, interpreters),
                     new NullCompletor()
                 };
             }
@@ -687,7 +700,7 @@ public class CommandInterpreter extends Thread {
      * @param numbered if true number the commands
      *
      */
-    private void dumpCommands() {
+    protected void dumpCommands() {
         int count = dumpGroup(commandGroups.get("Standard"), 0);
         for(CommandGroup cg : commandGroups.values()) {
             if(cg.getGroupName().equals("Standard")) {
@@ -695,8 +708,12 @@ public class CommandInterpreter extends Thread {
             }
             count = dumpGroup(cg, count);
         }
+        for(LayeredCommandInterpreter lci : interpreters) {
+            putResponse(String.format("Commands labeled %s", lci.getLayerTag()));
+            lci.dumpCommands();
+        }
     }
-
+    
     private int dumpGroup(CommandGroup cg, int count) {
         putResponse(String.format("%s group: %s", cg.getGroupName(), cg.getDescription()));
         for(String cmdName : cg) {
@@ -786,6 +803,38 @@ public class CommandInterpreter extends Thread {
     public void add(Map newCommands) {
         commands.putAll(newCommands);
     }
+    
+    /**
+     * Adds a layered command interpreter to this command interpreter.
+     * 
+     * @param lci the layered command interpreter to add.
+     */
+    public void add(LayeredCommandInterpreter lci) {
+        //
+        // Make sure the commands in there are set up like we are.
+        lci.setOutput(out);
+        lci.setParseQuotes(parseQuotes);
+        lci.setTrace(trace);
+        
+        //
+        // Put it on the front of the queue so that we will try this one 
+        // before others.
+        interpreters.addFirst(lci);
+    }
+    
+    /**
+     * Removes a layered command interpreter with the given layer tag.
+     * @param layerTag the tag for the interpreter that we want to remove.
+     */
+    public void remove(String layerTag) {
+        for(Iterator<LayeredCommandInterpreter> i = interpreters.iterator(); i.hasNext(); ) {
+            LayeredCommandInterpreter lci = i.next();
+            if(lci.getLayerTag().equals(layerTag)) {
+                i.remove();
+                break;
+            }
+        }
+    }
 
     /**
      * Outputs a response to the sender.
@@ -836,11 +885,48 @@ public class CommandInterpreter extends Thread {
     private String execute(String[] args, boolean first) {
         String response = "";
 
-        CommandInterface ci;
+        CommandInterface ci = null;
 
         if(args.length > 0) {
+            
+            String command = args[0];
+            
+            //
+            // Does this command specify a layered interpreter that we should be
+            // concerned about?
+            Matcher m = layeredCommandPattern.matcher(command);
+            if(m.matches()) {
+                String layeredName = m.group(1);
+                String layerTag = m.group(2);
+                //
+                // Find the layered interpreter with this tag name.
+                for(LayeredCommandInterpreter lci : interpreters) {
+                    if(lci.getLayerTag().equals(layerTag)) {
+                        String[] newArgs = Arrays.copyOf(args, args.length);
+                        newArgs[0] = layeredName;
+                        return lci.execute(newArgs);
+                    }
+                }
+                //
+                // No match? Well, maybe it's the name of a command that 
+                // happens to match the layer pattern, so we'll just fall
+                // through here.
+            }
+            
+            //
+            // Check our layered interpreters first.
+            for(LayeredCommandInterpreter lci : interpreters) {
+                ci = lci.commands.get(command);
+                if(ci == null) {
+                    break;
+                }
+            }
 
-            ci = (CommandInterface) commands.get(args[0]);
+            //
+            // Now check the commands from this interpreter.
+            if (ci == null) {
+                ci = (CommandInterface) commands.get(args[0]);
+            }
             if(ci != null) {
                 try {
                     response = ci.execute(this, args);
@@ -1232,7 +1318,7 @@ public class CommandInterpreter extends Thread {
         }
     }
 
-    private class CommandGroup implements Iterable<String> {
+    protected class CommandGroup implements Iterable<String> {
 
         private String groupName;
 
