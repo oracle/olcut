@@ -10,14 +10,37 @@ public class LayeredCommandInterpreter extends CommandInterpreter {
 
     private String layerTag;
     
-    public LayeredCommandInterpreter(String layerTag) {
+    private String layerName;
+    
+    public LayeredCommandInterpreter(String layerTag, String layerName) {
         this.layerTag = layerTag;
+        this.layerName = layerName;
     }
+    
+    @Override
+    protected void dumpCommands() {
+        int count = 0;
+        for(CommandGroup cg : commandGroups.values()) {
+            if(cg.getGroupName().equals(STANDARD_COMMANDS_GROUP_NAME)) {
+                continue;
+            }
+            count = dumpGroup(cg, count);
+        }
+        for(LayeredCommandInterpreter lci : interpreters) {
+            putResponse(String.format("Commands labeled %s", lci.getLayerTag()));
+            lci.dumpCommands();
+        }
+    }
+
 
     public String getLayerTag() {
         return layerTag;
     }
 
+    public String getLayerName() {
+        return layerName;
+    }
+    
     public Map<String, CommandInterface> getCommands() {
         return commands;
     }
