@@ -35,6 +35,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,16 +47,20 @@ import jline.History;
 import jline.NullCompletor;
 
 /**
- * This class is a command interpreter. It reads strings from an
- * input stream, parses them into commands and executes them, results
- * are sent back on the output stream.
+ * This class is a command interpreter. It reads strings from an input stream,
+ * parses them into commands and executes them, results are sent back on the
+ * output stream.
  *
  * @see CommandInterpreter
  */
 public class CommandInterpreter extends Thread {
 
     private static final Logger logger = Logger.getLogger(CommandInterpreter.class.getName());
-    
+
+    public static final String STANDARD_COMMANDS_GROUP_NAME = "Standard";
+
+    public static final String UNGROUPED_COMMANDS_GROUP_NAME = "Ungrouped";
+
     /**
      * Commands for this interpreter.
      */
@@ -67,18 +72,18 @@ public class CommandInterpreter extends Thread {
     protected Map<String, CommandGroup> commandGroups = new TreeMap();
 
     /**
-     * Commands from interpreters that were layered on top of this one. If 
-     * interpreters have been layered on top of this one, they will be consulted
-     * first for commands.
+     * Interpreters that have been layered on top of this one. If interpreters
+     * have been layered on top of this one, they will be consulted first for
+     * commands.
      */
-    private Deque<LayeredCommandInterpreter> interpreters = new LinkedList<LayeredCommandInterpreter>();
-    
+    protected Deque<LayeredCommandInterpreter> interpreters = new LinkedList<LayeredCommandInterpreter>();
+
     private int totalCommands = 0;
-    
+
     private boolean parseQuotes = true;
 
     private String prompt;
-    
+
     private String rawArguments;
 
     private boolean done = false;
@@ -88,17 +93,17 @@ public class CommandInterpreter extends Thread {
     private CommandHistory history = new CommandHistory();
 
     private BufferedReader in;
-    
+
     private boolean inputIsFile;
 
     public PrintStream out;
 
     private String defaultCommand;
-    
+
     private ConsoleReader consoleReader = null;
-    
+
     private Pattern layeredCommandPattern = Pattern.compile("(.*)\\.([^.]*)");
-    
+
     public CommandInterpreter(String inputFile) throws java.io.IOException {
         addStandardCommands();
         if(inputFile == null) {
@@ -110,7 +115,7 @@ public class CommandInterpreter extends Thread {
         out = System.out;
     }
 
-    /** 
+    /**
      * Creates a command interpreter that won't read a stream.
      *
      */
@@ -122,30 +127,30 @@ public class CommandInterpreter extends Thread {
 
     protected void setupJLine() {
         try {
-            consoleReader= new ConsoleReader();
+            consoleReader = new ConsoleReader();
             consoleReader.setBellEnabled(false);
             String histFile = System.getProperty("user.home")
                     + File.separator
                     + ".olcut_history";
             String main = Utilities.getMainClassName();
-            if (!main.isEmpty()) {
+            if(!main.isEmpty()) {
                 histFile += "_" + main;
             }
-            History history =
-                    new History(new File(histFile));
+            History history
+                    = new History(new File(histFile));
             consoleReader.setHistory(history);
             //consoleReader.setDebug(new PrintWriter(System.out));
             consoleReader.addCompletor(new MultiCommandArgumentCompletor(consoleReader, commands, interpreters));
-        } catch (IOException e) {
+        } catch(IOException e) {
             logger.info("Failed to load JLine, falling back to System.in");
             in = new BufferedReader(new InputStreamReader(System.in));
         }
     }
-    
+
     public ConsoleReader getConsoleReader() {
         return consoleReader;
     }
-    
+
     public void setParseQuotes(boolean parseQuotes) {
         this.parseQuotes = parseQuotes;
     }
@@ -153,15 +158,15 @@ public class CommandInterpreter extends Thread {
     /**
      * Sets the trace mode of the command interpreter.
      *
-     *  @param trace 	true if tracing.
+     * @param trace true if tracing.
      */
     public void setTrace(boolean trace) {
         this.trace = trace;
     }
 
     /**
-     * Sets a default command to be used as a prefix for a string that isn't
-     * a recognized command.
+     * Sets a default command to be used as a prefix for a string that isn't a
+     * recognized command.
      */
     public void setDefaultCommand(String defaultCommand) {
         this.defaultCommand = defaultCommand;
@@ -173,10 +178,10 @@ public class CommandInterpreter extends Thread {
      */
     private void addStandardCommands() {
 
-        addGroup("Standard", "Standard commands");
-        addGroup("Ungrouped", "Commands not in other groups");
+        addGroup(STANDARD_COMMANDS_GROUP_NAME, "Standard commands");
+        addGroup(UNGROUPED_COMMANDS_GROUP_NAME, "Commands not in other groups");
 
-        add("help", "Standard", new CommandInterface() {
+        add("help", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 dumpCommands();
@@ -188,7 +193,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("history", "Standard", new CommandInterface() {
+        add("history", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 history.dump();
@@ -200,7 +205,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("status", "Standard", new CommandInterface() {
+        add("status", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 putResponse("Total number of commands: " + totalCommands);
@@ -212,7 +217,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("echo", "Standard", new CommandInterface() {
+        add("echo", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 StringBuilder b = new StringBuilder(80);
@@ -229,8 +234,8 @@ public class CommandInterpreter extends Thread {
                 return "display a line of text";
             }
         });
-        
-        add("pargs", "Standard", new CommandInterface() {
+
+        add("pargs", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             @Override
             public String execute(CommandInterpreter ci, String[] args) throws Exception {
@@ -244,7 +249,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("menu", "Standard", new CommandInterface() {
+        add("menu", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length < 2) {
@@ -278,7 +283,7 @@ public class CommandInterpreter extends Thread {
         addAlias("menu", "m");
 
         if(false) {
-            add("argtest", "Standard", new CommandInterface() {
+            add("argtest", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
                 public String execute(CommandInterpreter ci, String[] args) {
                     StringBuffer b = new StringBuffer(80);
@@ -298,7 +303,7 @@ public class CommandInterpreter extends Thread {
             });
         }
 
-        add("quit", "Standard", new CommandInterface() {
+        add("quit", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 done = true;
@@ -310,7 +315,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("exit", "Standard", new CommandInterface() {
+        add("exit", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 done = true;
@@ -322,7 +327,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("on_exit", "Standard", new CommandInterface() {
+        add("on_exit", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 return "";
@@ -333,7 +338,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("version", "Standard", new CommandInterface() {
+        add("version", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 putResponse("Command Interpreter - Version 1.1 ");
@@ -345,7 +350,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("gc", "Standard", new CommandInterface() {
+        add("gc", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 Runtime.getRuntime().gc();
@@ -357,7 +362,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("memory", "Standard", new CommandInterface() {
+        add("memory", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 long totalMem = Runtime.getRuntime().totalMemory();
@@ -373,8 +378,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-
-        add("delay", "Standard", new CommandInterface() {
+        add("delay", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length == 2) {
@@ -396,7 +400,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("alias", "Standard", new CompletorCommandInterface() {
+        add("alias", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length == 3) {
@@ -415,7 +419,7 @@ public class CommandInterpreter extends Thread {
 
             @Override
             public Completor[] getCompletors() {
-                return new Completor[] {
+                return new Completor[]{
                     new NullCompletor(),
                     new CommandCompletor(commands, interpreters),
                     new NullCompletor()
@@ -423,7 +427,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("repeat", "Standard", new CompletorCommandInterface() {
+        add("repeat", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length >= 3) {
@@ -451,7 +455,7 @@ public class CommandInterpreter extends Thread {
 
             @Override
             public Completor[] getCompletors() {
-                return new Completor[] {
+                return new Completor[]{
                     new NullCompletor(),
                     new CommandCompletor(commands, interpreters),
                     new NullCompletor()
@@ -459,7 +463,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("redirect", "Standard", new CompletorCommandInterface() {
+        add("redirect", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length >= 3) {
@@ -483,10 +487,10 @@ public class CommandInterpreter extends Thread {
             public String getHelp() {
                 return "redirect command output to a file";
             }
-            
+
             @Override
             public Completor[] getCompletors() {
-                return new Completor[] {
+                return new Completor[]{
                     new FileNameCompletor(),
                     new CommandCompletor(commands, interpreters),
                     new NullCompletor()
@@ -494,7 +498,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("load", "Standard", new CompletorCommandInterface() {
+        add("load", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length == 2) {
@@ -510,21 +514,21 @@ public class CommandInterpreter extends Thread {
             public String getHelp() {
                 return "load and execute commands from a file";
             }
-            
+
             @Override
             public Completor[] getCompletors() {
-                return new Completor[] {
+                return new Completor[]{
                     new FileNameCompletor(),
                     new NullCompletor()
                 };
             }
         });
 
-        add("pload", "Standard", new CompletorCommandInterface() {
+        add("pload", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
-                if (args.length == 3) {
-                    if (!pload(args[1], Integer.parseInt(args[2]))) {
+                if(args.length == 3) {
+                    if(!pload(args[1], Integer.parseInt(args[2]))) {
                         putResponse("pload: trouble loading " + args[1]);
                     }
                 } else {
@@ -539,14 +543,14 @@ public class CommandInterpreter extends Thread {
 
             @Override
             public Completor[] getCompletors() {
-                return new Completor[] {
+                return new Completor[]{
                     new FileNameCompletor(),
                     new NullCompletor()
                 };
             }
         });
 
-        add("chain", "Standard", new CommandInterface() {
+        add("chain", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length > 1) {
@@ -590,7 +594,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("time", "Standard", new CompletorCommandInterface() {
+        add("time", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length > 1) {
@@ -616,14 +620,14 @@ public class CommandInterpreter extends Thread {
 
             @Override
             public Completor[] getCompletors() {
-                return new Completor[] {
+                return new Completor[]{
                     new CommandCompletor(commands, interpreters),
                     new NullCompletor()
                 };
             }
         });
 
-        add("mstime", "Standard", new CompletorCommandInterface() {
+        add("mstime", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length > 1) {
@@ -644,14 +648,14 @@ public class CommandInterpreter extends Thread {
 
             @Override
             public Completor[] getCompletors() {
-                return new Completor[] {
+                return new Completor[]{
                     new CommandCompletor(commands, interpreters),
                     new NullCompletor()
                 };
             }
         });
 
-        add("redir", "Standard", new CompletorCommandInterface() {
+        add("redir", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
 
             @Override
             public String execute(CommandInterpreter ci, String[] args) throws Exception {
@@ -669,14 +673,14 @@ public class CommandInterpreter extends Thread {
 
             @Override
             public Completor[] getCompletors() {
-                return new Completor[] {
+                return new Completor[]{
                     new FileNameCompletor(),
                     new NullCompletor()
                 };
             }
         });
 
-        add("unredir", "Standard", new CommandInterface() {
+        add("unredir", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
             @Override
             public String execute(CommandInterpreter ci, String[] args) throws Exception {
@@ -701,20 +705,20 @@ public class CommandInterpreter extends Thread {
      *
      */
     protected void dumpCommands() {
-        int count = dumpGroup(commandGroups.get("Standard"), 0);
+        int count = dumpGroup(commandGroups.get(STANDARD_COMMANDS_GROUP_NAME), 0);
         for(CommandGroup cg : commandGroups.values()) {
-            if(cg.getGroupName().equals("Standard")) {
+            if(cg.getGroupName().equals(STANDARD_COMMANDS_GROUP_NAME)) {
                 continue;
             }
             count = dumpGroup(cg, count);
         }
         for(LayeredCommandInterpreter lci : interpreters) {
-            putResponse(String.format("Commands labeled %s", lci.getLayerTag()));
+            putResponse(String.format("Commands from %s labeled with .%s", lci.getLayerName(), lci.getLayerTag()));
             lci.dumpCommands();
         }
     }
-    
-    private int dumpGroup(CommandGroup cg, int count) {
+
+    protected int dumpGroup(CommandGroup cg, int count) {
         putResponse(String.format("%s group: %s", cg.getGroupName(), cg.getDescription()));
         for(String cmdName : cg) {
             String help = ((CommandInterface) commands.get(cmdName)).getHelp();
@@ -726,7 +730,7 @@ public class CommandInterpreter extends Thread {
 
     private String getCommandByNumber(int which) {
         int count = 0;
-        CommandGroup scg = commandGroups.get("Standard");
+        CommandGroup scg = commandGroups.get(STANDARD_COMMANDS_GROUP_NAME);
         for(String cmdName : scg) {
             if(count == which) {
                 return cmdName;
@@ -734,7 +738,7 @@ public class CommandInterpreter extends Thread {
         }
 
         for(CommandGroup cg : commandGroups.values()) {
-            if(cg.getGroupName().equals("Standard")) {
+            if(cg.getGroupName().equals(STANDARD_COMMANDS_GROUP_NAME)) {
                 continue;
             }
             for(String cmdName : cg) {
@@ -761,7 +765,7 @@ public class CommandInterpreter extends Thread {
 
     public void add(String commandName, String groupName, CommandInterface command) {
         if(groupName == null) {
-            groupName = "Ungrouped";
+            groupName = UNGROUPED_COMMANDS_GROUP_NAME;
         }
         commands.put(commandName, command);
         CommandGroup cg = commandGroups.get(groupName);
@@ -796,17 +800,17 @@ public class CommandInterpreter extends Thread {
     }
 
     /**
-     * Add the given set of commands to the list
-     * of commands.
-     * @param newCommands 	the new commands to add to this interpreter.
+     * Add the given set of commands to the list of commands.
+     *
+     * @param newCommands the new commands to add to this interpreter.
      */
     public void add(Map newCommands) {
         commands.putAll(newCommands);
     }
-    
+
     /**
      * Adds a layered command interpreter to this command interpreter.
-     * 
+     *
      * @param lci the layered command interpreter to add.
      */
     public void add(LayeredCommandInterpreter lci) {
@@ -815,19 +819,20 @@ public class CommandInterpreter extends Thread {
         lci.setOutput(out);
         lci.setParseQuotes(parseQuotes);
         lci.setTrace(trace);
-        
+
         //
         // Put it on the front of the queue so that we will try this one 
         // before others.
         interpreters.addFirst(lci);
     }
-    
+
     /**
      * Removes a layered command interpreter with the given layer tag.
+     *
      * @param layerTag the tag for the interpreter that we want to remove.
      */
     public void remove(String layerTag) {
-        for(Iterator<LayeredCommandInterpreter> i = interpreters.iterator(); i.hasNext(); ) {
+        for(Iterator<LayeredCommandInterpreter> i = interpreters.iterator(); i.hasNext();) {
             LayeredCommandInterpreter lci = i.next();
             if(lci.getLayerTag().equals(layerTag)) {
                 i.remove();
@@ -839,7 +844,7 @@ public class CommandInterpreter extends Thread {
     /**
      * Outputs a response to the sender.
      *
-     * @param response 	the response to send.
+     * @param response the response to send.
      *
      */
     public synchronized void putResponse(String response) {
@@ -857,11 +862,19 @@ public class CommandInterpreter extends Thread {
     }
 
     /**
-     * Called when the interpreter is exiting. Default behavior is
-     * to execute an "on_exit" command.
+     * Called when the interpreter is exiting. Default behavior is to execute an
+     * "on_exit" command.
      */
     protected void onExit() {
         execute("on_exit");
+        for(LayeredCommandInterpreter lci : interpreters) {
+            CommandInterface ci = lci.commands.get("on_exit");
+            try {
+                ci.execute(this, new String[0]);
+            } catch(Exception ex) {
+                logger.log(Level.SEVERE, String.format("Error on close for %s", lci.getLayerName()), ex);
+            }
+        }
         out.println("----------\n");
         if(out != System.out) {
             out.close();
@@ -871,7 +884,7 @@ public class CommandInterpreter extends Thread {
     /**
      * Execute the given command.
      *
-     *  @param args	command args, args[0] contains name of cmd.
+     * @param args	command args, args[0] contains name of cmd.
      */
     public String execute(String[] args) {
         return execute(args, true);
@@ -880,7 +893,7 @@ public class CommandInterpreter extends Thread {
     /**
      * Execute the given command.
      *
-     *  @param args	command args, args[0] contains name of cmd.
+     * @param args	command args, args[0] contains name of cmd.
      */
     private String execute(String[] args, boolean first) {
         String response = "";
@@ -888,43 +901,52 @@ public class CommandInterpreter extends Thread {
         CommandInterface ci = null;
 
         if(args.length > 0) {
-            
+
+            //
+            // First things first: Is this a standard command? If so, we'll use
+            // it from this group!
             String command = args[0];
-            
-            //
-            // Does this command specify a layered interpreter that we should be
-            // concerned about?
-            Matcher m = layeredCommandPattern.matcher(command);
-            if(m.matches()) {
-                String layeredName = m.group(1);
-                String layerTag = m.group(2);
-                //
-                // Find the layered interpreter with this tag name.
-                for(LayeredCommandInterpreter lci : interpreters) {
-                    if(lci.getLayerTag().equals(layerTag)) {
-                        String[] newArgs = Arrays.copyOf(args, args.length);
-                        newArgs[0] = layeredName;
-                        return lci.execute(newArgs);
-                    }
-                }
-                //
-                // No match? Well, maybe it's the name of a command that 
-                // happens to match the layer pattern, so we'll just fall
-                // through here.
+            CommandGroup cg = commandGroups.get(STANDARD_COMMANDS_GROUP_NAME);
+            if(cg.contains(command)) {
+                ci = (CommandInterface) commands.get(args[0]);
             }
-            
-            //
-            // Check our layered interpreters first.
-            for(LayeredCommandInterpreter lci : interpreters) {
-                ci = lci.commands.get(command);
-                if(ci == null) {
-                    break;
+
+            if(ci == null) {
+                //
+                // Does this command specify a layered interpreter that we should be
+                // concerned about?
+                Matcher m = layeredCommandPattern.matcher(command);
+                if(m.matches()) {
+                    String layeredName = m.group(1);
+                    String layerTag = m.group(2);
+                    //
+                    // Find the layered interpreter with this tag name.
+                    for(LayeredCommandInterpreter lci : interpreters) {
+                        if(lci.getLayerTag().equals(layerTag)) {
+                            String[] newArgs = Arrays.copyOf(args, args.length);
+                            newArgs[0] = layeredName;
+                            return lci.execute(newArgs);
+                        }
+                    }
+                    //
+                    // No match? Well, maybe it's the name of a command that 
+                    // happens to match the layer pattern, so we'll just fall
+                    // through here.
+                }
+
+                //
+                // Check our layered interpreters first.
+                for(LayeredCommandInterpreter lci : interpreters) {
+                    ci = lci.commands.get(command);
+                    if(ci != null) {
+                        break;
+                    }
                 }
             }
 
             //
             // Now check the commands from this interpreter.
-            if (ci == null) {
+            if(ci == null) {
                 ci = (CommandInterface) commands.get(args[0]);
             }
             if(ci != null) {
@@ -952,7 +974,7 @@ public class CommandInterpreter extends Thread {
 
     /**
      * Execute the given command string.
-     * 
+     *
      * @param cmdString the command string.
      *
      */
@@ -969,7 +991,7 @@ public class CommandInterpreter extends Thread {
     /**
      * Parses the given message into an array of strings.
      *
-     * @param message 	the string to be parsed.
+     * @param message the string to be parsed.
      * @return the parsed message as an array of strings
      */
     protected String[] parseMessage(String message) {
@@ -980,12 +1002,11 @@ public class CommandInterpreter extends Thread {
         st.resetSyntax();
         st.whitespaceChars(0, ' ');
         st.wordChars('!', 255);
-        
+
         if(parseQuotes) {
             st.quoteChar('"');
         }
         st.commentChar('#');
-        
 
         while(true) {
             try {
@@ -1039,23 +1060,22 @@ public class CommandInterpreter extends Thread {
     // some history patterns used by getInputLine()
     private static Pattern historyPush = Pattern.compile("(.+):p");
 
-    private static Pattern editPattern =
-            Pattern.compile("\\^(.+?)\\^(.*?)\\^?");
+    private static Pattern editPattern
+            = Pattern.compile("\\^(.+?)\\^(.*?)\\^?");
 
     private static Pattern bbPattern = Pattern.compile("(!!)");
 
     /**
-     * Gets the input line. Deals with history. Currently we support
-     * simple csh-like history. !! - execute last command, !-3 execute
-     * 3 from last command, !2 execute second command in history list,
-     * !foo - find last command that started with foo and execute it.
-     * Also allows editing of the last command wich ^old^new^ type 
-     * replacesments
+     * Gets the input line. Deals with history. Currently we support simple
+     * csh-like history. !! - execute last command, !-3 execute 3 from last
+     * command, !2 execute second command in history list, !foo - find last
+     * command that started with foo and execute it. Also allows editing of the
+     * last command wich ^old^new^ type replacesments
      *
      * @return the next history line or null if done
      */
     private String getInputLine() throws IOException {
-        if (consoleReader != null) {
+        if(consoleReader != null) {
             String message = consoleReader.readLine();
             //
             // To support the shell's history list, show this cmd in it
@@ -1170,14 +1190,14 @@ public class CommandInterpreter extends Thread {
             br = new BufferedReader(fr);
             String inputLine;
 
-            while ((inputLine = br.readLine()) != null) {
+            while((inputLine = br.readLine()) != null) {
                 final String currLine = inputLine;
                 Callable<Void> cmd = new Callable<Void>() {
                     @Override
                     public Void call() throws Exception {
-                        String response =
-                                CommandInterpreter.this.execute(currLine);
-                        if (!response.equals("OK")) {
+                        String response
+                                = CommandInterpreter.this.execute(currLine);
+                        if(!response.equals("OK")) {
                             putResponse(response);
                         }
                         return null;
@@ -1189,16 +1209,16 @@ public class CommandInterpreter extends Thread {
             exec.shutdown();
             exec.awaitTermination(1, TimeUnit.DAYS);
             return true;
-        } catch (IOException ioe) {
+        } catch(IOException ioe) {
             return false;
-        } catch (InterruptedException ex) {
+        } catch(InterruptedException ex) {
             logger.info("Parallel Load did not shut down properly");
             return false;
         } finally {
             try {
                 br.close();
                 fr.close();
-            } catch (IOException ex) {
+            } catch(IOException ex) {
             }
         }
     }
@@ -1210,7 +1230,7 @@ public class CommandInterpreter extends Thread {
      *
      */
     public void setPrompt(String prompt) {
-        if (consoleReader != null) {
+        if(consoleReader != null) {
             consoleReader.setDefaultPrompt(prompt);
             this.prompt = "";
         } else {
@@ -1289,8 +1309,7 @@ public class CommandInterpreter extends Thread {
         }
 
         /**
-         * Finds the most recent message that starts with
-         * the given string
+         * Finds the most recent message that starts with the given string
          *
          * @param match the string to match
          * @return the last command executed that matches match
