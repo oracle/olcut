@@ -408,7 +408,7 @@ public class PropertySheet implements Cloneable {
                 if (f.exists() && configFile.canRead() && !f.canRead()) {
                     throw new PropertyException(instanceName, propName, "Can't read file: " + f);
                 } else if (configFile.canRead() && !f.exists()) {
-                    logger.warning("canRead specified for file that doesn't exist: " + f);
+                    getLogger().warning("canRead specified for file that doesn't exist: " + f);
                 }
                 if (f.exists() && configFile.canWrite() && !f.canWrite()) {
                     throw new PropertyException(instanceName, propName, "Can't write file: " + f);
