@@ -402,25 +402,29 @@ public class PropertySheet implements Cloneable {
                 }
             } else {
                 f = new File(fileName);
-                if (configFile.exists() && !f.exists()) {
-                    throw new PropertyException(instanceName, propName, "File doesn't exist: " + f);
-                }
-                if (f.exists() && configFile.canRead() && !f.canRead()) {
-                    throw new PropertyException(instanceName, propName, "Can't read file: " + f);
-                } else if (configFile.canRead() && !f.exists()) {
-                    logger.warning("canRead specified for file that doesn't exist: " + f);
-                }
-                if (f.exists() && configFile.canWrite() && !f.canWrite()) {
-                    throw new PropertyException(instanceName, propName, "Can't write file: " + f);
-                } else if (!f.exists() && configFile.canWrite()) {
-                    File parent = f.getParentFile();
-                    if (!parent.canWrite()) {
-                        throw new PropertyException(instanceName, propName,
-                                "canWrite specified for file, but directory " + parent.getAbsolutePath() + " is not writeable");
+                if(!f.exists()) {
+                    if(configFile.exists()) {
+                        throw new PropertyException(instanceName, propName, "File doesn't exist: " + f);
+                    } else if(configFile.canRead()) {
+                        getLogger();
+                        logger.warning("canRead specified for file that doesn't exist: " + f);
+                    } else if(configFile.canWrite()) {
+                        File parent = f.getParentFile();
+                        if(!parent.canWrite()) {
+                            throw new PropertyException(instanceName, propName,
+                                    "canWrite specified for file, but directory " + parent.getAbsolutePath() + " is not writeable");
+                        }
                     }
-                }
-                if (configFile.isDirectory() && !f.isDirectory()) {
-                    throw new PropertyException(instanceName, propName, f + "is not a directory" + f);
+                } else {
+                    if(configFile.canRead() && !f.canRead()) {
+                        throw new PropertyException(instanceName, propName, "Can't read file: " + f);
+                    }
+                    if(configFile.canWrite() && !f.canWrite()) {
+                        throw new PropertyException(instanceName, propName, "Can't write file: " + f);
+                    }
+                    if(configFile.isDirectory() && !f.isDirectory()) {
+                        throw new PropertyException(instanceName, propName, f + "is not a directory" + f);
+                    }
                 }
             }
             propValues.put(propName, f);
