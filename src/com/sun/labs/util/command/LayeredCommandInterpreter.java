@@ -20,7 +20,7 @@ public class LayeredCommandInterpreter extends CommandInterpreter {
     @Override
     protected void dumpCommands() {
         int count = 0;
-        for(CommandGroup cg : commandGroups.values()) {
+        for(CommandGroupInternal cg : commandGroups.values()) {
             if(cg.getGroupName().equals(STANDARD_COMMANDS_GROUP_NAME)) {
                 continue;
             }
@@ -45,7 +45,7 @@ public class LayeredCommandInterpreter extends CommandInterpreter {
         return commands;
     }
 
-    public Map<String, CommandGroup> getCommandGroups() {
+    public Map<String, CommandGroupInternal> getCommandGroups() {
         return commandGroups;
     }
 
