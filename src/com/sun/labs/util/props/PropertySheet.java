@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -23,7 +25,8 @@ import javax.management.ObjectName;
 import net.jini.core.lease.Lease;
 
 /**
- * A property sheet which  defines a collection of properties for a single component in the system.
+ * A property sheet which defines a collection of properties for a single
+ * component in the system.
  *
  * @author Holger Brandl
  */
@@ -34,13 +37,14 @@ public class PropertySheet implements Cloneable {
         INT, DOUBLE, BOOL, ENUM, COMP, STRING, STRINGLIST, COMPLIST, ENUMSET;
 
     }
-    private Map<String, ConfigPropWrapper> registeredProperties =
-            new HashMap<String, ConfigPropWrapper>();
+    private Map<String, ConfigPropWrapper> registeredProperties
+            = new HashMap<String, ConfigPropWrapper>();
 
     private Map<String, Object> propValues = new HashMap<String, Object>();
 
     /**
-     * Maps the names of the component properties to their (possibly unresolved) values.
+     * Maps the names of the component properties to their (possibly unresolved)
+     * values.
      * <p/>
      * Example: <code>frontend</code> to <code>${myFrontEnd}</code>
      */
@@ -117,8 +121,8 @@ public class PropertySheet implements Cloneable {
         // then throw a property excepion.  Note that any component can specify the
         // log level without having it annotated!
         for(String propName : rpd.getProperties().keySet()) {
-            if(!propValues.containsKey(propName) &&
-                    !propName.equals(PROP_LOG_LEVEL)) {
+            if(!propValues.containsKey(propName)
+                    && !propName.equals(PROP_LOG_LEVEL)) {
                 throw new PropertyException(getInstanceName(), propName,
                         "Unknown property in configuration file.");
             }
@@ -127,8 +131,8 @@ public class PropertySheet implements Cloneable {
         //
         // If we're supposed to have configuration entries, then get them now.
         if(entriesName != null) {
-            ConfigurationEntries ce =
-                    (ConfigurationEntries) cm.lookup(entriesName);
+            ConfigurationEntries ce
+                    = (ConfigurationEntries) cm.lookup(entriesName);
             if(ce == null) {
                 throw new PropertyException(getInstanceName(), "entries",
                         "Cannot find entries component " + entriesName);
@@ -186,7 +190,8 @@ public class PropertySheet implements Cloneable {
     }
 
     /**
-     * Registers a new property which type and default value are defined by the given sphinx property.
+     * Registers a new property which type and default value are defined by the
+     * given sphinx property.
      *
      * @param propName The name of the property to be registered.
      * @param property The property annoation masked by a proxy.
@@ -199,13 +204,16 @@ public class PropertySheet implements Cloneable {
         rawProps.put(propName, null);
     }
 
-    /** Returns the property names <code>name</code> which is still wrapped into the annotation instance. */
+    /**
+     * Returns the property names <code>name</code> which is still wrapped into
+     * the annotation instance.
+     */
     public ConfigPropWrapper getProperty(String name, Class propertyClass)
             throws PropertyException {
         if(!propValues.containsKey(name)) {
             throw new InternalConfigurationException(getInstanceName(), name,
-                    "Unknown property '" +
-                    name + "' ! Make sure that you've annotated it.");
+                    "Unknown property '"
+                    + name + "' ! Make sure that you've annotated it.");
         }
 
         ConfigPropWrapper s4PropWrapper = registeredProperties.get(name);
@@ -213,8 +221,8 @@ public class PropertySheet implements Cloneable {
         try {
             propertyClass.cast(s4PropWrapper.getAnnotation());
         } catch(ClassCastException e) {
-            throw new InternalConfigurationException(e, getInstanceName(), name, name +
-                    " is not an annotated sphinx property of '" + getConfigurableClass().
+            throw new InternalConfigurationException(e, getInstanceName(), name, name
+                    + " is not an annotated sphinx property of '" + getConfigurableClass().
                     getName() + "' !");
         }
 
@@ -232,8 +240,8 @@ public class PropertySheet implements Cloneable {
         ConfigString s4String = ((ConfigString) s4PropWrapper.getAnnotation());
 
         if(propValues.get(name) == null) {
-            boolean isDefDefined =
-                    !s4String.defaultValue().equals(ConfigString.NOT_DEFINED);
+            boolean isDefDefined
+                    = !s4String.defaultValue().equals(ConfigString.NOT_DEFINED);
 
             if(s4String.mandatory()) {
                 if(!isDefDefined) {
@@ -249,8 +257,8 @@ public class PropertySheet implements Cloneable {
         //check range
         List<String> range = Arrays.asList(s4String.range());
         if(!range.isEmpty() && !range.contains(propValue)) {
-            throw new InternalConfigurationException(getInstanceName(), name, " is not in range (" +
-                    range + ")");
+            throw new InternalConfigurationException(getInstanceName(), name, " is not in range ("
+                    + range + ")");
         }
 
         return propValue;
@@ -259,8 +267,8 @@ public class PropertySheet implements Cloneable {
     public List<String> getStringList(String name) throws PropertyException {
         ConfigPropWrapper s4PropWrapper = getProperty(name,
                 ConfigStringList.class);
-        ConfigStringList configStringList =
-                ((ConfigStringList) s4PropWrapper.getAnnotation());
+        ConfigStringList configStringList
+                = ((ConfigStringList) s4PropWrapper.getAnnotation());
         List<String> vals = (List<String>) propValues.get(name);
         if(vals == null) {
             String[] dv = configStringList.defaultList();
@@ -270,7 +278,7 @@ public class PropertySheet implements Cloneable {
             }
             return dv == null ? new ArrayList<String>() : Arrays.asList(dv);
         }
-        
+
         //
         // Do global property replacement.
         List<String> temp = new ArrayList<String>();
@@ -282,8 +290,8 @@ public class PropertySheet implements Cloneable {
         List<String> range = Arrays.asList(configStringList.range());
         for(String s : vals) {
             if(!range.isEmpty() && !range.contains(s)) {
-                throw new InternalConfigurationException(getInstanceName(), name, " is not in range (" +
-                        range + ")");
+                throw new InternalConfigurationException(getInstanceName(), name, " is not in range ("
+                        + range + ")");
             }
         }
         return vals;
@@ -311,7 +319,7 @@ public class PropertySheet implements Cloneable {
                 throw new InternalConfigurationException(getInstanceName(),
                         name,
                         String.format("Default value %s is not valid for enum %s",
-                        configEnum.defaultValue(), configEnum.type()));
+                                configEnum.defaultValue(), configEnum.type()));
             }
         }
 
@@ -321,11 +329,11 @@ public class PropertySheet implements Cloneable {
         } catch(Exception e) {
             try {
                 ret = Enum.valueOf(configEnum.type(), ((String) val).toUpperCase());
-            } catch (Exception e2) {
+            } catch(Exception e2) {
                 throw new InternalConfigurationException(getInstanceName(),
                         name,
                         String.format("Value %s is not valid for enum %s",
-                        configEnum.defaultValue(), configEnum.type()));
+                                configEnum.defaultValue(), configEnum.type()));
             }
         }
         propValues.put(name, ret);
@@ -340,7 +348,7 @@ public class PropertySheet implements Cloneable {
         if(vals != null && vals instanceof EnumSet) {
             return (EnumSet) vals;
         }
-        
+
         Class enumClass = configEnumSet.type();
         EnumSet ret = EnumSet.noneOf(enumClass);
         String[] evs;
@@ -349,7 +357,7 @@ public class PropertySheet implements Cloneable {
             evs = configEnumSet.defaultList();
             if(configEnumSet.mandatory() && evs == null) {
                 throw new InternalConfigurationException(getInstanceName(), name,
-                                                         " requires enum values");
+                        " requires enum values");
             }
         } else {
             evs = ((List<String>) vals).toArray(new String[0]);
@@ -367,15 +375,15 @@ public class PropertySheet implements Cloneable {
                             getInstanceName(),
                             name,
                             String.format(
-                            "Value %s is not valid for enum %s",
-                            ev, enumClass.getName()));
+                                    "Value %s is not valid for enum %s",
+                                    ev, enumClass.getName()));
                 }
             }
         }
         propValues.put(name, ret);
         return ret;
     }
-    
+
     public File getFile(String propName) throws PropertyException {
         ConfigPropWrapper s4PropWrapper = getProperty(propName, ConfigFile.class);
         ConfigFile configFile = ((ConfigFile) s4PropWrapper.getAnnotation());
@@ -384,43 +392,47 @@ public class PropertySheet implements Cloneable {
         //
         // Val will initially have the bare string from the config file.
         // We should change it into a File.
-        if (val == null || val instanceof String) {
+        if(val == null || val instanceof String) {
             boolean isDefined = !configFile.defaultValue().equals(ConfigString.NOT_DEFINED);
 
-            if (configFile.mandatory()) {
-                if (!isDefined) {
+            if(configFile.mandatory()) {
+                if(!isDefined) {
                     throw new InternalConfigurationException(getInstanceName(),
                             propName, "mandatory property is not set!");
                 }
             }
-            
+
             String fileName = flattenProp(propName);
             File f = null;
-            if (fileName == null) {
-                if (configFile.mandatory()) {
+            if(fileName == null) {
+                if(configFile.mandatory()) {
                     throw new PropertyException(instanceName, propName, "Must specify file name");
                 }
             } else {
                 f = new File(fileName);
-                if (configFile.exists() && !f.exists()) {
-                    throw new PropertyException(instanceName, propName, "File doesn't exist: " + f);
-                }
-                if (f.exists() && configFile.canRead() && !f.canRead()) {
-                    throw new PropertyException(instanceName, propName, "Can't read file: " + f);
-                } else if (configFile.canRead() && !f.exists()) {
-                    getLogger().warning("canRead specified for file that doesn't exist: " + f);
-                }
-                if (f.exists() && configFile.canWrite() && !f.canWrite()) {
-                    throw new PropertyException(instanceName, propName, "Can't write file: " + f);
-                } else if (!f.exists() && configFile.canWrite()) {
-                    File parent = f.getParentFile();
-                    if (!parent.canWrite()) {
-                        throw new PropertyException(instanceName, propName,
-                                "canWrite specified for file, but directory " + parent.getAbsolutePath() + " is not writeable");
+                if(!f.exists()) {
+                    if(configFile.exists()) {
+                        throw new PropertyException(instanceName, propName, "File doesn't exist: " + f);
+                    } else if(configFile.canRead()) {
+                        getLogger();
+                        logger.warning("canRead specified for file that doesn't exist: " + f);
+                    } else if(configFile.canWrite()) {
+                        File parent = f.getParentFile();
+                        if(!parent.canWrite()) {
+                            throw new PropertyException(instanceName, propName,
+                                    "canWrite specified for file, but directory " + parent.getAbsolutePath() + " is not writeable");
+                        }
                     }
-                }
-                if (configFile.isDirectory() && !f.isDirectory()) {
-                    throw new PropertyException(instanceName, propName, f + "is not a directory" + f);
+                } else {
+                    if(configFile.canRead() && !f.canRead()) {
+                        throw new PropertyException(instanceName, propName, "Can't read file: " + f);
+                    }
+                    if(configFile.canWrite() && !f.canWrite()) {
+                        throw new PropertyException(instanceName, propName, "Can't write file: " + f);
+                    }
+                    if(configFile.isDirectory() && !f.isDirectory()) {
+                        throw new PropertyException(instanceName, propName, f + "is not a directory" + f);
+                    }
                 }
             }
             propValues.put(propName, f);
@@ -446,16 +458,16 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the name
      * @return the value
-     * @throws edu.cmu.sphinx.util.props.PropertyException
-     *          if the named property is not of this type
+     * @throws edu.cmu.sphinx.util.props.PropertyException if the named property
+     * is not of this type
      */
     public int getInt(String name) throws PropertyException {
         ConfigPropWrapper s4PropWrapper = getProperty(name, ConfigInteger.class);
         ConfigInteger s4Integer = (ConfigInteger) s4PropWrapper.getAnnotation();
 
         if(propValues.get(name) == null) {
-            boolean isDefDefined = !(s4Integer.defaultValue() ==
-                    ConfigInteger.NOT_DEFINED);
+            boolean isDefDefined = !(s4Integer.defaultValue()
+                    == ConfigInteger.NOT_DEFINED);
 
             if(s4Integer.mandatory()) {
                 if(!isDefDefined) {
@@ -478,7 +490,7 @@ public class PropertySheet implements Cloneable {
             int[] range = s4Integer.range();
             if(range.length != 2) {
                 throw new InternalConfigurationException(getInstanceName(), name,
-                                                         range
+                        range
                         + " is not of expected range type, which is {minValue, maxValue)");
             }
             if(propValue < range[0] || propValue > range[1]) {
@@ -486,7 +498,7 @@ public class PropertySheet implements Cloneable {
                         + range + ")");
             }
             return propValue;
-        } catch (NumberFormatException ex) {
+        } catch(NumberFormatException ex) {
             throw new PropertyException(instanceName, name, String.format("%s is not an integer", propObject));
         }
 
@@ -497,8 +509,8 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the name
      * @return the value
-     * @throws edu.cmu.sphinx.util.props.PropertyException
-     *          if the named property is not of this type
+     * @throws edu.cmu.sphinx.util.props.PropertyException if the named property
+     * is not of this type
      */
     public float getFloat(String name) throws PropertyException {
         return ((Double) getDouble(name)).floatValue();
@@ -509,16 +521,16 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the name
      * @return the value
-     * @throws edu.cmu.sphinx.util.props.PropertyException
-     *          if the named property is not of this type
+     * @throws edu.cmu.sphinx.util.props.PropertyException if the named property
+     * is not of this type
      */
     public double getDouble(String name) throws PropertyException {
         ConfigPropWrapper s4PropWrapper = getProperty(name, ConfigDouble.class);
         ConfigDouble s4Double = (ConfigDouble) s4PropWrapper.getAnnotation();
 
         if(propValues.get(name) == null) {
-            boolean isDefDefined = !(s4Double.defaultValue() ==
-                    ConfigDouble.NOT_DEFINED);
+            boolean isDefDefined = !(s4Double.defaultValue()
+                    == ConfigDouble.NOT_DEFINED);
 
             if(s4Double.mandatory()) {
                 if(!isDefDefined) {
@@ -534,14 +546,14 @@ public class PropertySheet implements Cloneable {
         }
         Object propObject = propValues.get(name);
         try {
-            Double propValue =
-                    propObject instanceof Double ? (Double) propObject : Double.
-                    valueOf(flattenProp(name));
+            Double propValue
+                    = propObject instanceof Double ? (Double) propObject : Double.
+                            valueOf(flattenProp(name));
 
             double[] range = s4Double.range();
             if(range.length != 2) {
                 throw new InternalConfigurationException(getInstanceName(), name,
-                                                         range
+                        range
                         + " is not of expected range type, which is {minValue, maxValue)");
             }
             if(propValue < range[0] || propValue > range[1]) {
@@ -560,8 +572,8 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the name
      * @return the value
-     * @throws edu.cmu.sphinx.util.props.PropertyException
-     *          if the named property is not of this type
+     * @throws edu.cmu.sphinx.util.props.PropertyException if the named property
+     * is not of this type
      */
     public Boolean getBoolean(String name) throws PropertyException {
         ConfigPropWrapper s4PropWrapper = getProperty(name, ConfigBoolean.class);
@@ -584,8 +596,8 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the parameter name
      * @return the component associated with the name
-     * @throws edu.cmu.sphinx.util.props.PropertyException
-     *          if the component does not exist or is of the wrong type.
+     * @throws edu.cmu.sphinx.util.props.PropertyException if the component does
+     * not exist or is of the wrong type.
      */
     public Component getComponent(String name) throws PropertyException {
         return getComponent(name, null);
@@ -602,7 +614,7 @@ public class PropertySheet implements Cloneable {
     public Component getComponent(Class c, ComponentListener cl) {
         return cm.lookup(c, cl);
     }
-    
+
     public Component getComponent(String name, ComponentListener cl) throws PropertyException {
         ConfigPropWrapper s4PropWrapper = getProperty(name,
                 ConfigComponent.class);
@@ -624,8 +636,8 @@ public class PropertySheet implements Cloneable {
                 ps.clearOwner();
             }
         }
-        if(propVal == null || propVal instanceof String ||
-                propVal instanceof GlobalProperty) {
+        if(propVal == null || propVal instanceof String
+                || propVal instanceof GlobalProperty) {
             Component configurable = null;
             PropertySheet ps = null;
 
@@ -637,8 +649,8 @@ public class PropertySheet implements Cloneable {
                     }
                 }
 
-                if(configurable != null &&
-                        !expectedType.isInstance(configurable)) {
+                if(configurable != null
+                        && !expectedType.isInstance(configurable)) {
                     throw new InternalConfigurationException(getInstanceName(),
                             name,
                             "mismatch between annoation and component type");
@@ -648,20 +660,20 @@ public class PropertySheet implements Cloneable {
                     Class<? extends Component> defClass;
 
                     if(propValues.get(name) != null) {
-                        defClass =
-                                (Class<? extends Component>) Class.forName((String) propValues.get(name));
+                        defClass
+                                = (Class<? extends Component>) Class.forName((String) propValues.get(name));
                     } else {
                         defClass = s4Component.defaultClass();
                     }
 
-                    if(defClass.equals(Component.class) &&
-                            s4Component.mandatory()) {
+                    if(defClass.equals(Component.class)
+                            && s4Component.mandatory()) {
                         throw new InternalConfigurationException(getInstanceName(),
                                 name, "mandatory property is not set!");
 
                     } else {
-                        if(Modifier.isAbstract(defClass.getModifiers()) &&
-                                s4Component.mandatory()) {
+                        if(Modifier.isAbstract(defClass.getModifiers())
+                                && s4Component.mandatory()) {
                             throw new InternalConfigurationException(getInstanceName(),
                                     name, defClass.getName() + " is abstract!");
                         }
@@ -670,8 +682,8 @@ public class PropertySheet implements Cloneable {
                         if(defClass.equals(Component.class)) {
                             if(s4Component.mandatory()) {
                                 throw new InternalConfigurationException(getInstanceName(),
-                                        name, instanceName +
-                                        ": no default class defined for " + name);
+                                        name, instanceName
+                                        + ": no default class defined for " + name);
                             } else {
                                 return null;
                             }
@@ -691,14 +703,17 @@ public class PropertySheet implements Cloneable {
         return (Component) propValues.get(name);
     }
 
-    /** Returns the class of of a registered component property without instantiating it. */
+    /**
+     * Returns the class of of a registered component property without
+     * instantiating it.
+     */
     public Class<? extends Component> getComponentClass(String propName) {
         Class<? extends Component> defClass = null;
 
         if(propValues.get(propName) != null) {
             try {
-                defClass =
-                        (Class<? extends Component>) Class.forName((String) propValues.get(propName));
+                defClass
+                        = (Class<? extends Component>) Class.forName((String) propValues.get(propName));
             } catch(ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -719,13 +734,13 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the parameter name
      * @return the component associated with the name
-     * @throws edu.cmu.sphinx.util.props.PropertyException
-     *          if the component does not exist or is of the wrong type.
+     * @throws edu.cmu.sphinx.util.props.PropertyException if the component does
+     * not exist or is of the wrong type.
      */
     public List<? extends Component> getComponentList(String name) throws InternalConfigurationException {
         return getComponentList(name, null);
     }
-    
+
     public List<? extends Component> getComponentList(String name, ComponentListener cl) throws InternalConfigurationException {
         getProperty(name, ConfigComponentList.class);
 
@@ -738,12 +753,11 @@ public class PropertySheet implements Cloneable {
         // no componets names are available and no comp-list was yet loaded
         // therefore load the default list of components from the annoation
         if(components == null) {
-            List<Class<? extends Component>> defClasses =
-                    Arrays.asList(annotation.defaultList());
+            List<Class<? extends Component>> defClasses
+                    = Arrays.asList(annotation.defaultList());
 
             //            if (annoation.mandatory() && defClasses.isEmpty())
 //                throw new InternalConfigurationException(getInstanceName(), name, "mandatory property is not set!");
-
             components = new ArrayList<Component>();
 
             for(Class<? extends Component> defClass : defClasses) {
@@ -764,10 +778,10 @@ public class PropertySheet implements Cloneable {
 
                     //
                     // If we couldn't find this component, then throw a property exception.
-                    if (configurable == null) {
+                    if(configurable == null) {
                         throw new PropertyException(instanceName, name,
-                                "Unknown component " + component +
-                                " in list: " + name);
+                                "Unknown component " + component
+                                + " in list: " + name);
                     }
                     list.add(configurable);
                 } else if(component instanceof Class) {
@@ -788,7 +802,9 @@ public class PropertySheet implements Cloneable {
         this.instanceName = newInstanceName;
     }
 
-    /** Returns true if the owner of this property sheet is already instantiated. */
+    /**
+     * Returns true if the owner of this property sheet is already instantiated.
+     */
     public boolean isInstantiated() {
         return owner != null;
     }
@@ -798,8 +814,8 @@ public class PropertySheet implements Cloneable {
     }
 
     /**
-     * Returns the owner of this property sheet. In most cases this will be the configurable instance which was
-     * instrumented by this property sheet.
+     * Returns the owner of this property sheet. In most cases this will be the
+     * configurable instance which was instrumented by this property sheet.
      */
     public Component getOwner() {
         return getOwner(null, null);
@@ -822,24 +838,25 @@ public class PropertySheet implements Cloneable {
      *
      * @param ps the property sheet that caused the getOwner call for this
      * property sheet.
-     * @param reuseComponent if <code>true</code>, a previously configured component
-     * will be returned, if there is one. If <code>false</code> a newly instantiated
-     * and configured component will be returned.
+     * @param reuseComponent if <code>true</code>, a previously configured
+     * component will be returned, if there is one. If <code>false</code> a
+     * newly instantiated and configured component will be returned.
      */
     public synchronized Component getOwner(PropertySheet ps, boolean reuseComponent) {
         return getOwner(ps, null, reuseComponent);
     }
-        /**
-     * Returns the owner of this property sheet. In most cases this will be the configurable instance which was
-     * instrumented by this property sheet.
-     * 
-     * @param ps the property sheet that caused the getOwner call for this property
-     * sheet.
+
+    /**
+     * Returns the owner of this property sheet. In most cases this will be the
+     * configurable instance which was instrumented by this property sheet.
+     *
+     * @param ps the property sheet that caused the getOwner call for this
+     * property sheet.
      */
     public synchronized Component getOwner(PropertySheet ps, ComponentListener cl) {
         return getOwner(ps, cl, true);
     }
-    
+
     public synchronized Component getOwner(PropertySheet ps, ComponentListener cl, boolean reuseComponent) {
         try {
 
@@ -885,8 +902,8 @@ public class PropertySheet implements Cloneable {
                             ownerClass.getSimpleName(),
                             instanceName);
                     try {
-                        ObjectName oname =
-                                new ObjectName(on);
+                        ObjectName oname
+                                = new ObjectName(on);
                         if(mbs != null) {
                             mbs.registerMBean(owner, oname);
                         }
@@ -901,11 +918,11 @@ public class PropertySheet implements Cloneable {
                 }
             }
         } catch(IllegalAccessException e) {
-            throw new InternalConfigurationException(e, getInstanceName(), null, "Can't access class " +
-                    ownerClass);
+            throw new InternalConfigurationException(e, getInstanceName(), null, "Can't access class "
+                    + ownerClass);
         } catch(InstantiationException e) {
-            throw new InternalConfigurationException(e, getInstanceName(), null, "Can't instantiate class " +
-                    ownerClass);
+            throw new InternalConfigurationException(e, getInstanceName(), null, "Can't instantiate class "
+                    + ownerClass);
         }
 
         return owner;
@@ -915,7 +932,9 @@ public class PropertySheet implements Cloneable {
         owner = null;
     }
 
-    /** Returns the class of the owner configurable of this property sheet. */
+    /**
+     * Returns the class of the owner configurable of this property sheet.
+     */
     public Class<? extends Component> getConfigurableClass() {
         return ownerClass;
     }
@@ -927,8 +946,8 @@ public class PropertySheet implements Cloneable {
      */
     public void setString(String name, String value) throws PropertyException {
         // ensure that there is such a property
-        assert registeredProperties.keySet().contains(name) : "'" + name +
-                "' is not a registered compontent";
+        assert registeredProperties.keySet().contains(name) : "'" + name
+                + "' is not a registered compontent";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigString;
@@ -939,13 +958,13 @@ public class PropertySheet implements Cloneable {
     /**
      * Sets the given property to the given name
      *
-     * @param name  the simple property name
+     * @param name the simple property name
      * @param value the value for the property
      */
     public void setInt(String name, int value) throws PropertyException {
         // ensure that there is such a property
-        assert registeredProperties.keySet().contains(name) : "'" + name +
-                "' is not a registered compontent";
+        assert registeredProperties.keySet().contains(name) : "'" + name
+                + "' is not a registered compontent";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigInteger;
@@ -956,13 +975,13 @@ public class PropertySheet implements Cloneable {
     /**
      * Sets the given property to the given name
      *
-     * @param name  the simple property name
+     * @param name the simple property name
      * @param value the value for the property
      */
     public void setDouble(String name, double value) throws PropertyException {
         // ensure that there is such a property
-        assert registeredProperties.keySet().contains(name) : "'" + name +
-                "' is not a registered compontent";
+        assert registeredProperties.keySet().contains(name) : "'" + name
+                + "' is not a registered compontent";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigDouble;
@@ -973,13 +992,13 @@ public class PropertySheet implements Cloneable {
     /**
      * Sets the given property to the given name
      *
-     * @param name  the simple property name
+     * @param name the simple property name
      * @param value the value for the property
      */
     public void setBoolean(String name, Boolean value) throws PropertyException {
         // ensure that there is such a property
-        assert registeredProperties.keySet().contains(name) : "'" + name +
-                "' is not a registered compontent";
+        assert registeredProperties.keySet().contains(name) : "'" + name
+                + "' is not a registered compontent";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigBoolean;
@@ -990,15 +1009,16 @@ public class PropertySheet implements Cloneable {
     /**
      * Sets the given property to the given name
      *
-     * @param name   the simple property name
-     * @param cmName the name of the configurable within the configuration manager (required for serialization only)
-     * @param value  the value for the property
+     * @param name the simple property name
+     * @param cmName the name of the configurable within the configuration
+     * manager (required for serialization only)
+     * @param value the value for the property
      */
     public void setComponent(String name, String cmName, Component value)
             throws PropertyException {
         // ensure that there is such a property
-        assert registeredProperties.keySet().contains(name) : "'" + name +
-                "' is not a registered compontent";
+        assert registeredProperties.keySet().contains(name) : "'" + name
+                + "' is not a registered compontent";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigComponent;
@@ -1009,45 +1029,44 @@ public class PropertySheet implements Cloneable {
     /**
      * Sets the given property to the given name
      *
-     * @param name       the simple property name
-     * @param valueNames the list of names of the configurables within the configuration manager (required for
-     *                   serialization only)
-     * @param value      the value for the property
+     * @param name the simple property name
+     * @param valueNames the list of names of the configurables within the
+     * configuration manager (required for serialization only)
+     * @param value the value for the property
      */
     public void setComponentList(String name, List<String> valueNames,
             List<Configurable> value) throws PropertyException {
         // ensure that there is such a property
-        assert registeredProperties.keySet().contains(name) : "'" + name +
-                "' is not a registered compontent";
+        assert registeredProperties.keySet().contains(name) : "'" + name
+                + "' is not a registered compontent";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigComponentList;
 
         //        assert valueNames.size() == value.size();
-
         rawProps.put(name, valueNames);
         propValues.put(name, value);
 
         applyConfigurationChange(name, valueNames, value);
     }
-    
+
     public void setStringList(String name, List<String> values) {
         if(!registeredProperties.containsKey(name)) {
-            throw new PropertyException(instanceName, name, name + " is not a" +
-                    "registered property");
+            throw new PropertyException(instanceName, name, name + " is not a"
+                    + "registered property");
         }
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         if(!(annotation instanceof ConfigStringList)) {
-            throw new PropertyException(instanceName, name, name + " is not a" +
-                    "string list property");
+            throw new PropertyException(instanceName, name, name + " is not a"
+                    + "string list property");
         }
 
         rawProps.put(name, values);
         propValues.put(name, values);
 
         applyConfigurationChange(name, values, values);
-        
+
     }
 
     private void applyConfigurationChange(String propName, Object cmName,
@@ -1079,23 +1098,28 @@ public class PropertySheet implements Cloneable {
      * Gets the raw value associated with this name
      *
      * @param name the name
-     * @return the value as an object (it could be a String or a String[] depending upon the property type)
+     * @return the value as an object (it could be a String or a String[]
+     * depending upon the property type)
      */
     public Object getRaw(String name) {
         return rawProps.get(name);
     }
 
     /**
-     * Gets the raw value associated with this name, no global symbol replacement is performed.
+     * Gets the raw value associated with this name, no global symbol
+     * replacement is performed.
      *
      * @param name the name
-     * @return the value as an object (it could be a String or a String[] depending upon the property type)
+     * @return the value as an object (it could be a String or a String[]
+     * depending upon the property type)
      */
     public Object getRawNoReplacement(String name) {
         return rawProps.get(name);
     }
 
-    /** Returns the type of the given property. */
+    /**
+     * Returns the type of the given property.
+     */
     public PropertyType getType(String propName) {
         Proxy annotation = registeredProperties.get(propName).getAnnotation();
         if(annotation instanceof ConfigComponent) {
@@ -1140,11 +1164,13 @@ public class PropertySheet implements Cloneable {
     }
 
     /**
-     * Returns a logger to use for this configurable component. The logger can be configured with the property:
-     * 'logLevel' - The default logLevel value is defined (within the xml configuration file by the global property
+     * Returns a logger to use for this configurable component. The logger can
+     * be configured with the property: 'logLevel' - The default logLevel value
+     * is defined (within the xml configuration file by the global property
      * 'defaultLogLevel' (which defaults to WARNING).
      * <p/>
-     * implementation note: the logger became configured within the constructor of the parenting configuration manager.
+     * implementation note: the logger became configured within the constructor
+     * of the parenting configuration manager.
      *
      * @return the logger for this component
      */
@@ -1185,10 +1211,10 @@ public class PropertySheet implements Cloneable {
                     logLevel = Level.parse(lls);
                 } catch(IllegalArgumentException iae) {
                     throw new PropertyException(instanceName, PROP_LOG_LEVEL,
-                            "Globa log level, " +
-                            lls + " is not a valid log level");
+                            "Globa log level, "
+                            + lls + " is not a valid log level");
                 }
-            }  else {
+            } else {
                 //
                 // When all else fails, choose INFO.
                 logLevel = Level.INFO;
@@ -1197,7 +1223,9 @@ public class PropertySheet implements Cloneable {
         return logLevel;
     }
 
-    /** Returns the names of registered properties of this PropertySheet object. */
+    /**
+     * Returns the names of registered properties of this PropertySheet object.
+     */
     public Collection<String> getRegisteredProperties() {
         return Collections.unmodifiableCollection(registeredProperties.keySet());
     }
@@ -1207,8 +1235,9 @@ public class PropertySheet implements Cloneable {
     }
 
     /**
-     * Returns true if two property sheet define the same object in terms of configuration. The owner (and the parent
-     * configuration manager) are not expected to be the same.
+     * Returns true if two property sheet define the same object in terms of
+     * configuration. The owner (and the parent configuration manager) are not
+     * expected to be the same.
      */
     public boolean equals(Object obj) {
         if(obj == null || !(obj instanceof PropertySheet)) {
@@ -1227,8 +1256,8 @@ public class PropertySheet implements Cloneable {
     protected Object clone() throws CloneNotSupportedException {
         PropertySheet ps = (PropertySheet) super.clone();
 
-        ps.registeredProperties =
-                new HashMap<String, ConfigPropWrapper>(this.registeredProperties);
+        ps.registeredProperties
+                = new HashMap<String, ConfigPropWrapper>(this.registeredProperties);
         ps.propValues = new HashMap<String, Object>(this.propValues);
 
         ps.rawProps = new HashMap<String, Object>(this.rawProps);
@@ -1251,14 +1280,53 @@ public class PropertySheet implements Cloneable {
     }
 
     /**
-     * use annotation based class parsing to detect the configurable properties of a <code>Configurable</code>-class
+     * use annotation based class parsing to detect the configurable properties
+     * of a <code>Configurable</code>-class
      *
      * @param propertySheet of type PropertySheet
-     * @param configurable  of type Class<? extends Configurable>
+     * @param configurable of type Class<? extends Configurable>
      */
     public static void processAnnotations(PropertySheet propertySheet,
             Class<? extends Configurable> configurable) throws PropertyException {
 
+        //
+        // This is kind of a hack to handle Scala classes that want to be 
+        // configurable. The convention in Scala is to annotate a method that
+        // returns a string that is the name of the variable in the configuration file
+        // like so:
+        // @ConfigInteger(defaultValue=128)
+        // def PROP_MY_INTEGER = "myInteger"
+        //
+        // Note that we're going to need to invoke the method, so we need an
+        // instance, so we'll gin one up if necessary.
+        Object configurableInstance = null;
+        for(Method method : configurable.getMethods()) {
+            for(Annotation annotation : method.getAnnotations()) {
+                for(Annotation superAnnotation : annotation.annotationType().getAnnotations()) {
+                    try {
+                        if(!(superAnnotation instanceof ConfigProperty)) {
+                            continue;
+                        }
+                        if(configurableInstance == null) {
+                            configurableInstance = configurable.newInstance();
+                        }
+                        //
+                        // OK, call the method to get the name of the string.
+                        String propertyName = (String) method.invoke(configurableInstance, (Object[]) null);
+                        propertySheet.registerProperty(propertyName,
+                                new ConfigPropWrapper((Proxy) annotation));
+                    } catch(IllegalAccessException | IllegalArgumentException |
+                            InvocationTargetException | InstantiationException ex) {
+                        throw new PropertyException(ex, propertySheet.instanceName, method.getName(),
+                                "Error invoking configurable method: "
+                                + method.getName());
+                    }
+                }
+            }
+        }
+
+        //
+        // The java version.
         Field[] classFields = configurable.getFields();
 
         for(Field field : classFields) {
@@ -1308,9 +1376,9 @@ public class PropertySheet implements Cloneable {
         writer.printf("\t<component name=\"%s\" type=\"%s\" export=\"%s\" "
                 + "import=\"%s\">\n",
                 instanceName,
-                getConfigurableClass().getName(), 
+                getConfigurableClass().getName(),
                 isExportable(),
-                isImportable() );
+                isImportable());
 
         for(String propName : getRegisteredProperties()) {
             if(getRawNoReplacement(propName) == null) {
@@ -1351,7 +1419,7 @@ public class PropertySheet implements Cloneable {
         }
 
         writer.println("\t</component>\n");
-        
+
     }
 
 }
