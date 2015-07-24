@@ -20,9 +20,13 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -69,7 +73,7 @@ public class CommandInterpreter extends Thread {
     /**
      * Groups for this interpreter.
      */
-    protected Map<String, CommandGroup> commandGroups = new TreeMap();
+    protected Map<String, CommandGroupInternal> commandGroups = new TreeMap();
 
     /**
      * Interpreters that have been layered on top of this one. If interpreters
@@ -706,7 +710,7 @@ public class CommandInterpreter extends Thread {
      */
     protected void dumpCommands() {
         int count = dumpGroup(commandGroups.get(STANDARD_COMMANDS_GROUP_NAME), 0);
-        for(CommandGroup cg : commandGroups.values()) {
+        for(CommandGroupInternal cg : commandGroups.values()) {
             if(cg.getGroupName().equals(STANDARD_COMMANDS_GROUP_NAME)) {
                 continue;
             }
@@ -718,7 +722,7 @@ public class CommandInterpreter extends Thread {
         }
     }
 
-    protected int dumpGroup(CommandGroup cg, int count) {
+    protected int dumpGroup(CommandGroupInternal cg, int count) {
         putResponse(String.format("%s group: %s", cg.getGroupName(), cg.getDescription()));
         for(String cmdName : cg) {
             String help = ((CommandInterface) commands.get(cmdName)).getHelp();
@@ -730,14 +734,14 @@ public class CommandInterpreter extends Thread {
 
     private String getCommandByNumber(int which) {
         int count = 0;
-        CommandGroup scg = commandGroups.get(STANDARD_COMMANDS_GROUP_NAME);
+        CommandGroupInternal scg = commandGroups.get(STANDARD_COMMANDS_GROUP_NAME);
         for(String cmdName : scg) {
             if(count == which) {
                 return cmdName;
             }
         }
 
-        for(CommandGroup cg : commandGroups.values()) {
+        for(CommandGroupInternal cg : commandGroups.values()) {
             if(cg.getGroupName().equals(STANDARD_COMMANDS_GROUP_NAME)) {
                 continue;
             }
@@ -756,11 +760,11 @@ public class CommandInterpreter extends Thread {
     }
 
     public void addGroup(String groupName, String description, boolean keepSorted) {
-        CommandGroup cg = commandGroups.get(groupName);
+        CommandGroupInternal cg = commandGroups.get(groupName);
         if(cg != null) {
             return;
         }
-        commandGroups.put(groupName, new CommandGroup(groupName, description, keepSorted));
+        commandGroups.put(groupName, new CommandGroupInternal(groupName, description, keepSorted));
     }
 
     public void add(String commandName, String groupName, CommandInterface command) {
@@ -768,10 +772,10 @@ public class CommandInterpreter extends Thread {
             groupName = UNGROUPED_COMMANDS_GROUP_NAME;
         }
         commands.put(commandName, command);
-        CommandGroup cg = commandGroups.get(groupName);
+        CommandGroupInternal cg = commandGroups.get(groupName);
         if(cg == null) {
-            logger.warning(String.format("Unknown command group name: %s", groupName));
-            cg = new CommandGroup(groupName, "", false);
+            logger.warning(String.format("Unknown command group name: %s (from %s)", groupName, commandName));
+            cg = new CommandGroupInternal(groupName, "", false);
             commandGroups.put(groupName, cg);
         }
         cg.add(commandName);
@@ -789,10 +793,305 @@ public class CommandInterpreter extends Thread {
     }
 
     /**
+     * Adds commands for all the methods in the provided object that are
+     * annotated with an @Command annotation
+     * 
+     * @param group an object with commands in it
+     */
+    public void add(final CommandGroup group) {
+        //
+        // Add a group for this CommandGroup
+        addGroup(group.getName(), group.getDescription());
+        
+        //
+        // Look at all the methods and find the annotated ones, if any
+        Method[] methods = group.getClass().getMethods();
+        for (final Method m : methods) {
+            String methodName = group.getClass().getName() + "#" + m.getName();
+            final Command cmd = m.getAnnotation(Command.class);
+            if (cmd == null) {
+                continue;
+            }
+
+            //
+            // Let's see if the params are of acceptable types
+            Parameter[] params = m.getParameters();
+            if (params.length == 0 || params[0].getType() != CommandInterpreter.class) {
+                logger.warning(methodName +
+                        " must have CommandInterpreter for its first parameter");
+                continue;
+            }
+            //
+            // If we aren't getting just a string array, check for supported
+            // types for our other params
+            if (!(params.length == 2 && params[1].getType() == String[].class)) {
+                for (int i = 1; i < params.length; i++) {
+                    if (!supportedMethodParameters.contains(params[i].getType())
+                            && !params[i].getType().isEnum()) {
+                        logger.warning(methodName
+                                + " has unsupported parameter type "
+                                + params[i].getType().getSimpleName());
+                    }
+                }
+                
+                //
+                // Also check to see that if we have optional parameters, we
+                // don't have any non-optional ones after the optional ones.
+                boolean foundOptional = false;
+                for (Parameter p : params) {
+                    Optional opt = p.getAnnotation(Optional.class);
+                    if (foundOptional && opt == null) {
+                        logger.warning(methodName +
+                                " has non-optional parameter following optional parameter.");
+                        continue;
+                    }
+                    if (opt != null) {
+                        foundOptional = true;
+                    }
+                }
+                
+            }
+
+            //
+            // And check return type
+            if (m.getReturnType() != String.class) {
+                logger.warning(methodName +
+                        " has wrong return type.  Expected String");
+                continue;
+            }
+            
+            
+            //
+            // Now let's see if there's a method to get the completors for
+            // this method.  First, check for an explicit one in the
+            // annotation itself.
+            Method completorMtd = null;
+            if (!cmd.completors().isEmpty()) {
+                try {
+                    completorMtd = group.getClass().getMethod(cmd.completors(), (Class<?>[])null);
+                } catch (NoSuchMethodException e) {
+                    logger.warning(methodName +
+                            " references a non-existant completor method: "
+                            + cmd.completors());
+                }
+            }
+            
+            //
+            // If we didn't get a completor that way, try to see if there's
+            // a method with a name that conforms to the convention.
+            try {
+                completorMtd = group.getClass().getMethod(m.getName() + "Completors", (Class<?>[])null);
+            } catch (NoSuchMethodException e) {
+                //
+                // This is okay, probably they just didn't want a completor.
+                logger.finer(methodName + " has no completors");
+            }
+            
+            //
+            // Get a completor for this method and add it in to our shell
+            CommandInterface ci = methodToCommand(m, cmd.usage(), group, completorMtd);
+            add(m.getName(), group.getName(), ci);
+        }
+    }
+    
+    private CommandInterface methodToCommand(final Method m,
+                                             final String usage,
+                                             final CommandGroup group,
+                                             final Method cm) {
+        if (cm != null) {
+            //
+            // Make sure the return type is right since we haven't checked
+            // that yet.
+            if (cm.getReturnType() != Completor[].class) {
+                logger.warning(group.getClass().getName() + "#" + cm.getName() +
+                        " has wrong return type.  Expected Completor[]");
+            }
+            //
+            // Make a CompletorCommand instead of a regular one
+            CommandInterface ci = new CompletorCommandInterface() {
+                @Override
+                public String execute(CommandInterpreter ci, String[] args)
+                        throws Exception {
+                    return invokeMethod(m, usage, group, ci, args);
+                }
+                
+                @Override
+                public String getHelp() {
+                    return usage;
+                }
+                
+                @Override
+                public Completor[] getCompletors() {
+                    try {
+                        return (Completor[])cm.invoke(group);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        logger.log(Level.WARNING, "Couldn't invoke "
+                                + group.getClass().getName() + "#" + cm.getName(), e);
+                        return null;
+                    }
+                }
+            };
+            return ci;
+        } else {
+            //
+            // Create a regular CommandInterface for it and add it in.
+            CommandInterface ci = new CommandInterface() {
+                @Override
+                public String execute(CommandInterpreter ci, String[] args)
+                        throws Exception {
+                    return invokeMethod(m, usage, group, ci, args);
+                }
+                
+                @Override
+                public String getHelp() {
+                    return usage;
+                }
+            };
+            return ci;
+        }
+        
+    }
+    
+    
+    
+    private HashSet<Class> supportedMethodParameters =
+            new HashSet<Class>(Arrays.asList(
+                    String.class,
+                    Integer.class,
+                    int.class,
+                    Long.class,
+                    long.class,
+                    Float.class,
+                    float.class,
+                    Double.class,
+                    double.class,
+                    Boolean.class,
+                    boolean.class,
+                    File.class));
+    
+    /**
+     * Actually invoke the method for a command.  Tries to parse command
+     * line arguments based on the method parameters or just passes straight
+     * through if the argument after the CommandIntereter is String[].
+     * This method only supports specific types.  If you add a type here,
+     * please add it to the list of supported types above.
+     * @param m
+     * @param usage
+     * @param group
+     * @param ci
+     * @param args
+     * @return
+     * @throws Exception 
+     */
+    private String invokeMethod(Method m,
+                                String usage,
+                                CommandGroup group,
+                                CommandInterpreter ci,
+                                String[] args) throws Exception {
+        //
+        // Check the params to see how we should invoke the method
+        Parameter[] params = m.getParameters();
+        //
+        // First param is the interpreter, next param is either String[] args
+        // or some specific parameters (or no parameters if there's no args)
+        if (params.length > 1 && params[1].getType() == String[].class && m.getParameterCount() == 2) {
+            //
+            // Regular invocation, we'll pass through the String array
+            return (String)m.invoke(group, ci, Arrays.copyOfRange(args, 1, args.length));
+        } else {
+            //
+            // Do we have the right number of args to fill the method?
+            if (m.getParameterCount() != args.length) {
+                //
+                // Check to see if we're off by optional parameters
+                int minParams = 0;
+                for (Parameter p : params) {
+                    Optional opt = p.getAnnotation(Optional.class);
+                    if (opt != null) {
+                        minParams++;
+                    }
+                }
+                if (args.length - 1 < minParams) {
+                    //
+                    // Nope, got the wrong number
+                    String paramStr = m.toString();
+                    paramStr = paramStr.substring(paramStr.indexOf('(') + 1, paramStr.indexOf(')'));
+                    if (paramStr.indexOf(',') < 0) {
+                        paramStr = "<empty>";
+                    } else {
+                        paramStr = paramStr.substring(paramStr.indexOf(',') + 1);
+                    }
+                    return String.format(
+                            "Incorrect number of arguments.  Found %d, expected %d: %s\nUsage: %s",
+                        args.length - 1,
+                        m.getParameterCount() - 1,
+                        paramStr,
+                        usage);
+                }
+            }
+            
+            //
+            // Let's get our parsing on 'cause we got some conversions to do
+            int numArgs = m.getParameterCount();
+            Object[] invokeParams = new Object[numArgs];
+            invokeParams[0] = ci;
+            for (int i = 1; i < numArgs; i++) {
+                String arg;
+                if (args.length - 1 < i) {
+                    Optional opt = params[i].getAnnotation(Optional.class);
+                    arg = opt.val();
+                } else {
+                    arg = args[i];
+                }
+                Class<?> currParam = params[i].getType();
+                try {
+                    if (arg.equals("null")) {
+                        invokeParams[i] = null;
+                    } else if (currParam == String.class) {
+                        invokeParams[i] = arg;
+                    } else if (currParam == Integer.class || currParam == int.class) {
+                        invokeParams[i] = Integer.parseInt(arg);
+                    } else if (currParam == Long.class || currParam == long.class) {
+                        invokeParams[i] = Long.parseLong(arg);
+                    } else if (currParam == Float.class || currParam == float.class) {
+                        invokeParams[i] = Float.parseFloat(arg);
+                    } else if (currParam == Double.class || currParam == double.class) {
+                        invokeParams[i] = Double.parseDouble(arg);
+                    } else if (currParam.isEnum()) {
+                        invokeParams[i] = Enum.valueOf((Class<Enum>)currParam, arg.toUpperCase());
+                    } else if (currParam == Boolean.class || currParam == boolean.class) {
+                        invokeParams[i] = Boolean.parseBoolean(arg);
+                    } else if (currParam == File.class) {
+                        invokeParams[i] = new File(arg);
+                    } else {
+                        //
+                        // ** NOTE: If you add supported classes, add them to the
+                        // Set defined above this method called supportedMethodParamters
+                        return String.format("Unsupported method argument: %s in %s#%s",
+                                         currParam.getName(),
+                                         group.getClass().getName(),
+                                         m.getName());
+                    }
+                } catch (NumberFormatException e) {
+                    return String.format(
+                            "Invalid value (%s) for parameter of type %s\nUsage: %s",
+                            args,
+                            currParam.getName(),
+                            usage);
+                    
+                }
+            }
+            return (String)m.invoke(group, invokeParams);
+        }
+        
+        
+    }
+    
+    /**
      * Adds an alias to the command
      *
      * @param command	the name of the command.
-     * @param alias	the new aliase
+     * @param alias	the new alias
      *
      */
     public void addAlias(String command, String alias) {
@@ -906,7 +1205,7 @@ public class CommandInterpreter extends Thread {
             // First things first: Is this a standard command? If so, we'll use
             // it from this group!
             String command = args[0];
-            CommandGroup cg = commandGroups.get(STANDARD_COMMANDS_GROUP_NAME);
+            CommandGroupInternal cg = commandGroups.get(STANDARD_COMMANDS_GROUP_NAME);
             if(cg.contains(command)) {
                 ci = (CommandInterface) commands.get(args[0]);
             }
@@ -1337,7 +1636,7 @@ public class CommandInterpreter extends Thread {
         }
     }
 
-    protected class CommandGroup implements Iterable<String> {
+    protected class CommandGroupInternal implements Iterable<String> {
 
         private String groupName;
 
@@ -1345,7 +1644,7 @@ public class CommandInterpreter extends Thread {
 
         private Set<String> commands;
 
-        public CommandGroup(String groupName, String description, boolean keepSorted) {
+        public CommandGroupInternal(String groupName, String description, boolean keepSorted) {
             this.groupName = groupName;
             this.description = description;
             if(keepSorted) {
