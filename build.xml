@@ -72,9 +72,30 @@
 
     -->
     
+    <!-- Figure out the name of the version we're on based on the latest tag -->
+    <!-- Borrowed from http://stackoverflow.com/questions/2974106/ -->
+    <target name="getgitversion" >
+        <exec executable="git" outputproperty="git.tagstring">
+            <arg value="describe"/>
+        </exec>
+    </target>
+    
+    <target name="-pre-init" depends="getgitversion">
+    </target>
+
     <!-- When building a jar, include JLine -->
     <target name="-pre-jar">
         <unjar src="${file.reference.jline.jar}" dest="${build.classes.dir}"/>
+        <tstamp>
+            <format property="NOW" pattern="yyyy-MM-dd HH:mm:ss z" />
+        </tstamp>
+
+        <manifest file="manifest.mf">
+            <attribute name="Extension-Name" value="com.oracle.labs.util"/>
+            <attribute name="Implementation-Title" value="${application.title}" />
+            <attribute name="Implementation-Version" value="${git.tagstring}" />
+            <attribute name="Implementation-Vendor" value="Oracle Labs IRML Group" />
+        </manifest>
     </target>
 
     <target name="-post-jar">

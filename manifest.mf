@@ -1,3 +1,8 @@
 Manifest-Version: 1.0
-X-COMMENT: Main-Class will be added automatically by build
+Ant-Version: Apache Ant 1.9.4
+Created-By: 1.8.0_51-b16 (Oracle Corporation)
+Extension-Name: com.oracle.labs.util
+Implementation-Title: Oracle Labs Configuration and Utilities Toolkit
+Implementation-Version: 2.0
+Implementation-Vendor: Oracle Labs IRML Group
 
