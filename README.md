@@ -55,10 +55,10 @@ The Pipeline class that correspond to the component would look as follow:
     public class Pipeline implements Configurable {
         @ConfigInteger(defaultValue=1)
         public static final String PROP_NUM_THREADS="numThreads";
-
+    
         @ConfigComponentList(type=PipelineStage.class)
         public static final String PROP_STAGES="stages";
-
+    
         public void newProperties(PropertySheet ps) {
             int numThreads = ps.getInt(PROP_NUM_THREADS);
             List<PipelineStage> stages = (List<PipelineStage>)ps.getComponentList(PROP_STAGES);
@@ -138,11 +138,11 @@ in the same directory, or use the same name prefix.  The path could be
 defined in a global variable and used in the rest of the configuration.
 
         <property name="outputDir" value="/work/sound/output"/>
-
+    
         <component name="mp3encoder" type="com.oracle.labs.sound.MP3Encoder">
-            <property name="file" value="${outputDir}/outfile.mp3"/>
+            <property name="file" value="${outputDir}/outfile.au"/>
         </component>
-
+    
         <component name="loggingStage" type="com.oracle.labs.sound.Logger">
             <property name="logFile" value="${outputDir}/pipeline.log"/>
         </component>
@@ -222,7 +222,8 @@ with.
 
 The CommandInterpreter has a number of built-in commands for things like shell
 history, status, file redirection, running a script of commands, etc.  These
-commands are all grouped together for convenience.
+commands are all grouped together for convenience, meaning they'll appear
+together when you run "help".
 
 ## Defining commands
 
@@ -242,10 +243,11 @@ Defining a command looks like this
         public String getDescription() {
             return "Commands for the Oracle Labs Sound Processor";
         }
-
+    
         @Command(usage="<fileName> - filter the given file")
         public String filter(CommandInterpreter ci, File file) {
             pipeline.filter(file);
+            return "";
         }
     }
 
@@ -276,11 +278,93 @@ argument types are:
 * Enum of any type
 * String[] (as the only parameter type)
 
+Note that there is a one-to-one correspondence between method names and
+Commands.  No distinctions are made for method signatures with different
+parameters.  No guarantee is made for the behavior of a shell with multiple
+methods that have the same name.
+
 ## Optional parameters
+
+For more flexibility in your commands, you may specify that trailing method
+parameters be optional.  Any optional parameter must have a default value
+assigned to it, expressed as a string that would be entered on the command
+line.  The default value may be the text "null" if you choose, although this
+should only be used with object/reference types and not base types.  Optional
+parameters are tagged with the @Optional annotation.  The above filter method
+could take an optional parameter to specify where the output of the pipeline
+should go:
+
+        @Command(usage="")
+        public String filter(CommandInterpreter ci,
+                             File inFile, 
+                             @Optional(val="/tmp/output.au", File outFile) {
+            pipeline.filter(inFile, outFile);
+            return "";
+        }
 
 ## Tab Completion
 
+Commands added to a CommandInterpreter may provide tab completion for each of
+their arguments.  A separate method may be included in the same CommandGroup
+that has a name consisting of the command it is providing completors for
+followed by the word Completors.  It takes no arguments and returns
+`Completor[]`.
+
+        public Completor[] filterCompletors() {
+            return new Completor[]{
+                new FileNameCompletor(),
+                new FileNameCompletor()
+            };
+        }
+
+In this example, an array of completors is returned, one per argument.  This
+could actually be simplified because the behavior of the completors is to
+reuse the last completor in the array for all further arguments.  Simply
+providing a single FileNameCompletor would work the same for this method.  To
+prevent tab-completion for a particular parameter, or to prevent the last
+completor from repeating, place a NullCompletor in the array in the appropriate
+spot.
+
+The following types of completors are available in OLCUT.  Most are provided
+by the [jline library](http://jline.sourceforge.net/apidocs/index.html).
+
+* FileNameCompletor - Completes file names starting in the PWD
+* SimpleCompletor - Pass it an array of strings or a Reader to give it the values it should complete to
+* ClassNameCompletor - Fills in Class names, optionally with a filter applied, from your classpath
+* EnumCompletor - Completes with values from a specified Enum type
+* NullCompletor - Does not complete with anything.
+* IntCompletor - Just kidding.  But it'd be awesome if it could figure that out, right?
+
+If you wish to reuse a method that generates completors, you can use an
+attribute of the Command annotation to specify the name of the completor method
+to use instead of relying on the xxxCompletors convention.  For example,
+if multiple commands take a single File parameter, you might make a method such
+as this one:
+
+        public Completors[] fileCompletor() {
+            return new Completor[]{
+                new FileNameCompletor(),
+                new NullCompletor()
+            }
+        }
+
+Then when annotating a method that takes a File as its parameter, you would
+specify:
+
+        @Command(usage="Processes a single file",
+                 completors="fileCompletor")
+
+Multiple annotated commands may share the same completor method.
+
 ## Manual argument processing
+
+In some cases, taking the supported types as arguments doesn't provide enough
+flexibility for the way you want your command to work.  In this case, you can
+instead have your method use `String[]` as its second parameter (after the
+CommandInterpreter) and all arguments provided in the shell will be passed
+through verbatim allow you to do your own argument parsing.  This is
+particularly useful if you want to support a varargs-style syntax.  You may
+still provide Completors even if the arguments are not otherwise specified.
 
 ## Layered Command Interpreter (Mixing in more commands)
 
