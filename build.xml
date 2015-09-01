@@ -80,7 +80,7 @@
             <pom refid="olcutPom" />
         </artifact:install>
         <artifact:deploy file="${dist.jar}">
-            <remoteRepository url="http://labeast.us.oracle.com:8081/artifactory/libs-release-local">
+            <remoteRepository url="http://citadel.us.oracle.com:8081/artifactory/libs-release-local">
                 <authentication username="ant-builds" password="APB5ujTsWhY9e7f5" />
             </remoteRepository>
             <pom refid="olcutPom" />
