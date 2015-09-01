@@ -3,15 +3,14 @@ package com.sun.labs.util.command;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import jline.Completor;
+import jline.console.completer.Completer;
 
 /**
  * A <a href="http://jline.sourceforge.net">JLine</a>-style Completor that will
  * complete partial text based on all commands currently defined in the
  * {@link CommandInterpreter}
  */
-public class CommandCompletor implements Completor {
+public class CommandCompleter implements Completer {
 
     Map<String,CommandInterface> cmdMap;
     
@@ -23,7 +22,7 @@ public class CommandCompletor implements Completor {
      *
      * @param commands
      */
-    public CommandCompletor(Map<String,CommandInterface> cmdMap, Deque<LayeredCommandInterpreter> interpreters) {
+    public CommandCompleter(Map<String,CommandInterface> cmdMap, Deque<LayeredCommandInterpreter> interpreters) {
         this.cmdMap = cmdMap;
         this.interpreters = interpreters;
     }
@@ -33,7 +32,7 @@ public class CommandCompletor implements Completor {
      * Completor</a> in the JLine javadoc.
      */
     @Override
-    public int complete(String buff, int i, List ret) {
+    public int complete(String buff, int i, List<CharSequence> ret) {
         String prefix = "";
         if (buff != null) {
             prefix = buff.substring(0, i);

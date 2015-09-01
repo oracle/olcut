@@ -1,6 +1,6 @@
 package com.sun.labs.util.command;
 
-import jline.Completor;
+import jline.console.completer.Completer;
 
 /**
  * A CommandInterface for commands that can provide tab-completion for their
@@ -28,5 +28,5 @@ public interface CompletorCommandInterface extends CommandInterface {
      * @return an array of Completors, one for each expected argument to this
      *         command
      */
-    public Completor[] getCompletors();
+    public Completer[] getCompletors();
 }

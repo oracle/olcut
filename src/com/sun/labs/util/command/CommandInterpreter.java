@@ -44,11 +44,12 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import jline.Completor;
-import jline.ConsoleReader;
-import jline.FileNameCompletor;
-import jline.History;
-import jline.NullCompletor;
+import jline.console.completer.Completer;
+import jline.console.ConsoleReader;
+import jline.console.completer.FileNameCompleter;
+import jline.console.history.History;
+import jline.console.completer.NullCompleter;
+import jline.console.history.FileHistory;
 
 /**
  * This class is a command interpreter. It reads strings from an input stream,
@@ -141,10 +142,10 @@ public class CommandInterpreter extends Thread {
                 histFile += "_" + main;
             }
             History history
-                    = new History(new File(histFile));
+                    = new FileHistory(new File(histFile));
             consoleReader.setHistory(history);
             //consoleReader.setDebug(new PrintWriter(System.out));
-            consoleReader.addCompletor(new MultiCommandArgumentCompletor(consoleReader, commands, interpreters));
+            consoleReader.addCompleter(new MultiCommandArgumentCompleter(consoleReader, commands, interpreters));
         } catch(IOException e) {
             logger.info("Failed to load JLine, falling back to System.in");
             in = new BufferedReader(new InputStreamReader(System.in));
@@ -422,11 +423,11 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completor[] getCompletors() {
-                return new Completor[]{
-                    new NullCompletor(),
-                    new CommandCompletor(commands, interpreters),
-                    new NullCompletor()
+            public Completer[] getCompletors() {
+                return new Completer[]{
+                    new NullCompleter(),
+                    new CommandCompleter(commands, interpreters),
+                    new NullCompleter()
                 };
             }
         });
@@ -458,11 +459,11 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completor[] getCompletors() {
-                return new Completor[]{
-                    new NullCompletor(),
-                    new CommandCompletor(commands, interpreters),
-                    new NullCompletor()
+            public Completer[] getCompletors() {
+                return new Completer[]{
+                    new NullCompleter(),
+                    new CommandCompleter(commands, interpreters),
+                    new NullCompleter()
                 };
             }
         });
@@ -493,11 +494,11 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completor[] getCompletors() {
-                return new Completor[]{
-                    new FileNameCompletor(),
-                    new CommandCompletor(commands, interpreters),
-                    new NullCompletor()
+            public Completer[] getCompletors() {
+                return new Completer[]{
+                    new FileNameCompleter(),
+                    new CommandCompleter(commands, interpreters),
+                    new NullCompleter()
                 };
             }
         });
@@ -520,10 +521,10 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completor[] getCompletors() {
-                return new Completor[]{
-                    new FileNameCompletor(),
-                    new NullCompletor()
+            public Completer[] getCompletors() {
+                return new Completer[]{
+                    new FileNameCompleter(),
+                    new NullCompleter()
                 };
             }
         });
@@ -546,10 +547,10 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completor[] getCompletors() {
-                return new Completor[]{
-                    new FileNameCompletor(),
-                    new NullCompletor()
+            public Completer[] getCompletors() {
+                return new Completer[]{
+                    new FileNameCompleter(),
+                    new NullCompleter()
                 };
             }
         });
@@ -623,10 +624,10 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completor[] getCompletors() {
-                return new Completor[]{
-                    new CommandCompletor(commands, interpreters),
-                    new NullCompletor()
+            public Completer[] getCompletors() {
+                return new Completer[]{
+                    new CommandCompleter(commands, interpreters),
+                    new NullCompleter()
                 };
             }
         });
@@ -651,10 +652,10 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completor[] getCompletors() {
-                return new Completor[]{
-                    new CommandCompletor(commands, interpreters),
-                    new NullCompletor()
+            public Completer[] getCompletors() {
+                return new Completer[]{
+                    new CommandCompleter(commands, interpreters),
+                    new NullCompleter()
                 };
             }
         });
@@ -676,10 +677,10 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completor[] getCompletors() {
-                return new Completor[]{
-                    new FileNameCompletor(),
-                    new NullCompletor()
+            public Completer[] getCompletors() {
+                return new Completer[]{
+                    new FileNameCompleter(),
+                    new NullCompleter()
                 };
             }
         });
@@ -902,7 +903,7 @@ public class CommandInterpreter extends Thread {
             //
             // Make sure the return type is right since we haven't checked
             // that yet.
-            if (cm.getReturnType() != Completor[].class) {
+            if (cm.getReturnType() != Completer[].class) {
                 logger.warning(group.getClass().getName() + "#" + cm.getName() +
                         " has wrong return type.  Expected Completor[]");
             }
@@ -921,9 +922,9 @@ public class CommandInterpreter extends Thread {
                 }
                 
                 @Override
-                public Completor[] getCompletors() {
+                public Completer[] getCompletors() {
                     try {
-                        return (Completor[])cm.invoke(group);
+                        return (Completer[])cm.invoke(group);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         logger.log(Level.WARNING, "Couldn't invoke "
                                 + group.getClass().getName() + "#" + cm.getName(), e);
@@ -1449,6 +1450,11 @@ public class CommandInterpreter extends Thread {
     }
 
     public void close() {
+        try {
+            ((FileHistory)consoleReader.getHistory()).flush();
+        } catch (IOException e) {
+            logger.log(Level.WARNING,"Failed to write history",e);
+        }
         done = true;
     }
 
@@ -1530,7 +1536,7 @@ public class CommandInterpreter extends Thread {
      */
     public void setPrompt(String prompt) {
         if(consoleReader != null) {
-            consoleReader.setDefaultPrompt(prompt);
+            consoleReader.setPrompt(prompt);
             this.prompt = "";
         } else {
             this.prompt = prompt;
