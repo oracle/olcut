@@ -4,7 +4,7 @@ package com.sun.labs.util.command;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import jline.Completor;
+import jline.console.completer.Completer;
 
 /**
  * A JLine-style command line argument completor that will complete the current
@@ -14,11 +14,11 @@ import jline.Completor;
  * match the case of the actual enum value so that the value may be parsed
  * correctly.
  */
-public class  EnumCompletor <E extends Enum<E>> implements Completor {
+public class EnumCompleter <E extends Enum<E>> implements Completer {
         
     protected Set<String> vals = new HashSet<String>();
         
-    public EnumCompletor(Class<E> enumType) {
+    public EnumCompleter(Class<E> enumType) {
         E[] consts = enumType.getEnumConstants();
         for (int i = 0; i < consts.length; i++) {
             vals.add(consts[i].name());
@@ -26,7 +26,7 @@ public class  EnumCompletor <E extends Enum<E>> implements Completor {
     }
         
     @Override
-    public int complete(String buff, int i, List ret) {
+    public int complete(String buff, int i, List<CharSequence> ret) {
         String prefix = "";
         if (buff != null) {
             prefix = buff.substring(0, i);

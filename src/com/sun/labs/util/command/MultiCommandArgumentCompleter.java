@@ -5,9 +5,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import jline.ArgumentCompletor;
-import jline.Completor;
-import jline.ConsoleReader;
+import jline.console.completer.ArgumentCompleter;
+import jline.console.completer.Completer;
+import jline.console.ConsoleReader;
+import jline.internal.Log;
 
 /**
  * Mostly re-implements the ArgumentCompletor from jline, but allows for
@@ -16,13 +17,13 @@ import jline.ConsoleReader;
  * of Completors to use for its arguments.  It should not be used directly
  * by anything else.
  */
-class MultiCommandArgumentCompletor extends ArgumentCompletor {
+class MultiCommandArgumentCompleter extends ArgumentCompleter {
 
     protected Map<String,CommandInterface> cmdMap;
     
     protected Deque<LayeredCommandInterpreter> interpreters;
     
-    protected Map<String,Completor[]> compMap;
+    protected Map<String,Completer[]> compMap;
     
     /**
      * ArgumentDelimiter.delim isn't accessible from here, so we'll mask
@@ -43,14 +44,14 @@ class MultiCommandArgumentCompletor extends ArgumentCompletor {
      * @param cmdMap a reference to the shell's internal command map, reused
      *               to check for added commands
      */
-    public MultiCommandArgumentCompletor(ConsoleReader reader,
+    public MultiCommandArgumentCompleter(ConsoleReader reader,
                                          Map<String,CommandInterface> cmdMap, 
                                          Deque<LayeredCommandInterpreter> interpreters) {
-        super((Completor)null);
+        super((Completer)null);
         this.reader = reader;
         this.cmdMap = cmdMap;
         this.interpreters = interpreters;
-        compMap = new HashMap<String,Completor[]>();
+        compMap = new HashMap<String,Completer[]>();
         setStrict(false);
     }
     
@@ -87,7 +88,7 @@ class MultiCommandArgumentCompletor extends ArgumentCompletor {
     @Override
     public int complete(final String buffer, final int cursor,
                         final List candidates) {
-        reader.debug("\ncomplete invoked with " + buffer);
+        Log.debug("\ncomplete invoked with " + buffer);
         ArgumentList list = delim.delimit(buffer, cursor);
         int argpos = list.getArgumentPosition();
         int argIndex = list.getCursorArgumentIndex();
@@ -99,20 +100,20 @@ class MultiCommandArgumentCompletor extends ArgumentCompletor {
         //
         // Adjust index since delimit leaves off the initial command name
         argIndex--;
-        final Completor comp;
+        final Completer comp;
 
         //
         // Update our subcommand completors in case there are new ones
         updateCompletors();
-        Completor[] completors;
+        Completer[] completors;
         if (list.getCursorArgumentIndex() == 0) {
-            comp = new CommandCompletor(cmdMap, interpreters);
-            completors = new Completor[] {comp};
+            comp = new CommandCompleter(cmdMap, interpreters);
+            completors = new Completer[] {comp};
         } else {
             //
             // Get out the list of completors we should use based on the current
             // subcommand
-            String wholeBuff = reader.getCursorBuffer().getBuffer().toString();
+            String wholeBuff = reader.getCursorBuffer().buffer.toString();
             completors = compMap.get(wholeBuff.substring(0, wholeBuff.indexOf(" ")));
             
             if (completors == null) {
@@ -128,11 +129,11 @@ class MultiCommandArgumentCompletor extends ArgumentCompletor {
                 comp = completors[argIndex];
             }
         }
-        reader.debug("evaluating " + list.getCursorArgument() + " with " + comp.getClass().getSimpleName() + " at " + argIndex);
+        Log.debug("evaluating " + list.getCursorArgument() + " with " + comp.getClass().getSimpleName() + " at " + argIndex);
         // ensure that all the previous completors are successful before
         // allowing this completor to pass (only if strict is true).
-        for (int i = 0; getStrict() && (i < argIndex); i++) {
-            Completor sub =
+        for (int i = 0; isStrict() && (i < argIndex); i++) {
+            Completer sub =
                 completors[(i >= completors.length) ? (completors.length - 1) : i];
             String[] args = list.getArguments();
             String arg = ((args == null) || (i >= args.length)) ? "" : args[i];
@@ -179,7 +180,7 @@ class MultiCommandArgumentCompletor extends ArgumentCompletor {
             }
         }
 
-        ConsoleReader.debug("Completing " + buffer + "(pos=" + cursor + ") "
+        Log.debug("Completing " + buffer + "(pos=" + cursor + ") "
             + "with: " + candidates + ": offset=" + pos);
 
         return pos;
