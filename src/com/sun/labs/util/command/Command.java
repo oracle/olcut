@@ -15,5 +15,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Command {
     String usage();
-    String completors() default "";
+    String completers() default "";
 }

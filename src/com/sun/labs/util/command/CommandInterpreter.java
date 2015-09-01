@@ -863,17 +863,17 @@ public class CommandInterpreter extends Thread {
             
             
             //
-            // Now let's see if there's a method to get the completors for
+            // Now let's see if there's a method to get the completers for
             // this method.  First, check for an explicit one in the
             // annotation itself.
             Method completorMtd = null;
-            if (!cmd.completors().isEmpty()) {
+            if (!cmd.completers().isEmpty()) {
                 try {
-                    completorMtd = group.getClass().getMethod(cmd.completors(), (Class<?>[])null);
+                    completorMtd = group.getClass().getMethod(cmd.completers(), (Class<?>[])null);
                 } catch (NoSuchMethodException e) {
                     logger.warning(methodName +
                             " references a non-existant completor method: "
-                            + cmd.completors());
+                            + cmd.completers());
                 }
             }
             
