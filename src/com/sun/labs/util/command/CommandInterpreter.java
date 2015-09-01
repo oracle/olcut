@@ -405,7 +405,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("alias", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
+        add("alias", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length == 3) {
@@ -423,7 +423,7 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completer[] getCompletors() {
+            public Completer[] getCompleters() {
                 return new Completer[]{
                     new NullCompleter(),
                     new CommandCompleter(commands, interpreters),
@@ -432,7 +432,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("repeat", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
+        add("repeat", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length >= 3) {
@@ -459,7 +459,7 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completer[] getCompletors() {
+            public Completer[] getCompleters() {
                 return new Completer[]{
                     new NullCompleter(),
                     new CommandCompleter(commands, interpreters),
@@ -468,7 +468,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("redirect", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
+        add("redirect", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length >= 3) {
@@ -494,7 +494,7 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completer[] getCompletors() {
+            public Completer[] getCompleters() {
                 return new Completer[]{
                     new FileNameCompleter(),
                     new CommandCompleter(commands, interpreters),
@@ -503,7 +503,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("load", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
+        add("load", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length == 2) {
@@ -521,7 +521,7 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completer[] getCompletors() {
+            public Completer[] getCompleters() {
                 return new Completer[]{
                     new FileNameCompleter(),
                     new NullCompleter()
@@ -529,7 +529,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("pload", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
+        add("pload", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length == 3) {
@@ -547,7 +547,7 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completer[] getCompletors() {
+            public Completer[] getCompleters() {
                 return new Completer[]{
                     new FileNameCompleter(),
                     new NullCompleter()
@@ -599,7 +599,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("time", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
+        add("time", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length > 1) {
@@ -624,7 +624,7 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completer[] getCompletors() {
+            public Completer[] getCompleters() {
                 return new Completer[]{
                     new CommandCompleter(commands, interpreters),
                     new NullCompleter()
@@ -632,7 +632,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("mstime", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
+        add("mstime", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
 
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length > 1) {
@@ -652,7 +652,7 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completer[] getCompletors() {
+            public Completer[] getCompleters() {
                 return new Completer[]{
                     new CommandCompleter(commands, interpreters),
                     new NullCompleter()
@@ -660,7 +660,7 @@ public class CommandInterpreter extends Thread {
             }
         });
 
-        add("redir", STANDARD_COMMANDS_GROUP_NAME, new CompletorCommandInterface() {
+        add("redir", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
 
             @Override
             public String execute(CommandInterpreter ci, String[] args) throws Exception {
@@ -677,7 +677,7 @@ public class CommandInterpreter extends Thread {
             }
 
             @Override
-            public Completer[] getCompletors() {
+            public Completer[] getCompleters() {
                 return new Completer[]{
                     new FileNameCompleter(),
                     new NullCompleter()
@@ -909,7 +909,7 @@ public class CommandInterpreter extends Thread {
             }
             //
             // Make a CompletorCommand instead of a regular one
-            CommandInterface ci = new CompletorCommandInterface() {
+            CommandInterface ci = new CompleterCommandInterface() {
                 @Override
                 public String execute(CommandInterpreter ci, String[] args)
                         throws Exception {
@@ -922,7 +922,7 @@ public class CommandInterpreter extends Thread {
                 }
                 
                 @Override
-                public Completer[] getCompletors() {
+                public Completer[] getCompleters() {
                     try {
                         return (Completer[])cm.invoke(group);
                     } catch (IllegalAccessException | InvocationTargetException e) {

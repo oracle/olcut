@@ -74,10 +74,10 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
             }
             if (!compMap.containsKey(lCommand)) {
                 CommandInterface ci = commands.get(command);
-                if (ci instanceof CompletorCommandInterface) {
-                    CompletorCommandInterface cci
-                            = (CompletorCommandInterface) ci;
-                    compMap.put(lCommand, cci.getCompletors());
+                if (ci instanceof CompleterCommandInterface) {
+                    CompleterCommandInterface cci
+                            = (CompleterCommandInterface) ci;
+                    compMap.put(lCommand, cci.getCompleters());
                 } else {
                     compMap.put(lCommand, null);
                 }

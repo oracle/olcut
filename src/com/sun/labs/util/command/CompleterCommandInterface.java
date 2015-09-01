@@ -10,12 +10,12 @@ import jline.console.completer.Completer;
  * </a> are provided by the <a href="http://jline.sourceforge.net">JLine</a>
  * library.  Additionally, this package provides {@link CommandCompletor} that
  * will complete with the name of a defined command.  The order of Completors
- * in the array returned from {@link #getCompletors} matches the arguments
+ * in the array returned from {@link #getCompleters} matches the arguments
  * provided to this command.  The last Completor in the array will be used
  * for any arguments that extend beyond the length of the array.
  * 
  */
-public interface CompletorCommandInterface extends CommandInterface {
+public interface CompleterCommandInterface extends CommandInterface {
     /**
      * Gets an array of Completors for the arguments to a command.  Each
      * component of the array is used with the corresponding argument to the
@@ -28,5 +28,5 @@ public interface CompletorCommandInterface extends CommandInterface {
      * @return an array of Completors, one for each expected argument to this
      *         command
      */
-    public Completer[] getCompletors();
+    public Completer[] getCompleters();
 }
