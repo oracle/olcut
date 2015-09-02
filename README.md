@@ -307,44 +307,44 @@ should go:
 Commands added to a CommandInterpreter may provide tab completion for each of
 their arguments.  A separate method may be included in the same CommandGroup
 that has a name consisting of the command it is providing completors for
-followed by the word Completors.  It takes no arguments and returns
-`Completor[]`.
+followed by the word Completers.  It takes no arguments and returns
+`Completer[]`.
 
-        public Completor[] filterCompletors() {
-            return new Completor[]{
-                new FileNameCompletor(),
-                new FileNameCompletor()
+        public Completer[] filterCompleters() {
+            return new Completer[]{
+                new FileNameCompleter(),
+                new FileNameCompleter()
             };
         }
 
 In this example, an array of completors is returned, one per argument.  This
 could actually be simplified because the behavior of the completors is to
 reuse the last completor in the array for all further arguments.  Simply
-providing a single FileNameCompletor would work the same for this method.  To
+providing a single FileNameCompleter would work the same for this method.  To
 prevent tab-completion for a particular parameter, or to prevent the last
-completor from repeating, place a NullCompletor in the array in the appropriate
+completor from repeating, place a NullCompleter in the array in the appropriate
 spot.
 
 The following types of completors are available in OLCUT.  Most are provided
 by the [jline library](http://jline.sourceforge.net/apidocs/index.html).
 
-* FileNameCompletor - Completes file names starting in the PWD
-* SimpleCompletor - Pass it an array of strings or a Reader to give it the values it should complete to
-* ClassNameCompletor - Fills in Class names, optionally with a filter applied, from your classpath
-* EnumCompletor - Completes with values from a specified Enum type
-* NullCompletor - Does not complete with anything.
-* IntCompletor - Just kidding.  But it'd be awesome if it could figure that out, right?
+* FileNameCompleter - Completes file names starting in the PWD
+* SimpleCompleter - Pass it an array of strings or a Reader to give it the values it should complete to
+* ClassNameCompleter - Fills in Class names, optionally with a filter applied, from your classpath
+* EnumCompleter - Completes with values from a specified Enum type
+* NullCompleter - Does not complete with anything.
+* IntCompleter - Just kidding.  But it'd be awesome if it could figure that out, right?
 
 If you wish to reuse a method that generates completors, you can use an
 attribute of the Command annotation to specify the name of the completor method
-to use instead of relying on the xxxCompletors convention.  For example,
+to use instead of relying on the xxxCompleters convention.  For example,
 if multiple commands take a single File parameter, you might make a method such
 as this one:
 
-        public Completors[] fileCompletor() {
-            return new Completor[]{
-                new FileNameCompletor(),
-                new NullCompletor()
+        public Completers[] fileCompleter() {
+            return new Completer[]{
+                new FileNameCompleter(),
+                new NullCompleter()
             }
         }
 
@@ -352,7 +352,7 @@ Then when annotating a method that takes a File as its parameter, you would
 specify:
 
         @Command(usage="Processes a single file",
-                 completors="fileCompletor")
+                 completors="fileCompleter")
 
 Multiple annotated commands may share the same completor method.
 
@@ -364,8 +364,18 @@ instead have your method use `String[]` as its second parameter (after the
 CommandInterpreter) and all arguments provided in the shell will be passed
 through verbatim allow you to do your own argument parsing.  This is
 particularly useful if you want to support a varargs-style syntax.  You may
-still provide Completors even if the arguments are not otherwise specified.
+still provide Completers even if the arguments are not otherwise specified.
 
 ## Layered Command Interpreter (Mixing in more commands)
 
 # Odds & Ends
+
+## Date parser
+
+## Getopt
+
+## Log formatter
+
+## Stop watch timer
+
+
