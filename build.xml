@@ -72,7 +72,14 @@
 
     -->
 
-    <!-- Push the jar out to the artifactory on labeast -->
+    <target name="install" depends="jar" description="Install to local maven">
+        <artifact:pom id="olcutPom" file="olcutPom.xml" />
+        <artifact:install file="${dist.jar}">
+            <pom refid="olcutPom" />
+        </artifact:install>
+    </target>
+
+    <!-- Push the jar out to the artifactory on citadel -->
     <!-- Borrowed from http://forums.jfrog.org/Ant-target-to-deploy-to-Artifactory-td3656903.html -->
     <target name="deployArtifactory" depends="jar" description="Deploy olcut to Artifactory">
         <artifact:pom id="olcutPom" file="olcutPom.xml" />

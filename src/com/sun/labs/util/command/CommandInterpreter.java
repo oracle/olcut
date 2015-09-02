@@ -1008,7 +1008,7 @@ public class CommandInterpreter extends Thread {
                 int minParams = 0;
                 for (Parameter p : params) {
                     Optional opt = p.getAnnotation(Optional.class);
-                    if (opt != null) {
+                    if (opt == null) {
                         minParams++;
                     }
                 }
