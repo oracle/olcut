@@ -1012,6 +1012,9 @@ public class CommandInterpreter extends Thread {
                         minParams++;
                     }
                 }
+                //
+                // Adjust minParams to skip the CommandInterpreter in the count
+                minParams--;
                 if (args.length - 1 < minParams) {
                     //
                     // Nope, got the wrong number
@@ -1025,7 +1028,7 @@ public class CommandInterpreter extends Thread {
                     return String.format(
                             "Incorrect number of arguments.  Found %d, expected %d: %s\nUsage: %s",
                         args.length - 1,
-                        m.getParameterCount() - 1,
+                        minParams,
                         paramStr,
                         usage);
                 }
