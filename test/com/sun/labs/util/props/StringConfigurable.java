@@ -7,7 +7,7 @@ import java.util.logging.Logger;
  */
 public class StringConfigurable implements Configurable {
 
-    private Logger logger;
+    protected Logger logger;
     
     @ConfigString(defaultValue="")
     public static final String PROP_ONE = "one";
