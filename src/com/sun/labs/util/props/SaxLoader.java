@@ -37,6 +37,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /** Loads configuration from an XML file */
 public class SaxLoader {
+    
+    private static final Logger logger = Logger.getLogger(SaxLoader.class.getName());
 
     private URL curURL;
 
@@ -178,11 +180,16 @@ public class SaxLoader {
                                                 "'name' and either 'type' or 'inherit' attributes",
                                                 locator);
                 }
-                if(curType == null) {
+                if(override != null) {
 
                     //
-                    // If we're not using an existing type, we're inheriting from
-                    // an already-defined component.
+                    // If we're overriding an existing type, then we should pull
+                    // its property set, copy it and override it. Note that we're 
+                    // not doing any type checking here, so it's possible to specify
+                    // a type for override that is incompatible with the specified
+                    // properties. If that's the case, then things might get
+                    // really weird. We'll log an override with a specified type
+                    // just in case.
                     RawPropertyData spd = rpdMap.get(override);
                     if(spd == null) {
                         spd = existingRPD.get(override);
@@ -191,7 +198,14 @@ public class SaxLoader {
                                                         override, locator);
                         }
                     }
-                    rpd = new RawPropertyData(curComponent, spd.getClassName(),
+                    if(curType != null && !curType.equals(spd.getClassName())) {
+                        logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s", 
+                                spd.getName(), curComponent, curType, spd.getClassName()));
+                    }
+                    if(curType == null) {
+                        curType = spd.getClassName();
+                    }
+                    rpd = new RawPropertyData(curComponent, curType,
                                               spd.getProperties());
                     overriding = true;
                 } else {

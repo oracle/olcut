@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.sun.labs.util.props;
 
 import java.util.HashMap;
@@ -16,10 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author sg93990
- */
 public class RemoveTest {
 
     public RemoveTest() {
