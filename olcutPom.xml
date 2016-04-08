@@ -2,13 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.oracle.labs.irml</groupId>
-        <artifactId>MavenParent</artifactId>
-        <version>1.0-SNAPSHOT</version>
-        <relativePath>../MavenParent/pom.xml</relativePath>
-    </parent>
-
     <groupId>com.oracle.labs.irml</groupId>
     <artifactId>olcut</artifactId>
     <version>2.1.3</version>
@@ -19,10 +12,15 @@
     </properties>
 
     <distributionManagement>
+        <repository>
+            <id>citadel-release</id>
+            <name>citadel-releases</name>
+            <url>http://citadel.us.oracle.com/artifactory/libs-release-local</url>
+        </repository>
         <snapshotRepository>
             <id>citadel</id>
-            <name>citadel-releases</name>
-            <url>http://citadel.us.oracle.com:8081/artifactory/libs-release-local</url>
+            <name>citadel-snapshot</name>
+            <url>http://citadel.us.oracle.com/artifactory/libs-snapshot-local</url>
         </snapshotRepository>
     </distributionManagement>
 
