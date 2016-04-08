@@ -49,6 +49,9 @@ public class LayeredCommandInterpreter extends CommandInterpreter {
         return commandGroups;
     }
 
-    
+    @Override
+    public String toString() {
+        return "LayeredCommandInterpreter name: " + layerName + ", tag: " + layerTag;
+    }
     
 }
