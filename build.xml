@@ -79,21 +79,6 @@
         </artifact:install>
     </target>
 
-    <!-- Push the jar out to the artifactory on citadel -->
-    <!-- Borrowed from http://forums.jfrog.org/Ant-target-to-deploy-to-Artifactory-td3656903.html -->
-    <target name="deployArtifactory" depends="jar" description="Deploy olcut to Artifactory">
-        <artifact:pom id="olcutPom" file="olcutPom.xml" />
-        <artifact:install file="${dist.jar}">
-            <pom refid="olcutPom" />
-        </artifact:install>
-        <artifact:deploy file="${dist.jar}">
-            <remoteRepository url="http://citadel.us.oracle.com:8081/artifactory/libs-release-local">
-                <authentication username="ant-builds" password="APB5ujTsWhY9e7f5" />
-            </remoteRepository>
-            <pom refid="olcutPom" />
-        </artifact:deploy>
-    </target>
-    
     <!-- Figure out the name of the version we're on based on the latest tag -->
     <!-- Borrowed from http://stackoverflow.com/questions/2974106/ -->
     <target name="getgitversion" >
@@ -124,4 +109,31 @@
     <target name="-post-jar">
         <copy file="${file.reference.jline.license.txt}" todir="${dist.dir}/lib"/>
     </target>
+    
+    <target name="deploy-artifactory-snapshot" depends="jar" description="Deploy snapshot to Artifactory">
+        <artifact:pom id="Pom" file="olcutPom.xml" />
+        <artifact:install file="${dist.jar}">
+            <pom refid="Pom" />
+        </artifact:install>
+        <artifact:deploy file="${dist.jar}">
+            <remoteRepository id="citadel-snapshot" url="http://citadel.us.oracle.com/artifactory/libs-snapshot-local">
+                <authentication username="ant-builds" password="APB5ujTsWhY9e7f5" />
+            </remoteRepository>
+            <pom refid="Pom" />
+        </artifact:deploy>
+    </target>
+
+    <target name="deploy-artifactory-release" depends="jar" description="Deploy snapshot to Artifactory">
+        <artifact:pom id="Pom" file="olcutPom.xml" />
+        <artifact:install file="${dist.jar}">
+            <pom refid="Pom" />
+        </artifact:install>
+        <artifact:deploy file="${dist.jar}">
+            <remoteRepository id="citadel-release" url="http://citadel.us.oracle.com/artifactory/libs-release-local">
+                <authentication username="ant-builds" password="APB5ujTsWhY9e7f5" />
+            </remoteRepository>
+            <pom refid="Pom" />
+        </artifact:deploy>
+    </target>
+
 </project>
