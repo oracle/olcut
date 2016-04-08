@@ -1173,7 +1173,7 @@ public class CommandInterpreter extends Thread {
         for(LayeredCommandInterpreter lci : interpreters) {
             CommandInterface ci = lci.commands.get("on_exit");
             try {
-                ci.execute(this, new String[0]);
+                ci.execute(this, new String[]{"on_exit"});
             } catch(Exception ex) {
                 logger.log(Level.SEVERE, String.format("Error on close for %s", lci.getLayerName()), ex);
             }
