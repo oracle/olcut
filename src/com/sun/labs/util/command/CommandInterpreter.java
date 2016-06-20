@@ -143,6 +143,7 @@ public class CommandInterpreter extends Thread {
             }
             History history
                     = new FileHistory(new File(histFile));
+            
             consoleReader.setHistory(history);
             //consoleReader.setDebug(new PrintWriter(System.out));
             consoleReader.addCompleter(new MultiCommandArgumentCompleter(consoleReader, commands, interpreters));
@@ -1178,6 +1179,7 @@ public class CommandInterpreter extends Thread {
                 logger.log(Level.SEVERE, String.format("Error on close for %s", lci.getLayerName()), ex);
             }
         }
+        close();
         out.println("----------\n");
         if(out != System.out) {
             out.close();
