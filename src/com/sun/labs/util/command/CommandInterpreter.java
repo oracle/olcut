@@ -1457,6 +1457,7 @@ public class CommandInterpreter extends Thread {
     public void close() {
         try {
             ((FileHistory)consoleReader.getHistory()).flush();
+            consoleReader.shutdown();
         } catch (IOException e) {
             logger.log(Level.WARNING,"Failed to write history",e);
         }
