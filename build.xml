@@ -81,6 +81,8 @@
 
     <!-- Figure out the name of the version we're on based on the latest tag -->
     <!-- Borrowed from http://stackoverflow.com/questions/2974106/ -->
+    <!-- Create a tag for a new version using git tag -a x.y.z -->
+    <!-- Make sure to push the tags using git push dashdash follow-tags -->
     <target name="getgitversion" >
         <exec executable="git" outputproperty="git.tagstring">
             <arg value="describe"/>

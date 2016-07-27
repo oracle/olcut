@@ -4,7 +4,7 @@
 
     <groupId>com.oracle.labs.irml</groupId>
     <artifactId>olcut</artifactId>
-    <version>2.1.5</version>
+    <version>2.1.6</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
