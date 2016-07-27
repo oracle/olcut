@@ -823,35 +823,44 @@ public class CommandInterpreter extends Thread {
                         " must have CommandInterpreter for its first parameter");
                 continue;
             }
+
             //
-            // If we aren't getting just a string array, check for supported
-            // types for our other params
-            if (!(params.length == 2 && params[1].getType() == String[].class)) {
-                for (int i = 1; i < params.length; i++) {
-                    if (!supportedMethodParameters.contains(params[i].getType())
-                            && !params[i].getType().isEnum()) {
-                        logger.warning(methodName
-                                + " has unsupported parameter type "
-                                + params[i].getType().getSimpleName());
-                    }
+            // Make sure that the parameter types are supported.
+            for (int i = 1; i < params.length; i++) {
+
+                //
+                // Check the parameter against our 
+                if (!supportedMethodParameters.contains(params[i].getType())
+                        && !params[i].getType().isEnum()) {
+                    logger.warning(methodName
+                            + " has unsupported parameter type "
+                            + params[i].getType().getSimpleName());
                 }
                 
                 //
-                // Also check to see that if we have optional parameters, we
-                // don't have any non-optional ones after the optional ones.
-                boolean foundOptional = false;
-                for (Parameter p : params) {
-                    Optional opt = p.getAnnotation(Optional.class);
-                    if (foundOptional && opt == null) {
-                        logger.warning(methodName +
-                                " has non-optional parameter following optional parameter.");
-                        continue;
-                    }
-                    if (opt != null) {
-                        foundOptional = true;
+                // If the parameter type is array of String, then it needs 
+                // to be the last parameter.
+                if(params[i].getType() == String[].class) {
+                    if(i != params.length - 1) {
+                        logger.warning(String.format("%s has String[] parameter which is not last", methodName));
                     }
                 }
-                
+            }
+
+            //
+            // Also check to see that if we have optional parameters, we
+            // don't have any non-optional ones after the optional ones.
+            boolean foundOptional = false;
+            for (Parameter p : params) {
+                Optional opt = p.getAnnotation(Optional.class);
+                if (foundOptional && opt == null) {
+                    logger.warning(methodName
+                            + " has non-optional parameter following optional parameter.");
+                    continue;
+                }
+                if (opt != null) {
+                    foundOptional = true;
+                }
             }
 
             //
@@ -861,7 +870,6 @@ public class CommandInterpreter extends Thread {
                         " has wrong return type.  Expected String");
                 continue;
             }
-            
             
             //
             // Now let's see if there's a method to get the completers for
@@ -959,6 +967,7 @@ public class CommandInterpreter extends Thread {
     private HashSet<Class> supportedMethodParameters =
             new HashSet<Class>(Arrays.asList(
                     String.class,
+                    String[].class,
                     Integer.class,
                     int.class,
                     Long.class,
@@ -1054,6 +1063,11 @@ public class CommandInterpreter extends Thread {
                         invokeParams[i] = null;
                     } else if (currParam == String.class) {
                         invokeParams[i] = arg;
+                    } else if (currParam == String[].class) {
+                        //
+                        // An array of string pulls the rest of the arguments.
+                        invokeParams[i] = Arrays.copyOfRange(args, i, args.length);
+                        break;
                     } else if (currParam == Integer.class || currParam == int.class) {
                         invokeParams[i] = Integer.parseInt(arg);
                     } else if (currParam == Long.class || currParam == long.class) {
