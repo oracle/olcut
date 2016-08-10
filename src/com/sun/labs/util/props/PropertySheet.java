@@ -222,7 +222,7 @@ public class PropertySheet implements Cloneable {
             propertyClass.cast(s4PropWrapper.getAnnotation());
         } catch(ClassCastException e) {
             throw new InternalConfigurationException(e, getInstanceName(), name, name
-                    + " is not an annotated sphinx property of '" + getConfigurableClass().
+                    + " is not an annotated property of '" + getConfigurableClass().
                     getName() + "' !");
         }
 
