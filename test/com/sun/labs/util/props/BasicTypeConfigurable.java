@@ -10,13 +10,25 @@ public class BasicTypeConfigurable implements Configurable {
     private Logger logger;
     
     @Config
-    String s = "";
+    String s = "default";
 
     @Config
-    int i = 0;
+    int i = 16;
+    
+    @Config
+    Integer bigI = 17;
 
     @Config
-    double d = 0;
+    long l = 18;
+    
+    @Config
+    Long bigL = 19L;
+    
+    @Config
+    double d = 21;
+    
+    @Config
+    Double bigD = 22d;
 
     public void newProperties(PropertySheet ps) throws PropertyException {
         logger = ps.getLogger();

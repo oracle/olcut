@@ -18,6 +18,6 @@ public @interface Config {
     /**
      * By default, configuration variables are mandatory.
      */
-    boolean mandatory() default true;
+    boolean mandatory() default false;
 
 }
