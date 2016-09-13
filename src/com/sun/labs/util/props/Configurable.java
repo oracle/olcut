@@ -73,6 +73,9 @@ public interface Configurable extends Component {
      * @param ps a property sheet holding the new data
      * @throws PropertyException if there is a problem with the properties.
      */
-    public void newProperties(PropertySheet ps) throws PropertyException;
+    @Deprecated
+    default public void newProperties(PropertySheet ps) throws PropertyException {
+        
+    }
 
 }

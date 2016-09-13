@@ -19,6 +19,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -940,6 +942,9 @@ public class PropertySheet implements Cloneable {
      * @param ps the property sheet with the values that we want to set.
      */
     private void setConfiguredFields(Object o, PropertySheet ps) throws PropertyException, IllegalAccessException {
+        
+        Logger logger = Logger.getLogger(PropertySheet.class.getName());
+        
         for (Field f : o.getClass().getDeclaredFields()) {
             boolean accessible = f.isAccessible();
             f.setAccessible(true);
@@ -949,17 +954,52 @@ public class PropertySheet implements Cloneable {
                     // We have a variable annotated with the Config annotation, 
                     // let's get a value out of the property sheet and figure 
                     // out how to turn it into the right type.
+                    
                     //
+                    // We'll handle things that have lists with items separately.
+                    FieldType ft = FieldType.getFieldType(f);
+                    if(FieldType.listTypes.contains(ft)) {
+                        List<String> vals = (List<String>) ps.propValues.get(f.getName());
+                        List<String> replaced = new ArrayList<String>();
+                        for(String val : vals) {
+                            replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), val));
+                        }
+                        switch(ft) {
+                            case STRING_ARRAY:
+                                f.set(o, replaced.toArray(new String[0]));
+                                break;
+                            case COMPONENT_ARRAY:
+                                Component[] cs = new Component[replaced.size()];
+                                for(int i = 0; i < cs.length; i++) {
+                                    cs[i] = ps.getConfigurationManager().lookup(replaced.get(i));
+                                }
+                                f.set(o, cs);
+                                break;
+                            case CONFIGURABLE_ARRAY:
+                                Configurable[] cos = new Configurable[replaced.size()];
+                                for(int i = 0; i < cos.length; i++) {
+                                    cos[i] = (Configurable) ps.getConfigurationManager().lookup(replaced.get(i));
+                                }
+                                f.set(o, cos);
+                                break;
+                        }
+                        continue;
+                    }
+                    
+                    //
+                    // We know it's a single string now. 
                     // We'll use flattenProp so that we take care of any variables
                     // in the value.
                     String val = ps.flattenProp(f.getName());
                     
                     //
-                    // We'll handle things that have lists with items separately.
-                    FieldType ft = FieldType.getFieldType(f);
-                    if(ft == FieldType.STRING_ARRAY || ft == FieldType.COMPONENT_ARRAY) {
-                        logger.info(String.format("Not yet"));
-                        continue;
+                    // Handle empty values.
+                    if(val == null) {
+                        if(((Config) a).mandatory()) {
+                            throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " is mandatory in configuration");
+                        } else {
+                            continue;
+                        }
                     }
                     switch (ft) {
                         case STRING:
@@ -971,6 +1011,13 @@ public class PropertySheet implements Cloneable {
                         case INTEGER:
                             try {
                                 f.setInt(o, Integer.parseInt(val));
+                            } catch (NumberFormatException ex) {
+                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
+                            }
+                            break;
+                        case ATOMIC_INTEGER:
+                            try {
+                                f.set(o, new AtomicInteger(Integer.parseInt(val)));
                             } catch (NumberFormatException ex) {
                                 throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
                             }
@@ -991,6 +1038,13 @@ public class PropertySheet implements Cloneable {
                         case LONG:
                             try {
                                 f.setLong(o, Long.parseLong(val));
+                            } catch (NumberFormatException ex) {
+                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a long", val));
+                            }
+                            break;
+                        case ATOMIC_LONG:
+                            try {
+                                f.set(o, new AtomicLong(Long.parseLong(val)));
                             } catch (NumberFormatException ex) {
                                 throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a long", val));
                             }

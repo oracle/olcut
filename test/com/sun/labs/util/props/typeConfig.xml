@@ -7,6 +7,10 @@
 
 <config>
     
+    <component name="default" type="com.sun.labs.util.props.BasicTypeConfigurable">
+        <property name="logLevel" value="FINER"/>
+    </component>
+
     <component name="a" type="com.sun.labs.util.props.BasicTypeConfigurable">
         <property name="logLevel" value="FINER"/>
         <property name="s" value="one"/>
@@ -19,6 +23,14 @@
         <property name="s" value="two"/>
         <property name="i" value="3"/>
         <property name="d" value="6.3"/>
+    </component>
+    
+    <component name="l1" type="com.sun.labs.util.props.ListTypeConfigurable">
+        <propertylist name="list">
+            <item>default</item>
+            <item>a</item>
+            <item>b</item>
+        </propertylist>
     </component>
     
 </config>
