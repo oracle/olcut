@@ -75,6 +75,15 @@ public interface Configurable extends Component {
      */
     @Deprecated
     default public void newProperties(PropertySheet ps) throws PropertyException {
+    }
+    
+    /**
+     * Uses the configured variables, which are set up by the configuration
+     * system before this method is called, to do any post variable configuration
+     * setup.
+     * @throws PropertyException 
+     */
+    default public void postConfig() throws PropertyException {
         
     }
 
