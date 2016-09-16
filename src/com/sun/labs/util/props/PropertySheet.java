@@ -943,8 +943,6 @@ public class PropertySheet implements Cloneable {
      */
     private void setConfiguredFields(Object o, PropertySheet ps) throws PropertyException, IllegalAccessException {
         
-        Logger logger = Logger.getLogger(PropertySheet.class.getName());
-        
         for (Field f : o.getClass().getDeclaredFields()) {
             boolean accessible = f.isAccessible();
             f.setAccessible(true);

@@ -10,6 +10,7 @@ import java.lang.annotation.RetentionPolicy;
  * @author Holger Brandl
  * @see ConfigurationManager
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @ConfigProperty
