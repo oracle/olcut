@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -1486,6 +1488,29 @@ public class PropertySheet implements Cloneable {
 
         return ps;
     }
+    
+    /**
+     * Gets all of the fields associated with a class by walking up the
+     * class tree.  Handles super classes, as well as interfaces.
+     * @param configurable the class who's fields we wish to walk.
+     * @return all of the fields, so they can be checked for annoatations.
+     */
+    private Collection<Field> getAllFields(Class configurable) {
+        Set<Field> ret = new HashSet<>();
+        Queue<Class> cq = new ArrayDeque<>();
+        cq.add(configurable);
+        while(!cq.isEmpty()) {
+            Class curr = cq.remove();
+            ret.addAll(Arrays.asList(curr.getDeclaredFields()));
+            ret.addAll(Arrays.asList(curr.getFields()));
+            Class sc = curr.getSuperclass();
+            if(sc != null) {
+                cq.add(sc);
+            }
+            cq.addAll(Arrays.asList(curr.getInterfaces()));
+        }
+        return ret;
+    }
 
     /**
      * use annotation based class parsing to detect the configurable properties
@@ -1496,7 +1521,7 @@ public class PropertySheet implements Cloneable {
      */
     public void processAnnotations(PropertySheet propertySheet,
             Class<? extends Configurable> configurable) throws PropertyException {
-
+        
         //
         // This is kind of a hack to handle Scala classes that want to be 
         // configurable. The convention in Scala is to annotate a method that
@@ -1535,8 +1560,8 @@ public class PropertySheet implements Cloneable {
 
         //
         // The java version.
-        Field[] classFields = configurable.getDeclaredFields();
-
+        Collection<Field> classFields = getAllFields(configurable);
+        
         for (Field field : classFields) {
             Annotation[] annotations = field.getAnnotations();
             for (Annotation annotation : annotations) {
