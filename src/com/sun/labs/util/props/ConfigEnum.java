@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * A configuration type for Java enums.
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @ConfigProperty

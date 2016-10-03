@@ -9,6 +9,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @see ConfigurationManager
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @ConfigProperty
