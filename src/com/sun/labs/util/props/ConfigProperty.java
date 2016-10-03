@@ -15,6 +15,7 @@ import java.lang.annotation.RetentionPolicy;
  * @see ConfigBoolean
  * @see ConfigString
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConfigProperty {
 
