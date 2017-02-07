@@ -24,6 +24,12 @@ public class RawPropertyData {
     private String className;
 
     private Map<String, Object> properties;
+    
+    /**
+     * A URL for a resource indicating from where the component can be
+     * deserialized.
+     */
+    private String serializedForm;
 
     /**
      * Whether this component is exportable to a service registrar.
@@ -91,7 +97,15 @@ public class RawPropertyData {
     String getName() {
         return name;
     }
-    
+
+    public String getSerializedForm() {
+        return serializedForm;
+    }
+
+    public void setSerializedForm(String serializedForm) {
+        this.serializedForm = serializedForm;
+    }
+
     public void setLeaseTime(long leaseTime) {
         this.leaseTime = leaseTime;
     }
@@ -139,7 +153,9 @@ public class RawPropertyData {
         return properties.get(propName) != null;
     }
 
-    /** Returns a copy of this property data instance with all ${}-fields resolved. */
+    /** 
+     * Returns a copy of this property data instance with all ${}-fields resolved.
+     */
     public RawPropertyData flatten(ConfigurationManager cm) {
         RawPropertyData copyRPD = new RawPropertyData(name, className);
 

@@ -71,7 +71,7 @@ public class SaxLoader {
      */
     public SaxLoader(URL url, GlobalProperties globalProperties,
                       Map<String, RawPropertyData> existingRPD) {
-        this.urlQueue = new LinkedList<URL>();
+        this.urlQueue = new LinkedList<>();
         this.urlQueue.add(url);
         this.globalProperties = globalProperties;
         this.existingRPD = existingRPD;
@@ -84,7 +84,7 @@ public class SaxLoader {
      * @throws IOException if an I/O or parse error occurs
      */
     public Map<String, RawPropertyData> load() throws IOException {
-        rpdMap = new HashMap<String, RawPropertyData>();
+        rpdMap = new HashMap<>();
         InputStream is = null;
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -143,6 +143,7 @@ public class SaxLoader {
                 String override = attributes.getValue("inherit");
                 String export = attributes.getValue("export");
                 String entriesName = attributes.getValue("entries");
+                String serializedForm = attributes.getValue("serialized");
                 boolean exportable = export != null && Boolean.valueOf(export);
                 String imp = attributes.getValue("import");
                 boolean importable = imp != null && Boolean.valueOf(imp);
@@ -222,6 +223,7 @@ public class SaxLoader {
                 rpd.setImportable(importable);
                 rpd.setLeaseTime(leaseTime);
                 rpd.setEntriesName(entriesName);
+                rpd.setSerializedForm(serializedForm);
             } else if(qName.equals("property")) {
                 String name = attributes.getValue("name");
                 String value = attributes.getValue("value");

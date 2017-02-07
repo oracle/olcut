@@ -1,16 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.sun.labs.util.props;
 
+import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**
  * A configurable with a few strings.
  */
-public class BasicConfigurable implements Configurable {
+public class BasicConfigurable implements Configurable, Serializable {
 
     private Logger logger;
     
