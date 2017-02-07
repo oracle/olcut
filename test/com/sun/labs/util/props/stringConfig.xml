@@ -14,6 +14,12 @@
         <property name="three" value="c"/>
     </component>
 
+    <component name="ac" type="com.sun.labs.util.props.StringConfig" serialized="/tmp/ac.ser">
+        <property name="one" value="a"/>
+        <property name="two" value="b"/>
+        <property name="three" value="c"/>
+    </component>
+
     <component name="b" type="com.sun.labs.util.props.StringConfigurable">
         <property name="logLevel" value="FINER"/>
         <property name="one" value="d"/>
@@ -21,4 +27,9 @@
         <property name="three" value="f"/>
     </component>
     
+    <component name="bc" type="com.sun.labs.util.props.StringConfig" serialized="/tmp/bc.ser">
+        <property name="one" value="d"/>
+        <property name="two" value="e"/>
+        <property name="three" value="f"/>
+    </component>
 </config>

@@ -1,6 +1,12 @@
 package com.sun.labs.util.props;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -8,6 +14,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -37,7 +45,7 @@ import net.jini.core.lease.Lease;
  * @author Holger Brandl
  */
 public class PropertySheet implements Cloneable {
-
+    
     public enum PropertyType {
 
         INT, DOUBLE, BOOL, ENUM, COMP, STRING, STRINGLIST, COMPLIST, ENUMSET;
@@ -71,6 +79,8 @@ public class PropertySheet implements Cloneable {
     private boolean importable;
 
     private boolean implementsRemote;
+    
+    private String serializedForm;
 
     /**
      * The time to lease this object.
@@ -96,7 +106,7 @@ public class PropertySheet implements Cloneable {
     private Level logLevel;
 
     @SuppressWarnings("NonConstantLogger")
-    private Logger logger;
+    private Logger logger = Logger.getLogger(getClass().getName());
 
     public PropertySheet(Configurable configurable, String name,
             RawPropertyData rpd, ConfigurationManager ConfigurationManager) {
@@ -113,6 +123,7 @@ public class PropertySheet implements Cloneable {
         importable = rpd.isImportable();
         leaseTime = rpd.getLeaseTime();
         entriesName = rpd.getEntriesName();
+        serializedForm = rpd.getSerializedForm();
 
         //
         // Does this class implement remote?
@@ -864,6 +875,36 @@ public class PropertySheet implements Cloneable {
     public synchronized Component getOwner(PropertySheet ps, ComponentListener cl) {
         return getOwner(ps, cl, true);
     }
+    
+    private InputStream getSerializedStream(String sf) {
+        //
+        // First, see if it's a resource on our classpath.
+        InputStream ret = this.getClass().getResourceAsStream(sf);
+        if(ret == null) {
+            try {
+                //
+                // Nope. See if it's a valid URL and open that.
+                URL sfu = new URL(sf);
+                ret = sfu.openStream();
+            } catch (MalformedURLException ex) {
+                try {
+                    //
+                    // Not a valid URL, so try it as a file name.
+                    ret = new FileInputStream(sf);
+                } catch (FileNotFoundException ex1) {
+                    //
+                    // Couldn't open the file, we're done.
+                    return null;
+                }
+            } catch (IOException ex) {
+                //
+                // No joy.
+                logger.warning("Cannot open serialized form " + sf);
+                return null;
+            }
+        }
+        return ret;
+    }
 
     public synchronized Component getOwner(PropertySheet ps, ComponentListener cl, boolean reuseComponent) {
         try {
@@ -890,6 +931,28 @@ public class PropertySheet implements Cloneable {
                         return null;
                     }
                 }
+                
+                //
+                // Should we load a serialized form?
+                if(serializedForm != null) {
+                    InputStream serStream = getSerializedStream(serializedForm);
+                    if(serStream != null) {
+                        ObjectInputStream ois;
+                        try {
+                            //
+                            // Read the object and cast it into this class for return;
+                            ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024*1024));
+                            Object deser = ois.readObject();
+                            ois.close();
+                            return ownerClass.cast(deser);
+                        } catch (IOException ex) {
+                            throw new PropertyException(ex, ps.getInstanceName(), null, "Error reading serialized form");
+                        } catch (ClassNotFoundException ex) {
+                            throw new PropertyException(ex, ps.getInstanceName(), null, "Serialized class not found");
+                        }
+                    }
+                }
+                
                 if (logger != null && logger.isLoggable(Level.FINER)) {
                     logger.finer(String.format("Creating %s", getInstanceName()));
                 }
