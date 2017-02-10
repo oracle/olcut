@@ -7,12 +7,23 @@
 
 <config>
     
+    <property name="serFile" value="/tmp/ac.ser"/>
+
     <component name="a" type="com.sun.labs.util.props.StringConfigurable">
         <property name="logLevel" value="FINER"/>
         <property name="one" value="a"/>
         <property name="two" value="b"/>
         <property name="three" value="c"/>
     </component>
+
+    <component name="ac" type="com.sun.labs.util.props.StringConfig" serialized="${serFile}">
+        <property name="one" value="a"/>
+        <property name="two" value="b"/>
+        <property name="three" value="c"/>
+    </component>
+    
+    <!-- Any serialized object can be here -->
+    <serialized name="acs" location="${serFile}"/>
 
     <component name="b" type="com.sun.labs.util.props.StringConfigurable">
         <property name="logLevel" value="FINER"/>
@@ -21,4 +32,9 @@
         <property name="three" value="f"/>
     </component>
     
+    <component name="bc" type="com.sun.labs.util.props.StringConfig" serialized="${serFile}">
+        <property name="one" value="d"/>
+        <property name="two" value="e"/>
+        <property name="three" value="f"/>
+    </component>
 </config>

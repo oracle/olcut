@@ -1,12 +1,16 @@
 package com.sun.labs.util.props;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.Remote;
 import java.util.ArrayList;
@@ -35,21 +39,25 @@ import javax.management.MBeanServer;
 public class ConfigurationManager implements Cloneable {
 
     private List<ConfigurationChangeListener> changeListeners =
-            new ArrayList<ConfigurationChangeListener>();
+            new ArrayList<>();
 
     private Map<String, PropertySheet> symbolTable =
-            new LinkedHashMap<String, PropertySheet>();
+            new LinkedHashMap<>();
 
     private Map<String, RawPropertyData> rawPropertyMap =
-            new LinkedHashMap<String, RawPropertyData>();
+            new LinkedHashMap<>();
     
     private Map<Component,PropertySheet> configuredComponents =
-            new LinkedHashMap<Component,PropertySheet>();
+            new LinkedHashMap<>();
 
     private Map<String,PropertySheet> addedComponents =
-            new LinkedHashMap<String,PropertySheet>();
+            new LinkedHashMap<>();
 
     private GlobalProperties globalProperties = new GlobalProperties();
+    
+    private Map<String,SerializedObject> serializedObjects = new HashMap<>();
+    
+    private Map<String,Object> deserializedObjects = new HashMap<>();
 
     private GlobalProperties origGlobal;
 
@@ -94,6 +102,11 @@ public class ConfigurationManager implements Cloneable {
         SaxLoader saxLoader = new SaxLoader(url, globalProperties);
         origGlobal = new GlobalProperties(globalProperties);
         rawPropertyMap = saxLoader.load();
+        for(Map.Entry<String,SerializedObject> e : saxLoader.getSerializedObjects().entrySet()) {
+            e.getValue().setConfigurationManager(this);
+            serializedObjects.put(e.getKey(), e.getValue());
+        }
+        serializedObjects = saxLoader.getSerializedObjects();
 
         ConfigurationManagerUtils.applySystemProperties(rawPropertyMap,
                                                         globalProperties);
@@ -123,6 +136,10 @@ public class ConfigurationManager implements Cloneable {
         GlobalProperties tgp = new GlobalProperties();
         SaxLoader saxLoader = new SaxLoader(url, tgp, rawPropertyMap);
         Map<String, RawPropertyData> trpm = saxLoader.load();
+        for(Map.Entry<String,SerializedObject> e : saxLoader.getSerializedObjects().entrySet()) {
+            e.getValue().setConfigurationManager(this);
+            serializedObjects.put(e.getKey(), e.getValue());
+        }
 
         //
         // Now, add the new global properties to the set for this configuration
@@ -154,6 +171,48 @@ public class ConfigurationManager implements Cloneable {
         }
         return mbs;
     }
+    
+    /**
+     * Gets an input stream for a given location. We can use the stream
+     * to deserialize objects that are part of our configuration.
+     * <P>
+     * We'll try to use the location as a resource, and failing that a URL, and
+     * failing that, a file.
+     * @param location the location provided.
+     * @return an input stream for that location, or null if we couldn't find
+     * any.
+     */
+    public InputStream getInputStreamForLocation(String location) {
+        //
+        // First, see if it's a resource on our classpath.
+        InputStream ret = this.getClass().getResourceAsStream(location);
+        if (ret == null) {
+            try {
+                //
+                // Nope. See if it's a valid URL and open that.
+                URL sfu = new URL(location);
+                ret = sfu.openStream();
+            } catch (MalformedURLException ex) {
+                try {
+                    //
+                    // Not a valid URL, so try it as a file name.
+                    ret = new FileInputStream(location);
+                } catch (FileNotFoundException ex1) {
+                    //
+                    // Couldn't open the file, we're done.
+                    return null;
+                }
+            } catch (IOException ex) {
+                //
+                // No joy.
+                logger.warning("Cannot open serialized form " + location);
+                return null;
+            }
+        }
+        return ret;
+    }
+
+
     
     /**
      * Makes sure that if a component registry is defined it is instantiated and
@@ -306,9 +365,24 @@ public class ConfigurationManager implements Cloneable {
      * @return all component named registered to this instance of <code>ConfigurationManager</code>
      */
     public Collection<String> getComponentNames() {
-        return new ArrayList<String>(rawPropertyMap.keySet());
+        return new ArrayList<>(rawPropertyMap.keySet());
     }
 
+    /**
+     * Looks up an object that has been specified in the configuration
+     * as one that was serialized. Note that such an object does not need
+     * to be a component.
+     * @param objectName the name of the object to lookup.
+     * @return the deserialized object, or <code>null</code> if the object 
+     * with that name does not occur in the configuration.
+     */
+    public Object lookupSerializedObject(String objectName) {
+        SerializedObject so = serializedObjects.get(objectName);
+        if(so == null) {
+            return null;
+        }
+        return so.getObject();
+    }
     /**
      * Looks up a configurable component by its name, instantiating it if
      * necessary.
