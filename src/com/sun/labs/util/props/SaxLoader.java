@@ -35,9 +35,11 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
-/** Loads configuration from an XML file */
+/**
+ * Loads configuration from an XML file
+ */
 public class SaxLoader {
-    
+
     private static final Logger logger = Logger.getLogger(SaxLoader.class.getName());
 
     private URL curURL;
@@ -47,13 +49,15 @@ public class SaxLoader {
     private Map<String, RawPropertyData> rpdMap;
 
     private Map<String, RawPropertyData> existingRPD;
-
+    
+    private Map<String, SerializedObject> serializedObjects = new HashMap<>();
+    
     private GlobalProperties globalProperties;
 
     /**
      * Creates a loader that will load from the given location
      *
-     * @param url              the location to load
+     * @param url the location to load
      * @param globalProperties the map of global properties
      */
     public SaxLoader(URL url, GlobalProperties globalProperties) {
@@ -63,14 +67,14 @@ public class SaxLoader {
     /**
      * Creates a loader that will load from the given location
      *
-     * @param url              the location to load
+     * @param url the location to load
      * @param globalProperties the map of global properties
      * @param existingRPD the map of existing raw property data from previously
      * loaded configuration files, which we might want when overriding elements
      * in the configuration file that we're loading.
      */
     public SaxLoader(URL url, GlobalProperties globalProperties,
-                      Map<String, RawPropertyData> existingRPD) {
+            Map<String, RawPropertyData> existingRPD) {
         this.urlQueue = new LinkedList<>();
         this.urlQueue.add(url);
         this.globalProperties = globalProperties;
@@ -98,13 +102,13 @@ public class SaxLoader {
                 xr.parse(new InputSource(is));
                 is.close();
             }
-        } catch(SAXParseException e) {
-            String msg = "Error while parsing line " + e.getLineNumber() +
-                    " of " + curURL + ": " + e.getMessage();
+        } catch (SAXParseException e) {
+            String msg = "Error while parsing line " + e.getLineNumber()
+                    + " of " + curURL + ": " + e.getMessage();
             throw new IOException(msg);
-        } catch(SAXException e) {
+        } catch (SAXException e) {
             throw new IOException("Problem with XML: " + e);
-        } catch(ParserConfigurationException e) {
+        } catch (ParserConfigurationException e) {
             throw new IOException(e.getMessage());
         } finally {
             if (is != null) {
@@ -114,7 +118,14 @@ public class SaxLoader {
         return rpdMap;
     }
 
-    /** A SAX XML Handler implementation that builds up the map of raw property data objects */
+    public Map<String, SerializedObject> getSerializedObjects() {
+        return serializedObjects;
+    }
+
+    /**
+     * A SAX XML Handler implementation that builds up the map of raw property
+     * data objects
+     */
     class ConfigHandler extends DefaultHandler {
 
         RawPropertyData rpd = null;
@@ -134,10 +145,10 @@ public class SaxLoader {
          * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
          */
         public void startElement(String uri, String localName, String qName,
-                                  Attributes attributes) throws SAXException {
-            if(qName.equals("config")) {
-            // nothing to do
-            } else if(qName.equals("component")) {
+                Attributes attributes) throws SAXException {
+            if (qName.equals("config")) {
+                // nothing to do
+            } else if (qName.equals("component")) {
                 String curComponent = attributes.getValue("name");
                 String curType = attributes.getValue("type");
                 String override = attributes.getValue("inherit");
@@ -148,40 +159,40 @@ public class SaxLoader {
                 String imp = attributes.getValue("import");
                 boolean importable = imp != null && Boolean.valueOf(imp);
                 String lt = attributes.getValue("leasetime");
-                if(export == null && lt != null) {
-                    throw new SAXParseException("lease timeout " +
-                                                lt +
-                                                " specified for component that" +
-                                                " does not have export set",
-                                                locator);
+                if (export == null && lt != null) {
+                    throw new SAXParseException("lease timeout "
+                            + lt
+                            + " specified for component that"
+                            + " does not have export set",
+                            locator);
 
                 }
                 long leaseTime = -1;
-                if(lt != null) {
+                if (lt != null) {
                     try {
                         leaseTime = Long.parseLong(lt);
-                        if(leaseTime < 0) {
-                            throw new SAXParseException("lease timeout " +
-                                                        lt +
-                                                        " must be greater than 0",
-                                                        locator);
+                        if (leaseTime < 0) {
+                            throw new SAXParseException("lease timeout "
+                                    + lt
+                                    + " must be greater than 0",
+                                    locator);
                         }
-                    } catch(NumberFormatException nfe) {
-                        throw new SAXParseException("lease timeout " +
-                                                    lt + " must be a long",
-                                                    locator);
+                    } catch (NumberFormatException nfe) {
+                        throw new SAXParseException("lease timeout "
+                                + lt + " must be a long",
+                                locator);
                     }
                 }
 
                 //
                 // Check for a badly formed component tag.
-                if(curComponent == null ||
-                        (curType == null && override == null)) {
-                    throw new SAXParseException("component element must specify " +
-                                                "'name' and either 'type' or 'inherit' attributes",
-                                                locator);
+                if (curComponent == null
+                        || (curType == null && override == null)) {
+                    throw new SAXParseException("component element must specify "
+                            + "'name' and either 'type' or 'inherit' attributes",
+                            locator);
                 }
-                if(override != null) {
+                if (override != null) {
 
                     //
                     // If we're overriding an existing type, then we should pull
@@ -192,27 +203,27 @@ public class SaxLoader {
                     // really weird. We'll log an override with a specified type
                     // just in case.
                     RawPropertyData spd = rpdMap.get(override);
-                    if(spd == null) {
+                    if (spd == null) {
                         spd = existingRPD.get(override);
-                        if(spd == null) {
-                            throw new SAXParseException("Override for undefined component: " +
-                                                        override, locator);
+                        if (spd == null) {
+                            throw new SAXParseException("Override for undefined component: "
+                                    + override, locator);
                         }
                     }
-                    if(curType != null && !curType.equals(spd.getClassName())) {
-                        logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s", 
+                    if (curType != null && !curType.equals(spd.getClassName())) {
+                        logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
                                 spd.getName(), curComponent, curType, spd.getClassName()));
                     }
-                    if(curType == null) {
+                    if (curType == null) {
                         curType = spd.getClassName();
                     }
                     rpd = new RawPropertyData(curComponent, curType,
-                                              spd.getProperties());
+                            spd.getProperties());
                     overriding = true;
                 } else {
-                    if(rpdMap.get(curComponent) != null) {
-                        throw new SAXParseException("duplicate definition for " +
-                                                    curComponent, locator);
+                    if (rpdMap.get(curComponent) != null) {
+                        throw new SAXParseException("duplicate definition for "
+                                + curComponent, locator);
                     }
                     rpd = new RawPropertyData(curComponent, curType, null);
                 }
@@ -224,65 +235,69 @@ public class SaxLoader {
                 rpd.setLeaseTime(leaseTime);
                 rpd.setEntriesName(entriesName);
                 rpd.setSerializedForm(serializedForm);
-            } else if(qName.equals("property")) {
+            } else if (qName.equals("property")) {
                 String name = attributes.getValue("name");
                 String value = attributes.getValue("value");
-                if(attributes.getLength() != 2 || name == null || value == null) {
-                    throw new SAXParseException("property element must only have " +
-                                                "'name' and 'value' attributes",
-                                                locator);
+                if (attributes.getLength() != 2 || name == null || value == null) {
+                    throw new SAXParseException("property element must only have "
+                            + "'name' and 'value' attributes",
+                            locator);
                 }
-                if(rpd == null) {
+                if (rpd == null) {
                     // we are not in a component so add this to the global
                     // set of symbols
 //                    String symbolName = "${" + name + "}"; // why should we warp the global props here
                     String symbolName = name;
                     globalProperties.setValue(symbolName, value);
-                } else if(rpd.contains(name) && !overriding) {
+                } else if (rpd.contains(name) && !overriding) {
                     throw new SAXParseException("Duplicate property: " + name,
-                                                locator);
+                            locator);
                 } else {
                     rpd.add(name, value);
                 }
-            } else if(qName.equals("propertylist")) {
+            } else if (qName.equals("propertylist")) {
                 itemListName = attributes.getValue("name");
-                if(attributes.getLength() != 1 || itemListName == null) {
-                    throw new SAXParseException("list element must only have " +
-                                                "the 'name'  attribute", locator);
+                if (attributes.getLength() != 1 || itemListName == null) {
+                    throw new SAXParseException("list element must only have "
+                            + "the 'name'  attribute", locator);
                 }
                 itemList = new ArrayList();
-            } else if(qName.equals("item") || qName.equals("type")) {
-                if(attributes.getLength() != 0) {
+            } else if (qName.equals("item") || qName.equals("type")) {
+                if (attributes.getLength() != 0) {
                     throw new SAXParseException("unknown 'item' attribute",
-                                                locator);
+                            locator);
                 }
                 curItem = new StringBuilder();
             } else if (qName.equals("file")) {
                 String name = attributes.getValue("name");
                 String value = attributes.getValue("value");
-                if(attributes.getLength() != 2 || name == null || value == null) {
-                    throw new SAXParseException("file element must only have " +
-                                                "'name' and 'value' attributes",
-                                                locator);
+                if (attributes.getLength() != 2 || name == null || value == null) {
+                    throw new SAXParseException("file element must only have "
+                            + "'name' and 'value' attributes",
+                            locator);
                 }
-                if(rpd == null) {
+                if (rpd == null) {
                     // we are not in a component so add this to the processing queue
                     try {
                         URL newURL = SaxLoader.class.getResource(value);
-                        if(newURL == null) {
+                        if (newURL == null) {
                             newURL = (new File(value)).toURI().toURL();
                         }
                         urlQueue.add(newURL);
                     } catch (MalformedURLException ex) {
-                        throw new SAXParseException("Incorrectly formatted file element " + name + " with value " + value,locator,ex);
+                        throw new SAXParseException("Incorrectly formatted file element " + name + " with value " + value, locator, ex);
                     }
                 } else {
                     throw new SAXParseException("File element found inside a component: " + name,
-                                                locator);
+                            locator);
                 }
+            } else if (qName.equals("serialized")) {
+                String name = attributes.getValue("name");
+                String location = attributes.getValue("location");
+                serializedObjects.put(name, new SerializedObject(name, location));
             } else {
                 throw new SAXParseException("Unknown element '" + qName + "'",
-                                            locator);
+                        locator);
             }
         }
 
@@ -292,7 +307,7 @@ public class SaxLoader {
          */
         public void characters(char ch[], int start, int length)
                 throws SAXParseException {
-            if(curItem != null) {
+            if (curItem != null) {
                 curItem.append(ch, start, length);
             }
         }
@@ -303,30 +318,30 @@ public class SaxLoader {
          */
         public void endElement(String uri, String localName, String qName)
                 throws SAXParseException {
-            if(qName.equals("component")) {
+            if (qName.equals("component")) {
                 rpdMap.put(rpd.getName(), rpd);
                 rpd = null;
                 overriding = false;
-            } else if(qName.equals("property")) {
-            // nothing to do
-            } else if(qName.equals("propertylist")) {
-                if(rpd.contains(itemListName)) {
-                    throw new SAXParseException("Duplicate property: " +
-                                                itemListName, locator);
+            } else if (qName.equals("property")) {
+                // nothing to do
+            } else if (qName.equals("propertylist")) {
+                if (rpd.contains(itemListName)) {
+                    throw new SAXParseException("Duplicate property: "
+                            + itemListName, locator);
                 } else {
                     rpd.add(itemListName, itemList);
                     itemList = null;
                 }
-            } else if(qName.equals("item")) {
+            } else if (qName.equals("item")) {
                 itemList.add(curItem.toString().trim());
                 curItem = null;
-            } else if(qName.equals("type")) {
+            } else if (qName.equals("type")) {
                 try {
-                itemList.add(Class.forName(curItem.toString()));
+                    itemList.add(Class.forName(curItem.toString()));
 
                 } catch (ClassNotFoundException cnfe) {
-                    throw new SAXParseException("Unable to find class " +
-                            curItem.toString() + " in property list " + itemListName, locator);
+                    throw new SAXParseException("Unable to find class "
+                            + curItem.toString() + " in property list " + itemListName, locator);
                 }
             }
         }
