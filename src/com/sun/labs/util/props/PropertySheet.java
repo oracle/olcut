@@ -45,7 +45,7 @@ import net.jini.core.lease.Lease;
  * @author Holger Brandl
  */
 public class PropertySheet implements Cloneable {
-    
+
     public enum PropertyType {
 
         INT, DOUBLE, BOOL, ENUM, COMP, STRING, STRINGLIST, COMPLIST, ENUMSET;
@@ -79,7 +79,7 @@ public class PropertySheet implements Cloneable {
     private boolean importable;
 
     private boolean implementsRemote;
-    
+
     private String serializedForm;
 
     /**
@@ -242,7 +242,7 @@ public class PropertySheet implements Cloneable {
         } catch (ClassCastException e) {
             throw new InternalConfigurationException(e, getInstanceName(), name, name
                     + " is not an annotated sphinx property of '" + getConfigurableClass().
-                    getName() + "' !");
+                            getName() + "' !");
         }
 
         return s4PropWrapper;
@@ -567,7 +567,7 @@ public class PropertySheet implements Cloneable {
         try {
             Double propValue
                     = propObject instanceof Double ? (Double) propObject : Double.
-                            valueOf(flattenProp(name));
+                                    valueOf(flattenProp(name));
 
             double[] range = s4Double.range();
             if (range.length != 2) {
@@ -875,36 +875,6 @@ public class PropertySheet implements Cloneable {
     public synchronized Component getOwner(PropertySheet ps, ComponentListener cl) {
         return getOwner(ps, cl, true);
     }
-    
-    private InputStream getSerializedStream(String sf) {
-        //
-        // First, see if it's a resource on our classpath.
-        InputStream ret = this.getClass().getResourceAsStream(sf);
-        if(ret == null) {
-            try {
-                //
-                // Nope. See if it's a valid URL and open that.
-                URL sfu = new URL(sf);
-                ret = sfu.openStream();
-            } catch (MalformedURLException ex) {
-                try {
-                    //
-                    // Not a valid URL, so try it as a file name.
-                    ret = new FileInputStream(sf);
-                } catch (FileNotFoundException ex1) {
-                    //
-                    // Couldn't open the file, we're done.
-                    return null;
-                }
-            } catch (IOException ex) {
-                //
-                // No joy.
-                logger.warning("Cannot open serialized form " + sf);
-                return null;
-            }
-        }
-        return ret;
-    }
 
     public synchronized Component getOwner(PropertySheet ps, ComponentListener cl, boolean reuseComponent) {
         try {
@@ -931,28 +901,29 @@ public class PropertySheet implements Cloneable {
                         return null;
                     }
                 }
-                
+
                 //
                 // Should we load a serialized form?
-                if(serializedForm != null) {
-                    InputStream serStream = getSerializedStream(serializedForm);
-                    if(serStream != null) {
-                        ObjectInputStream ois;
-                        try {
-                            //
-                            // Read the object and cast it into this class for return;
-                            ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024*1024));
+                if (serializedForm != null) {
+                    String actualLocation = cm.getGlobalProperties().replaceGlobalProperties(ps.getInstanceName(), null, serializedForm);
+                    InputStream serStream = cm.getInputStreamForLocation(actualLocation);
+                    if (serStream != null) {
+                        try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
                             Object deser = ois.readObject();
-                            ois.close();
-                            return ownerClass.cast(deser);
+                            owner = ownerClass.cast(deser);
+                            return owner;
                         } catch (IOException ex) {
-                            throw new PropertyException(ex, ps.getInstanceName(), null, "Error reading serialized form");
+                            throw new PropertyException(ex, 
+                                    ps.getInstanceName(), null, 
+                                    "Error reading serialized form from " + actualLocation);
                         } catch (ClassNotFoundException ex) {
-                            throw new PropertyException(ex, ps.getInstanceName(), null, "Serialized class not found");
+                            throw new PropertyException(ex, 
+                                    ps.getInstanceName(), null, 
+                                    "Serialized class not found at " + actualLocation);
                         }
                     }
                 }
-                
+
                 if (logger != null && logger.isLoggable(Level.FINER)) {
                     logger.finer(String.format("Creating %s", getInstanceName()));
                 }
@@ -1007,7 +978,7 @@ public class PropertySheet implements Cloneable {
      * @param ps the property sheet with the values that we want to set.
      */
     private void setConfiguredFields(Object o, PropertySheet ps) throws PropertyException, IllegalAccessException {
-        
+
         for (Field f : o.getClass().getDeclaredFields()) {
             boolean accessible = f.isAccessible();
             f.setAccessible(true);
@@ -1017,30 +988,30 @@ public class PropertySheet implements Cloneable {
                     // We have a variable annotated with the Config annotation, 
                     // let's get a value out of the property sheet and figure 
                     // out how to turn it into the right type.
-                    
+
                     //
                     // We'll handle things that have lists with items separately.
                     FieldType ft = FieldType.getFieldType(f);
-                    if(FieldType.listTypes.contains(ft)) {
+                    if (FieldType.listTypes.contains(ft)) {
                         List<String> vals = (List<String>) ps.propValues.get(f.getName());
                         List<String> replaced = new ArrayList<String>();
-                        for(String val : vals) {
+                        for (String val : vals) {
                             replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), val));
                         }
-                        switch(ft) {
+                        switch (ft) {
                             case STRING_ARRAY:
                                 f.set(o, replaced.toArray(new String[0]));
                                 break;
                             case COMPONENT_ARRAY:
                                 Component[] cs = new Component[replaced.size()];
-                                for(int i = 0; i < cs.length; i++) {
+                                for (int i = 0; i < cs.length; i++) {
                                     cs[i] = ps.getConfigurationManager().lookup(replaced.get(i));
                                 }
                                 f.set(o, cs);
                                 break;
                             case CONFIGURABLE_ARRAY:
                                 Configurable[] cos = new Configurable[replaced.size()];
-                                for(int i = 0; i < cos.length; i++) {
+                                for (int i = 0; i < cos.length; i++) {
                                     cos[i] = (Configurable) ps.getConfigurationManager().lookup(replaced.get(i));
                                 }
                                 f.set(o, cos);
@@ -1048,17 +1019,17 @@ public class PropertySheet implements Cloneable {
                         }
                         continue;
                     }
-                    
+
                     //
                     // We know it's a single string now. 
                     // We'll use flattenProp so that we take care of any variables
                     // in the value.
                     String val = ps.flattenProp(f.getName());
-                    
+
                     //
                     // Handle empty values.
-                    if(val == null) {
-                        if(((Config) a).mandatory()) {
+                    if (val == null) {
+                        if (((Config) a).mandatory()) {
                             throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " is mandatory in configuration");
                         } else {
                             continue;
@@ -1176,7 +1147,7 @@ public class PropertySheet implements Cloneable {
                             try {
                                 EnumSet s = EnumSet.noneOf((Class<Enum>) f.getType());
                                 String[] vals = arraySplit.split(val.toUpperCase());
-                                for(String v : vals) {
+                                for (String v : vals) {
                                     s.add(Enum.valueOf((Class<Enum>) f.getType(), v));
                                 }
                                 f.set(o, s);
@@ -1551,10 +1522,11 @@ public class PropertySheet implements Cloneable {
 
         return ps;
     }
-    
+
     /**
-     * Gets all of the fields associated with a class by walking up the
-     * class tree.  Handles super classes, as well as interfaces.
+     * Gets all of the fields associated with a class by walking up the class
+     * tree. Handles super classes, as well as interfaces.
+     *
      * @param configurable the class who's fields we wish to walk.
      * @return all of the fields, so they can be checked for annoatations.
      */
@@ -1562,12 +1534,12 @@ public class PropertySheet implements Cloneable {
         Set<Field> ret = new HashSet<>();
         Queue<Class> cq = new ArrayDeque<>();
         cq.add(configurable);
-        while(!cq.isEmpty()) {
+        while (!cq.isEmpty()) {
             Class curr = cq.remove();
             ret.addAll(Arrays.asList(curr.getDeclaredFields()));
             ret.addAll(Arrays.asList(curr.getFields()));
             Class sc = curr.getSuperclass();
-            if(sc != null) {
+            if (sc != null) {
                 cq.add(sc);
             }
             cq.addAll(Arrays.asList(curr.getInterfaces()));
@@ -1584,7 +1556,7 @@ public class PropertySheet implements Cloneable {
      */
     public void processAnnotations(PropertySheet propertySheet,
             Class<? extends Configurable> configurable) throws PropertyException {
-        
+
         //
         // This is kind of a hack to handle Scala classes that want to be 
         // configurable. The convention in Scala is to annotate a method that
@@ -1611,8 +1583,8 @@ public class PropertySheet implements Cloneable {
                         String propertyName = (String) method.invoke(configurableInstance, (Object[]) null);
                         propertySheet.registerProperty(propertyName,
                                 new ConfigPropWrapper((Proxy) annotation));
-                    } catch (IllegalAccessException | IllegalArgumentException |
-                            InvocationTargetException | InstantiationException ex) {
+                    } catch (IllegalAccessException | IllegalArgumentException
+                            | InvocationTargetException | InstantiationException ex) {
                         throw new PropertyException(ex, propertySheet.instanceName, method.getName(),
                                 "Error invoking configurable method: "
                                 + method.getName());
@@ -1624,7 +1596,7 @@ public class PropertySheet implements Cloneable {
         //
         // The java version.
         Collection<Field> classFields = getAllFields(configurable);
-        
+
         for (Field field : classFields) {
             Annotation[] annotations = field.getAnnotations();
             for (Annotation annotation : annotations) {
