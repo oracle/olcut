@@ -7,6 +7,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -34,6 +35,7 @@ public enum FieldType {
     CONFIGURABLE_ARRAY(Configurable[].class), 
     FILE(File.class),
     PATH(Path.class),
+    RANDOM(Random.class),
     ENUM(Enum.class),
     ENUM_SET(EnumSet.class);
     

@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -1160,6 +1161,9 @@ public class PropertySheet implements Cloneable {
                             break;
                         case PATH:
                             f.set(0, Paths.get(val));
+                            break;
+                        case RANDOM:
+                            f.set(o, new Random(Integer.parseInt(val)));
                             break;
                         case COMPONENT:
                             f.set(o, ps.getConfigurationManager().lookup(f.getName()));
