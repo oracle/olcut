@@ -68,11 +68,6 @@
         </dependency> 
         <dependency>
             <groupId>org.apache.river</groupId>
-            <artifactId>outrigger-dl</artifactId>
-            <version>${jsk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.river</groupId>
             <artifactId>start</artifactId>
             <version>${jsk.version}</version>
         </dependency>
