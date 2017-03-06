@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Description:
+        A configuration file for testing the postConfig hook.
+-->
+
+<config>
+    
+    <component name="post" type="com.sun.labs.util.props.PostConfigurable">
+        <property name="one" value="Monkeys"/>
+        <property name="two" value="AlsoMonkeys"/>
+    </component>
+
+</config>
+
