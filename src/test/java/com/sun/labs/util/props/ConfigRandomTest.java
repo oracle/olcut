@@ -13,7 +13,7 @@ public class ConfigRandomTest {
     public ConfigRandomTest() { }
 
     @Test
-    public void chainLoading() throws IOException {
+    public void configRandom() throws IOException {
         URL cu = getClass().getResource("randomConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
         RandomConfigurable r = (RandomConfigurable) cm.lookup("random");
