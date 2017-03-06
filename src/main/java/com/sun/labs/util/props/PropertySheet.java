@@ -936,6 +936,7 @@ public class PropertySheet implements Cloneable {
                 setConfiguredFields(owner, this);
                 if (owner instanceof Configurable) {
                     ((Configurable) owner).newProperties(this);
+                    ((Configurable) owner).postConfig();
                 }
                 if (owner instanceof ConfigurableMXBean) {
                     MBeanServer mbs = cm.getMBeanServer();
