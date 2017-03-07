@@ -88,6 +88,16 @@ public class RawPropertyData {
         properties.put(propName, propValue);
     }
 
+    /**
+     * Adds a new property
+     *
+     * @param propName  the name of the property
+     * @param propValue the value of the property
+     */
+    void add(String propName, Map propValue) {
+        properties.put(propName, propValue);
+    }
+
     /** @return Returns the className. */
     public String getClassName() {
         return className;

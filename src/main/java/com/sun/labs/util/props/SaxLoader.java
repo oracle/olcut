@@ -136,6 +136,10 @@ public class SaxLoader {
 
         String itemListName = null;
 
+        String mapName = null;
+
+        Map<String,String> entryMap = null;
+
         StringBuilder curItem;
 
         boolean overriding;
@@ -246,7 +250,7 @@ public class SaxLoader {
                 if (rpd == null) {
                     // we are not in a component so add this to the global
                     // set of symbols
-//                    String symbolName = "${" + name + "}"; // why should we warp the global props here
+                    //String symbolName = "${" + name + "}"; // why should we warp the global props here
                     String symbolName = name;
                     globalProperties.setValue(symbolName, value);
                 } else if (rpd.contains(name) && !overriding) {
@@ -259,22 +263,42 @@ public class SaxLoader {
                 itemListName = attributes.getValue("name");
                 if (attributes.getLength() != 1 || itemListName == null) {
                     throw new SAXParseException("list element must only have "
-                            + "the 'name'  attribute", locator);
+                            + "the 'name' attribute", locator);
                 }
                 itemList = new ArrayList();
             } else if (qName.equals("item") || qName.equals("type")) {
                 if (attributes.getLength() != 0) {
                     throw new SAXParseException("unknown 'item' attribute",
                             locator);
+                } else if (itemList == null) {
+                    throw new SAXParseException("'item' or 'type' elements must be inside a 'propertylist'", locator);
                 }
                 curItem = new StringBuilder();
+            } else if (qName.equals("map")) {
+                mapName = attributes.getValue("name");
+                if (attributes.getLength() != 1 || mapName == null) {
+                    throw new SAXParseException("map element must only have "
+                            + "the 'name' attribute", locator);
+                }
+                entryMap = new HashMap<String,String>();
+            } else if (qName.equals("entry")) {
+                String key = attributes.getValue("key");
+                String value = attributes.getValue("value");
+                if (attributes.getLength() != 2 || key == null || value == null) {
+                    throw new SAXParseException("entry element must only have "
+                            + "'key' and 'value' attributes", locator);
+                } else if (entryMap == null) {
+                    throw new SAXParseException("entry element must be inside a map", locator);
+                } else if (entryMap.containsKey(key)) {
+                    throw new SAXParseException("Repeated entry in map, key = " + key + " already exists", locator);
+                }
+                entryMap.put(key.trim(),value.trim());
             } else if (qName.equals("file")) {
                 String name = attributes.getValue("name");
                 String value = attributes.getValue("value");
                 if (attributes.getLength() != 2 || name == null || value == null) {
                     throw new SAXParseException("file element must only have "
-                            + "'name' and 'value' attributes",
-                            locator);
+                            + "'name' and 'value' attributes", locator);
                 }
                 if (rpd == null) {
                     // we are not in a component so add this to the processing queue
@@ -338,10 +362,17 @@ public class SaxLoader {
             } else if (qName.equals("type")) {
                 try {
                     itemList.add(Class.forName(curItem.toString()));
-
                 } catch (ClassNotFoundException cnfe) {
                     throw new SAXParseException("Unable to find class "
                             + curItem.toString() + " in property list " + itemListName, locator);
+                }
+            } else if (qName.equals("map")) {
+                if (rpd.contains(mapName)) {
+                    throw new SAXParseException("Duplicate property: "
+                            + mapName, locator);
+                } else {
+                    rpd.add(mapName, entryMap);
+                    entryMap = null;
                 }
             }
         }
