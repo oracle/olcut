@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    A configuration file for testing handling of map properties.
+-->
+
+<config>
+
+    <component name="mapTest" type="com.sun.labs.util.props.MapConfigurable">
+        <map name="map">
+            <entry key="things" value="stuff"/>
+            <entry key="foo" value="bar"/>
+        </map>
+    </component>
+
+</config>

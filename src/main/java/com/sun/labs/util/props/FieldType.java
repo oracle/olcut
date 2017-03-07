@@ -36,6 +36,7 @@ public enum FieldType {
     FILE(File.class),
     PATH(Path.class),
     RANDOM(Random.class),
+    MAP(Map.class),
     ENUM(Enum.class),
     ENUM_SET(EnumSet.class);
     

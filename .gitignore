@@ -1,9 +1,13 @@
+# Ant files
 /nbproject/private/
 /build/
 /dist/
+/target/
+manifest.mf
 
 # Backup files
 *~
 
-manifest.mf
-/target/
+# Intellij files
+.idea/
+olcut.iml

@@ -478,7 +478,7 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the name
      * @return the value
-     * @throws edu.cmu.sphinx.util.props.PropertyException if the named property
+     * @throws PropertyException if the named property
      * is not of this type
      */
     public int getInt(String name) throws PropertyException {
@@ -529,7 +529,7 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the name
      * @return the value
-     * @throws edu.cmu.sphinx.util.props.PropertyException if the named property
+     * @throws PropertyException if the named property
      * is not of this type
      */
     public float getFloat(String name) throws PropertyException {
@@ -541,7 +541,7 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the name
      * @return the value
-     * @throws edu.cmu.sphinx.util.props.PropertyException if the named property
+     * @throws PropertyException if the named property
      * is not of this type
      */
     public double getDouble(String name) throws PropertyException {
@@ -592,7 +592,7 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the name
      * @return the value
-     * @throws edu.cmu.sphinx.util.props.PropertyException if the named property
+     * @throws PropertyException if the named property
      * is not of this type
      */
     public Boolean getBoolean(String name) throws PropertyException {
@@ -616,7 +616,7 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the parameter name
      * @return the component associated with the name
-     * @throws edu.cmu.sphinx.util.props.PropertyException if the component does
+     * @throws PropertyException if the component does
      * not exist or is of the wrong type.
      */
     public Component getComponent(String name) throws PropertyException {
@@ -754,7 +754,7 @@ public class PropertySheet implements Cloneable {
      *
      * @param name the parameter name
      * @return the component associated with the name
-     * @throws edu.cmu.sphinx.util.props.PropertyException if the component does
+     * @throws PropertyException if the component does
      * not exist or is of the wrong type.
      */
     public List<? extends Component> getComponentList(String name) throws InternalConfigurationException {
@@ -976,7 +976,6 @@ public class PropertySheet implements Cloneable {
      * sheet.
      *
      * @param o the object we're setting values for
-     * @param ownerClass the class of the object we're setting values for
      * @param ps the property sheet with the values that we want to set.
      */
     private void setConfiguredFields(Object o, PropertySheet ps) throws PropertyException, IllegalAccessException {
@@ -1020,6 +1019,12 @@ public class PropertySheet implements Cloneable {
                                 break;
                         }
                         continue;
+                    }
+
+                    //
+                    // Special case the map, as it's not a list and doesn't require flattening.
+                    if (ft == FieldType.MAP) {
+                        f.set(o, ps.propValues.get(f.getName()));
                     }
 
                     //
