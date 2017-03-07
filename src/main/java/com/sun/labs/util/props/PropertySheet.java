@@ -1024,7 +1024,13 @@ public class PropertySheet implements Cloneable {
                     //
                     // Special case the map, as it's not a list and doesn't require flattening.
                     if (ft == FieldType.MAP) {
-                        f.set(o, ps.propValues.get(f.getName()));
+                        Map<String,String> map = new HashMap<>();
+                        Map<String,String> oldMap = (Map<String,String>) ps.propValues.get(f.getName());
+                        for (Map.Entry<String,String> e : oldMap.entrySet()) {
+                            String newVal = ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), e.getValue());
+                            map.put(e.getKey(),newVal);
+                        }
+                        f.set(o, map);
                     }
 
                     //

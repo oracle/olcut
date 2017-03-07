@@ -21,7 +21,7 @@ public class MapTest {
         MapConfigurable m = (MapConfigurable) cm.lookup("mapTest");
         Map<String,String> map = m.map;
         Assert.assertEquals("stuff",map.get("things"));
-        Assert.assertEquals("bar",map.get("foo"));
-        Assert.assertNull(map.get("quux"));
+        Assert.assertEquals("quux",map.get("foo"));
+        Assert.assertNull(map.get("bar"));
     }
 }
