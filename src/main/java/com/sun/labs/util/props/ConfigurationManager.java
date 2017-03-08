@@ -563,15 +563,27 @@ public class ConfigurationManager implements Cloneable {
                     ret.add(lookup(e.getKey()));
                 }
             }
-        }
-        
-        //
-        // If we have a registry, then do a lookup for all things of the
-        // given type.
-        if(registry != null) {
+        } else if(registry != null) {
+            //
+            // If we have a registry, then do a lookup for all things of the
+            // given type.
             Component[] reg = registry.lookup(c, Integer.MAX_VALUE, cl);
             ret.addAll(Arrays.asList(reg));
+        } else {
+            //
+            // If we have an interface and no registry, lookup all the
+            // implementing classes and return them.
+            Class[] interfaces = c.getInterfaces();
+            for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
+                for (Class interfaceClass : interfaces) {
+                    if (e.getValue().getClassName().equals(interfaceClass.getName()) &&
+                            !e.getValue().isImportable()) {
+                        ret.add(lookup(e.getKey()));
+                    }
+                }
+            }
         }
+
         return ret;
     }
     

@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -932,7 +933,19 @@ public class PropertySheet implements Cloneable {
                     logger.info(String.format("Creating %s type %s", instanceName,
                             ownerClass.getName()));
                 }
-                owner = ownerClass.newInstance();
+                try {
+                    Constructor<? extends Component> constructor = ownerClass.getDeclaredConstructor();
+                    boolean isAccessible = constructor.isAccessible();
+                    constructor.setAccessible(true);
+                    owner = constructor.newInstance();
+                    constructor.setAccessible(isAccessible);
+                } catch (NoSuchMethodException ex) {
+                    throw new PropertyException(ex, ps.getInstanceName(), null,
+                            "No-args constructor not found for class " + ownerClass);
+                } catch (InvocationTargetException ex) {
+                    throw new InternalConfigurationException(ex, ps.getInstanceName(), null,
+                            "Can't instantiate class " + ownerClass);
+                }
                 setConfiguredFields(owner, this);
                 if (owner instanceof Configurable) {
                     ((Configurable) owner).newProperties(this);
@@ -980,210 +993,221 @@ public class PropertySheet implements Cloneable {
      */
     private void setConfiguredFields(Object o, PropertySheet ps) throws PropertyException, IllegalAccessException {
 
-        for (Field f : o.getClass().getDeclaredFields()) {
-            boolean accessible = f.isAccessible();
-            f.setAccessible(true);
-            for (Annotation a : f.getAnnotations()) {
-                if (a instanceof Config) {
-                    //
-                    // We have a variable annotated with the Config annotation, 
-                    // let's get a value out of the property sheet and figure 
-                    // out how to turn it into the right type.
+        Class<?> curClass = o.getClass();
+        //
+        // This test is on Object.class.getCanonicalName as class.getSuperclass() returns
+        // Object rather than the interfaces it implements.
+        while (!curClass.getName().equals(Object.class.getName())) {
+            for (Field f : curClass.getDeclaredFields()) {
+                boolean accessible = f.isAccessible();
+                f.setAccessible(true);
+                for (Annotation a : f.getAnnotations()) {
+                    if (a instanceof Config) {
+                        //
+                        // We have a variable annotated with the Config annotation,
+                        // let's get a value out of the property sheet and figure
+                        // out how to turn it into the right type.
 
-                    //
-                    // We'll handle things that have lists with items separately.
-                    FieldType ft = FieldType.getFieldType(f);
-                    if (FieldType.listTypes.contains(ft)) {
-                        List<String> vals = (List<String>) ps.propValues.get(f.getName());
-                        List<String> replaced = new ArrayList<String>();
-                        for (String val : vals) {
-                            replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), val));
+                        //
+                        // We'll handle things that have lists with items separately.
+                        FieldType ft = FieldType.getFieldType(f);
+                        if (ft == null) {
+                            throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " has an unknown field type");
                         }
-                        switch (ft) {
-                            case STRING_ARRAY:
-                                f.set(o, replaced.toArray(new String[0]));
-                                break;
-                            case COMPONENT_ARRAY:
-                                Component[] cs = new Component[replaced.size()];
-                                for (int i = 0; i < cs.length; i++) {
-                                    cs[i] = ps.getConfigurationManager().lookup(replaced.get(i));
-                                }
-                                f.set(o, cs);
-                                break;
-                            case CONFIGURABLE_ARRAY:
-                                Configurable[] cos = new Configurable[replaced.size()];
-                                for (int i = 0; i < cos.length; i++) {
-                                    cos[i] = (Configurable) ps.getConfigurationManager().lookup(replaced.get(i));
-                                }
-                                f.set(o, cos);
-                                break;
-                        }
-                        continue;
-                    }
-
-                    //
-                    // Special case the map, as it's not a list and doesn't require flattening.
-                    if (ft == FieldType.MAP) {
-                        Map<String,String> map = new HashMap<>();
-                        Map<String,String> oldMap = (Map<String,String>) ps.propValues.get(f.getName());
-                        for (Map.Entry<String,String> e : oldMap.entrySet()) {
-                            String newVal = ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), e.getValue());
-                            map.put(e.getKey(),newVal);
-                        }
-                        f.set(o, map);
-                    }
-
-                    //
-                    // We know it's a single string now. 
-                    // We'll use flattenProp so that we take care of any variables
-                    // in the value.
-                    String val = ps.flattenProp(f.getName());
-
-                    //
-                    // Handle empty values.
-                    if (val == null) {
-                        if (((Config) a).mandatory()) {
-                            throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " is mandatory in configuration");
-                        } else {
+                        if (FieldType.listTypes.contains(ft)) {
+                            List<String> vals = (List<String>) ps.propValues.get(f.getName());
+                            List<String> replaced = new ArrayList<String>();
+                            for (String val : vals) {
+                                replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), val));
+                            }
+                            switch (ft) {
+                                case STRING_ARRAY:
+                                    f.set(o, replaced.toArray(new String[0]));
+                                    break;
+                                case COMPONENT_ARRAY:
+                                    Component[] cs = new Component[replaced.size()];
+                                    for (int i = 0; i < cs.length; i++) {
+                                        cs[i] = ps.getConfigurationManager().lookup(replaced.get(i));
+                                    }
+                                    f.set(o, cs);
+                                    break;
+                                case CONFIGURABLE_ARRAY:
+                                    Configurable[] cos = new Configurable[replaced.size()];
+                                    for (int i = 0; i < cos.length; i++) {
+                                        cos[i] = (Configurable) ps.getConfigurationManager().lookup(replaced.get(i));
+                                    }
+                                    f.set(o, cos);
+                                    break;
+                            }
                             continue;
                         }
-                    }
-                    switch (ft) {
-                        case STRING:
-                            f.set(o, val);
-                            break;
-                        case BOOLEAN:
-                            f.setBoolean(o, Boolean.parseBoolean(val));
-                            break;
-                        case INTEGER:
-                            try {
-                                f.setInt(o, Integer.parseInt(val));
-                            } catch (NumberFormatException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
+
+                        //
+                        // Special case the map, as it's not a list and doesn't require flattening.
+                        if (ft == FieldType.MAP) {
+                            Map<String, String> map = new HashMap<>();
+                            Map<String, String> oldMap = (Map<String, String>) ps.propValues.get(f.getName());
+                            for (Map.Entry<String, String> e : oldMap.entrySet()) {
+                                String newVal = ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), e.getValue());
+                                map.put(e.getKey(), newVal);
                             }
-                            break;
-                        case ATOMIC_INTEGER:
-                            try {
-                                f.set(o, new AtomicInteger(Integer.parseInt(val)));
-                            } catch (NumberFormatException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
+                            f.set(o, map);
+                        }
+
+                        //
+                        // We know it's a single string now.
+                        // We'll use flattenProp so that we take care of any variables
+                        // in the value.
+                        String val = ps.flattenProp(f.getName());
+
+                        //
+                        // Handle empty values.
+                        if (val == null) {
+                            if (((Config) a).mandatory()) {
+                                throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " is mandatory in configuration");
+                            } else {
+                                continue;
                             }
-                            break;
-                        case INTEGER_ARRAY:
-                            try {
-                                String[] vals = arraySplit.split(val);
-                                int[] ia = new int[vals.length];
-                                int i = 0;
-                                for (String v : vals) {
-                                    ia[i++] = Integer.parseInt(v);
+                        }
+                        switch (ft) {
+                            case STRING:
+                                f.set(o, val);
+                                break;
+                            case BOOLEAN:
+                                f.setBoolean(o, Boolean.parseBoolean(val));
+                                break;
+                            case INTEGER:
+                                try {
+                                    f.setInt(o, Integer.parseInt(val));
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
                                 }
-                                f.set(o, ia);
-                            } catch (NumberFormatException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
-                            }
-                            break;
-                        case LONG:
-                            try {
-                                f.setLong(o, Long.parseLong(val));
-                            } catch (NumberFormatException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a long", val));
-                            }
-                            break;
-                        case ATOMIC_LONG:
-                            try {
-                                f.set(o, new AtomicLong(Long.parseLong(val)));
-                            } catch (NumberFormatException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a long", val));
-                            }
-                            break;
-                        case LONG_ARRAY:
-                            try {
-                                String[] vals = arraySplit.split(val);
-                                long[] la = new long[vals.length];
-                                int i = 0;
-                                for (String v : vals) {
-                                    la[i++] = Long.parseLong(v);
+                                break;
+                            case ATOMIC_INTEGER:
+                                try {
+                                    f.set(o, new AtomicInteger(Integer.parseInt(val)));
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
                                 }
-                                f.set(o, la);
-                            } catch (NumberFormatException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an array of long", val));
-                            }
-                            break;
-                        case FLOAT:
-                            try {
-                                f.setFloat(o, Float.parseFloat(val));
-                            } catch (NumberFormatException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an float", val));
-                            }
-                            break;
-                        case FLOAT_ARRAY:
-                            try {
-                                String[] vals = arraySplit.split(val);
-                                float[] fa = new float[vals.length];
-                                int i = 0;
-                                for (String v : vals) {
-                                    fa[i++] = Float.parseFloat(v);
+                                break;
+                            case INTEGER_ARRAY:
+                                try {
+                                    String[] vals = arraySplit.split(val);
+                                    int[] ia = new int[vals.length];
+                                    int i = 0;
+                                    for (String v : vals) {
+                                        ia[i++] = Integer.parseInt(v);
+                                    }
+                                    f.set(o, ia);
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
                                 }
-                                f.set(o, fa);
-                            } catch (NumberFormatException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of float", val));
-                            }
-                            break;
-                        case DOUBLE:
-                            try {
-                                f.setDouble(o, Double.parseDouble(val));
-                            } catch (NumberFormatException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a double", val));
-                            }
-                            break;
-                        case DOUBLE_ARRAY:
-                            try {
-                                String[] vals = arraySplit.split(val);
-                                double[] da = new double[vals.length];
-                                int i = 0;
-                                for (String v : vals) {
-                                    da[i++] = Long.parseLong(v);
+                                break;
+                            case LONG:
+                                try {
+                                    f.setLong(o, Long.parseLong(val));
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a long", val));
                                 }
-                                f.set(o, da);
-                            } catch (NumberFormatException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of double", val));
-                            }
-                            break;
-                        case ENUM:
-                            try {
-                                f.set(o, Enum.valueOf((Class<Enum>) f.getType(), val));
-                            } catch (IllegalArgumentException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a value of %s", val, f.getClass()));
-                            }
-                            break;
-                        case ENUM_SET:
-                            try {
-                                EnumSet s = EnumSet.noneOf((Class<Enum>) f.getType());
-                                String[] vals = arraySplit.split(val.toUpperCase());
-                                for (String v : vals) {
-                                    s.add(Enum.valueOf((Class<Enum>) f.getType(), v));
+                                break;
+                            case ATOMIC_LONG:
+                                try {
+                                    f.set(o, new AtomicLong(Long.parseLong(val)));
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a long", val));
                                 }
-                                f.set(o, s);
-                            } catch (IllegalArgumentException ex) {
-                                throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s has values not in %s", val, f.getClass()));
-                            }
-                            break;
-                        case FILE:
-                            f.set(o, new File(val));
-                            break;
-                        case PATH:
-                            f.set(0, Paths.get(val));
-                            break;
-                        case RANDOM:
-                            f.set(o, new Random(Integer.parseInt(val)));
-                            break;
-                        case COMPONENT:
-                            f.set(o, ps.getConfigurationManager().lookup(f.getName()));
-                            break;
+                                break;
+                            case LONG_ARRAY:
+                                try {
+                                    String[] vals = arraySplit.split(val);
+                                    long[] la = new long[vals.length];
+                                    int i = 0;
+                                    for (String v : vals) {
+                                        la[i++] = Long.parseLong(v);
+                                    }
+                                    f.set(o, la);
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an array of long", val));
+                                }
+                                break;
+                            case FLOAT:
+                                try {
+                                    f.setFloat(o, Float.parseFloat(val));
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an float", val));
+                                }
+                                break;
+                            case FLOAT_ARRAY:
+                                try {
+                                    String[] vals = arraySplit.split(val);
+                                    float[] fa = new float[vals.length];
+                                    int i = 0;
+                                    for (String v : vals) {
+                                        fa[i++] = Float.parseFloat(v);
+                                    }
+                                    f.set(o, fa);
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of float", val));
+                                }
+                                break;
+                            case DOUBLE:
+                                try {
+                                    f.setDouble(o, Double.parseDouble(val));
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a double", val));
+                                }
+                                break;
+                            case DOUBLE_ARRAY:
+                                try {
+                                    String[] vals = arraySplit.split(val);
+                                    double[] da = new double[vals.length];
+                                    int i = 0;
+                                    for (String v : vals) {
+                                        da[i++] = Long.parseLong(v);
+                                    }
+                                    f.set(o, da);
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of double", val));
+                                }
+                                break;
+                            case ENUM:
+                                try {
+                                    f.set(o, Enum.valueOf((Class<Enum>) f.getType(), val));
+                                } catch (IllegalArgumentException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a value of %s", val, f.getClass()));
+                                }
+                                break;
+                            case ENUM_SET:
+                                try {
+                                    EnumSet s = EnumSet.noneOf((Class<Enum>) f.getType());
+                                    String[] vals = arraySplit.split(val.toUpperCase());
+                                    for (String v : vals) {
+                                        s.add(Enum.valueOf((Class<Enum>) f.getType(), v));
+                                    }
+                                    f.set(o, s);
+                                } catch (IllegalArgumentException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s has values not in %s", val, f.getClass()));
+                                }
+                                break;
+                            case FILE:
+                                f.set(o, new File(val));
+                                break;
+                            case PATH:
+                                f.set(0, Paths.get(val));
+                                break;
+                            case RANDOM:
+                                f.set(o, new Random(Integer.parseInt(val)));
+                                break;
+                            case COMPONENT:
+                            case CONFIGURABLE:
+                                f.set(o, ps.getConfigurationManager().lookup(val));
+                                break;
+                        }
                     }
                 }
+                f.setAccessible(accessible);
             }
-            f.setAccessible(accessible);
+            curClass = curClass.getSuperclass();
         }
 
     }
