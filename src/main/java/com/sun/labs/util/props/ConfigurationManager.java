@@ -100,8 +100,8 @@ public class ConfigurationManager implements Cloneable {
         
         configURLs.add(url);
         SaxLoader saxLoader = new SaxLoader(url, globalProperties);
-        origGlobal = new GlobalProperties(globalProperties);
         rawPropertyMap = saxLoader.load();
+        origGlobal = new GlobalProperties(globalProperties);
         for(Map.Entry<String,SerializedObject> e : saxLoader.getSerializedObjects().entrySet()) {
             e.getValue().setConfigurationManager(this);
             serializedObjects.put(e.getKey(), e.getValue());
