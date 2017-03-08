@@ -39,7 +39,12 @@ public enum FieldType {
     MAP(Map.class),
     ENUM(Enum.class),
     ENUM_SET(EnumSet.class);
-    
+
+    private static final Class<?> componentClass = Component.class;
+    private static final Class<?> componentArrayClass = Component[].class;
+    private static final Class<?> configurableClass = Configurable.class;
+    private static final Class<?> configurableArrayClass = Configurable[].class;
+
     private final Class<?>[] types;
     
     private final static Map<Class<?>,FieldType> m = new HashMap<>();
@@ -49,19 +54,30 @@ public enum FieldType {
     private FieldType(Class<?>... types) {
         this.types = types;
     }
-    
+
     static {
-        for(FieldType ft : FieldType.values()) {
-            for(Class<?> type : ft.types) {
+        for (FieldType ft : FieldType.values()) {
+            for (Class<?> type : ft.types) {
                 m.put(type, ft);
             }
         }
     }
 
     public static FieldType getFieldType(Field f) {
-        return m.get(f.getType());
+        Class<?> fieldClass = f.getType();
+        if (configurableClass.isAssignableFrom(fieldClass)) {
+            return m.get(configurableClass);
+        } else if (configurableArrayClass.isAssignableFrom(fieldClass)) {
+            return m.get(configurableArrayClass);
+        } else if (componentClass.isAssignableFrom(fieldClass)) {
+            return m.get(componentClass);
+        } else if (componentArrayClass.isAssignableFrom(fieldClass)) {
+            return m.get(componentArrayClass);
+        } else {
+            return m.get(f.getType());
+        }
     }
-    
+
     public Class<?>[] getTypes() {
         return types;
     }
