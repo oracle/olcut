@@ -44,6 +44,8 @@ public enum FieldType {
     private static final Class<?> componentArrayClass = Component[].class;
     private static final Class<?> configurableClass = Configurable.class;
     private static final Class<?> configurableArrayClass = Configurable[].class;
+    private static final Class<?> enumClass = Enum.class;
+    private static final Class<?> enumSetClass = EnumSet.class;
 
     private final Class<?>[] types;
     
@@ -73,6 +75,10 @@ public enum FieldType {
             return m.get(componentClass);
         } else if (componentArrayClass.isAssignableFrom(fieldClass)) {
             return m.get(componentArrayClass);
+        } else if (enumClass.isAssignableFrom(fieldClass)) {
+            return m.get(enumClass);
+        } else if (enumSetClass.isAssignableFrom(fieldClass)) {
+            return m.get(enumSetClass);
         } else {
             return m.get(f.getType());
         }

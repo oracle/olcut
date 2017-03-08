@@ -50,7 +50,7 @@ public class PropertySheet implements Cloneable {
 
     public enum PropertyType {
 
-        INT, DOUBLE, BOOL, ENUM, COMP, STRING, STRINGLIST, COMPLIST, ENUMSET;
+        INT, DOUBLE, BOOL, ENUM, COMP, STRING, STRINGLIST, COMPLIST, ENUMSET, FILE;
 
     }
     private Map<String, ConfigPropWrapper> registeredProperties
@@ -1016,30 +1016,32 @@ public class PropertySheet implements Cloneable {
                         }
                         if (FieldType.listTypes.contains(ft)) {
                             List<String> vals = (List<String>) ps.propValues.get(f.getName());
-                            List<String> replaced = new ArrayList<String>();
-                            for (String val : vals) {
-                                replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), val));
+                            if (vals != null) {
+                                List<String> replaced = new ArrayList<String>();
+                                for (String val : vals) {
+                                    replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), val));
+                                }
+                                switch (ft) {
+                                    case STRING_ARRAY:
+                                        f.set(o, replaced.toArray(new String[0]));
+                                        break;
+                                    case COMPONENT_ARRAY:
+                                        Component[] cs = new Component[replaced.size()];
+                                        for (int i = 0; i < cs.length; i++) {
+                                            cs[i] = ps.getConfigurationManager().lookup(replaced.get(i));
+                                        }
+                                        f.set(o, cs);
+                                        break;
+                                    case CONFIGURABLE_ARRAY:
+                                        Configurable[] cos = new Configurable[replaced.size()];
+                                        for (int i = 0; i < cos.length; i++) {
+                                            cos[i] = (Configurable) ps.getConfigurationManager().lookup(replaced.get(i));
+                                        }
+                                        f.set(o, cos);
+                                        break;
+                                }
+                                continue;
                             }
-                            switch (ft) {
-                                case STRING_ARRAY:
-                                    f.set(o, replaced.toArray(new String[0]));
-                                    break;
-                                case COMPONENT_ARRAY:
-                                    Component[] cs = new Component[replaced.size()];
-                                    for (int i = 0; i < cs.length; i++) {
-                                        cs[i] = ps.getConfigurationManager().lookup(replaced.get(i));
-                                    }
-                                    f.set(o, cs);
-                                    break;
-                                case CONFIGURABLE_ARRAY:
-                                    Configurable[] cos = new Configurable[replaced.size()];
-                                    for (int i = 0; i < cos.length; i++) {
-                                        cos[i] = (Configurable) ps.getConfigurationManager().lookup(replaced.get(i));
-                                    }
-                                    f.set(o, cos);
-                                    break;
-                            }
-                            continue;
                         }
 
                         //
@@ -1047,11 +1049,13 @@ public class PropertySheet implements Cloneable {
                         if (ft == FieldType.MAP) {
                             Map<String, String> map = new HashMap<>();
                             Map<String, String> oldMap = (Map<String, String>) ps.propValues.get(f.getName());
-                            for (Map.Entry<String, String> e : oldMap.entrySet()) {
-                                String newVal = ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), e.getValue());
-                                map.put(e.getKey(), newVal);
+                            if (oldMap != null) {
+                                for (Map.Entry<String, String> e : oldMap.entrySet()) {
+                                    String newVal = ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), e.getValue());
+                                    map.put(e.getKey(), newVal);
+                                }
+                                f.set(o, map);
                             }
-                            f.set(o, map);
                         }
 
                         //
@@ -1424,6 +1428,8 @@ public class PropertySheet implements Cloneable {
             return PropertyType.STRING;
         } else if (annotation instanceof ConfigStringList) {
             return PropertyType.STRINGLIST;
+        } else if (annotation instanceof ConfigFile) {
+            return PropertyType.FILE;
         } else {
             throw new RuntimeException("Unknown property type");
         }
