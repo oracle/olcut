@@ -9,10 +9,10 @@
     <property name="bar" value="quux"/>
 
     <component name="mapTest" type="com.sun.labs.util.props.MapConfigurable">
-        <map name="map">
+        <propertymap name="map">
             <entry key="things" value="stuff"/>
             <entry key="foo" value="${bar}"/>
-        </map>
+        </propertymap>
     </component>
 
 </config>

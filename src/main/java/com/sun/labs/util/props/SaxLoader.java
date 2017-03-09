@@ -274,7 +274,7 @@ public class SaxLoader {
                     throw new SAXParseException("'item' or 'type' elements must be inside a 'propertylist'", locator);
                 }
                 curItem = new StringBuilder();
-            } else if (qName.equals("map")) {
+            } else if (qName.equals("propertymap")) {
                 mapName = attributes.getValue("name");
                 if (attributes.getLength() != 1 || mapName == null) {
                     throw new SAXParseException("map element must only have "
@@ -366,7 +366,7 @@ public class SaxLoader {
                     throw new SAXParseException("Unable to find class "
                             + curItem.toString() + " in property list " + itemListName, locator);
                 }
-            } else if (qName.equals("map")) {
+            } else if (qName.equals("propertymap")) {
                 if (rpd.contains(mapName)) {
                     throw new SAXParseException("Duplicate property: "
                             + mapName, locator);
