@@ -1091,7 +1091,10 @@ public class ConfigurationManager implements Cloneable {
         Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
 
         for(String propName : origGlobal.keySet()) {
-            String propVal = origGlobal.get(propName).toString();
+            //
+            // Changed to lookup in globalProperties as this has
+            // any values overridden on the command line.
+            String propVal = globalProperties.get(propName).toString();
 
             Matcher matcher = pattern.matcher(propName);
             propName = matcher.matches() ? matcher.group(1) : propName;
