@@ -5,6 +5,7 @@ import java.util.Map;
 import java.net.URL;
 import java.io.File;
 import java.io.IOException;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -174,5 +175,18 @@ public class SaveTest {
         ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
         BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("c");
         assertNull(bc2);
+    }
+
+    @Test
+    public void addNewConfigProgramatically() throws IOException {
+        StringConfig sc = new StringConfig("foo", "bar", "quux");
+
+        ConfigurationManager cm = new ConfigurationManager();
+        cm.importConfigurable(sc, "testStringConfig");
+        cm.save(f, false);
+
+        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        StringConfig sc2 = (StringConfig) cm2.lookup("testStringConfig");
+        assertEquals(sc,sc2);
     }
 }
