@@ -1063,8 +1063,6 @@ public class ConfigurationManager implements Cloneable {
      * Writes the current configuration to the given writer.  Only components
      * that have been instantiated or programatically added will be written.
      *
-     * @param file
-     *                place to save the configuration
      * @throws IOException
      *                 if an error occurs while writing to the file
      */
@@ -1128,17 +1126,6 @@ public class ConfigurationManager implements Cloneable {
         writer.println("</config>");
     }
 
-    private Field getNamedField(Object o, String fieldName) {
-        Field[] fields = o.getClass().getDeclaredFields();
-        for(Field field : fields) {
-            field.setAccessible(true);
-            if(field.getName().equals(fieldName)) {
-                return field;
-            }
-        }
-        return null;
-    }
-
     /**
      * Imports a configurable component by generating the property sheets
      * necessary to configure the provided component and puts them into
@@ -1153,48 +1140,60 @@ public class ConfigurationManager implements Cloneable {
     public void importConfigurable(Configurable configurable,
                                    String name) throws PropertyException {
         Map<String, Object> m = new LinkedHashMap<String, Object>();
-        Field[] fields = configurable.getClass().getFields();
 
         //
         // The name of the configuration property for an annotated variable in
         // the configurable class that we were given.
         String propertyName = null;
+        Class<?> curClass = configurable.getClass();
         try {
-            for(Field field : fields) {
-                Annotation[] annotations = field.getAnnotations();
-                for(Annotation annotation : annotations) {
-                    if(annotation instanceof ConfigComponent) {
+            //
+            // This test is on Object.class.getName as class.getSuperclass() returns
+            // Object rather than the interfaces it implements.
+            while (!curClass.getName().equals(Object.class.getName())) {
+                for (Field field : curClass.getDeclaredFields()) {
+                    boolean accessible = field.isAccessible();
+                    field.setAccessible(true);
+                    Annotation[] annotations = field.getAnnotations();
+                    for (Annotation annotation : annotations) {
+                        if (annotation instanceof ConfigComponent) {
 
-                        propertyName = (String) field.get(null);
+                            propertyName = (String) field.get(null);
 
-                        //
-                        // A single component.
-                        m.put(propertyName, importComponent(configurable, propertyName,
-                                                              name));
-                    } else if(annotation instanceof ConfigComponentList) {
-                        propertyName = (String) field.get(null);
+                            //
+                            // A single component.
+                            m.put(propertyName, importComponent(configurable, propertyName,
+                                    name));
+                        } else if (annotation instanceof ConfigComponentList) {
+                            propertyName = (String) field.get(null);
 
-                        //
-                        // A list of components.
-                        m.put(propertyName, importComponentList(configurable, propertyName,
-                                                                  name));
-                    } else {
-                        Annotation[] superAnnotations = annotation.
-                                annotationType().
-                                getAnnotations();
-                        propertyName = (String) field.get(null);
+                            //
+                            // A list of components.
+                            m.put(propertyName, importComponentList(configurable, propertyName,
+                                    name));
+                        } else if (annotation instanceof Config) {
+                            propertyName = field.getName();
+                            m.put(propertyName, field.get(configurable));
+                        } else {
+                            Annotation[] superAnnotations = annotation.
+                                    annotationType().
+                                    getAnnotations();
+                            propertyName = (String) field.get(null);
 
-                        //
-                        // One of the other configuration types.
-                        for(Annotation superAnnotation : superAnnotations) {
-                            if(superAnnotation instanceof ConfigProperty) {
-                                m.put(propertyName, importPropertyValue(configurable, propertyName));
+                            //
+                            // One of the other configuration types.
+                            for (Annotation superAnnotation : superAnnotations) {
+                                if (superAnnotation instanceof ConfigProperty) {
+                                    m.put(propertyName, importPropertyValue(configurable, propertyName));
+                                }
                             }
                         }
                     }
+                    field.setAccessible(accessible);
                 }
+                addConfigurable(configurable.getClass(), name, m);
+                curClass = curClass.getSuperclass();
             }
-            addConfigurable(configurable.getClass(), name, m);
         } catch(PropertyException ex) {
             throw ex;
         } catch(Exception ex) {
@@ -1224,15 +1223,25 @@ public class ConfigurationManager implements Cloneable {
         try {
             //
             // Get the list of configurable components.
-            Field field = getNamedField(configurable, propertyName);
-
-            if(field == null) {
+            Field curField = null;
+            Field[] fields = configurable.getClass().getDeclaredFields();
+            boolean accessible = false;
+            for(Field field : fields) {
+                accessible = field.isAccessible();
+                field.setAccessible(true);
+                if(field.getName().equals(propertyName)) {
+                    curField = field;
+                    break;
+                }
+                field.setAccessible(accessible);
+            }
+            if(curField == null) {
                 throw new PropertyException(null, propertyName, String.format(
                         "Property %s has no variable named %s", propertyName,
                         propertyName));
             }
-
-            List<Component> l = (List<Component>) field.get(configurable);
+            List<Component> l = (List<Component>) curField.get(configurable);
+            curField.setAccessible(accessible);
             List<String> names = new ArrayList<String>();
             String embeddedName = String.format("%s-%s", prefix, propertyName);
             int i = 0;
@@ -1298,13 +1307,25 @@ public class ConfigurationManager implements Cloneable {
 
             //
             // Get the configurable that we actually want to import.
-            Field field = getNamedField(configurable, propertyName);
-            if(field == null) {
+            Field curField = null;
+            Field[] fields = configurable.getClass().getDeclaredFields();
+            boolean accessible = false;
+            for(Field field : fields) {
+                accessible = field.isAccessible();
+                field.setAccessible(true);
+                if(field.getName().equals(propertyName)) {
+                    curField = field;
+                    break;
+                }
+                field.setAccessible(accessible);
+            }
+            if(curField == null) {
                 throw new PropertyException(null, propertyName, String.format(
                         "Property %s has no variable named %s", propertyName,
                         propertyName));
             }
-            Configurable newConf = (Configurable) field.get(configurable);
+            Configurable newConf = (Configurable) curField.get(configurable);
+            curField.setAccessible(accessible);
             importConfigurable(newConf, componentName);
         } catch(PropertyException ex) {
             throw ex;
@@ -1334,13 +1355,28 @@ public class ConfigurationManager implements Cloneable {
      */
     private Object importPropertyValue(Configurable configurable, String propertyName) throws PropertyException {
         try {
-            Field field = getNamedField(configurable, propertyName);
-            if(field == null) {
+            //
+            // Get the list of configurable components.
+            Field curField = null;
+            Field[] fields = configurable.getClass().getDeclaredFields();
+            boolean accessible = false;
+            for(Field field : fields) {
+                accessible = field.isAccessible();
+                field.setAccessible(true);
+                if(field.getName().equals(propertyName)) {
+                    curField = field;
+                    break;
+                }
+                field.setAccessible(accessible);
+            }
+            if(curField == null) {
                 throw new PropertyException(null, propertyName, String.format(
                         "Property %s has no variable named %s", propertyName,
                         propertyName));
             }
-            return field.get(configurable);
+            Object value = curField.get(configurable);
+            curField.setAccessible(accessible);
+            return value;
         } catch(PropertyException ex) {
             throw ex;
         } catch(Exception ex) {
