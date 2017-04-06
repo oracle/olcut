@@ -139,7 +139,7 @@ public class PropertySheet implements Cloneable {
 
         //
         // If there were any properties in the XML file that were not annotated,
-        // then throw a property excepion.  Note that any component can specify the
+        // then throw a property exception.  Note that any component can specify the
         // log level without having it annotated!
         for (String propName : rpd.getProperties().keySet()) {
             if (!propValues.containsKey(propName)
@@ -215,7 +215,7 @@ public class PropertySheet implements Cloneable {
      * given sphinx property.
      *
      * @param propName The name of the property to be registered.
-     * @param property The property annoation masked by a proxy.
+     * @param property The property annotation masked by a proxy.
      */
     private void registerProperty(String propName, ConfigPropWrapper property) {
         assert property != null && propName != null;
@@ -674,7 +674,7 @@ public class PropertySheet implements Cloneable {
                         && !expectedType.isInstance(configurable)) {
                     throw new InternalConfigurationException(getInstanceName(),
                             name,
-                            "mismatch between annoation and component type");
+                            "mismatch between annotation and component type");
                 }
 
                 if (configurable == null) {
@@ -771,7 +771,7 @@ public class PropertySheet implements Cloneable {
         ConfigComponentList annotation = (ConfigComponentList) registeredProperties.get(name).
                 getAnnotation();
 
-        // no componets names are available and no comp-list was yet loaded
+        // no components names are available and no comp-list was yet loaded
         // therefore load the default list of components from the annoation
         if (components == null) {
             List<Class<? extends Component>> defClasses
@@ -1234,7 +1234,7 @@ public class PropertySheet implements Cloneable {
     public void setString(String name, String value) throws PropertyException {
         // ensure that there is such a property
         assert registeredProperties.keySet().contains(name) : "'" + name
-                + "' is not a registered compontent";
+                + "' is not a registered component";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigString;
@@ -1251,7 +1251,7 @@ public class PropertySheet implements Cloneable {
     public void setInt(String name, int value) throws PropertyException {
         // ensure that there is such a property
         assert registeredProperties.keySet().contains(name) : "'" + name
-                + "' is not a registered compontent";
+                + "' is not a registered component";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigInteger;
@@ -1268,7 +1268,7 @@ public class PropertySheet implements Cloneable {
     public void setDouble(String name, double value) throws PropertyException {
         // ensure that there is such a property
         assert registeredProperties.keySet().contains(name) : "'" + name
-                + "' is not a registered compontent";
+                + "' is not a registered component";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigDouble;
@@ -1285,7 +1285,7 @@ public class PropertySheet implements Cloneable {
     public void setBoolean(String name, Boolean value) throws PropertyException {
         // ensure that there is such a property
         assert registeredProperties.keySet().contains(name) : "'" + name
-                + "' is not a registered compontent";
+                + "' is not a registered component";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigBoolean;
@@ -1305,7 +1305,7 @@ public class PropertySheet implements Cloneable {
             throws PropertyException {
         // ensure that there is such a property
         assert registeredProperties.keySet().contains(name) : "'" + name
-                + "' is not a registered compontent";
+                + "' is not a registered component";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigComponent;
@@ -1325,7 +1325,7 @@ public class PropertySheet implements Cloneable {
             List<Configurable> value) throws PropertyException {
         // ensure that there is such a property
         assert registeredProperties.keySet().contains(name) : "'" + name
-                + "' is not a registered compontent";
+                + "' is not a registered component";
 
         Proxy annotation = registeredProperties.get(name).getAnnotation();
         assert annotation instanceof ConfigComponentList;
@@ -1575,7 +1575,7 @@ public class PropertySheet implements Cloneable {
      * tree. Handles super classes, as well as interfaces.
      *
      * @param configurable the class who's fields we wish to walk.
-     * @return all of the fields, so they can be checked for annoatations.
+     * @return all of the fields, so they can be checked for annotations.
      */
     private Collection<Field> getAllFields(Class configurable) {
         Set<Field> ret = new HashSet<>();
