@@ -20,9 +20,26 @@ public class StringConfig implements Configurable, Serializable {
     @Config
     String three = "";
 
+    public StringConfig() {}
+
+    public StringConfig(String one, String two, String three) {
+        this.one = one;
+        this.two = two;
+        this.three = three;
+    }
+
     @Override
     public String toString() {
         return "StringConfig{" + "one=" + one + ", two=" + two + ", three=" + three + '}';
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof StringConfig) {
+            StringConfig sc = (StringConfig) other;
+            return one.equals(sc.one) && two.equals(sc.two) && three.equals(sc.three);
+        } else {
+            return false;
+        }
+    }
 }
