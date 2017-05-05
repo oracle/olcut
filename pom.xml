@@ -14,7 +14,7 @@
 
     <distributionManagement>
         <repository>
-            <id>citadel-release</id>
+            <id>citadel</id>
             <name>citadel-releases</name>
             <url>http://citadel.us.oracle.com/artifactory/libs-release-local</url>
         </repository>
@@ -83,4 +83,24 @@
 		    <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jdeps-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jdkinternals</goal> <!-- verify main classes -->
+                            <goal>test-jdkinternals</goal> <!-- verify test classes -->
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
