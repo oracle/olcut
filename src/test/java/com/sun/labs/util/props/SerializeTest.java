@@ -107,6 +107,7 @@ public class SerializeTest {
         assertEquals(acs.two, "b");
         assertEquals(acs.three, "c");
     }
+
     @Test
     public void deserializeObjectAndReuse() throws IOException {
         ConfigurationManager cm = new ConfigurationManager(getClass().getResource("stringConfig.xml"));
