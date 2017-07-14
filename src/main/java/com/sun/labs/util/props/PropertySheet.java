@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -144,7 +145,7 @@ public class PropertySheet implements Cloneable {
         for (String propName : rpd.getProperties().keySet()) {
             if (!propValues.containsKey(propName)
                     && !propName.equals(PROP_LOG_LEVEL)) {
-                throw new PropertyException(getInstanceName(), propName,
+                throw new PropertyException(instanceName, propName,
                         "Unknown property in configuration file.");
             }
         }
@@ -155,7 +156,7 @@ public class PropertySheet implements Cloneable {
             ConfigurationEntries ce
                     = (ConfigurationEntries) cm.lookup(entriesName);
             if (ce == null) {
-                throw new PropertyException(getInstanceName(), "entries",
+                throw new PropertyException(instanceName, "entries",
                         "Cannot find entries component " + entriesName);
             }
             entries = ce.getEntries();
@@ -772,12 +773,12 @@ public class PropertySheet implements Cloneable {
                 getAnnotation();
 
         // no components names are available and no comp-list was yet loaded
-        // therefore load the default list of components from the annoation
+        // therefore load the default list of components from the annotation
         if (components == null) {
             List<Class<? extends Component>> defClasses
                     = Arrays.asList(annotation.defaultList());
 
-            //            if (annoation.mandatory() && defClasses.isEmpty())
+            //            if (anntoation.mandatory() && defClasses.isEmpty())
 //                throw new InternalConfigurationException(getInstanceName(), name, "mandatory property is not set!");
             components = new ArrayList<Component>();
 
@@ -1025,16 +1026,22 @@ public class PropertySheet implements Cloneable {
                                         f.set(o, replaced.toArray(new String[0]));
                                         break;
                                     case COMPONENT_ARRAY:
-                                        Component[] cs = new Component[replaced.size()];
+                                        Component[] cs = (Component[]) Array.newInstance(f.getType().getComponentType(),replaced.size());
                                         for (int i = 0; i < cs.length; i++) {
                                             cs[i] = ps.getConfigurationManager().lookup(replaced.get(i));
+                                            if (cs[i] == null) {
+                                                throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " looked up an unknown component called " + replaced.get(i));
+                                            }
                                         }
                                         f.set(o, cs);
                                         break;
                                     case CONFIGURABLE_ARRAY:
-                                        Configurable[] cos = new Configurable[replaced.size()];
+                                        Configurable[] cos = (Configurable[]) Array.newInstance(f.getType().getComponentType(),replaced.size());
                                         for (int i = 0; i < cos.length; i++) {
                                             cos[i] = (Configurable) ps.getConfigurationManager().lookup(replaced.get(i));
+                                            if (cos[i] == null) {
+                                                throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " looked up an unknown configurable called " + replaced.get(i));
+                                            }
                                         }
                                         f.set(o, cos);
                                         break;
