@@ -1203,7 +1203,7 @@ public class PropertySheet implements Cloneable {
                                 f.set(o, new File(val));
                                 break;
                             case PATH:
-                                f.set(0, Paths.get(val));
+                                f.set(o, Paths.get(val));
                                 break;
                             case RANDOM:
                                 f.set(o, new Random(Integer.parseInt(val)));
