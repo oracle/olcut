@@ -51,7 +51,7 @@ public class PropertySheet implements Cloneable {
 
     public enum PropertyType {
 
-        INT, DOUBLE, BOOL, ENUM, COMP, STRING, STRINGLIST, COMPLIST, ENUMSET, FILE, CONFIG;
+        INT, DOUBLE, BOOL, ENUM, COMP, STRING, STRINGLIST, COMPLIST, ENUMSET, FILE, CONFIG, COMPNAME;
 
     }
     private Map<String, ConfigPropWrapper> registeredProperties
@@ -1213,6 +1213,8 @@ public class PropertySheet implements Cloneable {
                                 f.set(o, ps.getConfigurationManager().lookup(val));
                                 break;
                         }
+                    } else if (a instanceof ComponentName) {
+                        f.set(o,ps.getInstanceName());
                     }
                 }
                 f.setAccessible(accessible);
@@ -1438,6 +1440,8 @@ public class PropertySheet implements Cloneable {
             return PropertyType.FILE;
         } else if (annotation instanceof Config) {
             return PropertyType.CONFIG;
+        } else if (annotation instanceof ComponentName) {
+            return PropertyType.COMPNAME;
         } else {
             throw new RuntimeException("Unknown property type");
         }
@@ -1660,6 +1664,10 @@ public class PropertySheet implements Cloneable {
 
                     propertySheet.registerProperty(field.getName(), new ConfigPropWrapper((Proxy) annotation));
 
+                } else if (annotation instanceof ComponentName) {
+                    if (!field.getType().equals(String.class)) {
+                        throw new PropertyException(propertySheet.getInstanceName(),field.getName(),"The component name must be an instance of java.lang.String");
+                    }
                 } else {
                     Annotation[] superAnnotations = annotation.annotationType().
                             getAnnotations();

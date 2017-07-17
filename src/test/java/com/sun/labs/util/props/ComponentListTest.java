@@ -123,7 +123,6 @@ public class ComponentListTest {
         assertEquals("un",thirdOne);
     }
 
-
     @Test
     public void stringConfigurableBrokenArrayTest() throws IOException {
         URL cu = getClass().getResource("componentListConfig.xml");
