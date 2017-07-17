@@ -1100,19 +1100,6 @@ public class PropertySheet implements Cloneable {
                                     throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
                                 }
                                 break;
-                            case INTEGER_ARRAY:
-                                try {
-                                    String[] vals = arraySplit.split(val);
-                                    int[] ia = new int[vals.length];
-                                    int i = 0;
-                                    for (String v : vals) {
-                                        ia[i++] = Integer.parseInt(v);
-                                    }
-                                    f.set(o, ia);
-                                } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
-                                }
-                                break;
                             case LONG:
                                 try {
                                     f.setLong(o, Long.parseLong(val));
@@ -1127,9 +1114,36 @@ public class PropertySheet implements Cloneable {
                                     throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a long", val));
                                 }
                                 break;
+                            case FLOAT:
+                                try {
+                                    f.setFloat(o, Float.parseFloat(val));
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an float", val));
+                                }
+                                break;
+                            case DOUBLE:
+                                try {
+                                    f.setDouble(o, Double.parseDouble(val));
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a double", val));
+                                }
+                                break;
+                            case INTEGER_ARRAY:
+                                try {
+                                    String[] vals = arraySplit.split(val.substring(1,val.length()-1));
+                                    int[] ia = new int[vals.length];
+                                    int i = 0;
+                                    for (String v : vals) {
+                                        ia[i++] = Integer.parseInt(v);
+                                    }
+                                    f.set(o, ia);
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
+                                }
+                                break;
                             case LONG_ARRAY:
                                 try {
-                                    String[] vals = arraySplit.split(val);
+                                    String[] vals = arraySplit.split(val.substring(1,val.length()-1));
                                     long[] la = new long[vals.length];
                                     int i = 0;
                                     for (String v : vals) {
@@ -1140,16 +1154,9 @@ public class PropertySheet implements Cloneable {
                                     throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an array of long", val));
                                 }
                                 break;
-                            case FLOAT:
-                                try {
-                                    f.setFloat(o, Float.parseFloat(val));
-                                } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an float", val));
-                                }
-                                break;
                             case FLOAT_ARRAY:
                                 try {
-                                    String[] vals = arraySplit.split(val);
+                                    String[] vals = arraySplit.split(val.substring(1,val.length()-1));
                                     float[] fa = new float[vals.length];
                                     int i = 0;
                                     for (String v : vals) {
@@ -1160,20 +1167,13 @@ public class PropertySheet implements Cloneable {
                                     throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of float", val));
                                 }
                                 break;
-                            case DOUBLE:
-                                try {
-                                    f.setDouble(o, Double.parseDouble(val));
-                                } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a double", val));
-                                }
-                                break;
                             case DOUBLE_ARRAY:
                                 try {
-                                    String[] vals = arraySplit.split(val);
+                                    String[] vals = arraySplit.split(val.substring(1,val.length()-1));
                                     double[] da = new double[vals.length];
                                     int i = 0;
                                     for (String v : vals) {
-                                        da[i++] = Long.parseLong(v);
+                                        da[i++] = Double.parseDouble(v);
                                     }
                                     f.set(o, da);
                                 } catch (NumberFormatException ex) {
@@ -1189,12 +1189,15 @@ public class PropertySheet implements Cloneable {
                                 break;
                             case ENUM_SET:
                                 try {
-                                    EnumSet s = EnumSet.noneOf((Class<Enum>) f.getType());
-                                    String[] vals = arraySplit.split(val.toUpperCase());
+                                    Class<Enum> enumType = (Class<Enum>) ((Config) a).genericType();
+                                    EnumSet s = EnumSet.noneOf(enumType);
+                                    String[] vals = arraySplit.split(val.substring(1,val.length()-1).toUpperCase());
                                     for (String v : vals) {
-                                        s.add(Enum.valueOf((Class<Enum>) f.getType(), v));
+                                        s.add(Enum.valueOf(enumType, v));
                                     }
                                     f.set(o, s);
+                                } catch (ClassCastException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("The supplied type %s is not an Enum type", ((Config)a).genericType().toString()));
                                 } catch (IllegalArgumentException ex) {
                                     throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s has values not in %s", val, f.getClass()));
                                 }

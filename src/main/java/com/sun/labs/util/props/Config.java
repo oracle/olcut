@@ -15,6 +15,8 @@ import java.lang.annotation.RetentionPolicy;
 @ConfigProperty
 public @interface Config {
 
+    Class<?> genericType() default Object.class;
+
     /**
      * By default, configuration variables are mandatory.
      */
