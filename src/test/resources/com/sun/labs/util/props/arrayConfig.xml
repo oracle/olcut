@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Description:
+        A configuration file for testing primitive array configurations.
+-->
+
+<config>
+
+    <component name="a" type="com.sun.labs.util.props.ArrayConfigurable">
+        <propertylist name="intArray">
+            <item>1</item>
+            <item>2</item>
+            <item>3</item>
+        </propertylist>
+        <propertylist name="longArray">
+            <item>9223372036854775807</item>
+            <item>9223372036854775806</item>
+            <item>5</item>
+        </propertylist>
+        <propertylist name="floatArray">
+            <item>1.1f</item>
+            <item>2.3</item>
+            <item>3.5</item>
+        </propertylist>
+        <propertylist name="doubleArray">
+            <item>1e-16</item>
+            <item>2e-16</item>
+            <item>3.16</item>
+        </propertylist>
+    </component>
+
+</config>
