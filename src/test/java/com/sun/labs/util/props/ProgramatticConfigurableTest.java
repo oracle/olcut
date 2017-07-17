@@ -189,6 +189,7 @@ public class ProgramatticConfigurableTest {
         assertEquals("one", sc.one);
         assertEquals("two", sc.two);
         assertEquals("three", sc.three);
-        logger.info(String.format("f: %s", f));
+        //logger.info(String.format("f: %s", f));
+        f.deleteOnExit();
     }
 }
