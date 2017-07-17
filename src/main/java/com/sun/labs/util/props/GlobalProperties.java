@@ -75,7 +75,7 @@ public class GlobalProperties extends HashMap<String, GlobalProperty> {
     
     /**
      * Replaces all of the global properties in a property value with the appropriate
-     * gobal values.
+     * global values.
      * @param instanceName the name of the instance whose properties we're 
      * processing.
      * @param propName the name of the property whose value we're processing
