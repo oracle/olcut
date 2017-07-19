@@ -10,7 +10,7 @@ import java.util.EnumSet;
 /**
  *
  */
-public class ConfigEnumConfigurable implements Configurable {
+public class EnumConfig implements Configurable {
 
     public enum Type { A, B, C, D, E, F};
 
@@ -20,7 +20,7 @@ public class ConfigEnumConfigurable implements Configurable {
     @Config
     Type enum2 = Type.A;
 
-    @Config(genericType=ConfigEnumConfigurable.Type.class)
+    @Config(genericType=EnumConfig.Type.class)
     EnumSet<Type> enumSet1 = EnumSet.of(Type.A,Type.F);
 
     @Override
@@ -31,7 +31,7 @@ public class ConfigEnumConfigurable implements Configurable {
         if(getClass() != obj.getClass()) {
             return false;
         }
-        final ConfigEnumConfigurable other = (ConfigEnumConfigurable) obj;
+        final EnumConfig other = (EnumConfig) obj;
         if(this.enum1 != other.enum1) {
             return false;
         }

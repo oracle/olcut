@@ -14,8 +14,8 @@
 
     <component name="fooMap" type="com.sun.labs.util.props.FooMapConfigurable">
         <propertymap name="map">
-            <entry key="first" value="${foo1}"/>
-            <entry key="second" value="${foo2}"/>
+            <entry key="first" value="foo1"/>
+            <entry key="second" value="foo2"/>
         </propertymap>
     </component>
 </config>

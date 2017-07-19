@@ -7,6 +7,6 @@ import java.util.Map;
  */
 public class FooMapConfigurable implements Configurable {
 
-    @Config
+    @Config(genericType=FooConfigurable.class)
     public Map<String, FooConfigurable> map;
 }
