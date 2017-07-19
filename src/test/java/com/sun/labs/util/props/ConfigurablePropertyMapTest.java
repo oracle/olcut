@@ -7,7 +7,7 @@ import java.io.IOException;
 import static org.junit.Assert.*;
 
 /**
- * TODO this test case is not yet implemented
+ *
  */
 public class ConfigurablePropertyMapTest {
 

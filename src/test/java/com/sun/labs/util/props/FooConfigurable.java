@@ -14,4 +14,6 @@ public class FooConfigurable implements Configurable {
         this.name = name;
         this.value = value;
     }
+
+    private FooConfigurable() { }
 }
