@@ -16,4 +16,22 @@ public class FooConfigurable implements Configurable {
     }
 
     private FooConfigurable() { }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FooConfigurable that = (FooConfigurable) o;
+
+        if (value != that.value) return false;
+        return name != null ? name.equals(that.name) : that.name == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + value;
+        return result;
+    }
 }
