@@ -991,9 +991,6 @@ public class PropertySheet implements Cloneable {
     private void setConfiguredFields(Object o, PropertySheet ps) throws PropertyException, IllegalAccessException {
 
         Class<?> curClass = o.getClass();
-        //
-        // This test is on Object.class.getName as class.getSuperclass() returns
-        // Object rather than the interfaces it implements.
         Set<Field> fields = getAllFields(curClass);
         for (Field f : fields) {
             boolean accessible = f.isAccessible();
@@ -1009,52 +1006,8 @@ public class PropertySheet implements Cloneable {
                         throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " has an unknown field type");
                     }
                     //
-                    // We'll handle things that have lists with items separately.
-                    if (FieldType.objectArrayTypes.contains(ft)) {
-                        List<String> vals = (List<String>) ps.propValues.get(f.getName());
-                        if (vals != null) {
-                            List<String> replaced = new ArrayList<String>();
-                            for (String val : vals) {
-                                replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), val));
-                            }
-                            switch (ft) {
-                                case STRING_ARRAY:
-                                    f.set(o, replaced.toArray(new String[0]));
-                                    break;
-                                case COMPONENT_ARRAY:
-                                    Component[] cs = (Component[]) Array.newInstance(f.getType().getComponentType(), replaced.size());
-                                    for (int i = 0; i < cs.length; i++) {
-                                        cs[i] = ps.getConfigurationManager().lookup(replaced.get(i));
-                                        if (cs[i] == null) {
-                                            throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " looked up an unknown component called " + replaced.get(i));
-                                        }
-                                    }
-                                    f.set(o, cs);
-                                    break;
-                                case CONFIGURABLE_ARRAY:
-                                    Configurable[] cos = (Configurable[]) Array.newInstance(f.getType().getComponentType(), replaced.size());
-                                    for (int i = 0; i < cos.length; i++) {
-                                        cos[i] = (Configurable) ps.getConfigurationManager().lookup(replaced.get(i));
-                                        if (cos[i] == null) {
-                                            throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " looked up an unknown configurable called " + replaced.get(i));
-                                        }
-                                    }
-                                    f.set(o, cos);
-                                    break;
-                            }
-                            continue;
-                        }
-                    }
-
-                    //
-                    // We know it's a single string now.
-                    // We'll use flattenProp so that we take care of any variables
-                    // in the value.
-                    String val = ps.flattenProp(f.getName());
-
-                    //
                     // Handle empty values.
-                    if (val == null) {
+                    if (propValues.get(f.getName()) == null) {
                         if (((Config) a).mandatory()) {
                             throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " is mandatory in configuration");
                         } else {
@@ -1062,92 +1015,107 @@ public class PropertySheet implements Cloneable {
                         }
                     }
 
-                    if (FieldType.simpleTypes.contains(ft)) {
-                        f.set(o, parseSimpleField(f.getName(), ft, ps, val));
-                    } else {
+                    //
+                    // We'll handle things that have list or arrays with items separately.
+                    if (FieldType.listTypes.contains(ft)) {
+                        List<String> vals = (List<String>) ps.propValues.get(f.getName());
+                        List<String> replaced = new ArrayList<String>();
+                        for (String val : vals) {
+                            replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(getInstanceName(), f.getName(), val));
+                        }
                         switch (ft) {
+                            case STRING_ARRAY:
+                                f.set(o, replaced.toArray(new String[0]));
+                                break;
+                            case COMPONENT_ARRAY:
+                                Component[] cs = (Component[]) Array.newInstance(f.getType().getComponentType(), replaced.size());
+                                for (int i = 0; i < cs.length; i++) {
+                                    cs[i] = ps.getConfigurationManager().lookup(replaced.get(i));
+                                    if (cs[i] == null) {
+                                        throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " looked up an unknown component called " + replaced.get(i));
+                                    }
+                                }
+                                f.set(o, cs);
+                                break;
+                            case CONFIGURABLE_ARRAY:
+                                Configurable[] cos = (Configurable[]) Array.newInstance(f.getType().getComponentType(), replaced.size());
+                                for (int i = 0; i < cos.length; i++) {
+                                    cos[i] = (Configurable) ps.getConfigurationManager().lookup(replaced.get(i));
+                                    if (cos[i] == null) {
+                                        throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " looked up an unknown configurable called " + replaced.get(i));
+                                    }
+                                }
+                                f.set(o, cos);
+                                break;
                             case INTEGER_ARRAY:
                                 try {
-                                    String[] vals = arraySplit.split(val.substring(1, val.length() - 1));
-                                    int[] ia = new int[vals.length];
+                                    int[] ia = new int[replaced.size()];
                                     int i = 0;
-                                    for (String v : vals) {
+                                    for (String v : replaced) {
                                         ia[i++] = Integer.parseInt(v);
                                     }
                                     f.set(o, ia);
                                 } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", val));
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", replaced.toString()));
                                 }
                                 break;
                             case LONG_ARRAY:
                                 try {
-                                    String[] vals = arraySplit.split(val.substring(1, val.length() - 1));
-                                    long[] la = new long[vals.length];
+                                    long[] la = new long[replaced.size()];
                                     int i = 0;
-                                    for (String v : vals) {
+                                    for (String v : replaced) {
                                         la[i++] = Long.parseLong(v);
                                     }
                                     f.set(o, la);
                                 } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an array of long", val));
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an array of long", replaced.toString()));
                                 }
                                 break;
                             case FLOAT_ARRAY:
                                 try {
-                                    String[] vals = arraySplit.split(val.substring(1, val.length() - 1));
-                                    float[] fa = new float[vals.length];
+                                    float[] fa = new float[replaced.size()];
                                     int i = 0;
-                                    for (String v : vals) {
+                                    for (String v : replaced) {
                                         fa[i++] = Float.parseFloat(v);
                                     }
                                     f.set(o, fa);
                                 } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of float", val));
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of float", replaced.toString()));
                                 }
                                 break;
                             case DOUBLE_ARRAY:
                                 try {
-                                    String[] vals = arraySplit.split(val.substring(1, val.length() - 1));
-                                    double[] da = new double[vals.length];
+                                    double[] da = new double[replaced.size()];
                                     int i = 0;
-                                    for (String v : vals) {
+                                    for (String v : replaced) {
                                         da[i++] = Double.parseDouble(v);
                                     }
                                     f.set(o, da);
                                 } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of double", val));
-                                }
-                                break;
-                            case ENUM:
-                                try {
-                                    f.set(o, Enum.valueOf((Class<Enum>) f.getType(), val));
-                                } catch (IllegalArgumentException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a value of %s", val, f.getClass()));
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of double", replaced.toString()));
                                 }
                                 break;
                             case ENUM_SET:
                                 try {
                                     Class<Enum> enumType = (Class<Enum>) ((Config) a).genericType();
                                     EnumSet s = EnumSet.noneOf(enumType);
-                                    String[] vals = arraySplit.split(val.substring(1, val.length() - 1).toUpperCase());
-                                    for (String v : vals) {
-                                        s.add(Enum.valueOf(enumType, v));
+                                    for (String v : replaced) {
+                                        s.add(Enum.valueOf(enumType, v.toUpperCase()));
                                     }
                                     f.set(o, s);
                                 } catch (ClassCastException ex) {
                                     throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("The supplied type %s is not an Enum type", ((Config) a).genericType().toString()));
                                 } catch (IllegalArgumentException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s has values not in %s", val, f.getClass()));
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s has values not in %s", replaced.toString(), f.getClass()));
                                 }
                                 break;
                             case LIST:
                                 try {
                                     Class<?> genericType = ((Config) a).genericType();
                                     FieldType genericft = FieldType.getFieldType(genericType);
-                                    String[] vals = arraySplit.split(val.substring(1, val.length() - 1));
-                                    List list = new ArrayList(vals.length);
-                                    for (String v : vals) {
-                                        list.add(parseSimpleField(f.getName(), genericft, ps, v));
+                                    List list = new ArrayList(replaced.size());
+                                    for (String v : replaced) {
+                                        list.add(parseSimpleField(f.getName(), genericType, genericft, ps, v));
                                     }
                                     f.set(o, list);
                                 } catch (ClassCastException ex) {
@@ -1158,29 +1126,36 @@ public class PropertySheet implements Cloneable {
                                 try {
                                     Class<?> genericType = ((Config) a).genericType();
                                     FieldType genericft = FieldType.getFieldType(genericType);
-                                    String[] vals = arraySplit.split(val.substring(1, val.length() - 1));
-                                    Set set = new HashSet(vals.length);
-                                    for (String v : vals) {
-                                        set.add(parseSimpleField(f.getName(), genericft, ps, v));
+                                    Set set = new HashSet(replaced.size());
+                                    for (String v : replaced) {
+                                        set.add(parseSimpleField(f.getName(), genericType, genericft, ps, v));
                                     }
                                     f.set(o, set);
                                 } catch (ClassCastException ex) {
                                     throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("The supplied genericType %s does not match the type of the object", ((Config) a).genericType().toString()));
                                 }
                                 break;
-                            case MAP:
-                                Class<?> genericType = ((Config) a).genericType();
-                                FieldType genericft = FieldType.getFieldType(genericType);
-                                Map map = new HashMap<>();
-                                Map<String, String> oldMap = (Map<String, String>) ps.propValues.get(f.getName());
-                                if (oldMap != null) {
-                                    for (Map.Entry<String, String> e : oldMap.entrySet()) {
-                                        String newVal = cm.getGlobalProperties().replaceGlobalProperties(ps.instanceName, f.getName(), e.getValue());
-                                        map.put(e.getKey(), parseSimpleField(f.getName(), genericft, ps, newVal));
-                                    }
-                                    f.set(o, map);
-                                }
-                                break;
+                        }
+                    } else if (FieldType.simpleTypes.contains(ft)) {
+                        //
+                        // We know it's a single string now.
+                        // We'll use flattenProp so that we take care of any variables
+                        // in the value.
+                        String val = ps.flattenProp(f.getName());
+                        f.set(o, parseSimpleField(f.getName(), f.getType(), ft, ps, val));
+                    } else {
+                        //
+                        // Last option is a map, as it's not a single value or a list.
+                        Class<?> genericType = ((Config) a).genericType();
+                        FieldType genericft = FieldType.getFieldType(genericType);
+                        Map map = new HashMap<>();
+                        Map<String, String> oldMap = (Map<String, String>) ps.propValues.get(f.getName());
+                        if (oldMap != null) {
+                            for (Map.Entry<String, String> e : oldMap.entrySet()) {
+                                String newVal = cm.getGlobalProperties().replaceGlobalProperties(ps.instanceName, f.getName(), e.getValue());
+                                map.put(e.getKey(), parseSimpleField(f.getName(), genericType, genericft, ps, newVal));
+                            }
+                            f.set(o, map);
                         }
                     }
                 } else if (a instanceof ComponentName) {
@@ -1191,7 +1166,7 @@ public class PropertySheet implements Cloneable {
         }
     }
 
-    private Object parseSimpleField(String fieldName, FieldType ft, PropertySheet ps, String val) throws IllegalAccessException {
+    private Object parseSimpleField(String fieldName, Class<?> fieldClass, FieldType ft, PropertySheet ps, String val) throws IllegalAccessException {
         switch (ft) {
             case STRING:
                 return val;
@@ -1242,6 +1217,12 @@ public class PropertySheet implements Cloneable {
                     return new Random(Integer.parseInt(val));
                 } catch (NumberFormatException ex) {
                     throw new PropertyException(ex, ps.instanceName, fieldName, String.format("The seed %s is not an integer", val));
+                }
+            case ENUM:
+                try {
+                    return Enum.valueOf((Class<Enum>) fieldClass, val);
+                } catch (IllegalArgumentException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a value of %s", val, fieldClass));
                 }
             case COMPONENT:
             case CONFIGURABLE:
@@ -1781,7 +1762,7 @@ public class PropertySheet implements Cloneable {
                     break;
                 case CONFIG:
                     Object val = getRawNoReplacement(propName);
-                    if (val instanceof String[]) {
+                    if (val instanceof List) {
                         //
                         // Must be a string or component list
                         writer.printf("\n\t\t<propertylist name=\"%s\">", propName);

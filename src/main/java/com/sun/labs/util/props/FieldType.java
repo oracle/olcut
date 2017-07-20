@@ -59,11 +59,12 @@ public enum FieldType {
     
     private final static Map<Class<?>,FieldType> m = new HashMap<>();
     
-    public final static EnumSet<FieldType> objectArrayTypes = EnumSet.of(STRING_ARRAY, COMPONENT_ARRAY, CONFIGURABLE_ARRAY);
-    public final static EnumSet<FieldType> genericTypes = EnumSet.of(LIST, SET, MAP, ENUM_SET);
+    public final static EnumSet<FieldType> listTypes = EnumSet.of(LIST, SET, ENUM_SET, INTEGER_ARRAY, LONG_ARRAY,
+                                                                  FLOAT_ARRAY, DOUBLE_ARRAY, STRING_ARRAY,
+                                                                  COMPONENT_ARRAY, CONFIGURABLE_ARRAY);
     public final static EnumSet<FieldType> simpleTypes = EnumSet.of(BOOLEAN, INTEGER, LONG, FLOAT, DOUBLE, STRING,
                                                                     COMPONENT, CONFIGURABLE, ATOMIC_INTEGER,
-                                                                    ATOMIC_LONG, FILE, PATH, RANDOM);
+                                                                    ATOMIC_LONG, FILE, PATH, RANDOM, ENUM);
 
     private FieldType(Class<?>... types) {
         this.types = types;
