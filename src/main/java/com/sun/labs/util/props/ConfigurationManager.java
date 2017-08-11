@@ -1157,7 +1157,6 @@ public class ConfigurationManager implements Cloneable {
                     Annotation[] annotations = field.getAnnotations();
                     for (Annotation annotation : annotations) {
                         if (annotation instanceof ConfigComponent) {
-
                             propertyName = (String) field.get(null);
 
                             //
@@ -1173,7 +1172,29 @@ public class ConfigurationManager implements Cloneable {
                                     name));
                         } else if (annotation instanceof Config) {
                             propertyName = field.getName();
-                            m.put(propertyName, field.get(configurable));
+                            Class<?> outer = field.get(configurable).getClass();
+                            Class<?> inner = ((Config) annotation).genericType();
+
+//                            logger.info(String.format("field %s, class=%s, component? %s; genericType=%s / component? %s",
+//                                    field.getName(),
+//                                    outer.getCanonicalName(),
+//                                    Component.class.isAssignableFrom(outer),
+//                                    inner.getCanonicalName(),
+//                                    Component.class.isAssignableFrom(inner)
+//                                    ));
+
+                            if (Component.class.isAssignableFrom(outer)) {
+                                m.put(propertyName, importComponent(configurable, propertyName, name));
+                            } else if (Component.class.isAssignableFrom(inner)) {
+                                if (List.class.isAssignableFrom(outer)) {
+                                    m.put(propertyName, importComponentList(configurable, propertyName, name));
+                                } else {
+                                    throw new UnsupportedOperationException("not supported: outer type " + outer.getCanonicalName());
+                                }
+                            } else {
+                                m.put(propertyName, field.get(configurable));
+                            }
+
                         } else {
                             Annotation[] superAnnotations = annotation.
                                     annotationType().
