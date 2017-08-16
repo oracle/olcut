@@ -1047,6 +1047,30 @@ public class PropertySheet implements Cloneable {
                                 }
                                 f.set(o, cos);
                                 break;
+                            case BYTE_ARRAY:
+                                try {
+                                    byte[] ia = new byte[replaced.size()];
+                                    int i = 0;
+                                    for (String v : replaced) {
+                                        ia[i++] = Byte.parseByte(v);
+                                    }
+                                    f.set(o, ia);
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a byte", replaced.toString()));
+                                }
+                                break;
+                            case SHORT_ARRAY:
+                                try {
+                                    short[] ia = new short[replaced.size()];
+                                    int i = 0;
+                                    for (String v : replaced) {
+                                        ia[i++] = Short.parseShort(v);
+                                    }
+                                    f.set(o, ia);
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a short", replaced.toString()));
+                                }
+                                break;
                             case INTEGER_ARRAY:
                                 try {
                                     int[] ia = new int[replaced.size()];
@@ -1172,6 +1196,18 @@ public class PropertySheet implements Cloneable {
                 return val;
             case BOOLEAN:
                 return Boolean.parseBoolean(val);
+            case BYTE:
+                try {
+                    return Byte.parseByte(val);
+                } catch (NumberFormatException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a byte", val));
+                }
+            case SHORT:
+                try {
+                    return Short.parseShort(val);
+                } catch (NumberFormatException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a short", val));
+                }
             case INTEGER:
                 try {
                     return Integer.parseInt(val);
@@ -1774,9 +1810,9 @@ public class PropertySheet implements Cloneable {
                             }
                         }
                         writer.print("\n\t\t</propertylist>");
-                    } else if (val instanceof EnumSet) {
+                    } else if (val instanceof Set) {
                         writer.printf("\n\t\t<propertylist name=\"%s\">", propName);
-                        for (Object o : (EnumSet) val) {
+                        for (Object o : (Set) val) {
                             if (o instanceof Class) {
                                 writer.printf("\n\t\t\t<type>%s</type>", ((Class) o).
                                         getName());
