@@ -131,7 +131,7 @@ public class AllFieldsConfigurable implements Configurable {
     @Config(genericType=String.class)
     public Map<String, String> mapStringField;
     @Config(genericType=File.class)
-    public Map<String, Random> mapFileField;
+    public Map<String, File> mapFileField;
     @Config(genericType=StringConfig.class)
     public Map<String, StringConfig> mapConfigurableSubclassField;
 
