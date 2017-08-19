@@ -63,7 +63,8 @@ public enum FieldType {
     
     private final static Map<Class<?>,FieldType> m = new HashMap<>();
     
-    public final static EnumSet<FieldType> listTypes = EnumSet.of(LIST, SET, ENUM_SET, BYTE_ARRAY, INTEGER_ARRAY, LONG_ARRAY,
+    public final static EnumSet<FieldType> listTypes = EnumSet.of(LIST, SET, ENUM_SET, BYTE_ARRAY, SHORT_ARRAY,
+                                                                  INTEGER_ARRAY, LONG_ARRAY,
                                                                   FLOAT_ARRAY, DOUBLE_ARRAY, STRING_ARRAY,
                                                                   COMPONENT_ARRAY, CONFIGURABLE_ARRAY);
     public final static EnumSet<FieldType> simpleTypes = EnumSet.of(BOOLEAN, BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, STRING,
