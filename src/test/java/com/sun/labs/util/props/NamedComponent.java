@@ -8,6 +8,12 @@ public class NamedComponent implements Component {
     @ComponentName
     private String name;
 
+    private NamedComponent() { }
+
+    public NamedComponent(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }
