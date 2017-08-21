@@ -8,10 +8,10 @@ import java.util.Random;
 public class RandomConfigurable implements Configurable {
 
     @Config
-    public final Random one;
+    public Random one;
 
     @Config
-    public final Random two;
+    public Random two;
 
     public RandomConfigurable() {
         one = new Random(1);
