@@ -54,7 +54,7 @@ public class AllFieldsConfiguredTest {
         cm1.importConfigurable(ac,"all-config");
         cm1.save(f);
         ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
-        AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup(ac.name);
+        AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
         assertEquals("Imported config not equal to generated object",ac,ac2);
     }
 
