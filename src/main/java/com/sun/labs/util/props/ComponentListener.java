@@ -5,8 +5,8 @@ package com.sun.labs.util.props;
  * looked up in a configuration manager, especially for those components that 
  * have been looked up in a component registry.
  * 
- * @see ConfigurationManger.lookup(String,ComponentListener)
- * @see ConfigurationManager.lookupAll(String,ComponentListener)
+ * @see ConfigurationManager#lookup(String,ComponentListener)
+ * @see ConfigurationManager#lookupAll(Class, ComponentListener)
  */
 public interface ComponentListener {
     
