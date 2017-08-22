@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1268,6 +1269,26 @@ public class ConfigurationManager implements Cloneable {
                                     m.put(propertyName, importComponentMap(configurable, propertyName, name));
                                 } else if (Set.class.isAssignableFrom(fieldType)) {
                                     m.put(propertyName, importComponentCollection(configurable, propertyName, name));
+                                } else {
+                                    throw new UnsupportedOperationException("not supported: field type " + fieldType.getCanonicalName());
+                                }
+                            } else if (Random.class.isAssignableFrom(fieldType)) {
+                                m.put(propertyName, ((Random) field.get(configurable)).nextInt());
+                            } else if (Random.class.isAssignableFrom(genericType)) {
+                                if (Map.class.isAssignableFrom(fieldType)) {
+                                    Map fieldMap = (Map) field.get(configurable);
+                                    HashMap<String,String> newMap = new HashMap<>();
+                                    for (Object k : fieldMap.keySet()) {
+                                        newMap.put((String)k,""+((Random)fieldMap.get(k)).nextInt());
+                                    }
+                                    m.put(propertyName,newMap);
+                                } else if (Collection.class.isAssignableFrom(fieldType)) {
+                                    Collection collection = (Collection) field.get(configurable);
+                                    List<String> newList = new ArrayList<>();
+                                    for (Object o : collection) {
+                                        newList.add(""+((Random)o).nextInt());
+                                    }
+                                    m.put(propertyName,newList);
                                 } else {
                                     throw new UnsupportedOperationException("not supported: field type " + fieldType.getCanonicalName());
                                 }

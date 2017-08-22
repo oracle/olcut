@@ -1852,7 +1852,7 @@ public class PropertySheet implements Cloneable {
             //
             // Must be a component, which doesn't have properties
             writer.printf("\t<component name=\"%s\" type=\"%s\" export=\"%s\" "
-                            + "import=\"%s\"/>",
+                            + "import=\"%s\"/>\n",
                     instanceName,
                     getConfigurableClass().getName(),
                     isExportable(),
