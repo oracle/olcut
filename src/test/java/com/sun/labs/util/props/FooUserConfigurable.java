@@ -8,7 +8,7 @@ package com.sun.labs.util.props;
 public class FooUserConfigurable implements Configurable {
 
     @ComponentName
-    private String componentName = "fooUserComponent";
+    private String name = "user";
 
     @Config
     private FooConfigurable foo;
@@ -16,6 +16,11 @@ public class FooUserConfigurable implements Configurable {
     public FooUserConfigurable() { }
 
     public FooUserConfigurable(FooConfigurable foo) {
+        this.foo = foo;
+    }
+
+    public FooUserConfigurable(String name, FooConfigurable foo) {
+        this.name = name;
         this.foo = foo;
     }
 
