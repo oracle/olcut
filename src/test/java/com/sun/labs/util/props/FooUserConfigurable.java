@@ -7,6 +7,9 @@ package com.sun.labs.util.props;
  */
 public class FooUserConfigurable implements Configurable {
 
+    @ComponentName
+    private String componentName = "fooUserComponent";
+
     @Config
     private FooConfigurable foo;
 
