@@ -42,16 +42,15 @@ public class NestedConfigurablesTest {
 
     @Test
     public void testImportConfigurable() throws IOException {
-        fail("FIXME: This test hangs (I've commented it out)");
-//        FooUserConfigurable u1 = new FooUserConfigurable(new FooConfigurable("foo1", 1));
-//        ConfigurationManager cm1 = new ConfigurationManager();
-//        cm1.importConfigurable(u1);
-//        assertEquals(2, cm1.getNumConfigured());
-//        File tmp = mkTmp();
-//        cm1.save(tmp);
-//        ConfigurationManager cm2 = new ConfigurationManager(tmp.toURI().toURL());
-//        FooUserConfigurable u2 = (FooUserConfigurable) cm2.lookup("user");
-//        assertEquals(u1.getFoo(), u2.getFoo());
+        FooUserConfigurable u1 = new FooUserConfigurable(new FooConfigurable("foo1", 1));
+        ConfigurationManager cm1 = new ConfigurationManager();
+        cm1.importConfigurable(u1);
+        assertEquals(2, cm1.getNumAdded());
+        File tmp = mkTmp();
+        cm1.save(tmp);
+        ConfigurationManager cm2 = new ConfigurationManager(tmp.toURI().toURL());
+        FooUserConfigurable u2 = (FooUserConfigurable) cm2.lookup("user");
+        assertEquals(u1.getFoo(), u2.getFoo());
     }
 
     private static File mkTmp() throws IOException {

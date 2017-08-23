@@ -514,6 +514,15 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
+     * Gets the number of added (i.e., uninstantiated components)
+     *
+     * @return the number of added components in this configuration manager.
+     */
+    public int getNumAdded() {
+        return addedComponents.size();
+    }
+
+    /**
      * Gets the number of configured (i.e., instantiated components)
      *
      * @return the number of instantiated components in this configuration manager.
@@ -1187,6 +1196,7 @@ public class ConfigurationManager implements Cloneable {
                     }
                     field.setAccessible(accessible);
                 }
+                curClass = curClass.getSuperclass();
             }
         } catch (PropertyException ex) {
             throw ex;
