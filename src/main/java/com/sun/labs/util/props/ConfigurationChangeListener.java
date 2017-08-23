@@ -4,13 +4,13 @@ package com.sun.labs.util.props;
  * Describes all methods necessary to process change events of a <code>ConfigurationManager</code>.
  *
  * @author Holger Brandl
- * @see edu.cmu.sphinx.util.props.ConfigurationManager
+ * @see com.sun.labs.util.props.ConfigurationManager
  */
 
 public interface ConfigurationChangeListener {
 
     /**
-     * Called if the configuration of a registered compoenent named <code>configurableName</code> was changed.
+     * Called if the configuration of a registered component named <code>configurableName</code> was changed.
      *
      * @param configurableName The name of the changed configurable.
      * @param propertyName     The name of the property which was changed
@@ -20,21 +20,21 @@ public interface ConfigurationChangeListener {
 
 
     /**
-     * Called if a new compoenent defined by <code>ps</code> was registered to the ConfigurationManager
+     * Called if a new component defined by <code>ps</code> was registered to the ConfigurationManager
      * <code>cm</code>.
      */
     public void componentAdded(ConfigurationManager cm, PropertySheet ps);
 
 
     /**
-     * Called if a compoenent defined by <code>ps</code> was unregistered (removed) from the ConfigurationManager
+     * Called if a component defined by <code>ps</code> was unregistered (removed) from the ConfigurationManager
      * <code>cm</code>.
      */
     public void componentRemoved(ConfigurationManager cm, PropertySheet ps);
 
 
     /**
-     * Called if a compoenent was renamed.
+     * Called if a component was renamed.
      */
     public void componentRenamed(ConfigurationManager cm, PropertySheet ps, String oldName);
 }
