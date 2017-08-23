@@ -1287,20 +1287,83 @@ public class ConfigurationManager implements Cloneable {
                             } else if (Random.class.isAssignableFrom(genericType)) {
                                 if (Map.class.isAssignableFrom(fieldType)) {
                                     Map fieldMap = (Map) field.get(configurable);
-                                    HashMap<String,String> newMap = new HashMap<>();
+                                    HashMap<String, String> newMap = new HashMap<>();
                                     for (Object k : fieldMap.keySet()) {
-                                        newMap.put((String)k,""+((Random)fieldMap.get(k)).nextInt());
+                                        newMap.put((String) k, "" + ((Random) fieldMap.get(k)).nextInt());
                                     }
-                                    m.put(propertyName,newMap);
+                                    m.put(propertyName, newMap);
                                 } else if (Collection.class.isAssignableFrom(fieldType)) {
                                     Collection collection = (Collection) field.get(configurable);
                                     List<String> newList = new ArrayList<>();
                                     for (Object o : collection) {
-                                        newList.add(""+((Random)o).nextInt());
+                                        newList.add("" + ((Random) o).nextInt());
                                     }
-                                    m.put(propertyName,newList);
+                                    m.put(propertyName, newList);
                                 } else {
                                     throw new UnsupportedOperationException("not supported: field type " + fieldType.getCanonicalName());
+                                }
+                            } else if (fieldType.isArray()) {
+                                //BYTE_ARRAY, SHORT_ARRAY, INTEGER_ARRAY, LONG_ARRAY, FLOAT_ARRAY,
+                                //DOUBLE_ARRAY, STRING_ARRAY, COMPONENT_ARRAY, CONFIGURABLE_ARRAY
+                                Class<?> arrayComponentType = fieldType.getComponentType();
+                                if (Configurable.class.isAssignableFrom(arrayComponentType)) {
+                                    Configurable[] l = (Configurable[]) field.get(configurable);
+                                    List<String> names = new ArrayList<>();
+                                    String embeddedName = String.format("%s-%s", name, propertyName);
+                                    int i = 0;
+                                    for (Configurable c : l) {
+                                        String np = String.format("%s-%d", embeddedName, i++);
+                                        importConfigurable(c, np);
+                                        names.add(np);
+                                    }
+                                    m.put(propertyName,names);
+                                } else if (Component.class.isAssignableFrom(arrayComponentType)) {
+                                    Component[] l = (Component[]) field.get(configurable);
+                                    List<String> names = new ArrayList<>();
+                                    String embeddedName = String.format("%s-%s", name, propertyName);
+                                    int i = 0;
+                                    for(Component c : l) {
+                                        String np = String.format("%s-%d", embeddedName, i++);
+                                        addComponent(c.getClass(),np);
+                                        names.add(np);
+                                    }
+                                    m.put(propertyName,names);
+                                } else {
+                                    //
+                                    // Primitive type, so we can just toString it.
+                                    List<String> stringList = new ArrayList<>();
+                                    if (byte.class.isAssignableFrom(arrayComponentType)) {
+                                        for (byte b : (byte[])field.get(configurable)) {
+                                            stringList.add(""+b);
+                                        }
+                                    } else if (short.class.isAssignableFrom(arrayComponentType)) {
+                                        for (short s : (short[])field.get(configurable)) {
+                                            stringList.add(""+s);
+                                        }
+                                    } else if (int.class.isAssignableFrom(arrayComponentType)) {
+                                        for (int i : (int[])field.get(configurable)) {
+                                            stringList.add(""+i);
+                                        }
+                                    } else if (long.class.isAssignableFrom(arrayComponentType)) {
+                                        for (long l : (long[])field.get(configurable)) {
+                                            stringList.add(""+l);
+                                        }
+                                    } else if (float.class.isAssignableFrom(arrayComponentType)) {
+                                        for (float f : (float[])field.get(configurable)) {
+                                            stringList.add(""+f);
+                                        }
+                                    } else if (double.class.isAssignableFrom(arrayComponentType)) {
+                                        for (double d : (double[])field.get(configurable)) {
+                                            stringList.add(""+d);
+                                        }
+                                    } else if (String.class.isAssignableFrom(arrayComponentType)) {
+                                        for (String s : (String[])field.get(configurable)) {
+                                            stringList.add(s);
+                                        }
+                                    } else {
+                                        throw new PropertyException(null, null, "Unsupported array type " + fieldType.toString());
+                                    }
+                                    m.put(propertyName, stringList);
                                 }
                             } else {
                                 m.put(propertyName, field.get(configurable));
@@ -1331,7 +1394,7 @@ public class ConfigurationManager implements Cloneable {
             throw ex;
         } catch(Exception ex) {
             throw new PropertyException(ex, null, null,
-                                        String.format("Error importing %s for propName",
+                                        String.format("Error importing %s for propName %s",
                                         name, propertyName));
         }
     }

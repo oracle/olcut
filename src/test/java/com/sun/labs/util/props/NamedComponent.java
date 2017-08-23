@@ -23,13 +23,21 @@ public class NamedComponent implements Component {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
+        return true;
+        /*
         NamedComponent that = (NamedComponent) o;
 
         return name != null ? name.equals(that.name) : that.name == null;
+        */
     }
 
     @Override
     public int hashCode() {
         return name != null ? name.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "NamedComponent(name="+name+")";
     }
 }
