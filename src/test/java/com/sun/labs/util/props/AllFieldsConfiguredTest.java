@@ -61,7 +61,7 @@ public class AllFieldsConfiguredTest {
     public AllFieldsConfigurable generateConfigurable() {
         AllFieldsConfigurable ac = new AllFieldsConfigurable();
 
-        ac.name = "generated";
+        ac.name = "all-config";
 
         //Primitives
         ac.boolField = true;
