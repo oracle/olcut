@@ -25,6 +25,46 @@
         </snapshotRepository>
     </distributionManagement>
 
+   	<repositories>
+	<repository>
+		<id>artifactory-oraclecorp</id>
+		<name>artifactory-oraclecorp</name>
+		<url>https://artifactory-slc.oraclecorp.com/artifactory/repo1-cache</url>
+	</repository>		
+	<repository>
+		<snapshots>
+			<enabled>false</enabled>
+		</snapshots>
+		<id>citadel-central</id>
+		<name>libs-release</name>
+		<url>http://citadel.us.oracle.com/artifactory/libs-release</url>
+	</repository>
+	<repository>
+		<snapshots />
+		<id>citadel-snapshots</id>
+		<name>libs-snapshot</name>
+		<url>http://citadel.us.oracle.com/artifactory/libs-snapshot</url>
+	</repository>
+	<repository>
+		<snapshots>
+			<enabled>false</enabled>
+		</snapshots>
+		<id>citadel-ext</id>
+		<name>ext-release-local</name>
+		<url>http://citadel.us.oracle.com/artifactory/ext-release-local</url>
+	</repository>
+	<repository>
+		<id>central</id>
+		<url>http://repo1.maven.org/maven2</url>
+		<releases>
+			<enabled>false</enabled>
+		</releases>
+		<snapshots>
+			<enabled>false</enabled>
+		</snapshots>
+	</repository>
+	</repositories>
+
 	<dependencies>
         <dependency>
             <groupId>jline</groupId>
