@@ -11,3 +11,5 @@ manifest.mf
 # Intellij files
 .idea/
 olcut.iml
+/.classpath
+/.project
