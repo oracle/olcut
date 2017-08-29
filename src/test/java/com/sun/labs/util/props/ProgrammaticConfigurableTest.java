@@ -23,11 +23,11 @@ import static org.junit.Assert.*;
  *
  * @author sg93990
  */
-public class ProgramatticConfigurableTest {
+public class ProgrammaticConfigurableTest {
 
-    private static final Logger logger = Logger.getLogger(ProgramatticConfigurableTest.class.getName());
+    private static final Logger logger = Logger.getLogger(ProgrammaticConfigurableTest.class.getName());
 
-    public ProgramatticConfigurableTest() {
+    public ProgrammaticConfigurableTest() {
     }
 
     @BeforeClass
