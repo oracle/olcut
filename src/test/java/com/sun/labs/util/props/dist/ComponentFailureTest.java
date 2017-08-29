@@ -15,6 +15,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -61,6 +62,7 @@ public class ComponentFailureTest {
         }
     }
 
+    @Ignore
     @Test
     public void simpleKillService() throws PropertyException, IOException {
         //
@@ -103,6 +105,7 @@ public class ComponentFailureTest {
         assertTrue(client.getNewPropsCalls() == 2);
     }
 
+    @Ignore
     @Test
     public void killService() throws PropertyException, IOException {
         //
