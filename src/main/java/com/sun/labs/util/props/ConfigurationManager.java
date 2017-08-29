@@ -1,5 +1,6 @@
 package com.sun.labs.util.props;
 
+import javax.management.MBeanServer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,12 +23,12 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.management.MBeanServer;
 
 /**
  * Manages a set of <code>Configurable</code>s, their parametrization and the relationships between them. Configurations
@@ -513,6 +514,15 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
+     * Gets the number of added (i.e., uninstantiated components)
+     *
+     * @return the number of added components in this configuration manager.
+     */
+    public int getNumAdded() {
+        return addedComponents.size();
+    }
+
+    /**
      * Gets the number of configured (i.e., instantiated components)
      *
      * @return the number of instantiated components in this configuration manager.
@@ -707,6 +717,35 @@ public class ConfigurationManager implements Cloneable {
     public void addConfigurable(Class<? extends Configurable> confClass,
                                  String instanceName) {
         addConfigurable(confClass, instanceName, new HashMap<String, Object>());
+    }
+
+    /**
+     * Registers a new component to this configuration manager.
+     *
+     * @param confClass The class of the component to be instantiated and to be added to this configuration manager
+     *                  instance.
+     * @param name      The desired  lookup-name of the component
+     * @throws IllegalArgumentException if the there's already a component with the same <code>name</code> that's been instantiated by
+     *                                  this configuration manager instance.
+     */
+    public void addComponent(Class<? extends Component> confClass,
+                                String name) {
+        if(name == null) {
+            name = confClass.getName();
+        }
+
+        if(symbolTable.containsKey(name)) {
+            throw new IllegalArgumentException("tried to override existing component name");
+        }
+
+        PropertySheet ps = getPropSheetInstanceFromClass(confClass, new HashMap<>(), name,
+                this);
+        symbolTable.put(name, ps);
+        rawPropertyMap.put(name, new RawPropertyData(name, confClass.getName()));
+        addedComponents.put(name, ps);
+        for(ConfigurationChangeListener changeListener : changeListeners) {
+            changeListener.componentAdded(this, ps);
+        }
     }
 
     /**
@@ -1014,7 +1053,7 @@ public class ConfigurationManager implements Cloneable {
      * Instantiates the given <code>targetClass</code> and instruments it using default properties or the properties
      * given by the <code>defaultProps</code>.
      */
-    private static PropertySheet getPropSheetInstanceFromClass(Class<? extends Configurable> targetClass,
+    private static PropertySheet getPropSheetInstanceFromClass(Class<? extends Component> targetClass,
                                                                  Map<String, Object> defaultProps,
                                                                  String componentName,
                                                                  ConfigurationManager cm) {
@@ -1134,6 +1173,54 @@ public class ConfigurationManager implements Cloneable {
      * generated it (e.g., if it was sent over the network.)
      *
      * @param configurable the configurable component to import
+     */
+    public void importConfigurable(Configurable configurable) throws PropertyException {
+        String configName = "";
+        String propertyName = "";
+
+        Class<?> curClass = configurable.getClass();
+        try {
+            //
+            // This test is on Object.class.getName as class.getSuperclass() returns
+            // Object rather than the interfaces it implements.
+            while (!curClass.getName().equals(Object.class.getName())) {
+                for (Field field : curClass.getDeclaredFields()) {
+                    boolean accessible = field.isAccessible();
+                    field.setAccessible(true);
+                    Annotation[] annotations = field.getAnnotations();
+                    for (Annotation annotation : annotations) {
+                        if (annotation instanceof ComponentName) {
+                            propertyName = field.getName();
+                            configName = (String) field.get(configurable);
+                        }
+                    }
+                    field.setAccessible(accessible);
+                }
+                curClass = curClass.getSuperclass();
+            }
+        } catch (PropertyException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new PropertyException(ex, null, null,
+                    String.format("Error importing for %s",
+                            propertyName));
+        }
+
+        if (configName.equals("")) {
+            throw new PropertyException("", "", "Failed to extract name from @ComponentName field");
+        } else {
+            importConfigurable(configurable, configName);
+        }
+    }
+
+    /**
+     * Imports a configurable component by generating the property sheets
+     * necessary to configure the provided component and puts them into
+     * this configuration manager.  This is useful in situations where you have
+     * a configurable component but you don't have the property sheet that
+     * generated it (e.g., if it was sent over the network.)
+     *
+     * @param configurable the configurable component to import
      * @param name the unique name to use for the component. This name will be
      * used to prefix any embedded components.
      */
@@ -1157,7 +1244,6 @@ public class ConfigurationManager implements Cloneable {
                     Annotation[] annotations = field.getAnnotations();
                     for (Annotation annotation : annotations) {
                         if (annotation instanceof ConfigComponent) {
-
                             propertyName = (String) field.get(null);
 
                             //
@@ -1169,11 +1255,121 @@ public class ConfigurationManager implements Cloneable {
 
                             //
                             // A list of components.
-                            m.put(propertyName, importComponentList(configurable, propertyName,
+                            m.put(propertyName, importComponentCollection(configurable, propertyName,
                                     name));
                         } else if (annotation instanceof Config) {
                             propertyName = field.getName();
-                            m.put(propertyName, field.get(configurable));
+                            Class<?> fieldType = field.get(configurable).getClass();
+                            Class<?> genericType = ((Config) annotation).genericType();
+
+//                            logger.info(String.format("field %s, class=%s, component? %s; genericType=%s / component? %s",
+//                                    field.getName(),
+//                                    outer.getCanonicalName(),
+//                                    Component.class.isAssignableFrom(outer),
+//                                    inner.getCanonicalName(),
+//                                    Component.class.isAssignableFrom(inner)
+//                                    ));
+
+                            if (Component.class.isAssignableFrom(fieldType)) {
+                                m.put(propertyName, importComponent(configurable, propertyName, name));
+                            } else if (Component.class.isAssignableFrom(genericType)) {
+                                if (List.class.isAssignableFrom(fieldType)) {
+                                    m.put(propertyName, importComponentCollection(configurable, propertyName, name));
+                                } else if (Map.class.isAssignableFrom(fieldType)) {
+                                    m.put(propertyName, importComponentMap(configurable, propertyName, name));
+                                } else if (Set.class.isAssignableFrom(fieldType)) {
+                                    m.put(propertyName, importComponentCollection(configurable, propertyName, name));
+                                } else {
+                                    throw new UnsupportedOperationException("not supported: field type " + fieldType.getCanonicalName());
+                                }
+                            } else if (Random.class.isAssignableFrom(fieldType)) {
+                                m.put(propertyName, ((Random) field.get(configurable)).nextInt());
+                            } else if (Random.class.isAssignableFrom(genericType)) {
+                                if (Map.class.isAssignableFrom(fieldType)) {
+                                    Map fieldMap = (Map) field.get(configurable);
+                                    HashMap<String, String> newMap = new HashMap<>();
+                                    for (Object k : fieldMap.keySet()) {
+                                        newMap.put((String) k, "" + ((Random) fieldMap.get(k)).nextInt());
+                                    }
+                                    m.put(propertyName, newMap);
+                                } else if (Collection.class.isAssignableFrom(fieldType)) {
+                                    Collection collection = (Collection) field.get(configurable);
+                                    List<String> newList = new ArrayList<>();
+                                    for (Object o : collection) {
+                                        newList.add("" + ((Random) o).nextInt());
+                                    }
+                                    m.put(propertyName, newList);
+                                } else {
+                                    throw new UnsupportedOperationException("not supported: field type " + fieldType.getCanonicalName());
+                                }
+                            } else if (fieldType.isArray()) {
+                                //BYTE_ARRAY, SHORT_ARRAY, INTEGER_ARRAY, LONG_ARRAY, FLOAT_ARRAY,
+                                //DOUBLE_ARRAY, STRING_ARRAY, COMPONENT_ARRAY, CONFIGURABLE_ARRAY
+                                Class<?> arrayComponentType = fieldType.getComponentType();
+                                if (Configurable.class.isAssignableFrom(arrayComponentType)) {
+                                    Configurable[] l = (Configurable[]) field.get(configurable);
+                                    List<String> names = new ArrayList<>();
+                                    String embeddedName = String.format("%s-%s", name, propertyName);
+                                    int i = 0;
+                                    for (Configurable c : l) {
+                                        String np = String.format("%s-%d", embeddedName, i++);
+                                        importConfigurable(c, np);
+                                        names.add(np);
+                                    }
+                                    m.put(propertyName,names);
+                                } else if (Component.class.isAssignableFrom(arrayComponentType)) {
+                                    Component[] l = (Component[]) field.get(configurable);
+                                    List<String> names = new ArrayList<>();
+                                    String embeddedName = String.format("%s-%s", name, propertyName);
+                                    int i = 0;
+                                    for(Component c : l) {
+                                        String np = String.format("%s-%d", embeddedName, i++);
+                                        addComponent(c.getClass(),np);
+                                        names.add(np);
+                                    }
+                                    m.put(propertyName,names);
+                                } else {
+                                    //
+                                    // Primitive type, so we can just toString it.
+                                    List<String> stringList = new ArrayList<>();
+                                    if (byte.class.isAssignableFrom(arrayComponentType)) {
+                                        for (byte b : (byte[])field.get(configurable)) {
+                                            stringList.add(""+b);
+                                        }
+                                    } else if (short.class.isAssignableFrom(arrayComponentType)) {
+                                        for (short s : (short[])field.get(configurable)) {
+                                            stringList.add(""+s);
+                                        }
+                                    } else if (int.class.isAssignableFrom(arrayComponentType)) {
+                                        for (int i : (int[])field.get(configurable)) {
+                                            stringList.add(""+i);
+                                        }
+                                    } else if (long.class.isAssignableFrom(arrayComponentType)) {
+                                        for (long l : (long[])field.get(configurable)) {
+                                            stringList.add(""+l);
+                                        }
+                                    } else if (float.class.isAssignableFrom(arrayComponentType)) {
+                                        for (float f : (float[])field.get(configurable)) {
+                                            stringList.add(""+f);
+                                        }
+                                    } else if (double.class.isAssignableFrom(arrayComponentType)) {
+                                        for (double d : (double[])field.get(configurable)) {
+                                            stringList.add(""+d);
+                                        }
+                                    } else if (String.class.isAssignableFrom(arrayComponentType)) {
+                                        for (String s : (String[])field.get(configurable)) {
+                                            stringList.add(s);
+                                        }
+                                    } else {
+                                        throw new PropertyException(null, null, "Unsupported array type " + fieldType.toString());
+                                    }
+                                    m.put(propertyName, stringList);
+                                }
+                            } else {
+                                m.put(propertyName, field.get(configurable));
+                            }
+                        } else if (annotation instanceof ComponentName) {
+
                         } else {
                             Annotation[] superAnnotations = annotation.
                                     annotationType().
@@ -1198,7 +1394,7 @@ public class ConfigurationManager implements Cloneable {
             throw ex;
         } catch(Exception ex) {
             throw new PropertyException(ex, null, null,
-                                        String.format("Error importing %s for propName",
+                                        String.format("Error importing %s for propName %s",
                                         name, propertyName));
         }
     }
@@ -1206,6 +1402,8 @@ public class ConfigurationManager implements Cloneable {
     /**
      * Imports a list of configurable components that is a property of another
      * configurable into this configuration manager.
+     *
+     * It expects a Collection of Configurable even though it's called importComponent
      *
      * @param configurable the configurable that has the list of configurable
      * components as a property
@@ -1216,8 +1414,8 @@ public class ConfigurationManager implements Cloneable {
      * @throws PropertyException if the embedded list of components cannot be
      * retrieved or if one of the components in the list cannot be imported.
      */
-    private List<String> importComponentList(Configurable configurable, 
-            String propertyName, String prefix)
+    private List<String> importComponentCollection(Configurable configurable,
+                                                   String propertyName, String prefix)
             throws PropertyException {
 
         try {
@@ -1240,14 +1438,14 @@ public class ConfigurationManager implements Cloneable {
                         "Property %s has no variable named %s", propertyName,
                         propertyName));
             }
-            List<Component> l = (List<Component>) curField.get(configurable);
+            Collection<Configurable> l = (Collection<Configurable>) curField.get(configurable);
             curField.setAccessible(accessible);
             List<String> names = new ArrayList<String>();
             String embeddedName = String.format("%s-%s", prefix, propertyName);
             int i = 0;
-            for(Component c : l) {
+            for(Configurable c : l) {
                 String np = String.format("%s-%d", embeddedName, i++);
-                importConfigurable((Configurable) c, np);
+                importConfigurable(c, np);
                 names.add(np);
             }
             return names;
@@ -1255,58 +1453,33 @@ public class ConfigurationManager implements Cloneable {
             throw ex;
         } catch(Exception ex) {
             throw new PropertyException(ex, null, propertyName,
-                                        String.format(
-                    "Error getting component field"));
+                    String.format(
+                            "Error getting component field"));
         }
     }
 
     /**
-     * Imports a configurable component that is a property of another configurable
-     * component.
+     * Imports a map of configurable components that is a property of another
+     * configurable into this configuration manager.
      *
-     * @param configurable the configurable component that has the configurable
-     * component that we want to import as a property.
-     * @param propertyName the name of the property of the provided configurable component
-     * that contains the component to import
-     * @param prefix a prefix to use to specify the component name of the
-     * component that we'll be importing.
-     * @return the name that we used for the component.
-     * @throws PropertyException
-     */
-    private String importComponent(Configurable configurable,
-                                   String propertyName, String prefix) throws
-            PropertyException {
-        try {
-            String newComponentName = String.format("%s-%s", prefix,
-                                                    propertyName);
-            importComponentInternal(configurable, propertyName, newComponentName);
-            return newComponentName;
-        } catch(Exception ex) {
-            throw new PropertyException(ex, null, propertyName,
-                                        String.format(
-                    "Error getting component field"));
-        }
-    }
-
-    /**
-     * Imports a configurable component that is a property of another configurable
-     * component.
+     * Expects a Map of Configurable even though it's called importComponent
      *
-     * @param configurable the configurable component that has the configurable
-     * that we want to import as a property.
-     * @param propertyName the name of the property that is associated with with
-     * configurable component that we want to import.
-     * @param componentName the name of the component to be used to uniquely
-     * identify it in the configuration.
+     * @param configurable the configurable that has the list of configurable
+     * components as a property
+     * @param propertyName the name of the property containing the list of
+     * configurable components
+     * @param prefix the prefix to use to name the components in the list
+     * @return a map of the names assigned to the components in the list.
+     * @throws PropertyException if the embedded list of components cannot be
+     * retrieved or if one of the components in the list cannot be imported.
      */
-    private void importComponentInternal(Configurable configurable,
-                                         String propertyName,
-                                         String componentName) throws PropertyException {
+    private Map<String,String> importComponentMap(Configurable configurable,
+                                                   String propertyName, String prefix)
+            throws PropertyException {
 
         try {
-
             //
-            // Get the configurable that we actually want to import.
+            // Get the list of configurable components.
             Field curField = null;
             Field[] fields = configurable.getClass().getDeclaredFields();
             boolean accessible = false;
@@ -1324,9 +1497,97 @@ public class ConfigurationManager implements Cloneable {
                         "Property %s has no variable named %s", propertyName,
                         propertyName));
             }
-            Configurable newConf = (Configurable) curField.get(configurable);
+            Map<String,Configurable> l = (Map<String,Configurable>) curField.get(configurable);
             curField.setAccessible(accessible);
-            importConfigurable(newConf, componentName);
+            Map<String,String> names = new HashMap<>();
+            String embeddedName = String.format("%s-%s", prefix, propertyName);
+            int i = 0;
+            for(Map.Entry<String,Configurable> e : l.entrySet()) {
+                String np = String.format("%s-%d", embeddedName, i++);
+                importConfigurable(e.getValue(), np);
+                names.put(e.getKey(),np);
+            }
+            return names;
+        } catch(PropertyException ex) {
+            throw ex;
+        } catch(Exception ex) {
+            throw new PropertyException(ex, null, propertyName,
+                                        String.format(
+                    "Error getting component field"));
+        }
+    }
+
+    /**
+     * Imports a configurable component that is a property of another configurable
+     * component.
+     *
+     * @param component the component that has the configurable
+     * component that we want to import as a property.
+     * @param propertyName the name of the property of the provided configurable component
+     * that contains the component to import
+     * @param prefix a prefix to use to specify the component name of the
+     * component that we'll be importing.
+     * @return the name that we used for the component.
+     * @throws PropertyException
+     */
+    private String importComponent(Component component,
+                                   String propertyName, String prefix) throws
+            PropertyException {
+        try {
+            String newComponentName = String.format("%s-%s", prefix,
+                                                    propertyName);
+            importComponentInternal(component, propertyName, newComponentName);
+            return newComponentName;
+        } catch(Exception ex) {
+            throw new PropertyException(ex, null, propertyName,
+                                        String.format(
+                    "Error getting component field"));
+        }
+    }
+
+    /**
+     * Imports a configurable component that is a property of another configurable
+     * component.
+     *
+     * @param component the configurable component that has the configurable
+     * that we want to import as a property.
+     * @param propertyName the name of the property that is associated with with
+     * configurable component that we want to import.
+     * @param componentName the name of the component to be used to uniquely
+     * identify it in the configuration.
+     */
+    private void importComponentInternal(Component component,
+                                         String propertyName,
+                                         String componentName) throws PropertyException {
+
+        try {
+
+            //
+            // Get the configurable that we actually want to import.
+            Field curField = null;
+            Field[] fields = component.getClass().getDeclaredFields();
+            boolean accessible = false;
+            for(Field field : fields) {
+                accessible = field.isAccessible();
+                field.setAccessible(true);
+                if(field.getName().equals(propertyName)) {
+                    curField = field;
+                    break;
+                }
+                field.setAccessible(accessible);
+            }
+            if(curField == null) {
+                throw new PropertyException(null, propertyName, String.format(
+                        "Property %s has no variable named %s", propertyName,
+                        propertyName));
+            }
+            Component newConf = (Component) curField.get(component);
+            curField.setAccessible(accessible);
+            if (newConf instanceof Configurable) {
+                importConfigurable((Configurable)newConf, componentName);
+            } else {
+                addComponent(newConf.getClass(),componentName);
+            }
         } catch(PropertyException ex) {
             throw ex;
         } catch(Exception ex) {
@@ -1341,7 +1602,7 @@ public class ConfigurationManager implements Cloneable {
      * Fetches the value that's associated with a given property name in the
      * given configurable component.  This method relies on the convention that
      * a given property name will be stored in the instance variable with that name.
-     * If that is not the case, then a <code>PropertyException</code> will be
+     * If that is not the case, then a {@link PropertyException} will be
      * thrown
      *
      * @param configurable the configurable component from which we want to fetch

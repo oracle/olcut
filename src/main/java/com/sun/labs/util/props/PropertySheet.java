@@ -113,7 +113,7 @@ public class PropertySheet implements Cloneable {
         owner = configurable;
     }
 
-    public PropertySheet(Class<? extends Configurable> confClass, String name,
+    public PropertySheet(Class<? extends Component> confClass, String name,
             ConfigurationManager cm, RawPropertyData rpd) {
         ownerClass = confClass;
         this.cm = cm;
@@ -1005,6 +1005,7 @@ public class PropertySheet implements Cloneable {
                     if (ft == null) {
                         throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " has an unknown field type");
                     }
+                    logger.log(Level.FINEST,"Found field of type " + ft.name());
                     //
                     // Handle empty values.
                     if (propValues.get(f.getName()) == null) {
@@ -1046,6 +1047,30 @@ public class PropertySheet implements Cloneable {
                                     }
                                 }
                                 f.set(o, cos);
+                                break;
+                            case BYTE_ARRAY:
+                                try {
+                                    byte[] ia = new byte[replaced.size()];
+                                    int i = 0;
+                                    for (String v : replaced) {
+                                        ia[i++] = Byte.parseByte(v);
+                                    }
+                                    f.set(o, ia);
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a byte", replaced.toString()));
+                                }
+                                break;
+                            case SHORT_ARRAY:
+                                try {
+                                    short[] ia = new short[replaced.size()];
+                                    int i = 0;
+                                    for (String v : replaced) {
+                                        ia[i++] = Short.parseShort(v);
+                                    }
+                                    f.set(o, ia);
+                                } catch (NumberFormatException ex) {
+                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a short", replaced.toString()));
+                                }
                                 break;
                             case INTEGER_ARRAY:
                                 try {
@@ -1172,6 +1197,18 @@ public class PropertySheet implements Cloneable {
                 return val;
             case BOOLEAN:
                 return Boolean.parseBoolean(val);
+            case BYTE:
+                try {
+                    return Byte.parseByte(val);
+                } catch (NumberFormatException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a byte", val));
+                }
+            case SHORT:
+                try {
+                    return Short.parseShort(val);
+                } catch (NumberFormatException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a short", val));
+                }
             case INTEGER:
                 try {
                     return Integer.parseInt(val);
@@ -1211,7 +1248,7 @@ public class PropertySheet implements Cloneable {
             case FILE:
                 return new File(val);
             case PATH:
-                return  Paths.get(val);
+                return Paths.get(val);
             case RANDOM:
                 try {
                     return new Random(Integer.parseInt(val));
@@ -1625,7 +1662,7 @@ public class PropertySheet implements Cloneable {
      * @param configurable of type Class<? extends Configurable>
      */
     public static void processAnnotations(PropertySheet propertySheet,
-            Class<? extends Configurable> configurable) throws PropertyException {
+            Class<? extends Component> configurable) throws PropertyException {
 
         //
         // This is kind of a hack to handle Scala classes that want to be 
@@ -1722,61 +1759,37 @@ public class PropertySheet implements Cloneable {
     }
 
     protected void save(PrintWriter writer) {
-        writer.printf("\t<component name=\"%s\" type=\"%s\" export=\"%s\" "
-                + "import=\"%s\">",
-                instanceName,
-                getConfigurableClass().getName(),
-                isExportable(),
-                isImportable());
+        Collection<String> registeredProperties = getRegisteredProperties();
+        if (registeredProperties.size() != 0) {
+            writer.printf("\t<component name=\"%s\" type=\"%s\" export=\"%s\" "
+                            + "import=\"%s\">",
+                    instanceName,
+                    getConfigurableClass().getName(),
+                    isExportable(),
+                    isImportable());
 
-        for (String propName : getRegisteredProperties()) {
-            if (getRawNoReplacement(propName) == null) {
-                continue;
-            }  // if the property was not defined within the xml file
+            for (String propName : registeredProperties) {
+                if (getRawNoReplacement(propName) == null) {
+                    continue;
+                }  // if the property was not defined within the xml file
 
-            switch (getType(propName)) {
+                switch (getType(propName)) {
 
-                case COMPLIST:
-                case STRINGLIST:
-                    writer.printf("\n\t\t<propertylist name=\"%s\">", propName);
-                    for (Object o : (List) getRawNoReplacement(propName)) {
-                        if (o instanceof Class) {
-                            writer.printf("\n\t\t\t<type>%s</type>", ((Class) o).getName());
-                        } else {
-                            writer.printf("\n\t\t\t<item>%s</item>", o);
-                        }
-                    }
-                    writer.println("\n\t\t</propertylist>");
-                    break;
-                case ENUMSET:
-                    writer.printf("\n\t\t<propertylist name=\"%s\">", propName);
-                    for (Object o : (EnumSet) getRawNoReplacement(propName)) {
-                        if (o instanceof Class) {
-                            writer.printf("\n\t\t\t<type>%s</type>", ((Class) o).
-                                    getName());
-                        } else {
-                            writer.printf("\n\t\t\t<item>%s</item>", o);
-                        }
-                    }
-                    writer.println("\n\t\t</propertylist>");
-                    break;
-                case CONFIG:
-                    Object val = getRawNoReplacement(propName);
-                    if (val instanceof List) {
-                        //
-                        // Must be a string or component list
+                    case COMPLIST:
+                    case STRINGLIST:
                         writer.printf("\n\t\t<propertylist name=\"%s\">", propName);
-                        for (Object o : (List) val) {
+                        for (Object o : (List) getRawNoReplacement(propName)) {
                             if (o instanceof Class) {
                                 writer.printf("\n\t\t\t<type>%s</type>", ((Class) o).getName());
                             } else {
                                 writer.printf("\n\t\t\t<item>%s</item>", o);
                             }
                         }
-                        writer.print("\n\t\t</propertylist>");
-                    } else if (val instanceof EnumSet) {
+                        writer.println("\n\t\t</propertylist>");
+                        break;
+                    case ENUMSET:
                         writer.printf("\n\t\t<propertylist name=\"%s\">", propName);
-                        for (Object o : (EnumSet) val) {
+                        for (Object o : (EnumSet) getRawNoReplacement(propName)) {
                             if (o instanceof Class) {
                                 writer.printf("\n\t\t\t<type>%s</type>", ((Class) o).
                                         getName());
@@ -1784,31 +1797,68 @@ public class PropertySheet implements Cloneable {
                                 writer.printf("\n\t\t\t<item>%s</item>", o);
                             }
                         }
-                        writer.print("\n\t\t</propertylist>");
-                    } else if (val instanceof Map) {
-                        //
-                        // Must be a string,string map
-                        writer.printf("\n\t\t<propertymap name=\"%s\">", propName);
-                        for (Map.Entry<String,String> e : ((Map<String,String>) val).entrySet()) {
-                            writer.printf("\n\t\t\t<entry key=\"%s\" value=\"%s\"/>", e.getKey(), e.getValue());
+                        writer.println("\n\t\t</propertylist>");
+                        break;
+                    case CONFIG:
+                        Object val = getRawNoReplacement(propName);
+                        if (val instanceof List) {
+                            //
+                            // Must be a string or component list
+                            writer.printf("\n\t\t<propertylist name=\"%s\">", propName);
+                            for (Object o : (List) val) {
+                                if (o instanceof Class) {
+                                    writer.printf("\n\t\t\t<type>%s</type>", ((Class) o).getName());
+                                } else {
+                                    writer.printf("\n\t\t\t<item>%s</item>", o);
+                                }
+                            }
+                            writer.print("\n\t\t</propertylist>");
+                        } else if (val instanceof Set) {
+                            writer.printf("\n\t\t<propertylist name=\"%s\">", propName);
+                            for (Object o : (Set) val) {
+                                if (o instanceof Class) {
+                                    writer.printf("\n\t\t\t<type>%s</type>", ((Class) o).
+                                            getName());
+                                } else {
+                                    writer.printf("\n\t\t\t<item>%s</item>", o);
+                                }
+                            }
+                            writer.print("\n\t\t</propertylist>");
+                        } else if (val instanceof Map) {
+                            //
+                            // Must be a string,string map
+                            writer.printf("\n\t\t<propertymap name=\"%s\">", propName);
+                            for (Map.Entry<String, String> e : ((Map<String, String>) val).entrySet()) {
+                                writer.printf("\n\t\t\t<entry key=\"%s\" value=\"%s\"/>", e.getKey(), e.getValue());
+                            }
+                            writer.print("\n\t\t</propertymap>");
+                        } else {
+                            //
+                            // Standard property
+                            writer.printf("\n\t\t<property name=\"%s\" value=\"%s\"/>",
+                                    propName,
+                                    getRawNoReplacement(propName));
                         }
-                        writer.print("\n\t\t</propertymap>");
-                    } else {
-                        //
-                        // Standard property
+                        break;
+                    default:
                         writer.printf("\n\t\t<property name=\"%s\" value=\"%s\"/>",
                                 propName,
                                 getRawNoReplacement(propName));
-                    }
-                    break;
-                default:
-                    writer.printf("\n\t\t<property name=\"%s\" value=\"%s\"/>",
-                            propName,
-                            getRawNoReplacement(propName));
+                }
             }
-        }
 
-        writer.println("\n\t</component>");
+            writer.println("\n\t</component>");
+        } else {
+            //
+            // Must be a component, which doesn't have properties
+            writer.printf("\t<component name=\"%s\" type=\"%s\" export=\"%s\" "
+                            + "import=\"%s\"/>\n",
+                    instanceName,
+                    getConfigurableClass().getName(),
+                    isExportable(),
+                    isImportable());
+
+        }
 
     }
 
