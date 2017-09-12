@@ -1,13 +1,14 @@
 package com.sun.labs.util.service.sample;
 
-import com.sun.labs.util.props.Component;
+import com.sun.labs.util.props.Configurable;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
  * A sample service.
  */
-public interface HelloService extends Component, Remote {
+public interface HelloService extends Configurable, Remote {
     
     /**
      * Says hello

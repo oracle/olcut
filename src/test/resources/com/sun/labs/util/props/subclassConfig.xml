@@ -7,7 +7,7 @@
 
 <config>
     
-    <component name="stringConfigSubclass" type="com.sun.labs.util.props.StringConfigSubclass">
+    <component name="stringConfigSubclass" type="com.sun.labs.util.props.StringleConfigurable">
         <property name="one" value="a"/>
         <property name="two" value="b"/>
         <property name="three" value="c"/>

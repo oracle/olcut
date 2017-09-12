@@ -64,19 +64,8 @@ package com.sun.labs.util.props;
  * the component doesn't exist (but was defined to mandatory) and no configuration information is found in the config
  * file for it, or if it is of the wrong type, a <code>PropertyException</code> will be thrown.
  */
-public interface Configurable extends Component {
+public interface Configurable {
 
-
-    /**
-     * This method is called when this configurable component needs to be reconfigured.
-     *
-     * @param ps a property sheet holding the new data
-     * @throws PropertyException if there is a problem with the properties.
-     */
-    @Deprecated
-    default public void newProperties(PropertySheet ps) throws PropertyException {
-    }
-    
     /**
      * Uses the configured variables, which are set up by the configuration
      * system before this method is called, to do any post variable configuration

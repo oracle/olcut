@@ -7,6 +7,6 @@
 
 <config>
 
-    <component name="monkeys" type="com.sun.labs.util.props.NamedComponent" />
+    <component name="monkeys" type="com.sun.labs.util.props.NamedConfigurable" />
 
 </config>

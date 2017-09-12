@@ -5,18 +5,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * A logical property.
- *
- * @author Holger Brandl
- * @see ConfigurationManager
+ * An annotation that denotes where the String value of the component's name should be stored.
  */
-@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @ConfigProperty
-public @interface ConfigBoolean {
+public @interface ConfigurableName {
 
-    boolean defaultValue();
-
-    boolean isNotDefined() default false;
 }

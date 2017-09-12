@@ -59,7 +59,6 @@ public class RegistryTest {
         }
     }
 
-    @Ignore
     @Test
     public void testRegister() throws IOException {
         URL cu = getClass().getResource("serverConfig.xml");
@@ -68,7 +67,6 @@ public class RegistryTest {
         assertNotNull(rc);
     }
 
-    @Ignore
     @Test
     public void testRegisterWithEntries() throws IOException {
         URL cu = getClass().getResource("serverConfig.xml");
@@ -77,7 +75,6 @@ public class RegistryTest {
         assertNotNull(rc);
     }
 
-    @Ignore
     @Test
     public void testSpecificRegister() throws IOException {
         URL cu = getClass().getResource("specificRegConfig.xml");
@@ -87,7 +84,6 @@ public class RegistryTest {
         assertNotNull(rc);
     }
 
-    @Ignore
     @Test
     public void testRegisterAndLookup() throws IOException {
 
@@ -112,7 +108,6 @@ public class RegistryTest {
         assertEquals(((RegistryConfigurableImpl) rc1).recs.get(0), "test");
     }
 
-    @Ignore
     @Test
     public void testRegisterAndLookupWithEntries() throws IOException {
 
@@ -137,7 +132,6 @@ public class RegistryTest {
         assertEquals(((RegistryConfigurableImpl) rc1).recs.get(0), "test");
     }
 
-    @Ignore
     @Test
     public void testRegisterAndLookupWithPartialMatchingEntries() throws IOException {
 
@@ -162,7 +156,6 @@ public class RegistryTest {
         assertEquals(((RegistryConfigurableImpl) rc1).recs.get(0), "test");
     }
 
-    @Ignore
     @Test
     public void testRegisterAndLookupWithNonMatchingEntries() throws IOException {
 

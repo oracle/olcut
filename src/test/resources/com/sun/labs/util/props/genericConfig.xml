@@ -29,7 +29,7 @@
             <item>${pi}</item>
             <item>2.79</item>
         </propertylist>
-        <propertylist name="stringConfigList">
+        <propertylist name="stringConfigurableList">
             <item>draconic</item>
             <item>starwars</item>
         </propertylist>
@@ -46,7 +46,7 @@
             <item>3.14</item>
             <item>2.79</item>
         </propertylist>
-        <propertylist name="stringConfigList">
+        <propertylist name="stringConfigurableList">
             <item>monkeys</item>
             <item>sheep</item>
         </propertylist>
@@ -65,7 +65,7 @@
             <item>${pi}</item>
             <item>2.79</item>
         </propertylist>
-        <propertylist name="stringConfigSet">
+        <propertylist name="stringConfigurableSet">
             <item>draconic</item>
             <item>starwars</item>
         </propertylist>
@@ -82,19 +82,19 @@
             <item>3.14</item>
             <item>2.79</item>
         </propertylist>
-        <propertylist name="stringConfigSet">
+        <propertylist name="stringConfigurableSet">
             <item>monkeys</item>
             <item>sheep</item>
         </propertylist>
     </component>
 
-    <component name="draconic" type="com.sun.labs.util.props.StringConfig">
+    <component name="draconic" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="dragons"/>
         <property name="two" value="wyverns"/>
         <property name="three" value="wyrms"/>
     </component>
 
-    <component name="starwars" type="com.sun.labs.util.props.StringConfig">
+    <component name="starwars" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="jedi"/>
         <property name="two" value="sith"/>
         <property name="three" value="scoundrels"/>

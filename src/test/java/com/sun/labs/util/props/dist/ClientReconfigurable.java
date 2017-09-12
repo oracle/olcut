@@ -1,12 +1,11 @@
 package com.sun.labs.util.props.dist;
 
-import com.sun.labs.util.props.ConfigComponent;
-import com.sun.labs.util.props.ConfigInteger;
-import com.sun.labs.util.props.ConfigString;
+import com.sun.labs.util.props.Config;
+import com.sun.labs.util.props.ConMan;
 import com.sun.labs.util.props.Configurable;
 import com.sun.labs.util.props.ConfigurationManager;
 import com.sun.labs.util.props.PropertyException;
-import com.sun.labs.util.props.PropertySheet;
+
 import java.rmi.RemoteException;
 import java.util.logging.Logger;
 
@@ -14,30 +13,24 @@ import java.util.logging.Logger;
  * A client class that gets a configurable object from a registrar.
  */
 public class ClientReconfigurable implements Configurable, Runnable {
+    private static final Logger log = Logger.getLogger(ClientReconfigurable.class.getName());
 
-    @ConfigString(defaultValue = "foo")
-    public static final String PROP_VALUE = "value";
+    @Config
+    private String value = "foo";
 
-    private String value;
+    @Config
+    private int count = 10;
 
-    @ConfigInteger(defaultValue = 10)
-    public static final String PROP_COUNT = "count";
-
-    private int count;
-
-    @ConfigComponent(type = com.sun.labs.util.props.dist.RegistryConfigurable.class)
-    public static final String PROP_COMP = "comp";
-
+    @Config
     private RegistryConfigurable comp;
 
-    private Logger log;
-    
     private int newPropsCalls;
     
     private int opCount;
     
     private int exCount;
-    
+
+    @ConMan
     private ConfigurationManager cm;
 
     public void run() {
@@ -70,12 +63,8 @@ public class ClientReconfigurable implements Configurable, Runnable {
         return exCount;
     }
 
-    public void newProperties(PropertySheet ps) throws PropertyException {
+    @Override
+    public void postConfig() throws PropertyException {
         newPropsCalls++;
-        cm = ps.getConfigurationManager();
-        log = ps.getLogger();
-        value = ps.getString(PROP_VALUE);
-        count = ps.getInt(PROP_COUNT);
-        comp = (RegistryConfigurable) ps.getComponent(PROP_COMP);
     }
 }

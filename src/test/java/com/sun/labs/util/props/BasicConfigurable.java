@@ -1,66 +1,63 @@
 package com.sun.labs.util.props;
 
-import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**
- * A configurable with a few strings.
+ * A basic configurable object that uses the Config annotation directly on the
+ * types.
  */
-public class BasicConfigurable implements Configurable, Serializable {
-
-    private Logger logger;
+public class BasicConfigurable implements Configurable {
+    private static final Logger logger = Logger.getLogger(BasicConfigurable.class.getName());
     
-    @ConfigString(defaultValue="")
-    public static final String PROP_S = "s";
-    String s;
+    @Config
+    String s = "default";
 
-    @ConfigInteger(defaultValue=0)
-    public static final String PROP_I = "i";
-    int i;
+    @Config
+    int i = 16;
+    
+    @Config
+    Integer bigI = 17;
 
-    @ConfigDouble(defaultValue=0)
-    public static final String PROP_D = "d";
-    double d;
-
-    public void newProperties(PropertySheet ps) throws PropertyException {
-        logger = ps.getLogger();
-        s = ps.getString(PROP_S);
-        i = ps.getInt(PROP_I);
-        d = ps.getDouble(PROP_D);
-    }
+    @Config
+    long l = 18;
+    
+    @Config
+    Long bigL = 19L;
+    
+    @Config
+    double d = 21;
+    
+    @Config
+    Double bigD = 22d;
 
     @Override
-    public boolean equals(Object obj) {
-        if(obj == null) {
-            return false;
-        }
-        if(getClass() != obj.getClass()) {
-            return false;
-        }
-        final BasicConfigurable other = (BasicConfigurable) obj;
-        if((this.s == null) ? (other.s != null) : !this.s.equals(other.s)) {
-            return false;
-        }
-        if(this.i != other.i) {
-            return false;
-        }
-        if(Double.doubleToLongBits(this.d) != Double.doubleToLongBits(other.d)) {
-            return false;
-        }
-        return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BasicConfigurable that = (BasicConfigurable) o;
+
+        if (i != that.i) return false;
+        if (l != that.l) return false;
+        if (Double.compare(that.d, d) != 0) return false;
+        if (s != null ? !s.equals(that.s) : that.s != null) return false;
+        if (bigI != null ? !bigI.equals(that.bigI) : that.bigI != null) return false;
+        if (bigL != null ? !bigL.equals(that.bigL) : that.bigL != null) return false;
+        return bigD != null ? bigD.equals(that.bigD) : that.bigD == null;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 41 * hash + (this.s != null ? this.s.hashCode() : 0);
-        hash = 41 * hash + this.i;
-        hash =
-                41 * hash +
-                (int) (Double.doubleToLongBits(this.d) ^
-                (Double.doubleToLongBits(this.d) >>> 32));
-        return hash;
+        int result;
+        long temp;
+        result = s != null ? s.hashCode() : 0;
+        result = 31 * result + i;
+        result = 31 * result + (bigI != null ? bigI.hashCode() : 0);
+        result = 31 * result + (int) (l ^ (l >>> 32));
+        result = 31 * result + (bigL != null ? bigL.hashCode() : 0);
+        temp = Double.doubleToLongBits(d);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (bigD != null ? bigD.hashCode() : 0);
+        return result;
     }
-    
-    
 }

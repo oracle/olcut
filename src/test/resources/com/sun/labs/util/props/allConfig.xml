@@ -73,19 +73,9 @@
         </propertylist>
         <property name="enumField" value="F"/>
 
-        <property name="componentField" value="first-component"/>
-        <property name="componentSubclassField" value="second-component"/>
         <property name="configurableField" value="first-configurable"/>
         <property name="configurableSubclassField" value="second-configurable"/>
 
-        <propertylist name="componentArrayField">
-            <item>first-component</item>
-            <item>second-component</item>
-        </propertylist>
-        <propertylist name="componentSubclassArrayField">
-            <item>first-component</item>
-            <item>second-component</item>
-        </propertylist>
         <propertylist name="configurableArrayField">
             <item>first-configurable</item>
             <item>second-configurable</item>
@@ -150,22 +140,19 @@
         </propertymap>
     </component>
 
-    <component name="first-component" type="com.sun.labs.util.props.NamedComponent"/>
-    <component name="second-component" type="com.sun.labs.util.props.NamedComponent"/>
-
-    <component name="first-configurable" type="com.sun.labs.util.props.StringConfig">
+    <component name="first-configurable" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="A"/>
         <property name="two" value="B"/>
         <property name="three" value="C"/>
     </component>
 
-    <component name="second-configurable" type="com.sun.labs.util.props.StringConfig">
+    <component name="second-configurable" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="alpha"/>
         <property name="two" value="beta"/>
         <property name="three" value="gamma"/>
     </component>
 
-    <component name="third-configurable" type="com.sun.labs.util.props.StringConfig">
+    <component name="third-configurable" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="uno"/>
         <property name="two" value="dos"/>
         <property name="three" value="tres"/>

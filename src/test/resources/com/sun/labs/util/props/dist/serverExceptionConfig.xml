@@ -10,16 +10,14 @@
 
 <config>
     
-    <property name="home" value="${user.home}/Projects/LabsUtil"/>
-    
     <!-- A component registry that will serve the component classes -->
     <component name="registry" type="com.sun.labs.util.props.ComponentRegistry">
         <propertylist name="groupList">
             <item>Aura</item>
         </propertylist>
         <property name="lookupWait" value="10"/>
-        <property name="csDirs" value="${home}/build/classes:${home}/build/test/classes"/>
-        <property name="securityPolicy" value="${home}/jini/jsk-all.policy"/>
+        <property name="csDirs" value="target/classes:target/test-classes"/>
+        <property name="securityPolicy" value="src/test/resources/jsk-all.policy"/>
         <property name="codebase" value="http://${gp.hostName}:1104/"/>
     </component>
     

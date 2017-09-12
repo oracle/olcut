@@ -24,7 +24,7 @@
 
 package com.sun.labs.util.service;
 
-import com.sun.labs.util.props.Component;
+import com.sun.labs.util.props.Configurable;
 import com.sun.labs.util.props.ConfigurationManager;
 import com.sun.labs.util.props.PropertyException;
 import java.lang.reflect.Array;
@@ -35,15 +35,15 @@ import java.util.logging.Logger;
  * A component manager that will handle multiple instances of a given component
  * type and hand them out in a round-robin fashion when requested.
  */
-public class RemoteMultiComponentManager<T extends Component> extends RemoteComponentManager<T> {
+public class RemoteMultiComponentManager<T extends Configurable> extends RemoteComponentManager<T> {
 
     private T[] components;
 
     int p;
 
-    Logger logger = Logger.getLogger(getClass().getName());
+    private static final Logger logger = Logger.getLogger(RemoteMultiComponentManager.class.getName());
     
-    public RemoteMultiComponentManager(ConfigurationManager cm, Class c) {
+    public RemoteMultiComponentManager(ConfigurationManager cm, Class<T> c) {
         super(cm, c);
     }
 
@@ -57,8 +57,6 @@ public class RemoteMultiComponentManager<T extends Component> extends RemoteComp
     /**
      * Gets the component with the given name
      * @return the component
-     * @throws com.sun.labs.aura.util.AuraException if the component could not
-     *   be found after 10 minutes
      */
     public T getComponent() {
         if(components == null) {
@@ -74,14 +72,14 @@ public class RemoteMultiComponentManager<T extends Component> extends RemoteComp
     }
 
     @Override
-    public void componentAdded(Component added) {
-        logger.info(String.format("Added: " + added));
+    public void componentAdded(Configurable added) {
+        logger.info("Added: " + added);
         getComponents();
     }
 
     @Override
-    public void componentRemoved(Component componentToRemove) {
-        logger.info(String.format("Removed: " + componentToRemove));
+    public void componentRemoved(Configurable componentToRemove) {
+        logger.info("Removed: " + componentToRemove);
         getComponents();
     }
 

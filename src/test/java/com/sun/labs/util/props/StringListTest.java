@@ -57,11 +57,11 @@ public class StringListTest {
         URL cu = getClass().getResource("stringListConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
         PropertySheet ps = cm.getPropertySheet("listTest");
-        List<String> l = new ArrayList();
+        List<String> l = new ArrayList<>();
         l.add("d");
         l.add("e");
         l.add("f");
-        ps.setStringList(StringListConfigurable.PROP_STRINGS, l);
+        ps.setProp("strings", l);
         StringListConfigurable slc = (StringListConfigurable) cm.lookup(
                 "listTest");
         assertEquals("d", slc.strings.get(0));

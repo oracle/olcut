@@ -96,20 +96,14 @@ public class AllFieldsConfiguredTest {
         ac.doubleArrayField = new double[]{1e-16,2e-16,3.16};
 
         //Configurable classes
-        ac.componentField = new NamedComponent("first-component");
-        ac.componentSubclassField = new NamedComponent("second-component");
-
-        ac.configurableField = new StringConfig("A","B","C");
-        ac.configurableSubclassField = new StringConfig("alpha","beta","gamma");
+        ac.configurableField = new StringConfigurable("A","B","C");
+        ac.configurableSubclassField = new StringConfigurable("alpha","beta","gamma");
 
         //Object array types
         ac.stringArrayField = new String[]{"gibbons","baboons","gorillas"};
 
-        ac.componentArrayField = new Component[]{ac.componentField,ac.componentSubclassField};
-        ac.componentSubclassArrayField = new NamedComponent[]{(NamedComponent)ac.componentField,ac.componentSubclassField};
-
         ac.configurableArrayField = new Configurable[]{ac.configurableField,ac.configurableSubclassField};
-        ac.configurableSubclassArrayField = new StringConfig[]{(StringConfig)ac.configurableField,ac.configurableSubclassField};
+        ac.configurableSubclassArrayField = new StringConfigurable[]{(StringConfigurable)ac.configurableField,ac.configurableSubclassField};
 
         //Generic types - requires genericType argument to be set
         ac.listDoubleField = new ArrayList<>();
@@ -151,7 +145,7 @@ public class AllFieldsConfiguredTest {
         ac.mapConfigurableSubclassField = new HashMap<>();
         ac.mapConfigurableSubclassField.put("first", ac.configurableSubclassArrayField[0]);
         ac.mapConfigurableSubclassField.put("second", ac.configurableSubclassArrayField[1]);
-        ac.mapConfigurableSubclassField.put("third", new StringConfig("uno","dos","tres"));
+        ac.mapConfigurableSubclassField.put("third", new StringConfigurable("uno","dos","tres"));
 
         ac.enumSetField = EnumSet.of(AllFieldsConfigurable.Type.A, AllFieldsConfigurable.Type.C, AllFieldsConfigurable.Type.E);
 

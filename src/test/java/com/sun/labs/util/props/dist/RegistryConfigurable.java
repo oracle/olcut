@@ -5,14 +5,15 @@
 
 package com.sun.labs.util.props.dist;
 
-import com.sun.labs.util.props.*;
+import com.sun.labs.util.props.Configurable;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
  * An interface that can be used remotely.
  */
-public interface RegistryConfigurable extends Remote, Component {
+public interface RegistryConfigurable extends Remote, Configurable {
     
     public String stringOp(String s) throws RemoteException;
     

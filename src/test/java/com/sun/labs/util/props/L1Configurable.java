@@ -8,22 +8,12 @@ import java.util.logging.Logger;
  */
 public class L1Configurable implements Configurable {
 
-    private Logger logger;
+    private static final Logger logger = Logger.getLogger(L1Configurable.class.getName());
 
-    @ConfigString(defaultValue="l1")
-    public static final String PROP_S = "s";
+    @Config
+    String s = "l1";
 
-    String s;
-
-    @ConfigComponent(type=com.sun.labs.util.props.L2Configurable.class)
-    public static final String PROP_C = "c";
-
+    @Config
     L2Configurable c;
-
-    @Override
-    public void newProperties(PropertySheet ps) throws PropertyException {
-        s = ps.getString(PROP_S);
-        c = (L2Configurable) ps.getComponent(PROP_C);
-    }
 
 }

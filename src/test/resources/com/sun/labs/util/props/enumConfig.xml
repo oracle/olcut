@@ -51,39 +51,4 @@
         <property name="enum1" value="${globA}"/>
     </component>
 
-
-    <component name="both-config" type="com.sun.labs.util.props.EnumConfig">
-        <property name="enum1" value="A"/>
-        <property name="enum2" value="B"/>
-    </component>
-    
-    <component name="set1-config" type="com.sun.labs.util.props.EnumConfig">
-        <property name="enum1" value="A"/>
-        <property name="enum2" value="B"/>
-        <propertylist name="enumSet1">
-            <item>A</item>
-            <item>B</item>
-        </propertylist>
-    </component>
-
-    <component name="badset-config" type="com.sun.labs.util.props.EnumConfig">
-        <property name="enum1" value="A"/>
-        <property name="enum2" value="B"/>
-        <propertylist name="enumSet1">
-            <item>A</item>
-            <item>R</item>
-        </propertylist>
-    </component>
-
-    <component name="default-config" type="com.sun.labs.util.props.EnumConfig">
-        <property name="enum1" value="A"/>
-    </component>
-    
-    <component name="badvalue-config" type="com.sun.labs.util.props.EnumConfig">
-        <property name="enum1" value="Gargle"/>
-    </component>
-    
-    <component name="global-config" type="com.sun.labs.util.props.EnumConfig">
-        <property name="enum1" value="${globA}"/>
-    </component>
 </config>

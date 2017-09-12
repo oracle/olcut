@@ -39,9 +39,9 @@ public class RemoveTest {
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
-        assertEquals(bc.s, ps.getString("s"));
-        assertEquals(bc.i, ps.getInt("i"));
-        assertEquals(bc.d, ps.getDouble("d"), 0.001);
+        assertEquals(bc.s, ps.getRaw("s"));
+        assertEquals(bc.i, Integer.parseInt(ps.getRaw("i").toString()));
+        assertEquals(bc.d, Double.parseDouble(ps.getRaw("d").toString()), 0.001);
         BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
         assertNull(nbc);
     }
@@ -52,9 +52,9 @@ public class RemoveTest {
         ConfigurationManager cm = new ConfigurationManager(cu);
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
-        assertEquals("one", ps.getString("s"));
-        assertEquals(2, ps.getInt("i"));
-        assertEquals(3.0, ps.getDouble("d"), 0.001);
+        assertEquals("one", ps.getRaw("s"));
+        assertEquals(2, Integer.parseInt(ps.getRaw("i").toString()));
+        assertEquals(3.0, Double.parseDouble(ps.getRaw("d").toString()), 0.001);
         BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
         assertNull(nbc);
     }
@@ -69,9 +69,9 @@ public class RemoveTest {
         cm.addConfigurable(BasicConfigurable.class, "a", m);
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
-        assertEquals(m.get("s"), ps.getString("s"));
-        assertEquals(((Integer) m.get("i")).intValue(), ps.getInt("i"));
-        assertEquals((Double) m.get("d"), ps.getDouble("d"), 0.001);
+        assertEquals(m.get("s"), ps.getRaw("s"));
+        assertEquals(((Integer) m.get("i")).intValue(), Integer.parseInt(ps.getRaw("i").toString()));
+        assertEquals((Double) m.get("d"), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         assertNull(bc);
     }
@@ -87,9 +87,9 @@ public class RemoveTest {
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
-        assertEquals(m.get("s"), ps.getString("s"));
-        assertEquals(((Integer) m.get("i")).intValue(), ps.getInt("i"));
-        assertEquals((Double) m.get("d"), ps.getDouble("d"), 0.001);
+        assertEquals(m.get("s"), ps.getRaw("s"));
+        assertEquals(((Integer) m.get("i")).intValue(), Integer.parseInt(ps.getRaw("i").toString()));
+        assertEquals((Double) m.get("d"), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
     }
 
     @Test

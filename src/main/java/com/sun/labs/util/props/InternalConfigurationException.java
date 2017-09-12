@@ -11,8 +11,6 @@ package com.sun.labs.util.props;
  * <p/>
  * The intention of the class is to make a clear distinction between core configuration errors and high level user
  * specific problems.
- *
- * @author Holger Brandl
  */
 public class InternalConfigurationException extends PropertyException {
 

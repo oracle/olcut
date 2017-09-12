@@ -1,6 +1,8 @@
 package com.sun.labs.util.props.dist;
 
-import com.sun.labs.util.props.*;
+import com.sun.labs.util.props.Config;
+import com.sun.labs.util.props.Configurable;
+
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +12,11 @@ import java.util.List;
  */
 public class RegistryConfigurableImpl implements RegistryConfigurable, Configurable {
     
-    @ConfigString(defaultValue="prefix")
-    public static final String PROP_PREFIX = "prefix";
-    private String prefix;
+    @Config
+    private String prefix = "prefix";
     
-    @ConfigInteger(defaultValue=1)
-    public static final String PROP_INCR = "incr";
-    private int incr;
+    @Config
+    private int incr = 1;
     
     public List<String> recs = new ArrayList<String>();
     
@@ -39,8 +39,4 @@ public class RegistryConfigurableImpl implements RegistryConfigurable, Configura
         return x + incr;
     }
 
-    public void newProperties(PropertySheet ps) throws PropertyException {
-        prefix = ps.getString(PROP_PREFIX);
-        incr = ps.getInt(PROP_INCR);
-    }
 }

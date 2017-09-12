@@ -25,11 +25,10 @@
 package com.sun.labs.util.service;
 
 import com.sun.labs.util.LabsLogFormatter;
-import com.sun.labs.util.props.ConfigComponentList;
+import com.sun.labs.util.props.Config;
 import com.sun.labs.util.props.Configurable;
 import com.sun.labs.util.props.ConfigurationManager;
 import com.sun.labs.util.props.PropertyException;
-import com.sun.labs.util.props.PropertySheet;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -49,18 +48,14 @@ public class ConfigurableServiceStarter implements Configurable {
 
     private static final Logger logger = Logger.getLogger(ConfigurableServiceStarter.class.getName());
 
-    private List<ConfigurableService> services;
-
-    private List<Thread> serviceThreads;
-
-    private ConfigurationManager cm;
-
     /**
      * A configuration property for the services that we will be starting and
      * stopping.
      */
-    @ConfigComponentList(type = com.sun.labs.util.service.ConfigurableService.class)
-    public static final String PROP_SERVICE_COMPONENTS = "serviceComponents";
+    @Config(genericType=ConfigurableService.class)
+    private List<ConfigurableService> services;
+
+    private List<Thread> serviceThreads;
 
     private void waitForServices() {
         for (Thread serviceThread : serviceThreads) {
@@ -79,13 +74,9 @@ public class ConfigurableServiceStarter implements Configurable {
     }
 
     @Override
-    public void newProperties(PropertySheet ps) throws PropertyException {
-
-        cm = ps.getConfigurationManager();
-
+    public void postConfig() throws PropertyException {
         //
         // Get the names of the components we're to start, then start them.
-        services = (List<ConfigurableService>) ps.getComponentList(PROP_SERVICE_COMPONENTS);
         serviceThreads = new ArrayList<Thread>();
         for (ConfigurableService service : services) {
             service.setStarter(this);
@@ -184,9 +175,7 @@ public class ConfigurableServiceStarter implements Configurable {
             });
 
             starter.waitForServices();
-        } catch (IOException ex) { 
-            logger.log(Level.SEVERE, "Error parsing configuration file: " + configFile, ex);
-        } catch (PropertyException ex) {
+        } catch (IOException | PropertyException ex) {
             logger.log(Level.SEVERE, "Error parsing configuration file: " + configFile, ex);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Other error", ex);

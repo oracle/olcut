@@ -3,14 +3,14 @@ package com.sun.labs.util.props;
 /**
  *
  */
-public class NamedComponent implements Component {
+public class NamedConfigurable implements Configurable {
 
-    @ComponentName
+    @ConfigurableName
     private String name;
 
-    private NamedComponent() { }
+    private NamedConfigurable() { }
 
-    public NamedComponent(String name) {
+    public NamedConfigurable(String name) {
         this.name = name;
     }
 
@@ -25,7 +25,7 @@ public class NamedComponent implements Component {
 
         return true;
         /*
-        NamedComponent that = (NamedComponent) o;
+        NamedConfigurable that = (NamedConfigurable) o;
 
         return name != null ? name.equals(that.name) : that.name == null;
         */
@@ -38,6 +38,6 @@ public class NamedComponent implements Component {
 
     @Override
     public String toString() {
-        return "NamedComponent(name="+name+")";
+        return "NamedConfigurable(name="+name+")";
     }
 }

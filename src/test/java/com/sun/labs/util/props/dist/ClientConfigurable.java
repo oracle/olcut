@@ -1,11 +1,8 @@
 package com.sun.labs.util.props.dist;
 
-import com.sun.labs.util.props.ConfigComponent;
-import com.sun.labs.util.props.ConfigInteger;
-import com.sun.labs.util.props.ConfigString;
+import com.sun.labs.util.props.Config;
 import com.sun.labs.util.props.Configurable;
 import com.sun.labs.util.props.PropertyException;
-import com.sun.labs.util.props.PropertySheet;
 import java.rmi.RemoteException;
 import java.util.logging.Logger;
 
@@ -13,29 +10,22 @@ import java.util.logging.Logger;
  * A client class that gets a configurable object from a registrar.
  */
 public class ClientConfigurable implements Configurable, Runnable {
+    private static final Logger log = Logger.getLogger(ClientConfigurable.class.getName());
 
-    @ConfigString(defaultValue = "foo")
-    public static final String PROP_VALUE = "value";
+    @Config
+    private String value = "foo";
 
-    private String value;
+    @Config
+    private int count = 10;
 
-    @ConfigInteger(defaultValue = 10)
-    public static final String PROP_COUNT = "count";
-
-    private int count;
-
-    @ConfigComponent(type = com.sun.labs.util.props.dist.RegistryConfigurable.class)
-    public static final String PROP_COMP = "comp";
-
+    @Config
     private RegistryConfigurable comp;
 
-    private Logger log;
+    private int newPropsCalls = 0;
 
-    private int newPropsCalls;
+    private int opCount = 0;
 
-    private int opCount;
-
-    private boolean pause;
+    private boolean pause = false;
 
     public void run() {
         for(int i = 0; i < count; i++) {
@@ -73,12 +63,9 @@ public class ClientConfigurable implements Configurable, Runnable {
         return opCount;
     }
 
-    public void newProperties(PropertySheet ps) throws PropertyException {
+    @Override
+    public void postConfig() throws PropertyException {
         newPropsCalls++;
-        log = ps.getLogger();
-        value = ps.getString(PROP_VALUE);
-        count = ps.getInt(PROP_COUNT);
-        comp = (RegistryConfigurable) ps.getComponent(PROP_COMP);
         pause = false;
     }
 }

@@ -13,7 +13,6 @@
     </component>
 
     <component name="b" type="com.sun.labs.util.props.StringConfigurable">
-        <property name="logLevel" value="FINER"/>
         <property name="one" value="d"/>
         <property name="two" value="e"/>
         <property name="three" value="f"/>

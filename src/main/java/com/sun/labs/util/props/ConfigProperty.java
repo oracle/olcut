@@ -4,18 +4,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * A tag which superclasses all sphinx property annotations. Because there is no real inheritance for annotations all
+ * A tag which superclasses all olcut property annotations. Because there is no real inheritance for annotations all
  * child classes are annotated by this general property annotation.
  *
- * @author Holger Brandl
- * @see ConfigComponent
- * @see ConfigInteger
- * @see ConfigComponentList
- * @see ConfigDouble
- * @see ConfigBoolean
- * @see ConfigString
+ * @see Config
+ * @see ConfigurableName
  */
-@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConfigProperty {
 

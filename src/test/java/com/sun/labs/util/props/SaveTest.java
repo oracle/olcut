@@ -195,9 +195,9 @@ public class SaveTest {
         cm1.addConfigurable(BasicConfigurable.class, "c", m);
         PropertySheet ps = cm1.removeConfigurable("c");
         assertNotNull(ps);
-        assertEquals(m.get("s"), ps.getString("s"));
-        assertEquals(((Integer) m.get("i")).intValue(), ps.getInt("i"));
-        assertEquals((Double) m.get("d"), ps.getDouble("d"), 0.001);
+        assertEquals(m.get("s"), ps.getRaw("s"));
+        assertEquals(((Integer) m.get("i")).intValue(), Integer.parseInt(ps.getRaw("i").toString()));
+        assertEquals((Double) m.get("d"), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
         cm1.save(f, false);
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("c");
         assertNull(bc1);
@@ -209,14 +209,14 @@ public class SaveTest {
 
     @Test
     public void addNewConfigProgramatically() throws IOException {
-        StringConfig sc = new StringConfig("foo", "bar", "quux");
+        StringConfigurable sc = new StringConfigurable("foo", "bar", "quux");
 
         ConfigurationManager cm = new ConfigurationManager();
         cm.importConfigurable(sc, "testStringConfig");
         cm.save(f, false);
 
         ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
-        StringConfig sc2 = (StringConfig) cm2.lookup("testStringConfig");
+        StringConfigurable sc2 = (StringConfigurable) cm2.lookup("testStringConfig");
         assertEquals(sc,sc2);
     }
 }

@@ -30,15 +30,6 @@ import java.util.regex.Pattern;
  */
 public class ConfigurationManagerUtils {
 
-    /** A common property (used by all components) that sets the tersness of the log output */
-    public final static String PROP_COMMON_LOG_TERSE = "logTerse";
-
-    /** A common property (used by all components) that sets the log level for the component. */
-    public final static String GLOBAL_COMMON_LOGLEVEL = "logLevel";
-
-    /** The default file suffix of configuration files. */
-    public static final String CM_FILE_SUFFIX = ".sxl";
-
     /**
      * Return the local hostname.
      * @return the local hostname.
@@ -97,23 +88,6 @@ public class ConfigurationManagerUtils {
     }
 
     /**
-     * Configures the logger by setting the log level of the root logger to 
-     * the level specified in the global property value, if there is one.  If
-     * there is no such global value, then nothing is done and the root logger 
-     * is left at it's default level.
-     * @param cm the configuration manager whose logging we want to configure.
-     */
-    public static void configureLogger(ConfigurationManager cm) {
-        Logger rootLogger = Logger.getLogger("");
-        String level = cm.getGlobalProperty(GLOBAL_COMMON_LOGLEVEL);
-        if(level == null) {
-            return;
-        }
-        Level userLevel = Level.parse(level);
-        rootLogger.setLevel(userLevel);
-    }
-
-    /**
      * This method will automatically rename all components of <code>subCM</code> for which there is component named the
      * same in the <code>baseCM</code> .
      * <p/>
@@ -143,94 +117,6 @@ public class ConfigurationManagerUtils {
         }
 
         return renames;
-    }
-
-    /**
-     * converts a configuration manager instance into a xml-string .
-     * <p/>
-     * Note: This methods will not instantiate configurables.
-     */
-    public static String toXML(ConfigurationManager cm) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-        sb.append("\n<!--    Configuration file--> \n\n");
-
-        sb.append("<config>");
-
-        Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
-
-        GlobalProperties globalProps = cm.getGlobalProperties();
-        for(String propName : globalProps.keySet()) {
-            String propVal = globalProps.get(propName).toString();
-
-            Matcher matcher = pattern.matcher(propName);
-            propName = matcher.matches() ? matcher.group(1) : propName;
-
-            sb.append("\n\t<property name=\"" + propName + "\" value=\"" +
-                    propVal + "\"/>");
-        }
-
-        Collection<String> allInstances = cm.getComponentNames();
-        for(String instanceName : allInstances) {
-            sb.append("\n\n").append(propSheet2XML(instanceName,
-                    cm.getPropertySheet(instanceName)));
-        }
-
-        sb.append("\n</config>");
-        return sb.toString();
-    }
-
-    public static String propSheet2XML(String instanceName, PropertySheet ps) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("\t<component name=\"" + instanceName + "\" type=\"" + ps.getConfigurableClass().
-                getName() + "\">");
-
-        for(String propName : ps.getRegisteredProperties()) {
-            String predec = "\n\t\t<property name=\"" + propName + "\" ";
-            if(ps.getRawNoReplacement(propName) == null) {
-                continue;
-            }  // if the property was net defined within the xml-file
-
-            switch(ps.getType(propName)) {
-
-                case COMPLIST:
-                case STRINGLIST:
-                    sb.append("\n\t\t<propertylist name=\"" + propName + "\">");
-                    for(Object o : (List) ps.getRawNoReplacement(propName)) {
-                        if(o instanceof Class) {
-                            sb.append("\n\t\t\t<type>" + ((Class) o).getName() + "</type>");
-                        } else {
-                            sb.append("\n\t\t\t<item>" + o + "</item>");
-                        }
-                    }
-                    sb.append("\n\t\t</propertylist>");
-                    break;
-                default:
-                    sb.append(predec + "value=\"" +
-                            ps.getRawNoReplacement(propName) + "\"/>");
-            }
-        }
-
-        sb.append("\n\t</component>\n\n");
-        return sb.toString();
-    }
-
-    public static void save(ConfigurationManager cm, File cmLocation) {
-        if(!cmLocation.getName().endsWith(CM_FILE_SUFFIX)) {
-            Logger.getLogger("").severe("WARNING: Serialized s4-configuration should have the suffix '" +
-                    CM_FILE_SUFFIX + "'");
-        }
-
-        assert cm != null;
-        try {
-            PrintWriter pw = new PrintWriter(new FileOutputStream(cmLocation));
-            String configXML = ConfigurationManagerUtils.toXML(cm);
-            pw.print(configXML);
-            pw.flush();
-            pw.close();
-        } catch(FileNotFoundException e1) {
-            e1.printStackTrace();
-        }
     }
 
     /** Shows the current configuration */
@@ -321,35 +207,6 @@ public class ConfigurationManagerUtils {
         }
     }
 
-    /** PropertySheet.setter-methods should be used instead. */
-    @Deprecated
-    public static void setProperty(String componentName,
-            String propName, String propValue,
-            ConfigurationManager cm) {
-
-        PropertySheet ps = cm.getPropertySheet(componentName);
-        try {
-            Proxy wrapper =
-                    ps.getProperty(propName, Object.class).getAnnotation();
-            if(wrapper instanceof ConfigComponent) {
-                ps.setComponent(propName, propValue, cm.lookup(propValue));
-            } else if(wrapper instanceof ConfigBoolean) {
-                ps.setBoolean(propName, Boolean.valueOf(propValue));
-            } else if(wrapper instanceof ConfigInteger) {
-                ps.setInt(propName, Integer.valueOf(propValue));
-            } else if(wrapper instanceof ConfigString) {
-                ps.setString(propName, propValue);
-            } else if(wrapper instanceof ConfigDouble) {
-                ps.setDouble(propName, Double.valueOf(propValue));
-            } else if(wrapper instanceof ConfigComponentList) {
-                throw new RuntimeException("to set component lists please use PS.setComponentList()");
-            }
-        //                   ps.setComponentList(propName, null, cm.lookup(propValue));
-        } catch(PropertyException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * Renames a given <code>Configurable</code>. The configurable component named <code>oldName</code> is assumed to be
      * registered to the CM. Renaming does not only affect the configurable itself but possibly global property values
@@ -371,25 +228,28 @@ public class ConfigurationManagerUtils {
             for(String propName : propSheet.getRegisteredProperties()) {
                 if(propSheet.getRawNoReplacement(propName) == null) {
                     continue;
-                }  // if the property was net defined within the xml-file
+                }  // if the property was not defined within the xml-file
 
-                switch(propSheet.getType(propName)) {
-
-                    case COMPLIST:
-                        List<String> compNames =
-                                (List<String>) propSheet.getRawNoReplacement(propName);
-                        for(int i = 0; i < compNames.size(); i++) {
-                            String compName = compNames.get(i);
-                            if(compName.equals(oldName)) {
-                                compNames.set(i, newName);
-                            }
+                Object o = propSheet.getRawNoReplacement(propName);
+                if (o instanceof List) {
+                    List<String> compNames = (List<String>) o;
+                    for(int i = 0; i < compNames.size(); i++) {
+                        String compName = compNames.get(i);
+                        if(compName.equals(oldName)) {
+                            compNames.set(i, newName);
                         }
-
-                        break;
-                    case COMP:
-                        if(propSheet.getRawNoReplacement(propName).equals(oldName)) {
-                            propSheet.setRaw(propName, newName);
+                    }
+                } else if (o instanceof Map) {
+                    Map<String,String> compMap = (Map<String,String>) o;
+                    for (String e : compMap.keySet()) {
+                        if (compMap.get(e).equals(oldName)) {
+                            compMap.put(e,newName);
                         }
+                    }
+                } else {
+                    if(propSheet.getRawNoReplacement(propName).equals(oldName)) {
+                        propSheet.setRaw(propName, newName);
+                    }
                 }
             }
         }
@@ -418,7 +278,7 @@ public class ConfigurationManagerUtils {
      */
     public static URL getResource(String name, PropertySheet ps) throws PropertyException {
         URL url;
-        String location = ps.getString(name);
+        String location = ps.getRaw(name).toString();
         if(location == null) {
             throw new InternalConfigurationException(name, name, "Required resource property '" +
                     name + "' not set");
@@ -471,7 +331,7 @@ public class ConfigurationManagerUtils {
                         className);
             }
         } else {
-            if(location.indexOf(":") == -1) {
+            if(!location.contains(":")) {
                 location = "file:" + location;
             }
 
