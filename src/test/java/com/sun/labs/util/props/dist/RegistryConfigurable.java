@@ -6,6 +6,7 @@
 package com.sun.labs.util.props.dist;
 
 import com.sun.labs.util.props.Configurable;
+import com.sun.labs.util.props.PropertyException;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

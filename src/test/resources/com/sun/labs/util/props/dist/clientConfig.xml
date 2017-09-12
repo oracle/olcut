@@ -9,7 +9,8 @@
 -->
 
 <config>
-    
+    <property name="showCreations" value="true"/>
+
     <!-- A registry that won't serve any classes -->
     <component name="registry" type="com.sun.labs.util.props.ComponentRegistry">
         <propertylist name="groupList">
@@ -47,24 +48,36 @@
     <!-- Configuration entries to use for successful matching -->
     <component name="serverEntries" type="com.sun.labs.util.props.ConfigurationEntries">
         <propertylist name="entries">
-            <item>data1</item>
-            <item>data2</item>
+            <item>firstEntry</item>
+            <item>secondEntry</item>
         </propertylist>
     </component>
-    
+
     <!-- Configuration entries to use for unsuccessful matching -->
     <component name="serverNonMatchingEntries" type="com.sun.labs.util.props.ConfigurationEntries">
         <propertylist name="entries">
-            <item>data1</item>
-            <item>data3</item>
+            <item>firstEntry</item>
+            <item>thirdEntry</item>
         </propertylist>
     </component>
     
     <!-- Configuration entries to use for partial matching -->
     <component name="serverPartialMatchingEntries" type="com.sun.labs.util.props.ConfigurationEntries">
         <propertylist name="entries">
-            <item>data1</item>
+            <item>firstEntry</item>
         </propertylist>
     </component>
-    
+
+    <component name="firstEntry" type="com.sun.labs.util.props.ConfigurationEntry">
+        <property name="data" value="data1"/>
+    </component>
+
+    <component name="secondEntry" type="com.sun.labs.util.props.ConfigurationEntry">
+        <property name="data" value="data2"/>
+    </component>
+
+    <component name="thirdEntry" type="com.sun.labs.util.props.ConfigurationEntry">
+        <property name="data" value="data3"/>
+    </component>
+
 </config>

@@ -18,6 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -309,6 +310,7 @@ public class PropertySheet implements Cloneable {
 
     public synchronized Configurable getOwner(PropertySheet ps, ComponentListener cl, boolean reuseComponent) {
         try {
+            logger.setLevel(Level.ALL);
 
             if (!isInstantiated() || !reuseComponent) {
 
@@ -355,6 +357,10 @@ public class PropertySheet implements Cloneable {
 
                 logger.finer(String.format("Creating %s", getInstanceName()));
                 if (cm.showCreations) {
+                    logger.info("CM using:");
+                    for (URL u : cm.getConfigURLs()) {
+                        logger.info(u.toString());
+                    }
                     logger.info(String.format("Creating %s type %s", instanceName,
                             ownerClass.getName()));
                 }
@@ -372,7 +378,11 @@ public class PropertySheet implements Cloneable {
                             "Can't instantiate class " + ownerClass);
                 }
                 setConfiguredFields(owner, this);
-                owner.postConfig();
+                try {
+                    owner.postConfig();
+                } catch (IOException e) {
+                    throw new PropertyException(e, instanceName, null, "IOException thrown by postConfig");
+                }
                 if (owner instanceof ConfigurableMXBean) {
                     MBeanServer mbs = cm.getMBeanServer();
                     String on = String.format("%s:type=%s,name=%s",
@@ -745,7 +755,11 @@ public class PropertySheet implements Cloneable {
             } catch (IllegalAccessException e) {
                 throw new PropertyException(e,instanceName,"","Failed to reconfigure object");
             }
-            owner.postConfig();
+            try {
+                owner.postConfig();
+            } catch (IOException e) {
+                throw new PropertyException(e, instanceName, null, "IOException thrown by postConfig");
+            }
         }
     }
 
