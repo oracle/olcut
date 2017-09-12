@@ -12,6 +12,8 @@
  */
 package com.sun.labs.util.props;
 
+import java.io.IOException;
+
 /**
  * Defines the interface that must be implemented by any configurable component in Sphinx-4.  The life cycle of a
  * component is as follows:
@@ -72,7 +74,7 @@ public interface Configurable {
      * setup.
      * @throws PropertyException 
      */
-    default public void postConfig() throws PropertyException {
+    default public void postConfig() throws PropertyException, IOException {
         
     }
 

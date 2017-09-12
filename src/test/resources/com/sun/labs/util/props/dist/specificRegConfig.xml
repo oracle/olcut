@@ -9,7 +9,8 @@
 -->
 
 <config>
-    
+    <property name="showCreations" value="true"/>
+
     <!-- A component registry with an explicit registry host -->
     <component name="registry" type="com.sun.labs.util.props.ComponentRegistry">
         <propertylist name="groupList">
@@ -27,6 +28,5 @@
         <property name="prefix" value="Received: "/>
         <property name="incr" value="10"/>
     </component>
-    
-    
+
 </config>

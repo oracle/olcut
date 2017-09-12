@@ -9,7 +9,8 @@
 -->
 
 <config>
-    
+    <property name="showCreations" value="true"/>
+
     <!-- A registry that won't serve any classes -->
     <component name="registry" type="com.sun.labs.util.props.ComponentRegistry">
         <propertylist name="groupList">
