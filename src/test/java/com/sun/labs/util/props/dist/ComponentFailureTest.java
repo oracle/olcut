@@ -62,7 +62,6 @@ public class ComponentFailureTest {
         }
     }
 
-    @Ignore
     @Test
     public void simpleKillService() throws PropertyException, IOException {
         //
@@ -105,7 +104,6 @@ public class ComponentFailureTest {
         assertTrue(client.getNewPropsCalls() == 2);
     }
 
-    @Ignore
     @Test
     public void killService() throws PropertyException, IOException {
         //

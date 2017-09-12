@@ -5,11 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * An annotation that denotes where the String value of the component's name should be stored.
+ * An annotation that denotes where the ConfigurationManager should be stored.
+ *
+ * You should never need to use this, it's only for testing.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @ConfigProperty
-public @interface ComponentName {
+public @interface ConMan {
 
 }

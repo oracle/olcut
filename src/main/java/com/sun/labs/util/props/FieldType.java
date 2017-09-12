@@ -34,11 +34,9 @@ public enum FieldType {
     FLOAT_ARRAY(float[].class),
     DOUBLE_ARRAY(double[].class),
     //Configurable classes
-    COMPONENT(Component.class),
     CONFIGURABLE(Configurable.class),
     //Object array types
     STRING_ARRAY(String[].class),
-    COMPONENT_ARRAY(Component[].class),
     CONFIGURABLE_ARRAY(Configurable[].class),
     //Generic types - requires genericType argument to be set
     LIST(List.class),
@@ -53,8 +51,6 @@ public enum FieldType {
     RANDOM(Random.class),
     ENUM(Enum.class);
 
-    private static final Class<?> componentClass = Component.class;
-    private static final Class<?> componentArrayClass = Component[].class;
     private static final Class<?> configurableClass = Configurable.class;
     private static final Class<?> configurableArrayClass = Configurable[].class;
     private static final Class<?> enumClass = Enum.class;
@@ -66,9 +62,9 @@ public enum FieldType {
     public final static EnumSet<FieldType> listTypes = EnumSet.of(LIST, SET, ENUM_SET, BYTE_ARRAY, SHORT_ARRAY,
                                                                   INTEGER_ARRAY, LONG_ARRAY,
                                                                   FLOAT_ARRAY, DOUBLE_ARRAY, STRING_ARRAY,
-                                                                  COMPONENT_ARRAY, CONFIGURABLE_ARRAY);
+                                                                  CONFIGURABLE_ARRAY);
     public final static EnumSet<FieldType> simpleTypes = EnumSet.of(BOOLEAN, BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, STRING,
-                                                                    COMPONENT, CONFIGURABLE, ATOMIC_INTEGER,
+                                                                    CONFIGURABLE, ATOMIC_INTEGER,
                                                                     ATOMIC_LONG, FILE, PATH, RANDOM, ENUM);
 
     private FieldType(Class<?>... types) {
@@ -88,10 +84,6 @@ public enum FieldType {
             return m.get(configurableClass);
         } else if (configurableArrayClass.isAssignableFrom(clazz)) {
             return m.get(configurableArrayClass);
-        } else if (componentClass.isAssignableFrom(clazz)) {
-            return m.get(componentClass);
-        } else if (componentArrayClass.isAssignableFrom(clazz)) {
-            return m.get(componentArrayClass);
         } else if (enumClass.isAssignableFrom(clazz)) {
             return m.get(enumClass);
         } else {

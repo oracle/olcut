@@ -19,7 +19,7 @@ public interface ComponentListener {
      * whether it is interested in any particular instance of a component.
      * @param c the component that was added
      */
-    public void componentAdded(Component c);
+    public void componentAdded(Configurable c);
     
     /**
      * Indicates that a component has been removed from the configuration.  This 
@@ -28,6 +28,6 @@ public interface ComponentListener {
      * @param c the component that was removed.  Note that it's not likely that you
      * can do much with this component except test it's class.
      */
-    public void componentRemoved(Component c);
+    public void componentRemoved(Configurable c);
     
 }

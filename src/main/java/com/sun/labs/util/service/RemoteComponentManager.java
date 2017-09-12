@@ -24,24 +24,23 @@
 
 package com.sun.labs.util.service;
 
-import com.sun.labs.util.props.Component;
 import com.sun.labs.util.props.ComponentListener;
+import com.sun.labs.util.props.Configurable;
 import com.sun.labs.util.props.ConfigurationManager;
 
 /**
  * Manages connecting and reconnecting to a component
  */
-public class RemoteComponentManager<T extends Component> implements ComponentListener {
+public class RemoteComponentManager<T extends Configurable> implements ComponentListener {
     protected ConfigurationManager cm;
-    protected Class clazz;
+    protected Class<T> clazz;
     private T component = null;
 
     /**
      * Creates a RemoteComponentManager
      * @param cm the configuration manager to use to fetch components
-     * @param logger the logger to use (or null, in which case an anonymous logger will be used)
      */
-    public RemoteComponentManager(ConfigurationManager cm, Class c) {
+    public RemoteComponentManager(ConfigurationManager cm, Class<T> c) {
         this.cm = cm;
         this.clazz = c;
     }
@@ -53,8 +52,6 @@ public class RemoteComponentManager<T extends Component> implements ComponentLis
     /**
      * Gets the component with the given name
      * @return the component
-     * @throws com.sun.labs.aura.util.AuraException if the component could not
-     *   be found after 10 minutes
      */
     public T getComponent() {
         if(component == null) {
@@ -65,14 +62,14 @@ public class RemoteComponentManager<T extends Component> implements ComponentLis
 
 
     @Override
-    public void componentAdded(Component c) {
+    public void componentAdded(Configurable c) {
         if(component == null && clazz.isAssignableFrom(c.getClass())) {
             component = (T) c;
         }
     }
 
     @Override
-    public void componentRemoved(Component componentToRemove) {
+    public void componentRemoved(Configurable componentToRemove) {
         if (component == componentToRemove) {
             component = null;
         }

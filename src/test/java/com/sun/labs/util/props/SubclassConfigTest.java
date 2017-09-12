@@ -16,7 +16,7 @@ public class SubclassConfigTest {
     public void testStringConfigSubclass() throws IOException {
         URL cu = getClass().getResource("subclassConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        StringConfigSubclass scc = (StringConfigSubclass) cm.lookup(
+        StringleConfigurable scc = (StringleConfigurable) cm.lookup(
                 "stringConfigSubclass");
         assertEquals("a", scc.one);
         assertEquals("b", scc.two);

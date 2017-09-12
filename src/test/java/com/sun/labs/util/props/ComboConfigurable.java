@@ -1,6 +1,5 @@
 package com.sun.labs.util.props;
 
-
 import java.util.logging.Logger;
 
 /**
@@ -8,21 +7,12 @@ import java.util.logging.Logger;
  */
 public class ComboConfigurable implements Configurable {
 
-    private Logger logger;
+    private static final Logger logger = Logger.getLogger(ComboConfigurable.class.getName());
 
-    @ConfigString(defaultValue="alpha")
-    public static final String PROP_ALPHA = "alpha";
+    @Config
+    String alpha = "alpha";
 
-    String alpha;
-
-    @ConfigComponent(type=com.sun.labs.util.props.StringConfigurable.class)
-    public static final String PROP_SC = "sc";
-
+    @Config
     StringConfigurable sc;
 
-    @Override
-    public void newProperties(PropertySheet ps) throws PropertyException {
-        alpha = ps.getString(PROP_ALPHA);
-        sc = (StringConfigurable) ps.getComponent(PROP_SC);
-    }
 }

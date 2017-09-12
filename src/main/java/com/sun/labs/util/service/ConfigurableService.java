@@ -24,14 +24,14 @@
 
 package com.sun.labs.util.service;
 
-import com.sun.labs.util.props.Component;
+import com.sun.labs.util.props.Configurable;
 
 /**
  * An interface for starting and stopping configurable services.
  * 
  * @see ConfigurableServiceStarter
  */
-public interface ConfigurableService extends Component, Runnable {
+public interface ConfigurableService extends Configurable, Runnable {
     /**
      * Gets the name of the service.
      */

@@ -29,10 +29,10 @@ public class GenericConfigTest {
         Assert.assertTrue("DoubleList missing values",s.doubleList.contains(2.79));
         Assert.assertFalse("DoubleList contains incorrect values",s.doubleList.contains(1000000.0));
 
-        Assert.assertEquals("StringConfigList has an incorrect number of values", 2,s.stringConfigList.size());
-        Assert.assertTrue("StringConfigList missing values",s.stringConfigList.contains(new StringConfig("dragons","wyverns","wyrms")));
-        Assert.assertTrue("StringConfigList missing values",s.stringConfigList.contains(new StringConfig("jedi","sith","scoundrels")));
-        Assert.assertFalse("StringConfigList contains incorrect values",s.stringConfigList.contains(new StringConfig("sheep","cows","pigs")));
+        Assert.assertEquals("StringConfigList has an incorrect number of values", 2,s.stringConfigurableList.size());
+        Assert.assertTrue("StringConfigList missing values",s.stringConfigurableList.contains(new StringConfigurable("dragons","wyverns","wyrms")));
+        Assert.assertTrue("StringConfigList missing values",s.stringConfigurableList.contains(new StringConfigurable("jedi","sith","scoundrels")));
+        Assert.assertFalse("StringConfigList contains incorrect values",s.stringConfigurableList.contains(new StringConfigurable("sheep","cows","pigs")));
     }
 
     @Test(expected=PropertyException.class)
@@ -60,10 +60,10 @@ public class GenericConfigTest {
         Assert.assertTrue("DoubleSet missing values",s.doubleSet.contains(2.79));
         Assert.assertFalse("DoubleSet contains incorrect values",s.doubleSet.contains(1000000.0));
 
-        Assert.assertEquals("StringConfigSet has an incorrect number of values", 2,s.stringConfigSet.size());
-        Assert.assertTrue("StringConfigSet missing values",s.stringConfigSet.contains(new StringConfig("dragons","wyverns","wyrms")));
-        Assert.assertTrue("StringConfigSet missing values",s.stringConfigSet.contains(new StringConfig("jedi","sith","scoundrels")));
-        Assert.assertFalse("StringConfigSet contains incorrect values",s.stringConfigSet.contains(new StringConfig("sheep","cows","pigs")));
+        Assert.assertEquals("StringConfigSet has an incorrect number of values", 2,s.stringConfigurableSet.size());
+        Assert.assertTrue("StringConfigSet missing values",s.stringConfigurableSet.contains(new StringConfigurable("dragons","wyverns","wyrms")));
+        Assert.assertTrue("StringConfigSet missing values",s.stringConfigurableSet.contains(new StringConfigurable("jedi","sith","scoundrels")));
+        Assert.assertFalse("StringConfigSet contains incorrect values",s.stringConfigurableSet.contains(new StringConfigurable("sheep","cows","pigs")));
     }
 
     @Test(expected=PropertyException.class)

@@ -1,7 +1,7 @@
 package com.sun.labs.util.service.sample;
 
 import com.sun.labs.util.LabsLogFormatter;
-import com.sun.labs.util.props.Component;
+import com.sun.labs.util.props.Configurable;
 import com.sun.labs.util.props.ConfigurationManager;
 import com.sun.labs.util.service.ConfigurableServiceStarter;
 import java.io.File;
@@ -64,9 +64,9 @@ public class HelloClient {
         // Get all of the registered hello services. Note that we use the interface
         // here and not the implementation. We need to do this because we'll only
         // get a stub that implements the implementation.
-        List<Component> hellos = cm.lookupAll(com.sun.labs.util.service.sample.HelloService.class, null);
+        List<Configurable> hellos = cm.lookupAll(com.sun.labs.util.service.sample.HelloService.class, null);
         System.out.format("Got %d hello services\n", hellos.size());
-        for(Component hello : hellos) {
+        for(Configurable hello : hellos) {
             try {
                 System.out.format("%s says %s\n", hello, ((HelloService) hello).hello());
             } catch (RemoteException ex) {

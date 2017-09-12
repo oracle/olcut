@@ -21,7 +21,7 @@ public class AllFieldsConfigurable implements Configurable {
 
     public enum Type {A, B, C, D, E, F};
 
-    @ComponentName
+    @ConfigurableName
     public String name;
 
     //Primitives
@@ -84,28 +84,18 @@ public class AllFieldsConfigurable implements Configurable {
 
     //Configurable classes
     @Config
-    public Component componentField;
-    @Config
-    public NamedComponent componentSubclassField;
-
-    @Config
     public Configurable configurableField;
     @Config
-    public StringConfig configurableSubclassField;
+    public StringConfigurable configurableSubclassField;
 
     //Object array types
     @Config
     public String[] stringArrayField;
 
     @Config
-    public Component[] componentArrayField;
-    @Config
-    public NamedComponent[] componentSubclassArrayField;
-
-    @Config
     public Configurable[] configurableArrayField;
     @Config
-    public StringConfig[] configurableSubclassArrayField;
+    public StringConfigurable[] configurableSubclassArrayField;
 
     //Generic types - requires genericType argument to be set
     @Config(genericType=Double.class)
@@ -114,8 +104,8 @@ public class AllFieldsConfigurable implements Configurable {
     public List<String> listStringField;
     @Config(genericType=Random.class)
     public List<Random> listRandomField;
-    @Config(genericType=StringConfig.class)
-    public List<StringConfig> listConfigurableSubclassField;
+    @Config(genericType=StringConfigurable.class)
+    public List<StringConfigurable> listConfigurableSubclassField;
 
     @Config(genericType=Double.class)
     public Set<Double> setDoubleField;
@@ -123,8 +113,8 @@ public class AllFieldsConfigurable implements Configurable {
     public Set<String> setStringField;
     @Config(genericType=Path.class)
     public Set<Path> setPathField;
-    @Config(genericType=StringConfig.class)
-    public Set<StringConfig> setConfigurableSubclassField;
+    @Config(genericType=StringConfigurable.class)
+    public Set<StringConfigurable> setConfigurableSubclassField;
 
     @Config(genericType=Double.class)
     public Map<String, Double> mapDoubleField;
@@ -132,8 +122,8 @@ public class AllFieldsConfigurable implements Configurable {
     public Map<String, String> mapStringField;
     @Config(genericType=File.class)
     public Map<String, File> mapFileField;
-    @Config(genericType=StringConfig.class)
-    public Map<String, StringConfig> mapConfigurableSubclassField;
+    @Config(genericType=StringConfigurable.class)
+    public Map<String, StringConfigurable> mapConfigurableSubclassField;
 
     @Config(genericType=Type.class)
     public EnumSet<Type> enumSetField;
@@ -185,20 +175,12 @@ public class AllFieldsConfigurable implements Configurable {
         if (!Arrays.equals(longArrayField, that.longArrayField)) {logger.log(Level.INFO,"longArrayField differs, this = " + longArrayField + ", other = " + that.longArrayField); return false;}
         if (!Arrays.equals(floatArrayField, that.floatArrayField)) {logger.log(Level.INFO,"floatArrayField differs, this = " + floatArrayField + ", other = " + that.floatArrayField); return false;}
         if (!Arrays.equals(doubleArrayField, that.doubleArrayField)) {logger.log(Level.INFO,"doubleArrayField differs, this = " + doubleArrayField + ", other = " + that.doubleArrayField); return false;}
-        if (componentField != null ? !componentField.equals(that.componentField) : that.componentField != null)
-            {logger.log(Level.INFO,"componentField differs, this = " + componentField + ", other = " + that.componentField); return false;}
-        if (componentSubclassField != null ? !componentSubclassField.equals(that.componentSubclassField) : that.componentSubclassField != null)
-            {logger.log(Level.INFO,"componentSubclassField differs, this = " + componentSubclassField + ", other = " + that.componentSubclassField); return false;}
         if (configurableField != null ? !configurableField.equals(that.configurableField) : that.configurableField != null)
             {logger.log(Level.INFO,"configurableField differs, this = " + configurableField + ", other = " + that.configurableField); return false;}
         if (configurableSubclassField != null ? !configurableSubclassField.equals(that.configurableSubclassField) : that.configurableSubclassField != null)
             {logger.log(Level.INFO,"configurableSubclassField differs, this = " + configurableSubclassField + ", other = " + that.configurableSubclassField); return false;}
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(stringArrayField, that.stringArrayField)) {logger.log(Level.INFO,"stringArrayField differs, this = " + stringArrayField + ", other = " + that.stringArrayField); return false;}
-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
-        if (!Arrays.equals(componentArrayField, that.componentArrayField)) {logger.log(Level.INFO,"componentArrayField differs, this = " + componentArrayField + ", other = " + that.componentArrayField); return false;}
-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
-        if (!Arrays.equals(componentSubclassArrayField, that.componentSubclassArrayField)) {logger.log(Level.INFO,"componentSubclassArrayField differs, this = " + componentSubclassArrayField + ", other = " + that.componentSubclassArrayField); return false;}
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(configurableArrayField, that.configurableArrayField)) {logger.log(Level.INFO,"configurableArrayField differs, this = " + configurableArrayField + ", other = " + that.configurableArrayField); return false;}
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
@@ -266,13 +248,9 @@ public class AllFieldsConfigurable implements Configurable {
         result = 31 * result + Arrays.hashCode(longArrayField);
         result = 31 * result + Arrays.hashCode(floatArrayField);
         result = 31 * result + Arrays.hashCode(doubleArrayField);
-        result = 31 * result + (componentField != null ? componentField.hashCode() : 0);
-        result = 31 * result + (componentSubclassField != null ? componentSubclassField.hashCode() : 0);
         result = 31 * result + (configurableField != null ? configurableField.hashCode() : 0);
         result = 31 * result + (configurableSubclassField != null ? configurableSubclassField.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(stringArrayField);
-        result = 31 * result + Arrays.hashCode(componentArrayField);
-        result = 31 * result + Arrays.hashCode(componentSubclassArrayField);
         result = 31 * result + Arrays.hashCode(configurableArrayField);
         result = 31 * result + Arrays.hashCode(configurableSubclassArrayField);
         result = 31 * result + (listDoubleField != null ? listDoubleField.hashCode() : 0);

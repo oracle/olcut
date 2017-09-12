@@ -7,19 +7,11 @@ import java.util.logging.Logger;
  * A simple configurable class with a single configurable component.
  */
 public class SimpleConfigurable implements Configurable {
-    
-    @ConfigInteger(defaultValue=1)
-    public static final String PROP_SIMPLE = "simple";
-    
-    int simple;
-    
-    Logger logger;
-    
-    public void newProperties(PropertySheet ps) throws PropertyException {
-        logger = ps.getLogger();
-        simple = ps.getInt(PROP_SIMPLE);
-    }
-    
+    private static final Logger logger = Logger.getLogger(SimpleConfigurable.class.getName());
+
+    @Config
+    int simple = 1;
+
     public Level getLogLevel() {
         return logger.getLevel();
     }

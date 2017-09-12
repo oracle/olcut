@@ -57,139 +57,121 @@ import net.jini.lookup.ServiceDiscoveryManager;
  */
 public class ComponentRegistry implements Configurable, DiscoveryListener,
         ServiceDiscoveryListener, LeaseListener {
+    private static final Logger logger = Logger.getLogger(ComponentRegistry.class.getName());
+
+    @ConfigurableName
+    private String name;
 
     /**
-     * A property for the groups that we should use to do discovery of the 
-     * Jini registar.
+     * The groups that we should use to do discovery of the Jini registrar.
      */
-    @ConfigStringList(defaultList = {})
-    public static final String PROP_GROUP_LIST = "groupList";
+    @Config
+    private String[] groupList;
 
     /**
      * A property for the default lease timeout for components that we want
      * to register.
      */
-    @ConfigInteger(defaultValue = 100000)
-    public static final String PROP_DEFAULT_LEASE_TIME = "defaultLeaseTime";
-
-    private long defaultLeaseTime;
+    @Config
+    private long defaultLeaseTime = 100000;
 
     /**
      * A property for the wait time to use when looking up services, in seconds.  The default
      * is 2 seconds.
      */
-    @ConfigInteger(defaultValue = 2)
-    public static final String PROP_LOOKUP_WAIT = "lookupWait";
-
-    private long lookupWait;
+    @Config
+    private long lookupWait = 2;
 
     /**
      * A property for the number of times that we'll try a service lookup before
      * deciding nothings' there.
      */
-    @ConfigInteger(defaultValue = 50)
-    public static final String PROP_LOOKUP_TRIES = "lookupTries";
-
-    private int lookupTries;
+    @Config
+    private int lookupTries = 50;
 
     /**
-     * A property for the host where the Jini registry is running.  By default,
+     * The host where the Jini registry is running.  By default,
      * we'll use multicast to find the registry, which is indicated by the 
      * empty string.
      */
-    @ConfigString(defaultValue = "")
-    public static final String PROP_REGISTRY_HOST = "registryHost";
-
-    /**
-     * The host where the Jini registry is running.
-     */
-    private String registryHost;
-
-    @ConfigInteger(defaultValue = 4160)
-    public static final String PROP_REGISTRY_PORT = "registryPort";
+    @Config
+    private String registryHost = "";
 
     /**
      * The port on which the Jini registry is listening.
      */
-    private int registryPort;
+    @Config
+    private int registryPort = 4160;
 
     /**
-     * A property for the port that the class server should use.
+     * The port that the class server should use.
      */
-    @ConfigInteger(defaultValue = 1104)
-    public static final String PROP_CS_PORT = "csPort";
+    @Config
+    private int csPort = 1104;
 
     /**
-     * A property for the directory that the class server should serve files
+     * The directory that the class server should serve files
      * from.  This is a string composed of directories separated by the 
-     * {@link File.pathSeparator} character.  The default value is the empty
+     * {@link File#pathSeparator} character.  The default value is the empty
      * string, which will result in no class server being started.
      */
-    @ConfigString(defaultValue = "")
-    public static final String PROP_CS_DIRS = "csDirs";
+    @Config
+    private String csDirs = "";
 
     /**
      * The current hostname.
      */
-    @ConfigString(defaultValue = "")
-    public static final String PROP_HOST_NAME = "hostName";
+    @Config
+    private String hostName = "";
 
     /**
      * A property for an explicit codebase, which will be added to any dynamically
      * generated codebase.
      */
-    @ConfigString(defaultValue = "")
-    public static final String PROP_CODEBASE = "codebase";
+    @Config
+    private String codebase = "";
 
     /**
      * A property for the jars that that class server will be serving, and
      * therefore the components of the codebase.
      */
-    @ConfigStringList(defaultList = {})
-    public static final String PROP_CODEBASE_JARS = "codebaseJars";
+    @Config(genericType=String.class)
+    private List<String> codebaseJars = new ArrayList<>();
     
     /**
      * A property for some extra paths to be served via the class server.
      */
-    @ConfigStringList(defaultList = {})
-    public static final String PROP_CODEBASE_PATHS = "codebasePaths";
+    @Config(genericType=String.class)
+    private List<String> codebasePaths = new ArrayList<>();
 
     /**
      * A configuration property for the name of the security policy file to use.
      * If this property is not specified, then the policy specified on the 
      * command line will be used.
      */
-    @ConfigString(mandatory = false)
-    public static final String PROP_SECURITY_POLICY = "securityPolicy";
+    @Config
+    private String securityPolicy = null;
     
-    @ConfigBoolean(defaultValue = false)
-    public static final String PROP_DEBUG_RMI = "debugRMI";
-    
+    @Config
     boolean debugRMI;
     
-    @ConfigString(mandatory = false)
-    public static final String PROP_JINI_CONFIG_FILE = "jiniConfigFile";
-    
+    @Config
+    public String jiniConfigFile = null;
     private Configuration jiniConfig;
 
-    @ConfigStringList(defaultList = {})
-    public static final String PROP_DEBUG_METHODS = "debugMethods";
-    
-    @ConfigStringList(defaultList = {})
-    public static final String PROP_DEBUG_REPORT_INTERVALS = "debugReportIntervals";
-    
-    private Map<String,Integer> reportMap = new HashMap();
+    @Config(genericType=Integer.class)
+    private Map<String,Integer> debugReportMap = new HashMap<>();
     
     /**
      * An HTTP server for our classes.
      */
     private ClassServer classServer;
 
-    /**
+    /* TODO: check if this field is necessary. It must be accessed via reflection if so.
      * The configuration manager that created us.  We'll need this to get the 
      * instance names of components that want to register themselves.
+     * private ConfigurationManager cm;
      */
-    private ConfigurationManager cm;
 
     /**
      * A service registry manager for our components.
@@ -199,40 +181,191 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     /**
      * A list of service registrations for the services that we have registered.
      */
-    private List<ServiceRegistration> registrations;
+    private List<ServiceRegistration> registrations = new ArrayList<>();
 
-    private Logger logger;
 
     /**
      * A map from classes to lookup caches for those classes.
      */
-    private Map<Class, LookupCache> caches;
+    private Map<Class, LookupCache> caches = new HashMap<>();
 
     /**
      * A map from the things that we've looked up to the property sheets for 
      * those objects.  We'll be using this to reconfigure things.
      */
-    private Set<Component> lookedUp;
+    private Set<Configurable> lookedUp = new HashSet<>();
     
     /**
      * A map from the classes of things that we've looked up to the property
      * sheets for those looker-uppers.  We'll use this to add new items of this
      * type if they become available.
      */
-    private Map<Class, Set<ComponentListener>> classListeners;
+    private Map<Class, Set<ComponentListener>> classListeners = new HashMap<>();
 
     /**
      * Exporters for the services that we've registered and for the things we
      * were asked to export if necessary.  We need to unexport these when we shut
      * down.
      */
-    private Map<Remote, Exporter> exporters;
+    private Map<Remote, Exporter> exporters = new HashMap<>();
     
     /**
      * A map from components to exported versions of the components so that we
      * can avoid double exports, which is bad.
      */
-    private Map<Remote,Remote> exported;
+    private Map<Remote,Remote> exported = new HashMap<>();
+
+    @Override
+    public void postConfig() throws PropertyException {
+        if(jiniConfigFile != null) {
+            try {
+                jiniConfig = ConfigurationProvider.getInstance(new String[] {jiniConfigFile});
+            } catch(ConfigurationException ex) {
+                throw new PropertyException(ex, name, "jiniConfigFile", "Error reading jini config");
+            }
+        }
+
+        //
+        // Get the groups that we want to discover.
+        if(groupList.length == 0) {
+            groupList = LookupDiscovery.ALL_GROUPS;
+        }
+
+        //
+        // If there's no security manager, but there's a security policy provided,
+        // then make sure we have a security manager that's going to follow the
+        // policy!
+        if(System.getSecurityManager() == null && securityPolicy != null) {
+            if(!(new File(securityPolicy)).exists()) {
+                throw new PropertyException(name, "securityPolicy",
+                                "Security policy " + securityPolicy
+                                + " does not exist");
+            }
+            System.setProperty("java.security.policy", securityPolicy);
+            System.setSecurityManager(new SecurityManager());
+        }
+
+        //
+        // Get the local host name, if there was not one provided.
+        if(hostName.equals("")) {
+            try {
+                hostName = ConfigUtil.getHostName();
+            } catch(UnknownHostException ex) {
+                throw new PropertyException(ex, name, "hostName",
+                        "Unknown host setting hostName");
+            }
+        }
+
+        //
+        // Construct a codebase.
+        if(!codebaseJars.isEmpty() || !codebasePaths.isEmpty() || codebase != null) {
+            StringBuilder sb = new StringBuilder();
+
+            //
+            // Add URIs for the jar files specified in the properties.
+            for(String jar : codebaseJars) {
+                sb.append(String.format("http://%s:%d/%s ", hostName, csPort,
+                        jar));
+            }
+
+            //
+            // Add URIs for the paths specified in the properties.
+            for(String path : codebasePaths) {
+                sb.append(String.format("http://%s:%d/%s ", hostName, csPort,
+                        path));
+            }
+
+            //
+            // Add any explicit codebase settings.
+            if(codebase != null) {
+                sb.append(codebase);
+            }
+
+            //
+            // Set the codebase for RMI.
+            System.setProperty("java.rmi.server.codebase", sb.toString());
+        } else {
+            //
+            // No explicit codebase?  Give a URI for the top of the class
+            // server.
+            System.setProperty("java.rmi.server.codebase",
+                    String.format("http://%s:%d/", hostName, csPort));
+        }
+
+        //
+        // We may want to start a class server for the things registered by
+        // this component registry. We'll do this if the directories to serve
+        // are not empty.
+        if(!csDirs.equals("")) {
+            try {
+                classServer = new ClassServer(csPort, csDirs, true, true);
+                classServer.start();
+            } catch(java.io.IOException ioe) {
+                throw new PropertyException(ioe, name, "csPort",
+                        "Unable to start class server");
+            }
+        }
+
+        //
+        // If we were given a registry host, but it looks like a URL, then
+        // read a set of properties from the URL and get the registryHost
+        // property to use for the name.  This indirection allows us to
+        // get a registry host when we're deploying Web apps some place like
+        // EC2 that doesn't do multicast and doesn't provide for custom
+        // name resolution.
+        if(registryHost != null && !registryHost.equals("")) {
+            String hostString = registryHost;
+            try {
+                URL u = new URL(registryHost);
+                Properties props = new Properties();
+                props.load(u.openStream());
+                registryHost = props.getProperty("registryHost");
+                if(registryHost == null) {
+                    throw new PropertyException(name, "registryHost",
+                            "Properties at URL " + hostString +
+                                    " do not include registryHost property");
+                } else {
+                    logger.info("Got registry host: " + registryHost + " from properties");
+                }
+            } catch(MalformedURLException ex) {
+                //
+                // This is OK, it might not actually be a URL!
+            } catch(IOException ioe) {
+                throw new PropertyException(name, "registryHost",
+                        "Unable to read properties at URL " + hostString);
+            }
+        }
+
+        //
+        // Get our service discovery manager.
+        try {
+
+            //
+            // If a registry host was specified, make sure that we're using that
+            // registry!
+            LookupLocator[] lookups = null;
+            if(registryHost != null && !registryHost.equals("")) {
+                LookupLocator lookup =
+                        new LookupLocator(registryHost, registryPort);
+                lookups = new LookupLocator[]{lookup};
+                logger.finer(String.format("Using lookup: %s", lookup));
+            }
+
+            //
+            // Get the service discovery manager and add ourself as a listener
+            // for discovery events.
+            sdm = new ServiceDiscoveryManager(new LookupDiscoveryManager(groupList,
+                    lookups,
+                    null),
+                    new LeaseRenewalManager());
+            sdm.getDiscoveryManager().addDiscoveryListener(this);
+            logger.finer("Got SDM " + sdm);
+        } catch(IOException ioe) {
+            throw new PropertyException(ioe, name,
+                    "serviceDiscoveryManager",
+                    "Unable to create service discovery manager");
+        }
+    }
 
     /**
      * Gets a list of the services running in the registries that we're using
@@ -290,7 +423,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * the {@link java.rmi.Remote} interface or if the component type has more
      * than one property sheet associated with it in the configuration.
      */
-    public void register(Component c, PropertySheet ps) throws PropertyException {
+    public void register(Configurable c, PropertySheet ps) throws PropertyException {
 
         if(!(c instanceof Remote)) {
             throw new IllegalArgumentException("Component class " +
@@ -374,7 +507,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * @param c the component to which we want to pass <code>r</code>
      * @return a proxy for the object, if one is required.
      */
-    public Remote getRemote(Remote r, Component c) {
+    public Remote getRemote(Remote r, Configurable c) {
 
         //
         // If we haven't looked up this object, then just return the thing
@@ -411,7 +544,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
             InvocationLayerFactory ilf;
             if(debugRMI) {
                 ilf = new DebugILFactory();
-                ((DebugILFactory) ilf).setReportMap(reportMap);
+                ((DebugILFactory) ilf).setReportMap(debugReportMap);
             } else {
                 ilf = new BasicILFactory();
             }
@@ -458,9 +591,9 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * can be notified of service changes.
      * @return an array containing the matching components
      */
-    public Component[] lookup(Class c, int maxMatches, ComponentListener cl) {
+    public Configurable[] lookup(Class c, int maxMatches, ComponentListener cl) {
         if(sdm == null) {
-            return new Component[0];
+            return new Configurable[0];
         }
 
         //
@@ -510,13 +643,13 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         }
 
         if(sis == null || sis.length == 0) {
-            return new Component[0];
+            return new Configurable[0];
         }
      
         addListener(c, cl);
-        Component[] ret = new Component[sis.length];
+        Configurable[] ret = new Configurable[sis.length];
         for(int i = 0; i < sis.length; i++) {
-            ret[i] = (Component) sis[i].service;
+            ret[i] = (Configurable) sis[i].service;
             lookedUp.add(ret[i]);
         }
         return ret;
@@ -530,7 +663,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * @return the named component, or <code>null</code> if no such component
      * can be found.
      */
-    public Component lookup(PropertySheet cps, ComponentListener cl) {
+    public Configurable lookup(PropertySheet cps, ComponentListener cl) {
 
         if(sdm == null) {
             return null;
@@ -594,217 +727,14 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
 
         //
         // Remember that we looked up the component and add any listener.
-        Component component = (Component) si.service;
+        Configurable component = (Configurable) si.service;
         lookedUp.add(component);
         addListener(c, cl);
         return component;
     }
 
-    protected boolean wasLookedUp(Component c) {
+    protected boolean wasLookedUp(Configurable c) {
         return lookedUp.contains(c);
-    }
-
-    @Override
-    public void newProperties(PropertySheet ps) throws PropertyException {
-        cm = ps.getConfigurationManager();
-        defaultLeaseTime = ps.getInt(PROP_DEFAULT_LEASE_TIME);
-        registryHost = ps.getString(PROP_REGISTRY_HOST);
-        registryPort = ps.getInt(PROP_REGISTRY_PORT);
-        lookupWait = ps.getInt(PROP_LOOKUP_WAIT) * 1000;
-        lookupTries = ps.getInt(PROP_LOOKUP_TRIES);
-        debugRMI = ps.getBoolean(PROP_DEBUG_RMI);
-        
-        String jc = ps.getString(PROP_JINI_CONFIG_FILE);
-        if(jc != null) {
-            try {
-                jiniConfig = ConfigurationProvider.getInstance(new String[] {jc});
-            } catch(ConfigurationException ex) {
-                throw new PropertyException(ex, ps.getInstanceName(), PROP_JINI_CONFIG_FILE, "Error reading jini config");
-            }
-        }
-        
-        logger = ps.getLogger();
-        
-        List<String> reportMethods = ps.getStringList(PROP_DEBUG_METHODS);
-        List<String> reportIntervals = ps.getStringList(PROP_DEBUG_REPORT_INTERVALS);
-        if(reportMethods.size() != reportIntervals.size()) {
-            throw new PropertyException(ps.getInstanceName(), PROP_DEBUG_METHODS, "Debug methods and interval lists must be the same length");
-        }
-        for(int i = 0; i < reportMethods.size(); i++) {
-            try {
-                reportMap.put(reportMethods.get(i), Integer.parseInt(reportIntervals.get(i)));
-            } catch (NumberFormatException ex) {
-                throw new PropertyException(ex, ps.getInstanceName(), PROP_DEBUG_METHODS, "Can't parse report interval for " + reportMethods.get(i) +
-                        ": " + reportIntervals.get(i));
-            }
-        }
-        
-        //
-        // Get the groups that we want to discover.
-        String[] groups =
-                ps.getStringList(PROP_GROUP_LIST).toArray(new String[0]);
-        if(groups.length == 0) {
-            groups = LookupDiscovery.ALL_GROUPS;
-        }
-
-        //
-        // The objects that we've looked up and exported.
-        lookedUp = new HashSet<Component>();
-        classListeners = new HashMap<Class, Set<ComponentListener>>();
-        exporters = new HashMap<Remote, Exporter>();
-        exported = new HashMap<Remote, Remote>();
-        caches = new HashMap<Class, LookupCache>();
-        registrations = new ArrayList<ServiceRegistration>();
-
-        String securityPolicy = ps.getString(PROP_SECURITY_POLICY);
-
-        //
-        // If there's no security manager, but there's a security policy provided,
-        // then make sure we have a security manager that's going to follow the
-        // policy!
-        if(System.getSecurityManager() == null && securityPolicy != null) {
-
-            //
-            // If we got a security policy, then install it.
-            if(securityPolicy != null) {
-                if(!(new File(securityPolicy)).exists()) {
-                    throw new PropertyException(ps.getInstanceName(),
-                            PROP_SECURITY_POLICY, "Security policy " +
-                            securityPolicy + " does not exist");
-                }
-                System.setProperty("java.security.policy", securityPolicy);
-                System.setSecurityManager(new RMISecurityManager());
-            }
-        }
-
-        //
-        // Get the local host name, if there was not one provided.
-        String hostName = ps.getString(PROP_HOST_NAME);
-        if(hostName.equals("")) {
-            try {
-                hostName = ConfigUtil.getHostName();
-            } catch(UnknownHostException ex) {
-                throw new PropertyException(ex, ps.getInstanceName(),
-                        PROP_HOST_NAME,
-                        "Unknown host setting hostName");
-            }
-        }
-        
-        //
-        // Construct a codebase.
-        int csPort = ps.getInt(PROP_CS_PORT);
-        List<String> cbJars = ps.getStringList(PROP_CODEBASE_JARS);
-        List<String> cbPaths = ps.getStringList(PROP_CODEBASE_PATHS);
-        String explicitCB = ps.getString(PROP_CODEBASE);
-        if(!cbJars.isEmpty() || !cbPaths.isEmpty() || explicitCB != null) {
-            StringBuilder sb = new StringBuilder();
-            
-            //
-            // Add URIs for the jar files specified in the properties.
-            for(String jar : cbJars) {
-                sb.append(String.format("http://%s:%d/%s ", hostName, csPort,
-                        jar));
-            }
-            
-            //
-            // Add URIs for the paths specified in the properties.
-            for(String path : cbPaths) {
-                sb.append(String.format("http://%s:%d/%s ", hostName, csPort,
-                        path));
-            }
-            
-            //
-            // Add any explicit codebase settings.     
-            if(explicitCB != null) {
-                sb.append(explicitCB);
-            }
-            
-            //
-            // Set the codebase for RMI.
-            System.setProperty("java.rmi.server.codebase", sb.toString());
-        } else {
-            //
-            // No explicit codebase?  Give a URI for the top of the class
-            // server.
-            System.setProperty("java.rmi.server.codebase",
-                    String.format("http://%s:%d/", hostName, csPort));
-        }
-        
-        //
-        // We may want to start a class server for the things registered by
-        // this component registry. We'll do this if the directories to serve
-        // are not empty.
-        String csDirs = ps.getString(PROP_CS_DIRS);
-        if(!csDirs.equals("")) {
-            try {
-                classServer = new ClassServer(csPort, csDirs, true, true);
-                classServer.start();
-            } catch(java.io.IOException ioe) {
-                throw new PropertyException(ioe, ps.getInstanceName(),
-                        PROP_CS_PORT,
-                        "Unable to start class server");
-            }
-        }
-
-        //
-        // If we were given a registry host, but it looks like a URL, then
-        // read a set of properties from the URL and get the registryHost
-        // property to use for the name.  This indirection allows us to
-        // get a registry host when we're deploying Web apps some place like
-        // EC2 that doesn't do multicast and doesn't provide for custom
-        // name resolution.
-        if(registryHost != null && !registryHost.equals("")) {
-            try {
-                URL u = new URL(registryHost);
-                Properties props = new Properties();
-                props.load(u.openStream());
-                registryHost = props.getProperty(PROP_REGISTRY_HOST);
-                if(registryHost == null) {
-                    throw new PropertyException(ps.getInstanceName(), PROP_REGISTRY_HOST,
-                            "Properties at URL " + ps.getString(PROP_REGISTRY_HOST) +
-                            " do not include registryHost property");
-                } else {
-                    logger.info("Got registry host: " + registryHost + " from properties");
-                }
-            } catch(MalformedURLException ex) {
-                //
-                // This is OK, it might not actually be a URL!
-            } catch(IOException ioe) {
-                throw new PropertyException(ps.getInstanceName(),
-                        PROP_REGISTRY_HOST,
-                        "Unable to read properties at URL " + ps.getString(PROP_REGISTRY_HOST));
-            }
-        }
-
-        //
-        // Get our service discovery manager.
-        try {
-
-            //
-            // If a registry host was specified, make sure that we're using that
-            // registry!
-            LookupLocator[] lookups = null;
-            if(registryHost != null && !registryHost.equals("")) {
-                LookupLocator lookup =
-                        new LookupLocator(registryHost, registryPort);
-                lookups = new LookupLocator[]{lookup};
-                logger.finer(String.format("Using lookup: %s", lookup));
-            }
-
-            //
-            // Get the service discovery manager and add ourself as a listener
-            // for discovery events.
-            sdm = new ServiceDiscoveryManager(new LookupDiscoveryManager(groups,
-                    lookups,
-                    null),
-                    new LeaseRenewalManager());
-            sdm.getDiscoveryManager().addDiscoveryListener(this);
-            logger.finer("Got SDM " + sdm);
-        } catch(IOException ioe) {
-            throw new PropertyException(ioe, ps.getInstanceName(),
-                    "serviceDiscoveryManager",
-                    "Unable to create service discovery manager");
-        }
     }
 
     /**
@@ -855,7 +785,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     public void serviceAdded(ServiceDiscoveryEvent e) {
         ServiceItem si = e.getPostEventServiceItem();
         Class c = si.service.getClass();
-        Component component = (Component) si.service;
+        Configurable component = (Configurable) si.service;
         lookedUp.add(component);
         
         //
@@ -879,7 +809,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         // was removed and call its newProperties method, forcing it to get a
         // new remote component.
         ServiceItem si = e.getPreEventServiceItem();
-        Component component = (Component) si.service;
+        Configurable component = (Configurable) si.service;
         lookedUp.remove(component);
         Class c = component.getClass();
         for(Class iface : c.getInterfaces()) {
@@ -900,16 +830,16 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         ServiceItem pre = e.getPreEventServiceItem();
         ServiceItem post = e.getPostEventServiceItem();
         Class c = pre.service.getClass();
-        lookedUp.remove((Component) pre.service);
-        lookedUp.add((Component) post.service);
+        lookedUp.remove((Configurable) pre.service);
+        lookedUp.add((Configurable) post.service);
         for(Class iface : c.getInterfaces()) {
             Set<ComponentListener> listeners = classListeners.get(iface);
             if(listeners == null) {
                 continue;
             }
             for(ComponentListener l : listeners) {
-                l.componentRemoved((Component) pre.service);
-                l.componentAdded((Component) post.service);
+                l.componentRemoved((Configurable) pre.service);
+                l.componentAdded((Configurable) post.service);
             }
         }
     }

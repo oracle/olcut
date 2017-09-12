@@ -62,7 +62,6 @@ public class ReconfigureTest {
         }
     }
 
-    @Ignore
     @Test
     public void reconfigure() throws PropertyException, IOException {
         //

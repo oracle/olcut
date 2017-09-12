@@ -5,7 +5,7 @@ package com.sun.labs.util.props;
  */
 public class ArrayStringConfigurable implements Configurable {
 
-    @ComponentName
+    @ConfigurableName
     private String name;
 
     @Config

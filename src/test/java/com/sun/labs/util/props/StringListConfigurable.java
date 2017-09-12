@@ -1,5 +1,6 @@
 package com.sun.labs.util.props;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -7,11 +8,7 @@ import java.util.List;
  */
 public class StringListConfigurable implements Configurable {
 
-    @ConfigStringList(defaultList = {})
-    public static final String PROP_STRINGS = "strings";
-    public List<String> strings;
+    @Config(genericType=String.class)
+    public List<String> strings = new ArrayList<String>();
 
-    public void newProperties(PropertySheet ps) throws PropertyException {
-        strings = ps.getStringList(PROP_STRINGS);
-    }
 }

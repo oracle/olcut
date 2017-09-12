@@ -5,13 +5,16 @@
 
 package com.sun.labs.util.props;
 
-import java.io.IOException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -68,8 +71,7 @@ public class EnumConfigurableTest {
         assertTrue("Too big: " + ec.enumSet1, ec.enumSet1.size() == 2);
     }
 
-    @Test(expected =
-    com.sun.labs.util.props.InternalConfigurationException.class)
+    @Test(expected=PropertyException.class)
     public void badSetValue() throws IOException {
         ConfigurationManager cm = new ConfigurationManager(getClass().
                 getResource("enumConfig.xml"));
@@ -83,14 +85,8 @@ public class EnumConfigurableTest {
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.A, ec.enum2);
     }
-    
-    @Test(expected=com.sun.labs.util.props.InternalConfigurationException.class)
-    public void noRequired() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("norequired");
-    }
 
-    @Test(expected=com.sun.labs.util.props.InternalConfigurationException.class)
+    @Test(expected=PropertyException.class)
     public void badValue() throws IOException {
         ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("badvalue");

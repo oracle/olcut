@@ -10,14 +10,12 @@
 
 <config>
     
-    <property name="home" value="${user.home}/Projects/LabsUtil"/>
-    
     <!-- A registry that won't serve any classes -->
     <component name="registry" type="com.sun.labs.util.props.ComponentRegistry">
         <propertylist name="groupList">
             <item>Aura</item>
         </propertylist>
-        <property name="securityPolicy" value="${home}/jini/jsk-all.policy"/>
+        <property name="securityPolicy" value="src/test/resources/jsk-all.policy"/>
         <property name="lookupTries" value="2"/>
         <property name="lookupWait" value="2"/>
     </component>

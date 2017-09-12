@@ -33,7 +33,7 @@ public class NameTest {
     public void componentNameTest() throws IOException {
         URL cu = getClass().getResource("nameConfig.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
-        NamedComponent nc = (NamedComponent) cm.lookup("monkeys");
+        NamedConfigurable nc = (NamedConfigurable) cm.lookup("monkeys");
         assertEquals("monkeys",nc.getName());
     }
 
