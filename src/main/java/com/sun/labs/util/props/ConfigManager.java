@@ -7,11 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * An annotation that denotes where the ConfigurationManager should be stored.
  *
- * You should never need to use this, it's only for testing.
+ * Use this sparingly.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @ConfigProperty
-public @interface ConMan {
+public @interface ConfigManager {
 
 }

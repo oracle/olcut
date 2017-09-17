@@ -16,7 +16,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -455,212 +454,234 @@ public class PropertySheet implements Cloneable {
                     // We'll handle things that have list or arrays with items separately.
                     if (FieldType.listTypes.contains(ft)) {
                         List vals = (List) ps.propValues.get(f.getName());
-                        List<String> replaced = new ArrayList<>();
-                        List<Class<?>> classVals = new ArrayList<>();
-                        List<Class<?>> removeList = new ArrayList<>();
-                        for (Object val : vals) {
-                            if (val instanceof String) {
-                                replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(ps.instanceName, f.getName(), (String) val));
-                            } else if (val instanceof Class) {
-                                classVals.add((Class<?>) val);
-                            } else {
-                                throw new PropertyException(ps.instanceName,f.getName(),"Unknown type loaded from property, found " + val.getClass().getName());
-                            }
-                        }
-                        switch (ft) {
-                            case STRING_ARRAY:
-                                f.set(o, replaced.toArray(new String[0]));
-                                break;
-                            case CONFIGURABLE_ARRAY:
-                                List<Configurable> configurableList = new ArrayList<>();
-                                Class<?> configArrayType = f.getType().getComponentType();
-                                for (String name : replaced) {
-                                    Configurable c = ps.getConfigurationManager().lookup(name);
-                                    if (c == null) {
-                                        throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " looked up an unknown configurable called " + name);
-                                    }
-                                    configurableList.add(c);
-                                }
-                                for (Class c : classVals) {
-                                    if (configArrayType.isAssignableFrom(c)) {
-                                        configurableList.addAll(ps.getConfigurationManager().lookupAll(c, null));
-                                        removeList.add(c);
-                                    } else {
-                                        throw new PropertyException(ps.instanceName, f.getName(), "Unassignable class " + c.getName() + " to configArrayType " + configArrayType.getName());
-                                    }
-                                }
-                                Configurable[] cos = (Configurable[]) Array.newInstance(f.getType().getComponentType(), configurableList.size());
-                                for (int i = 0; i < configurableList.size(); i++) {
-                                    cos[i] = configurableList.get(i);
-                                }
-                                f.set(o, cos);
-                                break;
-                            case BYTE_ARRAY:
-                                try {
-                                    byte[] ia = new byte[replaced.size()];
-                                    int i = 0;
-                                    for (String v : replaced) {
-                                        ia[i++] = Byte.parseByte(v);
-                                    }
-                                    f.set(o, ia);
-                                } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a byte", replaced.toString()));
-                                }
-                                break;
-                            case SHORT_ARRAY:
-                                try {
-                                    short[] ia = new short[replaced.size()];
-                                    int i = 0;
-                                    for (String v : replaced) {
-                                        ia[i++] = Short.parseShort(v);
-                                    }
-                                    f.set(o, ia);
-                                } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not a short", replaced.toString()));
-                                }
-                                break;
-                            case INTEGER_ARRAY:
-                                try {
-                                    int[] ia = new int[replaced.size()];
-                                    int i = 0;
-                                    for (String v : replaced) {
-                                        ia[i++] = Integer.parseInt(v);
-                                    }
-                                    f.set(o, ia);
-                                } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an integer", replaced.toString()));
-                                }
-                                break;
-                            case LONG_ARRAY:
-                                try {
-                                    long[] la = new long[replaced.size()];
-                                    int i = 0;
-                                    for (String v : replaced) {
-                                        la[i++] = Long.parseLong(v);
-                                    }
-                                    f.set(o, la);
-                                } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s is not an array of long", replaced.toString()));
-                                }
-                                break;
-                            case FLOAT_ARRAY:
-                                try {
-                                    float[] fa = new float[replaced.size()];
-                                    int i = 0;
-                                    for (String v : replaced) {
-                                        fa[i++] = Float.parseFloat(v);
-                                    }
-                                    f.set(o, fa);
-                                } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of float", replaced.toString()));
-                                }
-                                break;
-                            case DOUBLE_ARRAY:
-                                try {
-                                    double[] da = new double[replaced.size()];
-                                    int i = 0;
-                                    for (String v : replaced) {
-                                        da[i++] = Double.parseDouble(v);
-                                    }
-                                    f.set(o, da);
-                                } catch (NumberFormatException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s does not specify an array of double", replaced.toString()));
-                                }
-                                break;
-                            case ENUM_SET:
-                                try {
-                                    Class<Enum> enumType = (Class<Enum>) ((Config) a).genericType();
-                                    EnumSet s = EnumSet.noneOf(enumType);
-                                    for (String v : replaced) {
-                                        s.add(Enum.valueOf(enumType, v.toUpperCase()));
-                                    }
-                                    f.set(o, s);
-                                } catch (ClassCastException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("The supplied type %s is not an Enum type", ((Config) a).genericType().toString()));
-                                } catch (IllegalArgumentException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("%s has values not in %s", replaced.toString(), f.getClass()));
-                                }
-                                break;
-                            case LIST:
-                                try {
-                                    Class<?> genericType = ((Config) a).genericType();
-                                    FieldType genericft = FieldType.getFieldType(genericType);
-                                    List list = new ArrayList(replaced.size());
-                                    for (String v : replaced) {
-                                        list.add(parseSimpleField(f.getName(), genericType, genericft, ps, v));
-                                    }
-                                    for (Class c : classVals) {
-                                        if (genericType.isAssignableFrom(c)) {
-                                            list.addAll(ps.getConfigurationManager().lookupAll(c, null));
-                                            removeList.add(c);
-                                        } else {
-                                            throw new PropertyException(ps.instanceName, f.getName(), "Unassignable class " + c.getName() + " to genericType " + genericType.getName());
-                                        }
-                                    }
-                                    f.set(o, list);
-                                } catch (ClassCastException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("The supplied genericType %s does not match the type of the object", ((Config) a).genericType().toString()));
-                                }
-                                break;
-                            case SET:
-                                try {
-                                    Class<?> genericType = ((Config) a).genericType();
-                                    FieldType genericft = FieldType.getFieldType(genericType);
-                                    Set set = new HashSet(replaced.size());
-                                    for (String v : replaced) {
-                                        set.add(parseSimpleField(f.getName(), genericType, genericft, ps, v));
-                                    }
-                                    for (Class c : classVals) {
-                                        if (genericType.isAssignableFrom(c)) {
-                                            set.addAll(ps.getConfigurationManager().lookupAll(c, null));
-                                            removeList.add(c);
-                                        } else {
-                                            throw new PropertyException(ps.instanceName, f.getName(), "Unassignable class " + c.getName() + " to genericType " + genericType.getName());
-                                        }
-                                    }
-                                    f.set(o, set);
-                                } catch (ClassCastException ex) {
-                                    throw new PropertyException(ex, ps.instanceName, f.getName(), String.format("The supplied genericType %s does not match the type of the object", ((Config) a).genericType().toString()));
-                                }
-                                break;
-                        }
-                        classVals.removeAll(removeList);
-                        if (classVals.size() > 0) {
-                            throw new PropertyException(ps.instanceName,f.getName(),"Found class values in a primitive array");
-                        }
+                        f.set(o, parseListField(f.getName(), f.getType(), (Config) a, ft, ps, vals));
                     } else if (FieldType.simpleTypes.contains(ft)) {
                         //
-                        // We know it's a single string now.
                         // We'll use flattenProp so that we take care of any variables
-                        // in the value.
+                        // in the single value.
                         String val = ps.flattenProp(f.getName());
                         f.set(o, parseSimpleField(f.getName(), f.getType(), ft, ps, val));
                     } else {
                         //
                         // Last option is a map, as it's not a single value or a list.
-                        Class<?> genericType = ((Config) a).genericType();
-                        FieldType genericft = FieldType.getFieldType(genericType);
-                        Map map = new HashMap<>();
-                        Map<String, String> oldMap = (Map<String, String>) ps.propValues.get(f.getName());
-                        if (oldMap != null) {
-                            for (Map.Entry<String, String> e : oldMap.entrySet()) {
-                                String newVal = ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(ps.instanceName, f.getName(), e.getValue());
-                                map.put(e.getKey(), parseSimpleField(f.getName(), genericType, genericft, ps, newVal));
-                            }
-                            f.set(o, map);
-                        }
+                        Map<String, String> mapVals = (Map<String, String>) ps.propValues.get(f.getName());
+                        f.set(o, parseMapField(f.getName(), (Config) a, ps, mapVals));
                     }
                 } else if (a instanceof ConfigurableName) {
-                    f.set(o, ps.getInstanceName());
-                } else if (a instanceof ConMan) {
-                    f.set(o, ps.getConfigurationManager());
+                    if (String.class.isAssignableFrom(f.getType())) {
+                        f.set(o, ps.getInstanceName());
+                    } else {
+                        throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigurableName to non-String type " + f.getType().getName());
+                    }
+                } else if (a instanceof ConfigManager) {
+                    if (ConfigurationManager.class.isAssignableFrom(f.getType())) {
+                        f.set(o, ps.getConfigurationManager());
+                    } else {
+                        throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigManager to non-ConfigurationManager type " + f.getType().getName());
+                    }
                 }
             }
             f.setAccessible(accessible);
         }
     }
 
-    private static Object parseSimpleField(String fieldName, Class<?> fieldClass, FieldType ft, PropertySheet ps, String val) throws IllegalAccessException {
+    private static Map parseMapField(String fieldName, Config fieldAnnotation, PropertySheet ps, Map<String,String> input) {
+        Class<?> genericType = fieldAnnotation.genericType();
+        FieldType genericft = FieldType.getFieldType(genericType);
+        Map map = new HashMap<>();
+        for (Map.Entry<String, String> e : input.entrySet()) {
+            String newVal = ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(ps.instanceName, fieldName, e.getValue());
+            map.put(e.getKey(), parseSimpleField(fieldName, genericType, genericft, ps, newVal));
+        }
+        return map;
+    }
+
+    private static Object parseListField(String fieldName, Class<?> fieldClass, Config fieldAnnotation, FieldType ft, PropertySheet ps, List input) {
+        //
+        // This dance happens as some of the list types support class values,
+        // and this is the first place where FieldType meets the value loaded
+        // from the xml file, so we have to check it.
+        List<String> replaced = new ArrayList<>();
+        List<Class<?>> classVals = new ArrayList<>();
+        List<Class<?>> removeList = new ArrayList<>();
+        for (Object val : input) {
+            if (val instanceof String) {
+                replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(ps.instanceName, fieldName, (String) val));
+            } else if (val instanceof Class) {
+                classVals.add((Class<?>) val);
+            } else {
+                throw new PropertyException(ps.instanceName,fieldName,"Unknown type loaded from property, found " + val.getClass().getName());
+            }
+        }
+
+        //
+        // Now go through the valid list types and assign the output field.
+        Object output = null;
+        switch (ft) {
+            case STRING_ARRAY:
+                output = replaced.toArray(new String[0]);
+                break;
+            case CONFIGURABLE_ARRAY:
+                List<Configurable> configurableList = new ArrayList<>();
+                Class<?> configArrayType = fieldClass.getComponentType();
+                for (String name : replaced) {
+                    Configurable c = ps.getConfigurationManager().lookup(name);
+                    if (c == null) {
+                        throw new PropertyException(ps.getInstanceName(), fieldName, fieldName + " looked up an unknown configurable called " + name);
+                    }
+                    configurableList.add(c);
+                }
+                for (Class c : classVals) {
+                    if (configArrayType.isAssignableFrom(c)) {
+                        configurableList.addAll(ps.getConfigurationManager().lookupAll(c, null));
+                        removeList.add(c);
+                    } else {
+                        throw new PropertyException(ps.instanceName, fieldName, "Unassignable class " + c.getName() + " to configArrayType " + configArrayType.getName());
+                    }
+                }
+                Configurable[] cos = (Configurable[]) Array.newInstance(configArrayType, configurableList.size());
+                for (int i = 0; i < configurableList.size(); i++) {
+                    cos[i] = configurableList.get(i);
+                }
+                output = cos;
+                break;
+            case BYTE_ARRAY:
+                try {
+                    byte[] ia = new byte[replaced.size()];
+                    int i = 0;
+                    for (String v : replaced) {
+                        ia[i++] = Byte.parseByte(v);
+                    }
+                    output = ia;
+                } catch (NumberFormatException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a byte", replaced.toString()));
+                }
+                break;
+            case SHORT_ARRAY:
+                try {
+                    short[] ia = new short[replaced.size()];
+                    int i = 0;
+                    for (String v : replaced) {
+                        ia[i++] = Short.parseShort(v);
+                    }
+                    output = ia;
+                } catch (NumberFormatException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a short", replaced.toString()));
+                }
+                break;
+            case INTEGER_ARRAY:
+                try {
+                    int[] ia = new int[replaced.size()];
+                    int i = 0;
+                    for (String v : replaced) {
+                        ia[i++] = Integer.parseInt(v);
+                    }
+                    output = ia;
+                } catch (NumberFormatException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not an integer", replaced.toString()));
+                }
+                break;
+            case LONG_ARRAY:
+                try {
+                    long[] la = new long[replaced.size()];
+                    int i = 0;
+                    for (String v : replaced) {
+                        la[i++] = Long.parseLong(v);
+                    }
+                    output = la;
+                } catch (NumberFormatException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not an array of long", replaced.toString()));
+                }
+                break;
+            case FLOAT_ARRAY:
+                try {
+                    float[] fa = new float[replaced.size()];
+                    int i = 0;
+                    for (String v : replaced) {
+                        fa[i++] = Float.parseFloat(v);
+                    }
+                    output = fa;
+                } catch (NumberFormatException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s does not specify an array of float", replaced.toString()));
+                }
+                break;
+            case DOUBLE_ARRAY:
+                try {
+                    double[] da = new double[replaced.size()];
+                    int i = 0;
+                    for (String v : replaced) {
+                        da[i++] = Double.parseDouble(v);
+                    }
+                    output = da;
+                } catch (NumberFormatException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s does not specify an array of double", replaced.toString()));
+                }
+                break;
+            case ENUM_SET:
+                try {
+                    Class<Enum> enumType = (Class<Enum>) fieldAnnotation.genericType();
+                    EnumSet s = EnumSet.noneOf(enumType);
+                    for (String v : replaced) {
+                        s.add(Enum.valueOf(enumType, v.toUpperCase()));
+                    }
+                    output = s;
+                } catch (ClassCastException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("The supplied type %s is not an Enum type", fieldAnnotation.genericType().toString()));
+                } catch (IllegalArgumentException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s has values not in %s", replaced.toString(), fieldClass));
+                }
+                break;
+            case LIST:
+                try {
+                    Class<?> genericType = fieldAnnotation.genericType();
+                    FieldType genericft = FieldType.getFieldType(genericType);
+                    List list = new ArrayList(replaced.size());
+                    for (String v : replaced) {
+                        list.add(parseSimpleField(fieldName, genericType, genericft, ps, v));
+                    }
+                    for (Class c : classVals) {
+                        if (genericType.isAssignableFrom(c)) {
+                            list.addAll(ps.getConfigurationManager().lookupAll(c, null));
+                            removeList.add(c);
+                        } else {
+                            throw new PropertyException(ps.instanceName, fieldName, "Unassignable class " + c.getName() + " to genericType " + genericType.getName());
+                        }
+                    }
+                    output = list;
+                } catch (ClassCastException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("The supplied genericType %s does not match the type of the object", fieldAnnotation.genericType().toString()));
+                }
+                break;
+            case SET:
+                try {
+                    Class<?> genericType = fieldAnnotation.genericType();
+                    FieldType genericft = FieldType.getFieldType(genericType);
+                    Set set = new HashSet(replaced.size());
+                    for (String v : replaced) {
+                        set.add(parseSimpleField(fieldName, genericType, genericft, ps, v));
+                    }
+                    for (Class c : classVals) {
+                        if (genericType.isAssignableFrom(c)) {
+                            set.addAll(ps.getConfigurationManager().lookupAll(c, null));
+                            removeList.add(c);
+                        } else {
+                            throw new PropertyException(ps.instanceName, fieldName, "Unassignable class " + c.getName() + " to genericType " + genericType.getName());
+                        }
+                    }
+                    output = set;
+                } catch (ClassCastException ex) {
+                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("The supplied genericType %s does not match the type of the object", fieldAnnotation.genericType().toString()));
+                }
+                break;
+        }
+        classVals.removeAll(removeList);
+        if (classVals.size() > 0) {
+            throw new PropertyException(ps.instanceName,fieldName,"Found class values in a primitive array");
+        }
+        return output;
+    }
+
+    private static Object parseSimpleField(String fieldName, Class<?> fieldClass, FieldType ft, PropertySheet ps, String val) {
         switch (ft) {
             case STRING:
                 return val;
@@ -739,6 +760,47 @@ public class PropertySheet implements Cloneable {
             default:
                 throw new PropertyException(ps.getInstanceName(), fieldName, fieldName + " was not a simple configurable field");
         }
+    }
+
+    /**
+     * Checks this PropertySheet for the supplied fieldName, and returns
+     * the parsed value. Returns null if the property is not set in the sheet,
+     * and throws PropertyException if it's mandatory.
+     *
+     * Note: does not read default values from class files, it only returns values
+     * from the configuration.
+     * @param fieldName The field name to lookup.
+     * @return The field value parsed out of the configuration.
+     */
+    public Object get(String fieldName) throws PropertyException {
+        Set<Field> fields = getAllFields(ownerClass);
+        for (Field f : fields) {
+            if (f.getName().equals(fieldName) && (f.getAnnotation(Config.class) != null)) {
+                Config fieldAnnotation = f.getAnnotation(Config.class);
+                //
+                // Field exists in object, now check the property sheet.
+                // Handle empty values.
+
+                if (propValues.get(f.getName()) == null) {
+                    if (fieldAnnotation.mandatory()) {
+                        throw new PropertyException(getInstanceName(), f.getName(), f.getName() + " is mandatory in configuration");
+                    } else {
+                        return null;
+                    }
+                } else {
+                    FieldType ft = FieldType.getFieldType(f);
+                    if (FieldType.listTypes.contains(ft)) {
+                        return parseListField(f.getName(),f.getType(),fieldAnnotation,ft,this,(List)propValues.get(f.getName()));
+                    } else if (FieldType.simpleTypes.contains(ft)) {
+                        return parseSimpleField(f.getName(),f.getType(),ft,this, flattenProp(f.getName()));
+                    } else {
+                        return parseMapField(f.getName(),fieldAnnotation,this, (Map<String,String>)propValues.get(f.getName()));
+                    }
+                }
+            }
+
+        }
+        return null;
     }
 
     /**
@@ -840,7 +902,7 @@ public class PropertySheet implements Cloneable {
             return PropertyType.CONFIG;
         } else if (annotation instanceof ConfigurableName) {
             return PropertyType.COMPNAME;
-        } else if (annotation instanceof ConMan) {
+        } else if (annotation instanceof ConfigManager) {
             return PropertyType.CONMAN;
         } else {
             throw new RuntimeException("Unknown property type");
