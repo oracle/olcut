@@ -1,7 +1,7 @@
 package com.sun.labs.util.props.dist;
 
 import com.sun.labs.util.props.Config;
-import com.sun.labs.util.props.ConMan;
+import com.sun.labs.util.props.ConfigManager;
 import com.sun.labs.util.props.Configurable;
 import com.sun.labs.util.props.ConfigurationManager;
 import com.sun.labs.util.props.PropertyException;
@@ -30,7 +30,7 @@ public class ClientReconfigurable implements Configurable, Runnable {
     
     private int exCount;
 
-    @ConMan
+    @ConfigManager
     private ConfigurationManager cm;
 
     public void run() {
