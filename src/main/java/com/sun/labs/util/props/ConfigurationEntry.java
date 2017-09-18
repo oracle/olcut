@@ -11,7 +11,7 @@ public class ConfigurationEntry extends AbstractEntry implements Configurable {
     @Config
     public String data;
 
-    private ConfigurationEntry() { }
+    public ConfigurationEntry() { }
     
     public ConfigurationEntry(String data) {
         this.data = data;
