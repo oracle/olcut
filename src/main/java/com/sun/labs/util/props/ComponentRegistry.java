@@ -388,7 +388,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                 }
                 ret.put(r.toString(), svcs);
             } catch(RemoteException rx) {
-                logger.severe("Error geting services" + rx);
+                logger.severe("Error getting services" + rx);
             }
         }
         return ret;
@@ -657,7 +657,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
 
     /**
      * Looks up a component in the lookup service.
-     * @param cps the propert sheet for the component to look up.
+     * @param cps the property sheet for the component to look up.
      * @param cl a listener for the component to be looked up so that it may
      * be notified of changes to things of the given type.  May be <code>null</code>
      * @return the named component, or <code>null</code> if no such component
