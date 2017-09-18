@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -56,6 +57,23 @@ public class AllFieldsConfiguredTest {
         ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
         AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
         assertEquals("Imported config not equal to generated object",ac,ac2);
+    }
+
+    @Test
+    public void getTest() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("allConfig.xml"));
+        PropertySheet ps = cm.getPropertySheet("all-config");
+
+        boolean boolField = (Boolean) ps.get("boolField");
+        assertTrue("Failed to lookup boolean field", boolField);
+
+        List<String> listStringField = (List<String>) ps.get("listStringField");
+        assertTrue("Failed to parse List<String> field", listStringField.size() == 2);
+
+        StringConfigurable sc = (StringConfigurable) ps.get("configurableField");
+        assertEquals("StringConfigurable not constructed correctly",new StringConfigurable("A","B","C"), sc);
+
+        assertTrue("Returned a value for an invalid field name", ps.get("monkeys") == null);
     }
 
     public AllFieldsConfigurable generateConfigurable() {
