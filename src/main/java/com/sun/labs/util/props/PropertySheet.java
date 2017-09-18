@@ -1065,12 +1065,14 @@ public class PropertySheet implements Cloneable {
                 if (annotation instanceof Config) {
                     //
                     // We have a variable annotated with the Config annotation.
-
                     propertySheet.registerProperty(field.getName(), new ConfigPropWrapper((Proxy) annotation));
-
                 } else if (annotation instanceof ConfigurableName) {
                     if (!field.getType().equals(String.class)) {
                         throw new PropertyException(propertySheet.getInstanceName(),field.getName(),"The component name must be an instance of java.lang.String");
+                    }
+                } else if (annotation instanceof ConfigManager) {
+                    if (!field.getType().equals(ConfigurationManager.class)) {
+                        throw new PropertyException(propertySheet.getInstanceName(),field.getName(),"The ConfigManager field must be an instance of ConfigurationManager");
                     }
                 }
             }
