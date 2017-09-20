@@ -111,7 +111,7 @@ public class Getopt {
 	// if no more option in currentArg
 	if (optPos >= argLength) {
 	    optInd++;
-	    optPos = 1;  // reset postion of opt letter
+	    optPos = 1;  // reset position of opt letter
 	}
 	return optLetter;
     }

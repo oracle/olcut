@@ -4,11 +4,11 @@ import jline.console.completer.Completer;
 
 /**
  * A CommandInterface for commands that can provide tab-completion for their
- * arguemnts.  A Completor takes a partial string as its input and returns
+ * arguments.  A Completor takes a partial string as its input and returns
  * all possibly completions starting with that string.  Several <a
  * href="http://jline.sourceforge.net/apidocs/index.html">flexible Completors
  * </a> are provided by the <a href="http://jline.sourceforge.net">JLine</a>
- * library.  Additionally, this package provides {@link CommandCompletor} that
+ * library.  Additionally, this package provides {@link CommandCompleter} that
  * will complete with the name of a defined command.  The order of Completors
  * in the array returned from {@link #getCompleters} matches the arguments
  * provided to this command.  The last Completor in the array will be used

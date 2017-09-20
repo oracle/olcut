@@ -39,7 +39,7 @@ public class Utilities {
      *
      * @param padding the number of spaces in the string
      *
-     * @return a string of length 'padding' containg only the SPACE
+     * @return a string of length 'padding' containing only the SPACE
      * char.
      */
     public static String pad(int padding) {
@@ -61,7 +61,7 @@ public class Utilities {
      * @param string the string to be padded
      * @param minLength the desired length of the string
      *
-     * @return a string of length conntaining string
+     * @return a string of length containing string
      * padded with whitespace or truncated
      */
     public static String pad(String string, int minLength) {
@@ -82,7 +82,7 @@ public class Utilities {
      * @param val the val to be padded
      * @param minLength the desired length of the string
      *
-     * @return a string of length conntaining string
+     * @return a string of length containing string
      * padded with whitespace or truncated
      */
     public static String pad(int val, int minLength) {
@@ -96,7 +96,7 @@ public class Utilities {
      * @param val the val to be padded
      * @param minLength the desired length of the string
      *
-     * @return a string of length conntaining string
+     * @return a string of length containing string
      * padded with whitespace or truncated
      */
     public static String pad(double val, int minLength) {
@@ -135,9 +135,9 @@ public class Utilities {
     static long maxUsed = 0L;
 
     /**
-     * Dumps  out memory information
+     * Dumps out memory information
      *
-     * @param msg addditional text for the dump
+     * @param msg additional text for the dump
      */
 
     public static void dumpMemoryInfo(String msg) {

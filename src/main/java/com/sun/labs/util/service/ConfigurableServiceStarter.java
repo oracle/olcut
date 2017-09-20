@@ -122,11 +122,7 @@ public class ConfigurableServiceStarter implements Configurable {
                     rl.removeHandler(h);
                 }
                 rl.addHandler(fh);
-            } catch (IOException ex) {
-                System.err.format("Error opening log file handler: " + ex);
-                usage();
-                return;
-            } catch (SecurityException ex) {
+            } catch (IOException | SecurityException ex) {
                 System.err.format("Error opening log file handler: " + ex);
                 usage();
                 return;

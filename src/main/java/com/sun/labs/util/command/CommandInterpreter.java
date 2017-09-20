@@ -1390,7 +1390,7 @@ public class CommandInterpreter extends Thread {
      * csh-like history. !! - execute last command, !-3 execute 3 from last
      * command, !2 execute second command in history list, !foo - find last
      * command that started with foo and execute it. Also allows editing of the
-     * last command wich ^old^new^ type replacesments
+     * last command which ^old^new^ type replacements
      *
      * @return the next history line or null if done
      */
@@ -1437,7 +1437,7 @@ public class CommandInterpreter extends Thread {
                 }
             } else {
                 error = true;
-                putResponse("bad substitution sytax, use ^old^new^");
+                putResponse("bad substitution syntax, use ^old^new^");
             }
         } else if((m = bbPattern.matcher(message)).find()) {
             message = m.replaceAll(history.getLast(0));

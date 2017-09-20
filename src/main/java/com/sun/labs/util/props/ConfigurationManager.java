@@ -422,7 +422,7 @@ public class ConfigurationManager implements Cloneable {
      * are added or removed
      * @return the component, or null if a component was not found.
      * @throws InternalConfigurationException If the requested object could not be properly created, or is not a
-     *                                        configurable object, or if an error occured while setting a component
+     *                                        configurable object, or if an error occurred while setting a component
      *                                        property.
      */
     public Configurable lookup(String instanceName, ComponentListener cl)
@@ -444,12 +444,12 @@ public class ConfigurationManager implements Cloneable {
      * before.
      * @return the component, or null if a component was not found.
      * @throws InternalConfigurationException If the requested object could not be properly created, or is not a
-     *                                        configurable object, or if an error occured while setting a component
+     *                                        configurable object, or if an error occurred while setting a component
      *                                        property.
      */
     public Configurable lookup(String instanceName, ComponentListener cl, boolean reuseComponent)
             throws InternalConfigurationException {
-        // apply all new propeties to the model
+        // apply all new properties to the model
         instanceName = getStrippedComponentName(instanceName);
         Configurable ret = null;
         
@@ -661,7 +661,7 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
-     * Given a <code>Configurable</code>-class/interface, all property-sheets which are subclassing/implemting this
+     * Given a <code>Configurable</code>-class/interface, all property-sheets which are subclassing/implementing this
      * class/interface are collected and returned.  No <code>Configurable</code> will be instantiated by this method.
      */
     public List<PropertySheet> getPropSheets(Class<? extends Configurable> confClass) {
@@ -930,8 +930,8 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
-     * Test wether the given configuration manager instance equals this instance in terms of same configuration. This
-     * This equals implemenation does not care about instantiation of components.
+     * Test whether the given configuration manager instance equals this instance in terms of same configuration. This
+     * This equals implementation does not care about instantiation of components.
      */
     public boolean equals(Object obj) {
         if(!(obj instanceof ConfigurationManager)) {
@@ -991,7 +991,7 @@ public class ConfigurationManager implements Cloneable {
 
     /**
      * Creates an instance of the given {@link Configurable} by using the default parameters as defined by the
-     * class annotations to parametrize the component. Default parameters will be overridded if their names are
+     * class annotations to parametrize the component. Default parameters will be overridden if their names are
      * contained in the given <code>props</code>-map
      */
     public static Configurable getInstance(Class<? extends Configurable> targetClass,
