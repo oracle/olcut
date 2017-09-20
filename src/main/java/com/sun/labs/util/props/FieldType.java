@@ -67,6 +67,9 @@ public enum FieldType {
                                                                     CONFIGURABLE, ATOMIC_INTEGER,
                                                                     ATOMIC_LONG, FILE, PATH, RANDOM, ENUM);
 
+    public final static EnumSet<FieldType> mapTypes = EnumSet.of(MAP);
+
+
     private FieldType(Class<?>... types) {
         this.types = types;
     }
