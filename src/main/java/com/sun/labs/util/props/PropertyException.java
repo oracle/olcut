@@ -24,6 +24,16 @@ public class PropertyException extends RuntimeException {
      * Creates a new property exception.
      *
      * @param instanceName The component this exception is related to.  (or <code>null</code> if unknown)
+     * @param msg          a description of the problem.
+     */
+    public PropertyException(String instanceName, String msg) {
+        this(null, instanceName, null, msg);
+    }
+
+    /**
+     * Creates a new property exception.
+     *
+     * @param instanceName The component this exception is related to.  (or <code>null</code> if unknown)
      * @param propertyName The name of the component-property which the problem is related. (or <code>null</code> if
      *                     unknown)
      * @param msg          a description of the problem.
@@ -32,6 +42,17 @@ public class PropertyException extends RuntimeException {
         this(null, instanceName, propertyName, msg);
     }
 
+
+    /**
+     * Creates a new property exception.
+     *
+     * @param cause        The cause of exception. (or <code>null</code> if unknown)
+     * @param instanceName The component this exception is related to.  (or <code>null</code> if unknown)
+     * @param msg          a description of the problem.
+     */
+    public PropertyException(Throwable cause, String instanceName, String msg) {
+        this(cause,instanceName,null,msg);
+    }
 
     /**
      * Creates a new property exception.
@@ -78,7 +99,11 @@ public class PropertyException extends RuntimeException {
      * @return the string representation of the object.
      */
     public String toString() {
-        return "Property Exception component:'" + instanceName + "' property:'" + propertyName + "' - " + msg + "\n"
-                + super.toString();
+        if (propertyName != null) {
+            return "Property Exception component:'" + instanceName + "' property:'" + propertyName + "' - " + msg + '\n'
+                    + super.toString();
+        } else {
+            return "Property Exception component:'" + instanceName + "' - " + msg + '\n' + super.toString();
+        }
     }
 }
