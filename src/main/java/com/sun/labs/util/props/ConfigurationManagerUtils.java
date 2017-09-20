@@ -226,11 +226,11 @@ public class ConfigurationManagerUtils {
             PropertySheet propSheet = cm.getPropertySheet(instanceName);
 
             for(String propName : propSheet.getRegisteredProperties()) {
-                if(propSheet.getRawNoReplacement(propName) == null) {
+                if(propSheet.getRaw(propName) == null) {
                     continue;
                 }  // if the property was not defined within the xml-file
 
-                Object o = propSheet.getRawNoReplacement(propName);
+                Object o = propSheet.getRaw(propName);
                 if (o instanceof List) {
                     List<String> compNames = (List<String>) o;
                     for(int i = 0; i < compNames.size(); i++) {
@@ -247,7 +247,7 @@ public class ConfigurationManagerUtils {
                         }
                     }
                 } else {
-                    if(propSheet.getRawNoReplacement(propName).equals(oldName)) {
+                    if(propSheet.getRaw(propName).equals(oldName)) {
                         propSheet.setRaw(propName, newName);
                     }
                 }

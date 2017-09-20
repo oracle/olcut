@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<config>
+    
+    <component name="nastyStringTest" type="com.sun.labs.util.props.StringConfigurable">
+        <property name="one" value="([^a-z0-9_!#$%&amp;*@＠]|^|RT:?)(@＠+)([a-z0-9_]{1,20})(/[a-z][a-z0-9_\\-]{0,24})?"/>
+        <property name="two" value="@＠"/>
+        <property name="three" value="&amp;&amp;"/>
+    </component>
+
+</config>

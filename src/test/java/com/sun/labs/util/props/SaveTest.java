@@ -219,4 +219,29 @@ public class SaveTest {
         StringConfigurable sc2 = (StringConfigurable) cm2.lookup("testStringConfig");
         assertEquals(sc,sc2);
     }
+
+    @Test
+    public void loadNastyStrings() throws IOException {
+        URL cu = getClass().getResource("nastyStringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(cu);
+        StringConfigurable sc = (StringConfigurable) cm.lookup(
+                "nastyStringTest");
+        assertEquals("([^a-z0-9_!#$%&*@＠]|^|RT:?)(@＠+)([a-z0-9_]{1,20})(/[a-z][a-z0-9_\\\\-]{0,24})?", sc.one);
+        assertEquals("@＠", sc.two);
+        assertEquals("&&", sc.three);
+    }
+
+    @Test
+    public void saveNastyStrings() throws IOException {
+        ConfigurationManager cm1 = new ConfigurationManager();
+
+        StringConfigurable sc1 = new StringConfigurable("([^a-z0-9_!#$%&*@＠]|^|RT:?)(@＠+)([a-z0-9_]{1,20})(/[a-z][a-z0-9_\\\\-]{0,24})?","@＠","&&");
+
+        cm1.importConfigurable(sc1,"nastyString");
+        cm1.save(f);
+
+        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        StringConfigurable sc2 = (StringConfigurable) cm2.lookup("nastyString");
+        assertEquals(sc1,sc2);
+    }
 }
