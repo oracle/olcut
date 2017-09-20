@@ -68,4 +68,16 @@ public class StringListTest {
         assertEquals("e", slc.strings.get(1));
         assertEquals("f", slc.strings.get(2));
     }
+
+    @Test
+    public void nastyStrings() throws IOException {
+        URL cu = getClass().getResource("uglyStringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(cu);
+        StringConfigurable sc = (StringConfigurable) cm.lookup(
+                "regexTest");
+        assertEquals("([^a-z0-9_!#$%&*@＠]|^|RT:?)(@＠+)([a-z0-9_]{1,20})(/[a-z][a-z0-9_\\-]{0,24})?", sc.one);
+        assertEquals("@＠", sc.two);
+        assertEquals("&&", sc.three);
+
+    }
 }
