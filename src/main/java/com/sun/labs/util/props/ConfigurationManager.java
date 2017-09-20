@@ -1,13 +1,16 @@
 package com.sun.labs.util.props;
 
 import javax.management.MBeanServer;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
@@ -828,10 +831,6 @@ public class ConfigurationManager implements Cloneable {
         return globalProperties.replaceGlobalProperties("_global", propertyName, globProp.toString());
     }
 
-    public GlobalProperty getGloPropReference(String propertyName) {
-        return globalProperties.get(propertyName);
-    }
-
     /**
      * Returns the url of the xml-configuration which defined this configuration or <code>null</code>  if it was created
      * dynamically.
@@ -978,15 +977,6 @@ public class ConfigurationManager implements Cloneable {
 
     /**
      * Creates an instance of the given {@link Configurable} by using the default parameters as defined by the
-     * class annotations to parametrize the component.
-     */
-    public static Configurable getInstance(Class<? extends Configurable> targetClass)
-            throws PropertyException {
-        return getInstance(targetClass, new HashMap<String, Object>());
-    }
-
-    /**
-     * Creates an instance of the given {@link Configurable} by using the default parameters as defined by the
      * class annotations to parametrize the component. Default parameters will be overridden if their names are
      * contained in the given <code>props</code>-map
      */
@@ -1047,6 +1037,7 @@ public class ConfigurationManager implements Cloneable {
     public void save(File file) throws IOException {
         save(file, false);
     }
+
     /**
      * Saves the current configuration to the given file
      *
@@ -1057,19 +1048,8 @@ public class ConfigurationManager implements Cloneable {
      */
     public void save(File file, boolean writeAll) throws IOException {
         FileOutputStream fos = new FileOutputStream(file);
-        PrintWriter writer = new PrintWriter(fos);
-        save(writer, writeAll);
-        writer.close();
-    }
-    /**
-     * Writes the current configuration to the given writer.  Only components
-     * that have been instantiated or programatically added will be written.
-     *
-     * @throws IOException
-     *                 if an error occurs while writing to the file
-     */
-    public void save(PrintWriter writer) throws IOException {
-        save(writer, false);
+        save(fos, writeAll);
+        fos.close();
     }
 
     /**
@@ -1082,50 +1062,72 @@ public class ConfigurationManager implements Cloneable {
      * will be written.
      * @throws IOException 
      */
-    public void save(PrintWriter writer, boolean writeAll) throws IOException {
-        writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
-        writer.println("<!--    Configuration file--> \n\n");
+    public void save(OutputStream writer, boolean writeAll) throws IOException {
+        XMLOutputFactory factory = XMLOutputFactory.newFactory();
 
-        writer.println("<config>");
+        try {
+            XMLStreamWriter xmlWriter = factory.createXMLStreamWriter(writer,"utf-8");
+            xmlWriter.writeStartDocument("utf-8","1.0");
+            xmlWriter.writeCharacters("\n");
+            xmlWriter.writeComment("OLCUT configuration file");
+            xmlWriter.writeCharacters("\n");
 
-        Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
+            xmlWriter.writeStartElement("config");
+            xmlWriter.writeCharacters("\n");
 
-        for(String propName : origGlobal.keySet()) {
             //
-            // Changed to lookup in globalProperties as this has
-            // any values overridden on the command line.
-            String propVal = globalProperties.get(propName).toString();
+            // Write out the global properties.
+            Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
 
-            Matcher matcher = pattern.matcher(propName);
-            propName = matcher.matches() ? matcher.group(1) : propName;
+            for(String propName : origGlobal.keySet()) {
+                //
+                // Changed to lookup in globalProperties as this has
+                // any values overridden on the command line.
+                String propVal = globalProperties.get(propName).toString();
 
-            writer.printf("\t<property name=\"%s\" value=\"%s\"/>\n", propName, propVal);
-        }
-        
-        //
-        // A copy of the raw property data that we can use to keep track of what's 
-        // been written.
-        Set<String> allNames = new HashSet<String>(rawPropertyMap.keySet());
-        for(PropertySheet ps : configuredComponents.values()) {
-            ps.save(writer);
-            allNames.remove(ps.getInstanceName());
-        }
+                Matcher matcher = pattern.matcher(propName);
+                propName = matcher.matches() ? matcher.group(1) : propName;
 
-        for(PropertySheet ps : addedComponents.values()) {
-            ps.save(writer);
-            allNames.remove(ps.getInstanceName());
-        }
-        
-        //
-        // If we're supposed to, write the rest of the stuff.
-        if(writeAll) {
-            for(String instanceName : allNames) {
-                PropertySheet ps = getPropertySheet(instanceName);
-                ps.save(writer);
+                xmlWriter.writeEmptyElement("property");
+                xmlWriter.writeAttribute("name",propName);
+                xmlWriter.writeAttribute("value",propVal);
+                xmlWriter.writeCharacters("\n");
             }
-        }
 
-        writer.println("</config>");
+            xmlWriter.writeCharacters("\n");
+
+            //
+            // A copy of the raw property data that we can use to keep track of what's
+            // been written.
+            Set<String> allNames = new HashSet<String>(rawPropertyMap.keySet());
+            for(PropertySheet ps : configuredComponents.values()) {
+                ps.save(xmlWriter);
+                xmlWriter.writeCharacters("\n");
+                allNames.remove(ps.getInstanceName());
+            }
+
+            for(PropertySheet ps : addedComponents.values()) {
+                ps.save(xmlWriter);
+                xmlWriter.writeCharacters("\n");
+                allNames.remove(ps.getInstanceName());
+            }
+
+            //
+            // If we're supposed to, write the rest of the stuff.
+            if(writeAll) {
+                for(String instanceName : allNames) {
+                    PropertySheet ps = getPropertySheet(instanceName);
+                    ps.save(xmlWriter);
+                    xmlWriter.writeCharacters("\n");
+                }
+            }
+
+            xmlWriter.writeEndElement();
+            xmlWriter.writeEndDocument();
+            xmlWriter.close();
+        } catch (XMLStreamException e) {
+            throw new IOException("Error generating XML file.", e);
+        }
     }
 
     /**
@@ -1270,7 +1272,7 @@ public class ConfigurationManager implements Cloneable {
                         Map fieldMap = (Map) field.get(configurable);
                         HashMap<String, String> newMap = new HashMap<>();
                         for (Object k : fieldMap.keySet()) {
-                            newMap.put((String) k, importSimpleField(genericType,name,(String) k,fieldMap.get(k)));
+                            newMap.put((String) k, importSimpleField(genericType,name+"-"+field.getName(),(String) k,fieldMap.get(k)));
                         }
                         m.put(propertyName, newMap);
                     } else {

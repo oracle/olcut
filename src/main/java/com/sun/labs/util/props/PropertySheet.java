@@ -4,18 +4,17 @@ import net.jini.core.lease.Lease;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.PrintWriter;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -880,22 +879,10 @@ public class PropertySheet implements Cloneable {
      * Gets the raw value associated with this name
      *
      * @param name the name
-     * @return the value as an object (it could be a String or a String[]
+     * @return the value as an object (it could be a String, a List, or a Map
      * depending upon the property type)
      */
     public Object getRaw(String name) {
-        return rawProps.get(name);
-    }
-
-    /**
-     * Gets the raw value associated with this name, no global symbol
-     * replacement is performed.
-     *
-     * @param name the name
-     * @return the value as an object (it could be a String or a String[]
-     * depending upon the property type)
-     */
-    public Object getRawNoReplacement(String name) {
         return rawProps.get(name);
     }
 
@@ -1049,74 +1036,84 @@ public class PropertySheet implements Cloneable {
         }
     }
 
-    protected void save(PrintWriter writer) {
+    protected void save(XMLStreamWriter xmlWriter) throws XMLStreamException {
         Collection<String> registeredProperties = getRegisteredProperties();
-        if (registeredProperties.size() != 0) {
-            writer.printf("\t<component name=\"%s\" type=\"%s\" export=\"%s\" "
-                            + "import=\"%s\">",
-                    instanceName,
-                    getConfigurableClass().getName(),
-                    isExportable(),
-                    isImportable());
+        if (registeredProperties.size() > 0) {
+            xmlWriter.writeStartElement("component");
+            xmlWriter.writeAttribute("name", instanceName);
+            xmlWriter.writeAttribute("type", getConfigurableClass().getName());
+            xmlWriter.writeAttribute("export", "" + isExportable());
+            xmlWriter.writeAttribute("import", "" + isImportable());
+            xmlWriter.writeCharacters("\n");
 
             for (String propName : registeredProperties) {
-                if (getRawNoReplacement(propName) == null) {
+                if (getRaw(propName) == null) {
                     continue;
                 }  // if the property was not defined within the xml file
-                Object val = getRawNoReplacement(propName);
-                if (val instanceof List) {
+                Object val = getRaw(propName);
+                if ((val instanceof List)) {
                     //
                     // Must be a string or component list
-                    writer.printf("\n\t\t<propertylist name=\"%s\">", propName);
+                    xmlWriter.writeCharacters("\t");
+                    xmlWriter.writeStartElement("propertylist");
+                    xmlWriter.writeAttribute("name",propName);
+                    xmlWriter.writeCharacters("\n");
                     for (Object o : (List) val) {
                         if (o instanceof Class) {
-                            writer.printf("\n\t\t\t<type>%s</type>", ((Class) o).getName());
+                            xmlWriter.writeCharacters("\t\t");
+                            xmlWriter.writeStartElement("type");
+                            xmlWriter.writeCharacters(((Class) o).getName());
+                            xmlWriter.writeEndElement();
+                            xmlWriter.writeCharacters("\n");
                         } else {
-                            writer.printf("\n\t\t\t<item>%s</item>", o);
+                            xmlWriter.writeCharacters("\t\t");
+                            xmlWriter.writeStartElement("item");
+                            xmlWriter.writeCharacters(o.toString());
+                            xmlWriter.writeEndElement();
+                            xmlWriter.writeCharacters("\n");
                         }
                     }
-                    writer.print("\n\t\t</propertylist>");
-                } else if (val instanceof Set) {
-                    writer.printf("\n\t\t<propertylist name=\"%s\">", propName);
-                    for (Object o : (Set) val) {
-                        if (o instanceof Class) {
-                            writer.printf("\n\t\t\t<type>%s</type>", ((Class) o).
-                                    getName());
-                        } else {
-                            writer.printf("\n\t\t\t<item>%s</item>", o);
-                        }
-                    }
-                    writer.print("\n\t\t</propertylist>");
+                    xmlWriter.writeCharacters("\t");
+                    xmlWriter.writeEndElement();
+                    xmlWriter.writeCharacters("\n");
                 } else if (val instanceof Map) {
                     //
                     // Must be a string,string map
-                    writer.printf("\n\t\t<propertymap name=\"%s\">", propName);
+                    xmlWriter.writeCharacters("\t");
+                    xmlWriter.writeStartElement("propertymap");
+                    xmlWriter.writeAttribute("name",propName);
+                    xmlWriter.writeCharacters("\n");
                     for (Map.Entry<String, String> e : ((Map<String, String>) val).entrySet()) {
-                        writer.printf("\n\t\t\t<entry key=\"%s\" value=\"%s\"/>", e.getKey(), e.getValue());
+                        xmlWriter.writeCharacters("\t\t");
+                        xmlWriter.writeEmptyElement("entry");
+                        xmlWriter.writeAttribute("key",e.getKey());
+                        xmlWriter.writeAttribute("value",e.getValue());
+                        xmlWriter.writeCharacters("\n");
                     }
-                    writer.print("\n\t\t</propertymap>");
+                    xmlWriter.writeCharacters("\t");
+                    xmlWriter.writeEndElement();
+                    xmlWriter.writeCharacters("\n");
                 } else {
                     //
                     // Standard property
-                    writer.printf("\n\t\t<property name=\"%s\" value=\"%s\"/>",
-                            propName,
-                            getRawNoReplacement(propName));
+                    xmlWriter.writeCharacters("\t");
+                    xmlWriter.writeEmptyElement("property");
+                    xmlWriter.writeAttribute("name",propName);
+                    xmlWriter.writeAttribute("value",getRaw(propName).toString());
+                    xmlWriter.writeCharacters("\n");
                 }
             }
 
-            writer.println("\n\t</component>");
+            xmlWriter.writeEndElement();
+            xmlWriter.writeCharacters("\n");
         } else {
-            //
-            // Must be a component, which doesn't have properties
-            writer.printf("\t<component name=\"%s\" type=\"%s\" export=\"%s\" "
-                            + "import=\"%s\"/>\n",
-                    instanceName,
-                    getConfigurableClass().getName(),
-                    isExportable(),
-                    isImportable());
-
+            xmlWriter.writeEmptyElement("component");
+            xmlWriter.writeAttribute("name", instanceName);
+            xmlWriter.writeAttribute("type", getConfigurableClass().getName());
+            xmlWriter.writeAttribute("export", "" + isExportable());
+            xmlWriter.writeAttribute("import", "" + isImportable());
+            xmlWriter.writeCharacters("\n");
         }
-
     }
 
 }
