@@ -896,6 +896,5 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                 System.out.println(String.format(" Service: %s", s));
             }
         }
-        return;
     }
 }

@@ -23,7 +23,7 @@ public interface CommandInterface {
     /**
      * Execute the given command.
      *  
-     * @param ci	the command interpretere that invoked this command.
+     * @param ci	the command interpreter that invoked this command.
      * @param args	command line arguments (just like main).
      * @return		a command result
      *

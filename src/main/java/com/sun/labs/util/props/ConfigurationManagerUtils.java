@@ -24,7 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Some static utitity methods which ease the handling of system configurations.
+ * Some static utility methods which ease the handling of system configurations.
  *
  * @author Holger Brandl
  */
@@ -171,7 +171,7 @@ public class ConfigurationManagerUtils {
      * List types cannot currently be set from system properties.
      *
      * @param rawMap the map of raw property values
-     * @param global global properies
+     * @param global global properties
      * @throws PropertyException if an attempt is made to set a parameter for an unknown component.
      */
     static void applySystemProperties(Map<String, RawPropertyData> rawMap,
@@ -183,7 +183,7 @@ public class ConfigurationManagerUtils {
             String value = props.getProperty(param);
 
             // search for params of the form component[param]=value
-            // thise go in the property sheet for the component
+            // these go in the property sheet for the component
             int lb = param.indexOf('[');
             int rb = param.indexOf(']');
 
@@ -347,8 +347,8 @@ public class ConfigurationManagerUtils {
     }
 
     /**
-     * @return <code>true</code> if <code>aClass</code> is either equal to <code>poosibleParent</code>, a subclass of
-     *         it, or implementing if <code>possibl\</code> is an interface.
+     * @return <code>true</code> if <code>aClass</code> is either equal to <code>possibleParent</code>, a subclass of
+     *         it, or implementing if <code>possible</code> is an interface.
      */
     public static boolean isDerivedClass(Class aClass, Class possibleParent) {
         return aClass.equals(possibleParent) ||

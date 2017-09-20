@@ -22,7 +22,7 @@ import java.util.logging.LogRecord;
  * <p/>
  * java.util.logging.ConsoleHandler.formatter to edu.cmu.sphinx.util.LabsLogFormatter
  * <p/>
- * This is typically done in a custom loger.properties file
+ * This is typically done in a custom logger.properties file
  */
 public class SimpleLabsLogFormatter extends Formatter {
 

@@ -189,8 +189,7 @@ public class PropertySheet implements Cloneable {
     }
 
     public Collection<String> getPropertyNames() {
-        Set<String> ps = new HashSet<String>(rawProps.keySet());
-        return ps;
+        return new HashSet<String>(rawProps.keySet());
     }
 
     /**

@@ -20,9 +20,9 @@ import java.io.IOException;
  * <p/>
  * <ul><li> <b>Class Parsing</b> The class file is parsed in order to determine all its configurable properties.  These
  * are defined using <code>public static final String</code> fields which are annotated with one of the following
- * annoations: <ul> <li>S4Integer <li>S4Double <li>S4Boolean <li>S4Component <li>S4ComponentList </ul> Further
- * informations about property-specific fields can be found in the javadoc of the property-annotation-definitions. Only
- * names of annotated proeprties will be allowed by the configuration system later on.
+ * annotations: <ul> <li>S4Integer <li>S4Double <li>S4Boolean <li>S4Component <li>S4ComponentList </ul> Further
+ * information about property-specific fields can be found in the javadoc of the property-annotation-definitions. Only
+ * names of annotated properties will be allowed by the configuration system later on.
  * <p/>
  * <li> <b>Construction</b> - The (empty) component constructor is called in order to instantiate the component.
  * Typically the constructor does little, if any work, since the component has not been configured yet.
