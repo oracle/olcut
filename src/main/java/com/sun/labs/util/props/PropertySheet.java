@@ -353,6 +353,10 @@ public class PropertySheet implements Cloneable {
                     }
                 }
 
+                if (ownerClass.isInterface()) {
+                    throw new PropertyException(instanceName,"Failed to lookup interface " + ownerClass.getName() + " in registry.");
+                }
+
                 logger.finer(String.format("Creating %s", getInstanceName()));
                 if (cm.showCreations) {
                     logger.info("CM using:");
@@ -428,56 +432,59 @@ public class PropertySheet implements Cloneable {
         for (Field f : fields) {
             boolean accessible = f.isAccessible();
             f.setAccessible(true);
-            for (Annotation a : f.getAnnotations()) {
-                if (a instanceof Config) {
-                    //
-                    // We have a variable annotated with the Config annotation,
-                    // let's get a value out of the property sheet and figure
-                    // out how to turn it into the right type.
-                    FieldType ft = FieldType.getFieldType(f);
-                    if (ft == null) {
-                        throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " has an unknown field type");
+            Config configAnnotation = f.getAnnotation(Config.class);
+            ConfigurableName nameAnnotation = f.getAnnotation(ConfigurableName.class);
+            ConfigManager cmAnnotation = f.getAnnotation(ConfigManager.class);
+            if (configAnnotation != null) {
+                //
+                // We have a variable annotated with the Config annotation,
+                // let's get a value out of the property sheet and figure
+                // out how to turn it into the right type.
+                FieldType ft = FieldType.getFieldType(f);
+                if (ft == null) {
+                    throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " has an unknown field type");
+                }
+                logger.log(Level.FINEST,"Found field of type " + ft.name());
+                //
+                // Handle empty values.
+                if (ps.propValues.get(f.getName()) == null) {
+                    if (configAnnotation.mandatory()) {
+                        throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " is mandatory in configuration");
+                    } else {
+                        continue;
                     }
-                    logger.log(Level.FINEST,"Found field of type " + ft.name());
-                    //
-                    // Handle empty values.
-                    if (ps.propValues.get(f.getName()) == null) {
-                        if (((Config) a).mandatory()) {
-                            throw new PropertyException(ps.getInstanceName(), f.getName(), f.getName() + " is mandatory in configuration");
-                        } else {
-                            continue;
-                        }
-                    }
+                }
 
+                //
+                // We'll handle things that have list or arrays with items separately.
+                if (FieldType.listTypes.contains(ft)) {
+                    List vals = (List) ps.propValues.get(f.getName());
+                    f.set(o, parseListField(f.getName(), f.getType(), configAnnotation, ft, ps, vals));
+                } else if (FieldType.simpleTypes.contains(ft)) {
                     //
-                    // We'll handle things that have list or arrays with items separately.
-                    if (FieldType.listTypes.contains(ft)) {
-                        List vals = (List) ps.propValues.get(f.getName());
-                        f.set(o, parseListField(f.getName(), f.getType(), (Config) a, ft, ps, vals));
-                    } else if (FieldType.simpleTypes.contains(ft)) {
-                        //
-                        // We'll use flattenProp so that we take care of any variables
-                        // in the single value.
-                        String val = ps.flattenProp(f.getName());
-                        f.set(o, parseSimpleField(f.getName(), f.getType(), ft, ps, val));
-                    } else {
-                        //
-                        // Last option is a map, as it's not a single value or a list.
-                        Map<String, String> mapVals = (Map<String, String>) ps.propValues.get(f.getName());
-                        f.set(o, parseMapField(f.getName(), (Config) a, ps, mapVals));
-                    }
-                } else if (a instanceof ConfigurableName) {
-                    if (String.class.isAssignableFrom(f.getType())) {
-                        f.set(o, ps.getInstanceName());
-                    } else {
-                        throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigurableName to non-String type " + f.getType().getName());
-                    }
-                } else if (a instanceof ConfigManager) {
-                    if (ConfigurationManager.class.isAssignableFrom(f.getType())) {
-                        f.set(o, ps.getConfigurationManager());
-                    } else {
-                        throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigManager to non-ConfigurationManager type " + f.getType().getName());
-                    }
+                    // We'll use flattenProp so that we take care of any variables
+                    // in the single value.
+                    String val = ps.flattenProp(f.getName());
+                    f.set(o, parseSimpleField(f.getName(), f.getType(), ft, ps, val));
+                } else if (FieldType.mapTypes.contains(ft)){
+                    //
+                    // Last option is a map, as it's not a single value or a list.
+                    Map<String, String> mapVals = (Map<String, String>) ps.propValues.get(f.getName());
+                    f.set(o, parseMapField(f.getName(), configAnnotation, ps, mapVals));
+                } else {
+                    throw new PropertyException(ps.getInstanceName(), f.getName(), "Unknown field type " + ft.toString());
+                }
+            } else if (nameAnnotation != null) {
+                if (String.class.isAssignableFrom(f.getType())) {
+                    f.set(o, ps.getInstanceName());
+                } else {
+                    throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigurableName to non-String type " + f.getType().getName());
+                }
+            } else if (cmAnnotation != null) {
+                if (ConfigurationManager.class.isAssignableFrom(f.getType())) {
+                    f.set(o, ps.getConfigurationManager());
+                } else {
+                    throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigManager to non-ConfigurationManager type " + f.getType().getName());
                 }
             }
             f.setAccessible(accessible);
@@ -991,7 +998,7 @@ public class PropertySheet implements Cloneable {
      * @param configurable the class who's fields we wish to walk.
      * @return all of the fields, so they can be checked for annotations.
      */
-    private static Set<Field> getAllFields(Class configurable) {
+    public static Set<Field> getAllFields(Class configurable) {
         Set<Field> ret = new HashSet<>();
         Queue<Class> cq = new ArrayDeque<>();
         cq.add(configurable);
@@ -1017,62 +1024,26 @@ public class PropertySheet implements Cloneable {
      */
     public static void processAnnotations(PropertySheet propertySheet,
             Class<? extends Configurable> configurable) throws PropertyException {
-
-        //
-        // This is kind of a hack to handle Scala classes that want to be 
-        // configurable. The convention in Scala is to annotate a method that
-        // returns a string that is the name of the variable in the configuration file
-        // like so:
-        // @ConfigInteger(defaultValue=128)
-        // def PROP_MY_INTEGER = "myInteger"
-        //
-        // Note that we're going to need to invoke the method, so we need an
-        // instance, so we'll gin one up if necessary.
-        Object configurableInstance = null;
-        for (Method method : configurable.getMethods()) {
-            for (Annotation annotation : method.getAnnotations()) {
-                for (Annotation superAnnotation : annotation.annotationType().getAnnotations()) {
-                    try {
-                        if (!(superAnnotation instanceof ConfigProperty)) {
-                            continue;
-                        }
-                        if (configurableInstance == null) {
-                            configurableInstance = configurable.newInstance();
-                        }
-                        //
-                        // OK, call the method to get the name of the string.
-                        String propertyName = (String) method.invoke(configurableInstance, (Object[]) null);
-                        propertySheet.registerProperty(propertyName,
-                                new ConfigPropWrapper((Proxy) annotation));
-                    } catch (IllegalAccessException | IllegalArgumentException
-                            | InvocationTargetException | InstantiationException ex) {
-                        throw new PropertyException(ex, propertySheet.instanceName, method.getName(),
-                                "Error invoking configurable method: "
-                                + method.getName());
-                    }
-                }
-            }
-        }
-
-        //
-        // The java version.
         Set<Field> classFields = getAllFields(configurable);
 
         for (Field field : classFields) {
-            Annotation[] annotations = field.getAnnotations();
-            for (Annotation annotation : annotations) {
-                if (annotation instanceof Config) {
-                    //
-                    // We have a variable annotated with the Config annotation.
-                    propertySheet.registerProperty(field.getName(), new ConfigPropWrapper((Proxy) annotation));
-                } else if (annotation instanceof ConfigurableName) {
-                    if (!field.getType().equals(String.class)) {
-                        throw new PropertyException(propertySheet.getInstanceName(),field.getName(),"The component name must be an instance of java.lang.String");
-                    }
-                } else if (annotation instanceof ConfigManager) {
-                    if (!field.getType().equals(ConfigurationManager.class)) {
-                        throw new PropertyException(propertySheet.getInstanceName(),field.getName(),"The ConfigManager field must be an instance of ConfigurationManager");
-                    }
+            Config configAnnotation = field.getAnnotation(Config.class);
+            ConfigurableName nameAnnotation = field.getAnnotation(ConfigurableName.class);
+            ConfigManager cmAnnotation = field.getAnnotation(ConfigManager.class);
+            if (((configAnnotation != null) && (nameAnnotation != null)) || ((nameAnnotation != null) && (cmAnnotation != null)) || ((configAnnotation != null) && (cmAnnotation != null))) {
+                throw new PropertyException(propertySheet.getInstanceName(), field.getName(), "Multiple olcut annotations applied to the same field");
+            }
+            if (configAnnotation != null) {
+                //
+                // We have a variable annotated with the Config annotation.
+                propertySheet.registerProperty(field.getName(), new ConfigPropWrapper((Proxy) configAnnotation));
+            } else if (nameAnnotation != null) {
+                if (!field.getType().equals(String.class)) {
+                    throw new PropertyException(propertySheet.getInstanceName(),field.getName(),"The component name must be an instance of java.lang.String");
+                }
+            } else if (cmAnnotation != null) {
+                if (!field.getType().equals(ConfigurationManager.class)) {
+                    throw new PropertyException(propertySheet.getInstanceName(),field.getName(),"The ConfigManager field must be an instance of ConfigurationManager");
                 }
             }
         }
