@@ -105,11 +105,11 @@ public class SaxLoader {
         } catch (SAXParseException e) {
             String msg = "Error while parsing line " + e.getLineNumber()
                     + " of " + curURL + ": " + e.getMessage();
-            throw new IOException(msg);
+            throw new IOException(msg, e);
         } catch (SAXException e) {
-            throw new IOException("Problem with XML: " + e);
+            throw new IOException("Problem with XML: " + e, e);
         } catch (ParserConfigurationException e) {
-            throw new IOException(e.getMessage());
+            throw new IOException(e.getMessage(), e);
         } finally {
             if (is != null) {
                 is.close();
