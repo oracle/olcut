@@ -41,7 +41,7 @@ public class CDateParser {
 
     static long _32_bit_seconds = 0x7fffffffL * 1000L;	// largest date that fits in 32 bits
 
-    LinkedList<DateFormat> dateFormats = new LinkedList();
+    LinkedList<DateFormat> dateFormats = new LinkedList<>();
 
     static String[] USFormatStrings = {
         "E, d MMM y h:m:s.S a z",
@@ -163,9 +163,9 @@ public class CDateParser {
      * This date parser understands many US and locale based formats. Typical RD
      * dates look like: Fri, 17 Jan 1997 16:42:49 GMT (this format derives from
      * http timestamps)
-     *
-     * @param _32_bits if false allows 64 bit (milliseconds) dates if true, only
-     * allows 32 bit dates (seconds) due to search engine limit.
+     * @param date The input date as a String.
+     * @return A parsed Date object.
+     * @throws ParseException If it failed to parse a date.
      */
     public Date parse(String date) throws ParseException {
         Date d = null;
