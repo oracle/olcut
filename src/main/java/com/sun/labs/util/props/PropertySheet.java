@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
  * A property sheet which defines a collection of properties for a single
@@ -50,8 +49,6 @@ public class PropertySheet implements Cloneable {
             = new HashMap<String, ConfigPropWrapper>();
 
     private Map<String, Object> propValues = new HashMap<String, Object>();
-
-    private Pattern arraySplit = Pattern.compile(",\\s*");
 
     /**
      * Maps the names of the component properties to their (possibly unresolved)
@@ -424,6 +421,7 @@ public class PropertySheet implements Cloneable {
      * @param o the object we're setting values for
      * @param ps the property sheet with the values that we want to set.
      */
+    @SuppressWarnings("unchecked")
     private static void setConfiguredFields(Object o, PropertySheet ps) throws PropertyException, IllegalAccessException {
 
         Class<?> curClass = o.getClass();
@@ -490,6 +488,7 @@ public class PropertySheet implements Cloneable {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static Map parseMapField(String fieldName, Config fieldAnnotation, PropertySheet ps, Map<String,String> input) {
         Class<?> genericType = fieldAnnotation.genericType();
         FieldType genericft = FieldType.getFieldType(genericType);
@@ -501,6 +500,7 @@ public class PropertySheet implements Cloneable {
         return map;
     }
 
+    @SuppressWarnings("unchecked")
     private static Object parseListField(String fieldName, Class<?> fieldClass, Config fieldAnnotation, FieldType ft, PropertySheet ps, List input) {
         //
         // This dance happens as some of the list types support class values,
@@ -953,17 +953,16 @@ public class PropertySheet implements Cloneable {
     protected Object clone() throws CloneNotSupportedException {
         PropertySheet ps = (PropertySheet) super.clone();
 
-        ps.registeredProperties
-                = new HashMap<String, ConfigPropWrapper>(this.registeredProperties);
-        ps.propValues = new HashMap<String, Object>(this.propValues);
+        ps.registeredProperties = new HashMap<>(this.registeredProperties);
+        ps.propValues = new HashMap<>(this.propValues);
 
-        ps.rawProps = new HashMap<String, Object>(this.rawProps);
+        ps.rawProps = new HashMap<>(this.rawProps);
 
         // make deep copy of raw-lists
         for (String regProp : ps.getRegisteredProperties()) {
             Object o = rawProps.get(regProp);
             if (o instanceof List) {
-                ps.rawProps.put(regProp, new ArrayList<String>((List<? extends String>) o));
+                ps.rawProps.put(regProp, new ArrayList<Object>((List) o));
                 ps.propValues.put(regProp, null);
             } else if (o instanceof Map) {
                 ps.rawProps.put(regProp, new HashMap<String,String>((Map<String,String>) o));

@@ -20,7 +20,7 @@ import java.util.logging.LogRecord;
  * Provides a log formatter for use with sphinx. This formatter generates nicer looking console messages than the
  * default formatter. To use the formatter, set the property
  * <p/>
- * java.util.logging.ConsoleHandler.formatter to edu.cmu.sphinx.util.LabsLogFormatter
+ * java.util.logging.ConsoleHandler.formatter to com.sun.labs.util.LabsLogFormatter
  * <p/>
  * This is typically done in a custom logger.properties file
  */

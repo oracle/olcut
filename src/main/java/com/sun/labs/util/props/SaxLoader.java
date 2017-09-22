@@ -132,7 +132,7 @@ public class SaxLoader {
 
         Locator locator;
 
-        List itemList = null;
+        List<Object> itemList = null;
 
         String itemListName = null;
 
@@ -265,7 +265,7 @@ public class SaxLoader {
                     throw new SAXParseException("list element must only have "
                             + "the 'name' attribute", locator);
                 }
-                itemList = new ArrayList();
+                itemList = new ArrayList<>();
             } else if (qName.equals("item") || qName.equals("type")) {
                 if (attributes.getLength() != 0) {
                     throw new SAXParseException("unknown 'item' attribute",

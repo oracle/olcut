@@ -87,7 +87,7 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
     
     @Override
     public int complete(final String buffer, final int cursor,
-                        final List candidates) {
+                        final List<CharSequence> candidates) {
         Log.debug("\ncomplete invoked with " + buffer);
         ArgumentList list = delim.delimit(buffer, cursor);
         int argpos = list.getArgumentPosition();
@@ -138,7 +138,7 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
             String[] args = list.getArguments();
             String arg = ((args == null) || (i >= args.length)) ? "" : args[i];
 
-            List subCandidates = new LinkedList();
+            List<CharSequence> subCandidates = new LinkedList<>();
 
             if (sub.complete(arg, arg.length(), subCandidates) == -1) {
                 return -1;
