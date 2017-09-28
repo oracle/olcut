@@ -1,17 +1,8 @@
 package com.sun.labs.util.props;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,8 +16,6 @@ import java.util.regex.Pattern;
 
 /**
  * Some static utility methods which ease the handling of system configurations.
- *
- * @author Holger Brandl
  */
 public class ConfigurationManagerUtils {
 
@@ -38,53 +27,6 @@ public class ConfigurationManagerUtils {
      */
     public static String getHostName() throws UnknownHostException {
         return java.net.InetAddress.getLocalHost().getCanonicalHostName();
-    }
-
-    public static void editConfig(ConfigurationManager cm, String name) {
-        PropertySheet ps = cm.getPropertySheet(name);
-        boolean done;
-
-        if(ps == null) {
-            System.out.println("No component: " + name);
-            return;
-        }
-        System.out.println(name + ":");
-
-        Collection<String> propertyNames = ps.getRegisteredProperties();
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-        for(String propertyName : propertyNames) {
-            try {
-                Object value = ps.getRaw(propertyName);
-                String svalue;
-
-                if(value instanceof List) {
-                    continue;
-                } else if(value instanceof String) {
-                    svalue = (String) value;
-                } else {
-                    svalue = "DEFAULT";
-                }
-                done = false;
-
-                while(!done) {
-                    System.out.print("  " + propertyName + " [" + svalue + "]: ");
-                    String in = br.readLine();
-                    if(in.length() == 0) {
-                        done = true;
-                    } else if(in.equals(".")) {
-                        return;
-                    } else {
-
-                        cm.getPropertySheet(name).setRaw(propertyName, in);
-                        done = true;
-                    }
-                }
-            } catch(IOException ioe) {
-                System.out.println("Trouble reading input");
-                return;
-            }
-        }
     }
 
     /**
@@ -128,7 +70,7 @@ public class ConfigurationManagerUtils {
     }
 
     /**
-     * Show the configuration for the compnent with the given name
+     * Show the configuration for the component with the given name
      *
      * @param name the component name
      */
@@ -346,57 +288,4 @@ public class ConfigurationManagerUtils {
         return url;
     }
 
-    /**
-     * @return <code>true</code> if <code>aClass</code> is either equal to <code>possibleParent</code>, a subclass of
-     *         it, or implementing if <code>possible</code> is an interface.
-     */
-    public static boolean isDerivedClass(Class aClass, Class possibleParent) {
-        return aClass.equals(possibleParent) ||
-                (possibleParent.isInterface() &&
-                ConfigurationManagerUtils.isImplementingInterface(aClass,
-                possibleParent)) ||
-                ConfigurationManagerUtils.isSubClass(aClass,
-                possibleParent);
-    }
-
-    public static boolean isImplementingInterface(Class aClass,
-            Class interfaceClass) {
-        assert interfaceClass.isInterface();
-
-        Class<?> superClass = aClass.getSuperclass();
-        if(superClass != null && isImplementingInterface(superClass, interfaceClass)) {
-            return true;
-        }
-
-        for(Class curInterface : aClass.getInterfaces()) {
-            if(curInterface.equals(interfaceClass) ||
-                    isImplementingInterface(curInterface,
-                    interfaceClass)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static boolean isSubClass(Class aClass, Class possibleSuperclass) {
-        while(aClass != null && !aClass.equals(Object.class)) {
-            aClass = aClass.getSuperclass();
-
-            if(aClass != null && aClass.equals(possibleSuperclass)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Why do we need this method. The reason is, that we would like to avoid the getPropertyManager part of the
-     * <code>PropertySheet</code>-API. In some circumstances it is nevertheless required to get access to the managing
-     * <code>ConfigurationManager</code>.
-     */
-    public static ConfigurationManager getPropertyManager(PropertySheet ps) {
-        return ps.getConfigurationManager();
-    }
 }
