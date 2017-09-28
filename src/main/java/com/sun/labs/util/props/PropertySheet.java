@@ -304,6 +304,7 @@ public class PropertySheet implements Cloneable {
 
     public synchronized Configurable getOwner(PropertySheet ps, ComponentListener cl, boolean reuseComponent) {
         try {
+            // TODO: remove this once the Jini tests pass.
             logger.setLevel(Level.ALL);
 
             if (!isInstantiated() || !reuseComponent) {
@@ -350,7 +351,7 @@ public class PropertySheet implements Cloneable {
                 }
 
                 if (ownerClass.isInterface()) {
-                    throw new PropertyException(instanceName,"Failed to lookup interface " + ownerClass.getName() + " in registry.");
+                    throw new PropertyException(instanceName,"Failed to lookup interface " + ownerClass.getName() + " in registry, or deserialise it.");
                 }
 
                 logger.finer(String.format("Creating %s", getInstanceName()));
@@ -842,7 +843,9 @@ public class PropertySheet implements Cloneable {
     }
 
     /**
-     * Sets the raw property to the given name
+     * Sets the raw property to the given name.
+     *
+     * TODO: If the owner is instantiated it *does not* change the field in the owner.
      *
      * @param key the simple property name
      * @param val the value for the property
@@ -858,10 +861,6 @@ public class PropertySheet implements Cloneable {
 
         if (instanceName != null) {
             cm.fireConfChanged(instanceName, key);
-        }
-
-        if (owner != null) {
-            reconfigure();
         }
     }
 

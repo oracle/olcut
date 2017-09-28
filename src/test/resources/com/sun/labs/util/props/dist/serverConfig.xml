@@ -14,7 +14,7 @@
     <!-- A component registry that will serve the component classes -->
     <component name="registry" type="com.sun.labs.util.props.ComponentRegistry">
         <propertylist name="groupList">
-            <item>Aura</item>
+            <item>olcut-test</item>
         </propertylist>
         <property name="lookupWait" value="10"/>
         <property name="csDirs" value="target/classes:target/test-classes"/>
