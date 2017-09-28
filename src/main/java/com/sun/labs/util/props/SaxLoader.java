@@ -87,7 +87,7 @@ public class SaxLoader {
      * @return a map keyed by component name containing RawPropertyData objects
      * @throws IOException if an I/O or parse error occurs
      */
-    public Map<String, RawPropertyData> load() throws IOException {
+    public Map<String, RawPropertyData> load() throws PropertyException, IOException {
         rpdMap = new HashMap<>();
         InputStream is = null;
         try {
@@ -105,11 +105,11 @@ public class SaxLoader {
         } catch (SAXParseException e) {
             String msg = "Error while parsing line " + e.getLineNumber()
                     + " of " + curURL + ": " + e.getMessage();
-            throw new IOException(msg, e);
+            throw new PropertyException(e, msg);
         } catch (SAXException e) {
-            throw new IOException("Problem with XML: " + e, e);
-        } catch (ParserConfigurationException e) {
-            throw new IOException(e.getMessage(), e);
+            throw new PropertyException(e, "Problem with XML: " + e);
+        } catch (ParserConfigurationException | IOException e) {
+            throw new PropertyException(e, e.getMessage());
         } finally {
             if (is != null) {
                 is.close();
@@ -150,178 +150,196 @@ public class SaxLoader {
          */
         public void startElement(String uri, String localName, String qName,
                 Attributes attributes) throws SAXException {
-            if (qName.equals("config")) {
-                // nothing to do
-            } else if (qName.equals("component")) {
-                String curComponent = attributes.getValue("name");
-                String curType = attributes.getValue("type");
-                String override = attributes.getValue("inherit");
-                String export = attributes.getValue("export");
-                String entriesName = attributes.getValue("entries");
-                String serializedForm = attributes.getValue("serialized");
-                boolean exportable = export != null && Boolean.valueOf(export);
-                String imp = attributes.getValue("import");
-                boolean importable = imp != null && Boolean.valueOf(imp);
-                String lt = attributes.getValue("leasetime");
-                if (export == null && lt != null) {
-                    throw new SAXParseException("lease timeout "
-                            + lt
-                            + " specified for component that"
-                            + " does not have export set",
-                            locator);
-
-                }
-                long leaseTime = -1;
-                if (lt != null) {
-                    try {
-                        leaseTime = Long.parseLong(lt);
-                        if (leaseTime < 0) {
-                            throw new SAXParseException("lease timeout "
-                                    + lt
-                                    + " must be greater than 0",
-                                    locator);
-                        }
-                    } catch (NumberFormatException nfe) {
+            switch (qName) {
+                case "config":
+                    // nothing to do
+                    break;
+                case "component":
+                    String curComponent = attributes.getValue("name");
+                    String curType = attributes.getValue("type");
+                    String override = attributes.getValue("inherit");
+                    String export = attributes.getValue("export");
+                    String entriesName = attributes.getValue("entries");
+                    String serializedForm = attributes.getValue("serialized");
+                    boolean exportable = export != null && Boolean.valueOf(export);
+                    String imp = attributes.getValue("import");
+                    boolean importable = imp != null && Boolean.valueOf(imp);
+                    String lt = attributes.getValue("leasetime");
+                    if (export == null && lt != null) {
                         throw new SAXParseException("lease timeout "
-                                + lt + " must be a long",
+                                + lt
+                                + " specified for component that"
+                                + " does not have export set",
                                 locator);
                     }
-                }
-
-                //
-                // Check for a badly formed component tag.
-                if (curComponent == null
-                        || (curType == null && override == null)) {
-                    throw new SAXParseException("component element must specify "
-                            + "'name' and either 'type' or 'inherit' attributes",
-                            locator);
-                }
-                if (override != null) {
+                    long leaseTime = -1;
+                    if (lt != null) {
+                        try {
+                            leaseTime = Long.parseLong(lt);
+                            if (leaseTime < 0) {
+                                throw new SAXParseException("lease timeout "
+                                        + lt
+                                        + " must be greater than 0",
+                                        locator);
+                            }
+                        } catch (NumberFormatException nfe) {
+                            throw new SAXParseException("lease timeout "
+                                    + lt + " must be a long",
+                                    locator);
+                        }
+                    }
 
                     //
-                    // If we're overriding an existing type, then we should pull
-                    // its property set, copy it and override it. Note that we're 
-                    // not doing any type checking here, so it's possible to specify
-                    // a type for override that is incompatible with the specified
-                    // properties. If that's the case, then things might get
-                    // really weird. We'll log an override with a specified type
-                    // just in case.
-                    RawPropertyData spd = rpdMap.get(override);
-                    if (spd == null) {
-                        spd = existingRPD.get(override);
-                        if (spd == null) {
-                            throw new SAXParseException("Override for undefined component: "
-                                    + override, locator);
-                        }
+                    // Check for a badly formed component tag.
+                    if (curComponent == null
+                            || (curType == null && override == null)) {
+                        throw new SAXParseException("component element must specify "
+                                + "'name' and either 'type' or 'inherit' attributes",
+                                locator);
                     }
-                    if (curType != null && !curType.equals(spd.getClassName())) {
-                        logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
-                                spd.getName(), curComponent, curType, spd.getClassName()));
-                    }
-                    if (curType == null) {
-                        curType = spd.getClassName();
-                    }
-                    rpd = new RawPropertyData(curComponent, curType,
-                            spd.getProperties());
-                    overriding = true;
-                } else {
-                    if (rpdMap.get(curComponent) != null) {
-                        throw new SAXParseException("duplicate definition for "
-                                + curComponent, locator);
-                    }
-                    rpd = new RawPropertyData(curComponent, curType, null);
-                }
+                    if (override != null) {
 
-                //
-                // Set the lease time.
-                rpd.setExportable(exportable);
-                rpd.setImportable(importable);
-                rpd.setLeaseTime(leaseTime);
-                rpd.setEntriesName(entriesName);
-                rpd.setSerializedForm(serializedForm);
-            } else if (qName.equals("property")) {
-                String name = attributes.getValue("name");
-                String value = attributes.getValue("value");
-                if (attributes.getLength() != 2 || name == null || value == null) {
-                    throw new SAXParseException("property element must only have "
-                            + "'name' and 'value' attributes",
-                            locator);
-                }
-                if (rpd == null) {
-                    // we are not in a component so add this to the global
-                    // set of symbols
-                    //String symbolName = "${" + name + "}"; // why should we warp the global props here
-                    String symbolName = name;
-                    globalProperties.setValue(symbolName, value);
-                } else if (rpd.contains(name) && !overriding) {
-                    throw new SAXParseException("Duplicate property: " + name,
-                            locator);
-                } else {
-                    rpd.add(name, value);
-                }
-            } else if (qName.equals("propertylist")) {
-                itemListName = attributes.getValue("name");
-                if (attributes.getLength() != 1 || itemListName == null) {
-                    throw new SAXParseException("list element must only have "
-                            + "the 'name' attribute", locator);
-                }
-                itemList = new ArrayList<>();
-            } else if (qName.equals("item") || qName.equals("type")) {
-                if (attributes.getLength() != 0) {
-                    throw new SAXParseException("unknown 'item' attribute",
-                            locator);
-                } else if (itemList == null) {
-                    throw new SAXParseException("'item' or 'type' elements must be inside a 'propertylist'", locator);
-                }
-                curItem = new StringBuilder();
-            } else if (qName.equals("propertymap")) {
-                mapName = attributes.getValue("name");
-                if (attributes.getLength() != 1 || mapName == null) {
-                    throw new SAXParseException("map element must only have "
-                            + "the 'name' attribute", locator);
-                }
-                entryMap = new HashMap<String,String>();
-            } else if (qName.equals("entry")) {
-                String key = attributes.getValue("key");
-                String value = attributes.getValue("value");
-                if (attributes.getLength() != 2 || key == null || value == null) {
-                    throw new SAXParseException("entry element must only have "
-                            + "'key' and 'value' attributes", locator);
-                } else if (entryMap == null) {
-                    throw new SAXParseException("entry element must be inside a map", locator);
-                } else if (entryMap.containsKey(key)) {
-                    throw new SAXParseException("Repeated entry in map, key = " + key + " already exists", locator);
-                }
-                entryMap.put(key.trim(),value.trim());
-            } else if (qName.equals("file")) {
-                String name = attributes.getValue("name");
-                String value = attributes.getValue("value");
-                if (attributes.getLength() != 2 || name == null || value == null) {
-                    throw new SAXParseException("file element must only have "
-                            + "'name' and 'value' attributes", locator);
-                }
-                if (rpd == null) {
-                    // we are not in a component so add this to the processing queue
-                    try {
-                        URL newURL = SaxLoader.class.getResource(value);
-                        if (newURL == null) {
-                            newURL = (new File(value)).toURI().toURL();
+                        //
+                        // If we're overriding an existing type, then we should pull
+                        // its property set, copy it and override it. Note that we're
+                        // not doing any type checking here, so it's possible to specify
+                        // a type for override that is incompatible with the specified
+                        // properties. If that's the case, then things might get
+                        // really weird. We'll log an override with a specified type
+                        // just in case.
+                        RawPropertyData spd = rpdMap.get(override);
+                        if (spd == null) {
+                            spd = existingRPD.get(override);
+                            if (spd == null) {
+                                throw new SAXParseException("Override for undefined component: "
+                                        + override, locator);
+                            }
                         }
-                        urlQueue.add(newURL);
-                    } catch (MalformedURLException ex) {
-                        throw new SAXParseException("Incorrectly formatted file element " + name + " with value " + value, locator, ex);
+                        if (curType != null && !curType.equals(spd.getClassName())) {
+                            logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
+                                    spd.getName(), curComponent, curType, spd.getClassName()));
+                        }
+                        if (curType == null) {
+                            curType = spd.getClassName();
+                        }
+                        rpd = new RawPropertyData(curComponent, curType,
+                                spd.getProperties());
+                        overriding = true;
+                    } else {
+                        if (rpdMap.get(curComponent) != null) {
+                            throw new SAXParseException("duplicate definition for "
+                                    + curComponent, locator);
+                        }
+                        rpd = new RawPropertyData(curComponent, curType, null);
                     }
-                } else {
-                    throw new SAXParseException("File element found inside a component: " + name,
-                            locator);
+
+                    //
+                    // Set the lease time.
+                    rpd.setExportable(exportable);
+                    rpd.setImportable(importable);
+                    rpd.setLeaseTime(leaseTime);
+                    rpd.setEntriesName(entriesName);
+                    rpd.setSerializedForm(serializedForm);
+                    break;
+                case "property": {
+                    String name = attributes.getValue("name");
+                    String value = attributes.getValue("value");
+                    if (attributes.getLength() != 2 || name == null || value == null) {
+                        throw new SAXParseException("property element must only have "
+                                + "'name' and 'value' attributes",
+                                locator);
+                    }
+                    if (rpd == null) {
+                        // we are not in a component so add this to the global
+                        // set of symbols
+                        //String symbolName = "${" + name + "}"; // why should we warp the global props here
+                        String symbolName = name;
+                        globalProperties.setValue(symbolName, value);
+                    } else if (rpd.contains(name) && !overriding) {
+                        throw new SAXParseException("Duplicate property: " + name,
+                                locator);
+                    } else {
+                        rpd.add(name, value);
+                    }
+                    break;
                 }
-            } else if (qName.equals("serialized")) {
-                String name = attributes.getValue("name");
-                String location = attributes.getValue("location");
-                serializedObjects.put(name, new SerializedObject(name, location));
-            } else {
-                throw new SAXParseException("Unknown element '" + qName + "'",
-                        locator);
+                case "propertylist":
+                    itemListName = attributes.getValue("name");
+                    if (attributes.getLength() != 1 || itemListName == null) {
+                        throw new SAXParseException("list element must only have "
+                                + "the 'name' attribute", locator);
+                    }
+                    itemList = new ArrayList<>();
+                    break;
+                case "item":
+                case "type":
+                    if (attributes.getLength() != 0) {
+                        throw new SAXParseException("unknown 'item' attribute",
+                                locator);
+                    } else if (itemList == null) {
+                        throw new SAXParseException("'item' or 'type' elements must be inside a 'propertylist'", locator);
+                    }
+                    curItem = new StringBuilder();
+                    break;
+                case "propertymap":
+                    mapName = attributes.getValue("name");
+                    if (attributes.getLength() != 1 || mapName == null) {
+                        throw new SAXParseException("map element must only have "
+                                + "the 'name' attribute", locator);
+                    }
+                    entryMap = new HashMap<String, String>();
+                    break;
+                case "entry": {
+                    String key = attributes.getValue("key");
+                    String value = attributes.getValue("value");
+                    if (attributes.getLength() != 2 || key == null || value == null) {
+                        throw new SAXParseException("entry element must only have "
+                                + "'key' and 'value' attributes", locator);
+                    } else if (entryMap == null) {
+                        throw new SAXParseException("entry element must be inside a map", locator);
+                    } else if (entryMap.containsKey(key)) {
+                        throw new SAXParseException("Repeated entry in map, key = " + key + " already exists", locator);
+                    }
+                    entryMap.put(key.trim(), value.trim());
+                    break;
+                }
+                case "file": {
+                    String name = attributes.getValue("name");
+                    String value = attributes.getValue("value");
+                    if (attributes.getLength() != 2 || name == null || value == null) {
+                        throw new SAXParseException("file element must only have "
+                                + "'name' and 'value' attributes", locator);
+                    }
+                    if (rpd == null) {
+                        // we are not in a component so add this to the processing queue
+                        try {
+                            URL newURL = SaxLoader.class.getResource(value);
+                            if (newURL == null) {
+                                newURL = (new File(value)).toURI().toURL();
+                            }
+                            urlQueue.add(newURL);
+                        } catch (MalformedURLException ex) {
+                            throw new SAXParseException("Incorrectly formatted file element " + name + " with value " + value, locator, ex);
+                        }
+                    } else {
+                        throw new SAXParseException("File element found inside a component: " + name,
+                                locator);
+                    }
+                    break;
+                }
+                case "serialized": {
+                    String name = attributes.getValue("name");
+                    String type = attributes.getValue("type");
+                    String location = attributes.getValue("location");
+                    if ((attributes.getLength() != 3) || (name == null) || (type == null) || (location == null)) {
+                        throw new SAXParseException("serialized element must only have 'name', 'type' and 'location' elements", locator);
+                    }
+                    serializedObjects.put(name, new SerializedObject(name, location, type));
+                    break;
+                }
+                default:
+                    throw new SAXParseException("Unknown element '" + qName + "'",
+                            locator);
             }
         }
 
@@ -342,38 +360,45 @@ public class SaxLoader {
          */
         public void endElement(String uri, String localName, String qName)
                 throws SAXParseException {
-            if (qName.equals("component")) {
-                rpdMap.put(rpd.getName(), rpd);
-                rpd = null;
-                overriding = false;
-            } else if (qName.equals("property")) {
-                // nothing to do
-            } else if (qName.equals("propertylist")) {
-                if (rpd.contains(itemListName)) {
-                    throw new SAXParseException("Duplicate property: "
-                            + itemListName, locator);
-                } else {
-                    rpd.add(itemListName, itemList);
-                    itemList = null;
-                }
-            } else if (qName.equals("item")) {
-                itemList.add(curItem.toString().trim());
-                curItem = null;
-            } else if (qName.equals("type")) {
-                try {
-                    itemList.add(Class.forName(curItem.toString()));
-                } catch (ClassNotFoundException cnfe) {
-                    throw new SAXParseException("Unable to find class "
-                            + curItem.toString() + " in property list " + itemListName, locator);
-                }
-            } else if (qName.equals("propertymap")) {
-                if (rpd.contains(mapName)) {
-                    throw new SAXParseException("Duplicate property: "
-                            + mapName, locator);
-                } else {
-                    rpd.add(mapName, entryMap);
-                    entryMap = null;
-                }
+            switch (qName) {
+                case "component":
+                    rpdMap.put(rpd.getName(), rpd);
+                    rpd = null;
+                    overriding = false;
+                    break;
+                case "property":
+                    // nothing to do
+                    break;
+                case "propertylist":
+                    if (rpd.contains(itemListName)) {
+                        throw new SAXParseException("Duplicate property: "
+                                + itemListName, locator);
+                    } else {
+                        rpd.add(itemListName, itemList);
+                        itemList = null;
+                    }
+                    break;
+                case "item":
+                    itemList.add(curItem.toString().trim());
+                    curItem = null;
+                    break;
+                case "type":
+                    try {
+                        itemList.add(Class.forName(curItem.toString()));
+                    } catch (ClassNotFoundException cnfe) {
+                        throw new SAXParseException("Unable to find class "
+                                + curItem.toString() + " in property list " + itemListName, locator);
+                    }
+                    break;
+                case "propertymap":
+                    if (rpd.contains(mapName)) {
+                        throw new SAXParseException("Duplicate property: "
+                                + mapName, locator);
+                    } else {
+                        rpd.add(mapName, entryMap);
+                        entryMap = null;
+                    }
+                    break;
             }
         }
 
