@@ -69,12 +69,12 @@ public class CommandInterpreter extends Thread {
     /**
      * Commands for this interpreter.
      */
-    protected Map<String, CommandInterface> commands = new TreeMap();
+    protected Map<String, CommandInterface> commands = new TreeMap<>();
 
     /**
      * Groups for this interpreter.
      */
-    protected Map<String, CommandGroupInternal> commandGroups = new TreeMap();
+    protected Map<String, CommandGroupInternal> commandGroups = new TreeMap<>();
 
     /**
      * Interpreters that have been layered on top of this one. If interpreters
@@ -561,7 +561,7 @@ public class CommandInterpreter extends Thread {
             public String execute(CommandInterpreter ci, String[] args) {
                 if(args.length > 1) {
                     String[] subargs = new String[args.length - 1];
-                    List commands = new ArrayList(5);
+                    List<String[]> commands = new ArrayList<>(5);
                     int count = 0;
                     for(int i = 1; i < args.length; i++) {
                         if(args[i].equals(";")) {
@@ -585,9 +585,8 @@ public class CommandInterpreter extends Thread {
                         count = 0;
                     }
 
-                    for(Iterator i = commands.iterator(); i.hasNext();) {
-                        putResponse(CommandInterpreter.this.execute(
-                                (String[]) i.next()));
+                    for(String[] i : commands) {
+                        putResponse(CommandInterpreter.this.execute(i));
                     }
                 } else {
                     putResponse("Usage: chain cmd1 ; cmd2 ; cmd3 ");
@@ -1123,7 +1122,7 @@ public class CommandInterpreter extends Thread {
      *
      * @param newCommands the new commands to add to this interpreter.
      */
-    public void add(Map newCommands) {
+    public void add(Map<String,CommandInterface> newCommands) {
         commands.putAll(newCommands);
     }
 
@@ -1593,7 +1592,7 @@ public class CommandInterpreter extends Thread {
 
     class CommandHistory {
 
-        private List history = new ArrayList(100);
+        private List<String> history = new ArrayList<>(100);
 
         /**
          * Adds a command to the history
@@ -1612,7 +1611,7 @@ public class CommandInterpreter extends Thread {
          */
         public String getLast(int offset) {
             if(history.size() > offset) {
-                return (String) history.get((history.size() - 1) - offset);
+                return history.get((history.size() - 1) - offset);
             } else {
                 putResponse("command not found");
                 return "";
@@ -1627,7 +1626,7 @@ public class CommandInterpreter extends Thread {
          */
         public String get(int which) {
             if(history.size() > which) {
-                return (String) history.get(which);
+                return history.get(which);
             } else {
                 putResponse("command not found");
                 return "";

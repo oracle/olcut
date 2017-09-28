@@ -14,7 +14,7 @@
     <!-- A component registry with an explicit registry host -->
     <component name="registry" type="com.sun.labs.util.props.ComponentRegistry">
         <propertylist name="groupList">
-            <item>Aura</item>
+            <item>olcut-test</item>
         </propertylist>
         <property name="registryHost" value="${gp.hostName}"/>
         <property name="lookupWait" value="10"/>
