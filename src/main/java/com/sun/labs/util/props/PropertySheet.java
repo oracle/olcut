@@ -808,28 +808,6 @@ public class PropertySheet implements Cloneable {
         return null;
     }
 
-    /**
-     * Reconfigures the object if it's been instantiated.
-     *
-     * This reconfiguration doesn't affect fields with default values that were not
-     * overridden in the {@link PropertySheet}, as those are set in the constructor.
-     * Therefore it might have odd behaviour if there are default values.
-     */
-    public void reconfigure() {
-        if (owner != null) {
-            try {
-                setConfiguredFields(owner, this);
-            } catch (IllegalAccessException e) {
-                throw new PropertyException(e,instanceName,"","Failed to reconfigure object");
-            }
-            try {
-                owner.postConfig();
-            } catch (IOException e) {
-                throw new PropertyException(e, instanceName, null, "IOException thrown by postConfig");
-            }
-        }
-    }
-
     protected void clearOwner() {
         owner = null;
     }
@@ -858,10 +836,6 @@ public class PropertySheet implements Cloneable {
 
         if (instanceName != null) {
             cm.fireConfChanged(instanceName, key);
-        }
-
-        if (owner != null) {
-            reconfigure();
         }
     }
 
@@ -1043,7 +1017,7 @@ public class PropertySheet implements Cloneable {
             xmlWriter.writeAttribute("type", getConfigurableClass().getName());
             xmlWriter.writeAttribute("export", "" + isExportable());
             xmlWriter.writeAttribute("import", "" + isImportable());
-            xmlWriter.writeCharacters("\n");
+            xmlWriter.writeCharacters(System.lineSeparator());
 
             for (String propName : registeredProperties) {
                 if (getRaw(propName) == null) {
@@ -1056,42 +1030,42 @@ public class PropertySheet implements Cloneable {
                     xmlWriter.writeCharacters("\t");
                     xmlWriter.writeStartElement("propertylist");
                     xmlWriter.writeAttribute("name",propName);
-                    xmlWriter.writeCharacters("\n");
+                    xmlWriter.writeCharacters(System.lineSeparator());
                     for (Object o : (List) val) {
                         if (o instanceof Class) {
                             xmlWriter.writeCharacters("\t\t");
                             xmlWriter.writeStartElement("type");
                             xmlWriter.writeCharacters(((Class) o).getName());
                             xmlWriter.writeEndElement();
-                            xmlWriter.writeCharacters("\n");
+                            xmlWriter.writeCharacters(System.lineSeparator());
                         } else {
                             xmlWriter.writeCharacters("\t\t");
                             xmlWriter.writeStartElement("item");
                             xmlWriter.writeCharacters(o.toString());
                             xmlWriter.writeEndElement();
-                            xmlWriter.writeCharacters("\n");
+                            xmlWriter.writeCharacters(System.lineSeparator());
                         }
                     }
                     xmlWriter.writeCharacters("\t");
                     xmlWriter.writeEndElement();
-                    xmlWriter.writeCharacters("\n");
+                    xmlWriter.writeCharacters(System.lineSeparator());
                 } else if (val instanceof Map) {
                     //
                     // Must be a string,string map
                     xmlWriter.writeCharacters("\t");
                     xmlWriter.writeStartElement("propertymap");
                     xmlWriter.writeAttribute("name",propName);
-                    xmlWriter.writeCharacters("\n");
+                    xmlWriter.writeCharacters(System.lineSeparator());
                     for (Map.Entry<String, String> e : ((Map<String, String>) val).entrySet()) {
                         xmlWriter.writeCharacters("\t\t");
                         xmlWriter.writeEmptyElement("entry");
                         xmlWriter.writeAttribute("key",e.getKey());
                         xmlWriter.writeAttribute("value",e.getValue());
-                        xmlWriter.writeCharacters("\n");
+                        xmlWriter.writeCharacters(System.lineSeparator());
                     }
                     xmlWriter.writeCharacters("\t");
                     xmlWriter.writeEndElement();
-                    xmlWriter.writeCharacters("\n");
+                    xmlWriter.writeCharacters(System.lineSeparator());
                 } else {
                     //
                     // Standard property
@@ -1099,19 +1073,19 @@ public class PropertySheet implements Cloneable {
                     xmlWriter.writeEmptyElement("property");
                     xmlWriter.writeAttribute("name",propName);
                     xmlWriter.writeAttribute("value",getRaw(propName).toString());
-                    xmlWriter.writeCharacters("\n");
+                    xmlWriter.writeCharacters(System.lineSeparator());
                 }
             }
 
             xmlWriter.writeEndElement();
-            xmlWriter.writeCharacters("\n");
+            xmlWriter.writeCharacters(System.lineSeparator());
         } else {
             xmlWriter.writeEmptyElement("component");
             xmlWriter.writeAttribute("name", instanceName);
             xmlWriter.writeAttribute("type", getConfigurableClass().getName());
             xmlWriter.writeAttribute("export", "" + isExportable());
             xmlWriter.writeAttribute("import", "" + isImportable());
-            xmlWriter.writeCharacters("\n");
+            xmlWriter.writeCharacters(System.lineSeparator());
         }
     }
 
