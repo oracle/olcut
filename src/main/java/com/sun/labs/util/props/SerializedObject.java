@@ -9,7 +9,7 @@ import java.io.ObjectInputStream;
  * A class to hold the information for a serialized Object that is defined in a
  * configuration file.
  */
-public class SerializedObject {
+public class SerializedObject<T> {
 
     private ConfigurationManager configurationManager;
 
@@ -17,11 +17,14 @@ public class SerializedObject {
 
     private String location;
 
-    private Object object;
+    private String className;
 
-    public SerializedObject(String name, String location) {
+    private T object;
+
+    public SerializedObject(String name, String location, String className) {
         this.name = name;
         this.location = location;
+        this.className = className;
     }
 
     public void setConfigurationManager(ConfigurationManager configurationManager) {
@@ -33,20 +36,25 @@ public class SerializedObject {
      * @return the object
      * @throws PropertyException if the object cannot be deserialized.
      */
-    public Object getObject() throws PropertyException {
+    public T getObject() throws PropertyException {
         if (object == null) {
             String actualLocation = configurationManager.getGlobalProperties().replaceGlobalProperties(name, null, location);
             InputStream serStream = configurationManager.getInputStreamForLocation(actualLocation);
-            if (serStream != null) {
-                try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
-                    //
-                    // Read the object and cast it into this class for return;
-                    object = ois.readObject();
-                } catch (IOException ex) {
-                    throw new PropertyException(ex, name, null, "Error reading serialized form from" + actualLocation);
-                } catch (ClassNotFoundException ex) {
-                    throw new PropertyException(ex, name, null, "Serialized class not found for " + actualLocation);
+            try {
+                Class<T> objectClass = (Class<T>) Class.forName(className);
+                if (serStream != null) {
+                    try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
+                        //
+                        // Read the object and cast it into this class for return;
+                        object = objectClass.cast(ois.readObject());
+                    } catch (ClassCastException ex) {
+                        throw new PropertyException(ex, name, "Failed to cast object to type " + objectClass.getName());
+                    } catch (IOException ex) {
+                        throw new PropertyException(ex, name, "Error reading serialized form from" + actualLocation);
+                    }
                 }
+            } catch (ClassNotFoundException ex) {
+                throw new PropertyException(ex, name, "Serialized class " + className + " not found for " + actualLocation);
             }
         }
         return object;

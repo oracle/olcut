@@ -20,9 +20,12 @@
         <property name="two" value="b"/>
         <property name="three" value="c"/>
     </component>
-    
+
     <!-- Any serialized object can be here -->
-    <serialized name="acs" location="${serFile}"/>
+    <serialized name="acs" type="com.sun.labs.util.props.StringConfigurable" location="${serFile}"/>
+
+    <!-- Any serialized object can be here -->
+    <serialized name="badClass" type="a.dangerous.group.of.Monkeys" location="${serFile}"/>
 
     <component name="b" type="com.sun.labs.util.props.StringConfigurable">
         <property name="one" value="d"/>

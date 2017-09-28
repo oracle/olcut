@@ -127,4 +127,17 @@ public class SerializeTest {
         assertEquals(acs.two, "b");
         assertEquals(acs.three, "three");
     }
+
+    @Test(expected=com.sun.labs.util.props.PropertyException.class)
+    public void checkBadSerialisedClass() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("stringConfig.xml"));
+        cm.setGlobalProperty("serFile", serPath.toString());
+        StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
+        ac.one = "one";
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serPath.toFile()))) {
+            oos.writeObject(ac);
+        }
+        StringConfigurable acs = (StringConfigurable) cm.lookupSerializedObject("badClass");
+        fail("Should have thrown PropertyException for an unknown class file");
+    }
 }
