@@ -67,7 +67,7 @@ public class AllFieldsConfiguredTest {
         boolean boolField = (Boolean) ps.get("boolField");
         assertTrue("Failed to lookup boolean field", boolField);
 
-        List<String> listStringField = (List<String>) ps.get("listStringField");
+        List listStringField = (List) ps.get("listStringField");
         assertTrue("Failed to parse List<String> field", listStringField.size() == 2);
 
         StringConfigurable sc = (StringConfigurable) ps.get("configurableField");

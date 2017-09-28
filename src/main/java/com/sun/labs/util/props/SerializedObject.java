@@ -11,13 +11,13 @@ import java.io.ObjectInputStream;
  */
 public class SerializedObject {
 
-    ConfigurationManager configurationManager;
+    private ConfigurationManager configurationManager;
 
-    String name;
+    private String name;
 
-    String location;
+    private String location;
 
-    Object object;
+    private Object object;
 
     public SerializedObject(String name, String location) {
         this.name = name;

@@ -315,20 +315,20 @@ public class ConfigurationManager implements Cloneable {
                 String className = rpd.getClassName();
                 try {
                     Class cls = Class.forName(className);
+                    if (Configurable.class.isAssignableFrom(cls)) {
 
-                    // now load the property-sheet by using the class annotation
-                    PropertySheet propertySheet =
-                            new PropertySheet(cls,
-                                              instanceName, this, rpd);
+                        // now load the property-sheet by using the class annotation
+                        PropertySheet propertySheet =
+                                new PropertySheet((Class<? extends Configurable>)cls,
+                                        instanceName, this, rpd);
 
-                    symbolTable.put(instanceName, propertySheet);
-
+                        symbolTable.put(instanceName, propertySheet);
+                    } else {
+                        throw new PropertyException(instanceName, "Unable to cast " + className +
+                                                " to com.sun.labs.util.props.Configurable");
+                    }
                 } catch(ClassNotFoundException e) {
                     throw new PropertyException(e);
-                } catch(ClassCastException e) {
-                    throw new PropertyException(instanceName, "",
-                                                "Unable to cast " + className +
-                                                " to com.sun.labs.util.props.Configurable");
                 }
             }
         }
@@ -350,8 +350,7 @@ public class ConfigurationManager implements Cloneable {
                 continue;
             }
 
-            if(ConfigurationManagerUtils.isImplementingInterface(ps.getClass(),
-                                                                 type)) {
+            if (type.isAssignableFrom(ps.getClass())) {
                 instanceNames.add(ps.getInstanceName());
             }
         }
@@ -606,11 +605,8 @@ public class ConfigurationManager implements Cloneable {
             RawPropertyData rpd = e.getValue();
             try {
                 Class pclass = Class.forName(rpd.getClassName());
-                try {
-                    pclass.asSubclass(c);
+                if (c.isAssignableFrom(pclass)) {
                     ret.add(e.getKey());
-                } catch(ClassCastException ex) {
-                    continue;
                 }
             } catch(ClassNotFoundException ex) {
                 logger.warning(String.format("Non class %s found in config",
@@ -629,24 +625,6 @@ public class ConfigurationManager implements Cloneable {
      */
     public ComponentRegistry getComponentRegistry() {
         return registry;
-    }
-    
-    /**
-     * Reconfigures a component.  This is useful when, for example, a remote
-     * service has thrown an exception and a component wishes to be reconfigured
-     * in order to get a new instance of the required service.
-     * 
-     * @param c the component that needs reconfiguration
-     */
-    public void reconfigure(Configurable c) {
-        PropertySheet ps = configuredComponents.get(c);
-        if(ps != null) {
-            /*
-             * TODO: Reconfiguration doesn't initialise fields back to their default values.
-             * This is a behaviour change from olcut v3 using the old config system.
-             */
-            ps.reconfigure();
-        }
     }
 
     /**
@@ -667,8 +645,7 @@ public class ConfigurationManager implements Cloneable {
         List<PropertySheet> psCol = new ArrayList<PropertySheet>();
 
         for(PropertySheet ps : symbolTable.values()) {
-            if(ConfigurationManagerUtils.isDerivedClass(ps.getConfigurableClass(),
-                                                        confClass)) {
+            if(confClass.isAssignableFrom(ps.getConfigurableClass())) {
                 psCol.add(ps);
             }
         }
@@ -717,7 +694,7 @@ public class ConfigurationManager implements Cloneable {
      */
     public void addConfigurable(Class<? extends Configurable> confClass,
                                  String instanceName) {
-        addConfigurable(confClass, instanceName, new HashMap<String, Object>());
+        addConfigurable(confClass, instanceName, new HashMap<>());
     }
 
     /**
@@ -854,19 +831,6 @@ public class ConfigurationManager implements Cloneable {
             globalProperties.setValue(propertyName, value);
             origGlobal.setValue(propertyName, value);
         }
-
-        // update all component configurations because they might be affected by the change
-        for(String instanceName : getInstanceNames(Configurable.class)) {
-            PropertySheet ps = getPropertySheet(instanceName);
-            if(ps.isInstantiated()) {
-                try {
-                    //TODO: this reconfiguration doesn't initialise default values properly.
-                    ps.reconfigure();
-                } catch(PropertyException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     public String getStrippedComponentName(String propertyName) {
@@ -912,7 +876,7 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
-     * Informs all registered <code>ConfigurationChangeListener</code>s about the component previously namesd
+     * Informs all registered <code>ConfigurationChangeListener</code>s about the component previously named
      * <code>oldName</code>
      */
     void fireRenamedConfigurable(String oldName, String newName) {
@@ -983,23 +947,11 @@ public class ConfigurationManager implements Cloneable {
     public static Configurable getInstance(Class<? extends Configurable> targetClass,
                                           Map<String, Object> props) throws PropertyException {
 
-        if(ConfigurationManagerUtils.isDerivedClass(targetClass,
-                                                    Configurable.class)) {
-            PropertySheet ps =
-                    getPropSheetInstanceFromClass(targetClass.asSubclass(Configurable.class), props,
-                                                  null,
-                                                  new ConfigurationManager());
-            
-            return ps.getOwner();
-        } else {
-            try {
-                return targetClass.newInstance();
-            } catch(InstantiationException | IllegalAccessException ex) {
-                throw new PropertyException(ex, "", "",
-                                            "Unable to instantiate component " +
-                                            targetClass);
-            }
-        }
+        PropertySheet ps = getPropSheetInstanceFromClass(targetClass, props,
+                                              null,
+                                              new ConfigurationManager());
+
+        return ps.getOwner();
     }
 
     /**
@@ -1068,12 +1020,12 @@ public class ConfigurationManager implements Cloneable {
         try {
             XMLStreamWriter xmlWriter = factory.createXMLStreamWriter(writer,"utf-8");
             xmlWriter.writeStartDocument("utf-8","1.0");
-            xmlWriter.writeCharacters("\n");
+            xmlWriter.writeCharacters(System.lineSeparator());
             xmlWriter.writeComment("OLCUT configuration file");
-            xmlWriter.writeCharacters("\n");
+            xmlWriter.writeCharacters(System.lineSeparator());
 
             xmlWriter.writeStartElement("config");
-            xmlWriter.writeCharacters("\n");
+            xmlWriter.writeCharacters(System.lineSeparator());
 
             //
             // Write out the global properties.
@@ -1091,10 +1043,10 @@ public class ConfigurationManager implements Cloneable {
                 xmlWriter.writeEmptyElement("property");
                 xmlWriter.writeAttribute("name",propName);
                 xmlWriter.writeAttribute("value",propVal);
-                xmlWriter.writeCharacters("\n");
+                xmlWriter.writeCharacters(System.lineSeparator());
             }
 
-            xmlWriter.writeCharacters("\n");
+            xmlWriter.writeCharacters(System.lineSeparator());
 
             //
             // A copy of the raw property data that we can use to keep track of what's
@@ -1102,13 +1054,13 @@ public class ConfigurationManager implements Cloneable {
             Set<String> allNames = new HashSet<String>(rawPropertyMap.keySet());
             for(PropertySheet ps : configuredComponents.values()) {
                 ps.save(xmlWriter);
-                xmlWriter.writeCharacters("\n");
+                xmlWriter.writeCharacters(System.lineSeparator());
                 allNames.remove(ps.getInstanceName());
             }
 
             for(PropertySheet ps : addedComponents.values()) {
                 ps.save(xmlWriter);
-                xmlWriter.writeCharacters("\n");
+                xmlWriter.writeCharacters(System.lineSeparator());
                 allNames.remove(ps.getInstanceName());
             }
 
@@ -1118,7 +1070,7 @@ public class ConfigurationManager implements Cloneable {
                 for(String instanceName : allNames) {
                     PropertySheet ps = getPropertySheet(instanceName);
                     ps.save(xmlWriter);
-                    xmlWriter.writeCharacters("\n");
+                    xmlWriter.writeCharacters(System.lineSeparator());
                 }
             }
 
@@ -1144,7 +1096,6 @@ public class ConfigurationManager implements Cloneable {
      */
     public void importConfigurable(Configurable configurable) throws PropertyException {
         String configName = "";
-        String propertyName = "";
 
         try {
             //
@@ -1156,18 +1107,18 @@ public class ConfigurationManager implements Cloneable {
                 field.setAccessible(true);
                 ConfigurableName nameAnnotation = field.getAnnotation(ConfigurableName.class);
                 if (nameAnnotation != null) {
-                    propertyName = field.getName();
                     configName = (String) field.get(configurable);
                     //
                     // break out of loop at the first instance of ConfigurableName.
+                    field.setAccessible(accessible);
                     break;
                 }
                 field.setAccessible(accessible);
             }
         } catch (PropertyException ex) {
             throw ex;
-        } catch (Exception ex) {
-            throw new PropertyException(ex, configName,"Error importing for " + propertyName);
+        } catch (IllegalAccessException ex) {
+            throw new PropertyException(ex, configName, "Failed to read the ConfigurableName field");
         }
 
         if (configName.equals("")) {
@@ -1193,7 +1144,7 @@ public class ConfigurationManager implements Cloneable {
      */
     public void importConfigurable(Configurable configurable,
                                    String name) throws PropertyException {
-        Map<String, Object> m = new LinkedHashMap<String, Object>();
+        Map<String, Object> m = new LinkedHashMap<>();
 
         //
         // The name of the configuration property for an annotated variable in
