@@ -45,7 +45,7 @@ public class NestedConfigurablesTest {
         FooUserConfigurable u1 = new FooUserConfigurable(new FooConfigurable("foo1", 1));
         ConfigurationManager cm1 = new ConfigurationManager();
         cm1.importConfigurable(u1);
-        assertEquals(2, cm1.getNumAdded());
+        assertEquals(2, cm1.getNumConfigured());
         File tmp = mkTmp();
         cm1.save(tmp);
         ConfigurationManager cm2 = new ConfigurationManager(tmp.toURI().toURL());
