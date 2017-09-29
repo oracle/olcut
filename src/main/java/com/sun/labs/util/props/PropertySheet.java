@@ -45,8 +45,8 @@ public class PropertySheet implements Cloneable {
 
     public enum PropertyType { CONFIG, COMPNAME, CONMAN; }
 
-    private Map<String, ConfigPropWrapper> registeredProperties
-            = new HashMap<String, ConfigPropWrapper>();
+    private Map<String, Config> registeredProperties
+            = new HashMap<String, Config>();
 
     private Map<String, Object> propValues = new HashMap<String, Object>();
 
@@ -195,37 +195,12 @@ public class PropertySheet implements Cloneable {
      * @param propName The name of the property to be registered.
      * @param property The property annotation masked by a proxy.
      */
-    private void registerProperty(String propName, ConfigPropWrapper property) {
+    private void registerProperty(String propName, Config property) {
         assert property != null && propName != null;
 
         registeredProperties.put(propName, property);
         propValues.put(propName, null);
         rawProps.put(propName, null);
-    }
-
-    /**
-     * Returns the property names <code>name</code> which is still wrapped into
-     * the annotation instance.
-     */
-    public ConfigPropWrapper getProperty(String name, Class propertyClass)
-            throws PropertyException {
-        if (!propValues.containsKey(name)) {
-            throw new InternalConfigurationException(getInstanceName(), name,
-                    "Unknown property '"
-                    + name + "' ! Make sure that you've annotated it.");
-        }
-
-        ConfigPropWrapper s4PropWrapper = registeredProperties.get(name);
-
-        try {
-            propertyClass.cast(s4PropWrapper.getAnnotation());
-        } catch (ClassCastException e) {
-            throw new InternalConfigurationException(e, getInstanceName(), name, name
-                    + " is not an annotated property of '" + getConfigurableClass().
-                    getName() + "' !");
-        }
-
-        return s4PropWrapper;
     }
 
     private String flattenProp(String name) {
@@ -864,23 +839,6 @@ public class PropertySheet implements Cloneable {
     }
 
     /**
-     * Returns the type of the given property.
-     */
-    public PropertyType getType(String propName) {
-        Proxy annotation = registeredProperties.get(propName).getAnnotation();
-        if (annotation instanceof Config) {
-            return PropertyType.CONFIG;
-        } else if (annotation instanceof ConfigurableName) {
-            return PropertyType.COMPNAME;
-        } else if (annotation instanceof ConfigManager) {
-            return PropertyType.CONMAN;
-        } else {
-            throw new RuntimeException("Unknown property type");
-        }
-
-    }
-
-    /**
      * Gets the owning property manager
      *
      * @return the property manager
@@ -999,7 +957,7 @@ public class PropertySheet implements Cloneable {
             if (configAnnotation != null) {
                 //
                 // We have a variable annotated with the Config annotation.
-                propertySheet.registerProperty(field.getName(), new ConfigPropWrapper((Proxy) configAnnotation));
+                propertySheet.registerProperty(field.getName(), configAnnotation);
             } else if (nameAnnotation != null) {
                 if (!field.getType().equals(String.class)) {
                     throw new PropertyException(propertySheet.getInstanceName(),field.getName(),"The component name must be an instance of java.lang.String");

@@ -50,7 +50,7 @@ public class ConfigurationManager implements Cloneable {
     private Map<String, RawPropertyData> rawPropertyMap =
             new LinkedHashMap<>();
     
-    private Map<Configurable,PropertySheet> configuredComponents =
+    private Map<ConfigWrapper,PropertySheet> configuredComponents =
             new LinkedHashMap<>();
 
     private Map<String,PropertySheet> addedComponents =
@@ -474,6 +474,7 @@ public class ConfigurationManager implements Cloneable {
         // for a component.
         if(registry != null && !ps.isExportable() &&
                 ((ps.size() == 0 && ps.implementsRemote()) || ps.isImportable())) {
+            logger.log(Level.INFO, "Attempted to lookup in registry");
             ret = registry.lookup(ps, cl);
         }
 
@@ -502,7 +503,7 @@ public class ConfigurationManager implements Cloneable {
             //
             // Remember that we configured this component, removing it from the
             // list of added components if necessary.
-            configuredComponents.put(ret, ps);
+            configuredComponents.put(new ConfigWrapper(ret), ps);
             addedComponents.remove(instanceName);
         }
 
@@ -628,16 +629,6 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
-     * Adds a component that was configured with a given property sheet to this
-     * configuration manager.
-     * @param c the configurable component
-     * @param ps the property sheet containing the configuration for the component.
-     */
-    protected void addConfigured(Configurable c, PropertySheet ps) {
-        configuredComponents.put(c, ps);
-    }
-
-    /**
      * Given a <code>Configurable</code>-class/interface, all property-sheets which are subclassing/implementing this
      * class/interface are collected and returned.  No <code>Configurable</code> will be instantiated by this method.
      */
@@ -748,7 +739,7 @@ public class ConfigurationManager implements Cloneable {
         //
         // If this one's been configured, remove it from there too!
         if(ps.isInstantiated()) {
-            configuredComponents.remove(ps.getOwner());
+            configuredComponents.remove(new ConfigWrapper(ps.getOwner()));
         }
 
         for(ConfigurationChangeListener changeListener : changeListeners) {
@@ -1089,12 +1080,10 @@ public class ConfigurationManager implements Cloneable {
      * a configurable component but you don't have the property sheet that
      * generated it (e.g., if it was sent over the network).
      *
-     * It's best effort, if your object graph is loopy, it will flatten it
-     * into a tree by cloning elements.
-     *
-     * @param configurable the configurable component to import
+     * @param configurable The configurable component to import.
+     * @return The imported configurable's name.
      */
-    public void importConfigurable(Configurable configurable) throws PropertyException {
+    public String importConfigurable(Configurable configurable) throws PropertyException {
         String configName = "";
 
         try {
@@ -1124,7 +1113,7 @@ public class ConfigurationManager implements Cloneable {
         if (configName.equals("")) {
             throw new PropertyException("", "Failed to extract name from @ConfigurableName field");
         } else {
-            importConfigurable(configurable, configName);
+            return importConfigurable(configurable, configName);
         }
     }
 
@@ -1142,16 +1131,26 @@ public class ConfigurationManager implements Cloneable {
      * @param name the unique name to use for the component. This name will be
      * used to prefix any embedded components.
      */
-    public void importConfigurable(Configurable configurable,
+    public String importConfigurable(Configurable configurable,
                                    String name) throws PropertyException {
         Map<String, Object> m = new LinkedHashMap<>();
+
+        ConfigWrapper wrapper = new ConfigWrapper(configurable);
+        if (configuredComponents.containsKey(wrapper)) {
+            return configuredComponents.get(wrapper).getInstanceName();
+        } else if (symbolTable.containsKey(name)) {
+            //
+            // This throws an exception if the object pointers are different and we're trying to reuse the name.
+            throw new PropertyException(name, "Tried to override existing component name");
+        }
 
         //
         // The name of the configuration property for an annotated variable in
         // the configurable class that we were given.
         String propertyName = null;
+        Class<? extends Configurable> confClass = configurable.getClass();
         try {
-            Set<Field> fields = PropertySheet.getAllFields(configurable.getClass());
+            Set<Field> fields = PropertySheet.getAllFields(confClass);
             for (Field field : fields) {
                 boolean accessible = field.isAccessible();
                 field.setAccessible(true);
@@ -1234,7 +1233,26 @@ public class ConfigurationManager implements Cloneable {
                 }
                 field.setAccessible(accessible);
             }
-            addConfigurable(configurable.getClass(), name, m);
+            RawPropertyData rpd = new RawPropertyData(name, confClass.getName());
+
+            for(String confName : m.keySet()) {
+                Object property = m.get(confName);
+
+                if(property instanceof Class) {
+                    property = ((Class) property).getName();
+                }
+
+                rpd.getProperties().put(confName, property);
+            }
+
+            PropertySheet ps = new PropertySheet(configurable, name, rpd, this);
+            symbolTable.put(name, ps);
+            rawPropertyMap.put(name, rpd);
+            configuredComponents.put(new ConfigWrapper(configurable), ps);
+            for(ConfigurationChangeListener changeListener : changeListeners) {
+                changeListener.componentAdded(this, ps);
+            }
+            return name;
         } catch (PropertyException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -1247,8 +1265,7 @@ public class ConfigurationManager implements Cloneable {
     private String importSimpleField(Class type, String prefix, String fieldName, Object input) {
         if (Configurable.class.isAssignableFrom(type)) {
             String newName = prefix + "-" + fieldName;
-            importConfigurable((Configurable) input, newName);
-            return newName;
+            return importConfigurable((Configurable) input, newName);
         } else if (Random.class.isAssignableFrom(type)) {
             return "" + ((Random) input).nextInt();
         } else {
