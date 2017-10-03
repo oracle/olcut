@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+    <!-- A component registry that will be used to lookup and register components. -->
+    <component name="registry" type="com.sun.labs.util.props.dist.ComponentRegistry">
+        <property name="logLevel" value="FINER"/>
+        <propertylist name="groupList">
+            <item>${group}</item>
+        </propertylist>
+        <property name="securityPolicy" value="/aura/dist/dist/jsk-all.policy"/>
+    </component>
+    
+</config>
