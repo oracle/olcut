@@ -754,7 +754,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
             try {
                 sr.getLease().cancel();
             } catch(UnknownLeaseException ex) {
-                logger.warning("Unknown lease when cancelling");
+                logger.log(Level.WARNING,"Unknown lease when cancelling",ex);
             } catch(RemoteException ex) {
                 logger.warning("Error cancelling lease");
             }
