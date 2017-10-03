@@ -15,7 +15,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
@@ -40,7 +39,7 @@ import java.util.logging.Logger;
  * A property sheet which defines a collection of properties for a single
  * component in the system.
  */
-public class PropertySheet implements Cloneable {
+public class PropertySheet<T extends Configurable> implements Cloneable {
     private static final Logger logger = Logger.getLogger(PropertySheet.class.getName());
 
     public enum PropertyType { CONFIG, COMPNAME, CONMAN; }
@@ -62,7 +61,7 @@ public class PropertySheet implements Cloneable {
 
     private ConfigurationManager cm;
 
-    private Configurable owner;
+    private T owner;
 
     private RawPropertyData rpd;
 
@@ -89,18 +88,18 @@ public class PropertySheet implements Cloneable {
      */
     private ConfigurationEntry[] entries;
 
-    private final Class<? extends Configurable> ownerClass;
+    private final Class<T> ownerClass;
 
     private String instanceName;
 
 
-    public PropertySheet(Configurable configurable, String name,
+    public PropertySheet(T configurable, String name,
             RawPropertyData rpd, ConfigurationManager ConfigurationManager) {
-        this(configurable.getClass(), name, ConfigurationManager, rpd);
+        this((Class<T>)configurable.getClass(), name, ConfigurationManager, rpd);
         owner = configurable;
     }
 
-    public PropertySheet(Class<? extends Configurable> confClass, String name,
+    public PropertySheet(Class<T> confClass, String name,
             ConfigurationManager cm, RawPropertyData rpd) {
         ownerClass = confClass;
         this.cm = cm;
@@ -184,13 +183,13 @@ public class PropertySheet implements Cloneable {
         return entries;
     }
 
-    public Collection<String> getPropertyNames() {
-        return new HashSet<String>(rawProps.keySet());
+    public Set<String> getPropertyNames() {
+        return new HashSet<>(rawProps.keySet());
     }
 
     /**
      * Registers a new property which type and default value are defined by the
-     * given sphinx property.
+     * given olcut property.
      *
      * @param propName The name of the property to be registered.
      * @param property The property annotation masked by a proxy.
@@ -237,47 +236,31 @@ public class PropertySheet implements Cloneable {
      * Returns the owner of this property sheet. In most cases this will be the
      * configurable instance which was instrumented by this property sheet.
      */
-    public Configurable getOwner() {
-        return getOwner(null, null);
+    public T getOwner() {
+        return getOwner(null);
     }
 
     /**
      * Gets the owner of this property sheet. In most cases this will be the
      * configurable instance which was instrumented by this property sheet.
      *
-     * @param ps the property sheet that caused the getOwner call for this
-     * property sheet.
-     */
-    public synchronized Configurable getOwner(PropertySheet ps) {
-        return getOwner(ps, null, true);
-    }
-
-    /**
-     * Gets the owner of this property sheet. In most cases this will be the
-     * configurable instance which was instrumented by this property sheet.
-     *
-     * @param ps the property sheet that caused the getOwner call for this
-     * property sheet.
      * @param reuseComponent if <code>true</code>, a previously configured
      * component will be returned, if there is one. If <code>false</code> a
      * newly instantiated and configured component will be returned.
      */
-    public synchronized Configurable getOwner(PropertySheet ps, boolean reuseComponent) {
-        return getOwner(ps, null, reuseComponent);
+    public synchronized T getOwner(boolean reuseComponent) {
+        return getOwner(null, reuseComponent);
     }
 
     /**
      * Returns the owner of this property sheet. In most cases this will be the
      * configurable instance which was instrumented by this property sheet.
-     *
-     * @param ps the property sheet that caused the getOwner call for this
-     * property sheet.
      */
-    public synchronized Configurable getOwner(PropertySheet ps, ComponentListener cl) {
-        return getOwner(ps, cl, true);
+    public synchronized T getOwner(ComponentListener<T> cl) {
+        return getOwner(cl, true);
     }
 
-    public synchronized Configurable getOwner(PropertySheet ps, ComponentListener cl, boolean reuseComponent) {
+    public synchronized T getOwner(ComponentListener<T> cl, boolean reuseComponent) {
         try {
             // TODO: remove this once the Jini tests pass.
             logger.setLevel(Level.ALL);
@@ -292,7 +275,7 @@ public class PropertySheet implements Cloneable {
                         && ((size() == 0 && implementsRemote) || isImportable())) {
                         logger.finer(String.format("Looking up instance %s in registry",
                                 getInstanceName()));
-                    owner = cm.getComponentRegistry().lookup(this, cl);
+                    owner = (T) cm.getComponentRegistry().lookup(this, cl);
                     if (owner != null) {
                         return owner;
                     } else if (size() == 0 && isImportable()) {
@@ -306,7 +289,7 @@ public class PropertySheet implements Cloneable {
                 //
                 // Should we load a serialized form?
                 if (serializedForm != null) {
-                    String actualLocation = cm.getGlobalProperties().replaceGlobalProperties(ps.getInstanceName(), null, serializedForm);
+                    String actualLocation = cm.getGlobalProperties().replaceGlobalProperties(instanceName, null, serializedForm);
                     InputStream serStream = cm.getInputStreamForLocation(actualLocation);
                     if (serStream != null) {
                         try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
@@ -314,12 +297,10 @@ public class PropertySheet implements Cloneable {
                             owner = ownerClass.cast(deser);
                             return owner;
                         } catch (IOException ex) {
-                            throw new PropertyException(ex, 
-                                    ps.getInstanceName(), null, 
+                            throw new PropertyException(ex, instanceName, null,
                                     "Error reading serialized form from " + actualLocation);
                         } catch (ClassNotFoundException ex) {
-                            throw new PropertyException(ex, 
-                                    ps.getInstanceName(), null, 
+                            throw new PropertyException(ex, instanceName, null,
                                     "Serialized class not found at " + actualLocation);
                         }
                     }
@@ -339,16 +320,16 @@ public class PropertySheet implements Cloneable {
                             ownerClass.getName()));
                 }
                 try {
-                    Constructor<? extends Configurable> constructor = ownerClass.getDeclaredConstructor();
+                    Constructor<T> constructor = ownerClass.getDeclaredConstructor();
                     boolean isAccessible = constructor.isAccessible();
                     constructor.setAccessible(true);
                     owner = constructor.newInstance();
                     constructor.setAccessible(isAccessible);
                 } catch (NoSuchMethodException ex) {
-                    throw new PropertyException(ex, ps.getInstanceName(), null,
+                    throw new PropertyException(ex, instanceName, null,
                             "No-args constructor not found for class " + ownerClass);
                 } catch (InvocationTargetException ex) {
-                    throw new InternalConfigurationException(ex, ps.getInstanceName(), null,
+                    throw new InternalConfigurationException(ex, instanceName, null,
                             "Can't instantiate class " + ownerClass);
                 }
                 setConfiguredFields(owner, this);
@@ -369,9 +350,7 @@ public class PropertySheet implements Cloneable {
                             mbs.registerMBean(owner, oname);
                         }
                     } catch (Exception e) {
-                        throw new PropertyException(e, ps.getInstanceName(),
-                                null,
-                                null);
+                        throw new PropertyException(e, instanceName, null, null);
                     }
                 }
                 if (registry != null && isExportable()) {
@@ -398,9 +377,9 @@ public class PropertySheet implements Cloneable {
      * @param ps the property sheet with the values that we want to set.
      */
     @SuppressWarnings("unchecked")
-    private static void setConfiguredFields(Object o, PropertySheet ps) throws PropertyException, IllegalAccessException {
+    private static <T extends Configurable> void setConfiguredFields(T o, PropertySheet ps) throws PropertyException, IllegalAccessException {
 
-        Class<?> curClass = o.getClass();
+        Class<? extends Configurable> curClass = o.getClass();
         Set<Field> fields = getAllFields(curClass);
         for (Field f : fields) {
             boolean accessible = f.isAccessible();
@@ -784,21 +763,21 @@ public class PropertySheet implements Cloneable {
         return null;
     }
 
-    protected void clearOwner() {
+    public void clearOwner() {
         owner = null;
     }
 
     /**
      * Returns the class of the owner configurable of this property sheet.
      */
-    public Class<? extends Configurable> getConfigurableClass() {
+    public Class<T> getConfigurableClass() {
         return ownerClass;
     }
 
     /**
      * Sets the raw property to the given name.
      *
-     * TODO: If the owner is instantiated it *does not* change the field in the owner.
+     * If the owner is instantiated it *does not* change the field in the owner.
      *
      * @param key the simple property name
      * @param val the value for the property
@@ -886,7 +865,7 @@ public class PropertySheet implements Cloneable {
     }
 
     protected Object clone() throws CloneNotSupportedException {
-        PropertySheet ps = (PropertySheet) super.clone();
+        PropertySheet<T> ps = (PropertySheet<T>) super.clone();
 
         ps.registeredProperties = new HashMap<>(this.registeredProperties);
         ps.propValues = new HashMap<>(this.propValues);
@@ -900,7 +879,7 @@ public class PropertySheet implements Cloneable {
                 ps.rawProps.put(regProp, new ArrayList<Object>((List) o));
                 ps.propValues.put(regProp, null);
             } else if (o instanceof Map) {
-                ps.rawProps.put(regProp, new HashMap<String,String>((Map<String,String>) o));
+                ps.rawProps.put(regProp, new HashMap<>((Map<String,String>) o));
                 ps.propValues.put(regProp, null);
             }
         }
@@ -919,7 +898,7 @@ public class PropertySheet implements Cloneable {
      * @param configurable the class who's fields we wish to walk.
      * @return all of the fields, so they can be checked for annotations.
      */
-    public static Set<Field> getAllFields(Class configurable) {
+    public static Set<Field> getAllFields(Class<? extends Configurable> configurable) {
         Set<Field> ret = new HashSet<>();
         Queue<Class> cq = new ArrayDeque<>();
         cq.add(configurable);
@@ -943,8 +922,8 @@ public class PropertySheet implements Cloneable {
      * @param propertySheet of type PropertySheet
      * @param configurable of type Class<? extends Configurable>
      */
-    public static void processAnnotations(PropertySheet propertySheet,
-            Class<? extends Configurable> configurable) throws PropertyException {
+    public static <T extends Configurable> void processAnnotations(PropertySheet<T> propertySheet,
+            Class<T> configurable) throws PropertyException {
         Set<Field> classFields = getAllFields(configurable);
 
         for (Field field : classFields) {
