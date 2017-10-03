@@ -44,16 +44,16 @@ public class ConfigurationManager implements Cloneable {
     private List<ConfigurationChangeListener> changeListeners =
             new ArrayList<>();
 
-    private Map<String, PropertySheet> symbolTable =
+    private Map<String, PropertySheet<? extends Configurable>> symbolTable =
             new LinkedHashMap<>();
 
     private Map<String, RawPropertyData> rawPropertyMap =
             new LinkedHashMap<>();
     
-    private Map<ConfigWrapper,PropertySheet> configuredComponents =
+    private Map<ConfigWrapper,PropertySheet<? extends Configurable>> configuredComponents =
             new LinkedHashMap<>();
 
-    private Map<String,PropertySheet> addedComponents =
+    private Map<String,PropertySheet<? extends Configurable>> addedComponents =
             new LinkedHashMap<>();
 
     private GlobalProperties globalProperties = new GlobalProperties();
@@ -66,7 +66,7 @@ public class ConfigurationManager implements Cloneable {
 
     protected boolean showCreations;
 
-    private List<URL> configURLs = new ArrayList<URL>();
+    private List<URL> configURLs = new ArrayList<>();
 
     private ComponentRegistry registry;
     
@@ -306,7 +306,7 @@ public class ConfigurationManager implements Cloneable {
      * @param instanceName the instance name of the object
      * @return the property sheet for the object.
      */
-    public PropertySheet getPropertySheet(String instanceName) {
+    public PropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
         if(!symbolTable.containsKey(instanceName)) {
             // if it is not in the symbol table, so construct
             // it based upon our raw property data
@@ -318,8 +318,8 @@ public class ConfigurationManager implements Cloneable {
                     if (Configurable.class.isAssignableFrom(cls)) {
 
                         // now load the property-sheet by using the class annotation
-                        PropertySheet propertySheet =
-                                new PropertySheet((Class<? extends Configurable>)cls,
+                        PropertySheet<? extends Configurable> propertySheet =
+                                new PropertySheet<>((Class<? extends Configurable>)cls,
                                         instanceName, this, rpd);
 
                         symbolTable.put(instanceName, propertySheet);
@@ -456,7 +456,7 @@ public class ConfigurationManager implements Cloneable {
         
         //
         // Get the property sheet for this component.
-        PropertySheet ps = getPropertySheet(instanceName);
+        PropertySheet<? extends Configurable> ps = getPropertySheet(instanceName);
         
         if(ps == null) {
             return null;
@@ -484,7 +484,7 @@ public class ConfigurationManager implements Cloneable {
 
             logger.log(Level.FINER,"lookup: %s", instanceName);
 
-            ret = ps.getOwner(ps, reuseComponent);
+            ret = ps.getOwner(reuseComponent);
             
             if(ret instanceof Startable) {
                 Startable stret = (Startable) ret;
@@ -538,8 +538,8 @@ public class ConfigurationManager implements Cloneable {
      * no components of the given type.
      */
 
-    public Configurable lookup(Class c, ComponentListener cl) {
-        List<Configurable> comps = lookupAll(c, cl);
+    public <T extends Configurable> T lookup(Class<T> c, ComponentListener<T> cl) {
+        List<T> comps = lookupAll(c, cl);
         if(comps.isEmpty()) {
             return null;
         }
@@ -554,9 +554,9 @@ public class ConfigurationManager implements Cloneable {
      * are added or removed
      * @return a list of all the components with the given class name as their type.
      */
-    public List<Configurable> lookupAll(Class c, ComponentListener cl) {
+    public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl) {
 
-        List<Configurable> ret = new ArrayList<Configurable>();
+        List<T> ret = new ArrayList<>();
 
         //
         // If the class isn't an interface, then lookup each of the names
@@ -567,7 +567,7 @@ public class ConfigurationManager implements Cloneable {
             for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
                 if (e.getValue().getClassName().equals(className) &&
                         !e.getValue().isImportable()) {
-                    ret.add(lookup(e.getKey()));
+                    ret.add((T)lookup(e.getKey()));
                 }
             }
         } else if(registry != null) {
@@ -575,7 +575,7 @@ public class ConfigurationManager implements Cloneable {
             // If we have a registry, then do a lookup for all things of the
             // given type.
             Configurable[] reg = registry.lookup(c, Integer.MAX_VALUE, cl);
-            ret.addAll(Arrays.asList(reg));
+            ret.addAll((List<T>)Arrays.asList(reg));
         } else {
             //
             // If we have an interface and no registry, lookup all the
@@ -585,7 +585,7 @@ public class ConfigurationManager implements Cloneable {
                 for (Class interfaceClass : interfaces) {
                     if (e.getValue().getClassName().equals(interfaceClass.getName()) &&
                             !e.getValue().isImportable()) {
-                        ret.add(lookup(e.getKey()));
+                        ret.add((T)lookup(e.getKey()));
                     }
                 }
             }
@@ -915,16 +915,14 @@ public class ConfigurationManager implements Cloneable {
     public Object clone() throws CloneNotSupportedException {
         ConfigurationManager cloneCM = (ConfigurationManager) super.clone();
 
-        cloneCM.changeListeners = new ArrayList<ConfigurationChangeListener>();
-        cloneCM.symbolTable = new LinkedHashMap<String, PropertySheet>();
+        cloneCM.changeListeners = new ArrayList<>();
+        cloneCM.symbolTable = new LinkedHashMap<>();
         for(String compName : symbolTable.keySet()) {
-            cloneCM.symbolTable.put(compName, (PropertySheet) symbolTable.get(compName).
-                                    clone());
+            cloneCM.symbolTable.put(compName, (PropertySheet<? extends Configurable>) symbolTable.get(compName).clone());
         }
 
         cloneCM.globalProperties = new GlobalProperties(globalProperties);
-        cloneCM.rawPropertyMap =
-                new HashMap<String, RawPropertyData>(rawPropertyMap);
+        cloneCM.rawPropertyMap = new HashMap<>(rawPropertyMap);
 
 
         return cloneCM;
@@ -966,7 +964,7 @@ public class ConfigurationManager implements Cloneable {
             rpd.getProperties().put(confName, property);
         }
 
-        return new PropertySheet(targetClass, componentName, cm, rpd);
+        return new PropertySheet<>(targetClass, componentName, cm, rpd);
     }
 
     /**

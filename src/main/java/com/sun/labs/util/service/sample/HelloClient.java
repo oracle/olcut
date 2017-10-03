@@ -64,11 +64,11 @@ public class HelloClient {
         // Get all of the registered hello services. Note that we use the interface
         // here and not the implementation. We need to do this because we'll only
         // get a stub that implements the implementation.
-        List<Configurable> hellos = cm.lookupAll(com.sun.labs.util.service.sample.HelloService.class, null);
+        List<HelloService> hellos = cm.lookupAll(com.sun.labs.util.service.sample.HelloService.class, null);
         System.out.format("Got %d hello services\n", hellos.size());
-        for(Configurable hello : hellos) {
+        for(HelloService hello : hellos) {
             try {
-                System.out.format("%s says %s\n", hello, ((HelloService) hello).hello());
+                System.out.format("%s says %s\n", hello, hello.hello());
             } catch (RemoteException ex) {
                 logger.log(Level.SEVERE, String.format("Error helloing %s", hello), ex);
             }
