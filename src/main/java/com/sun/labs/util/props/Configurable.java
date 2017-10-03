@@ -15,56 +15,28 @@ package com.sun.labs.util.props;
 import java.io.IOException;
 
 /**
- * Defines the interface that must be implemented by any configurable component in Sphinx-4.  The life cycle of a
- * component is as follows:
+ * Defines the interface that must be implemented by any configurable component.  The life cycle of a
+ * {@link Configurable} is as follows:
  * <p/>
  * <ul><li> <b>Class Parsing</b> The class file is parsed in order to determine all its configurable properties.  These
- * are defined using <code>public static final String</code> fields which are annotated with one of the following
- * annotations: <ul> <li>S4Integer <li>S4Double <li>S4Boolean <li>S4Component <li>S4ComponentList </ul> Further
- * information about property-specific fields can be found in the javadoc of the property-annotation-definitions. Only
- * names of annotated properties will be allowed by the configuration system later on.
+ * are defined using {@link Config} annotations on fields. Only types defined in {@link FieldType} are recognised. Only
+ * names of annotated properties will be allowed by the configuration system later on. Optionally the user can
+ * annotate a {@link String} field with {@link ConfigurableName} which will have the name from the xml file written
+ * into it. If required the {@link ConfigurationManager} can be stored by annotating an appropriate field with
+ * {@link ConfigManager}.</li>
  * <p/>
- * <li> <b>Construction</b> - The (empty) component constructor is called in order to instantiate the component.
- * Typically the constructor does little, if any work, since the component has not been configured yet.
+ * <li> <b>Construction</b> - The (empty, optionally private) constructor is called in order to instantiate the component.
+ * Typically the constructor does little, if any work, since the component has not been configured yet. </li>
  * <p/>
- * <li> <b> Configuration</b> - Shortly after instantiation, the component's <code>newProperties</code> method is
- * called. This method is called with a <code>PropertySheet</code> containing the properties (usually taken from an
- * external configuration file). The component should extract the properties from the property sheet. If some properties
- * defined for a component does not fullfill the property definition given by the annotation (type, range, etc.) a
- * <code>PropertyException</code> is thrown. Typically, once a component gets its configuration data via the
- * <code>newData</code> method, the component will initialize itself.
+ * <li> <b>Configuration</b> - Shortly after instantiation, the component's fields are written by inserting parsed
+ * values from a {@link PropertySheet}. The PropertySheet is usually derived from an external configuration file, but
+ * can be constructed programmatically as a {@link java.util.Map} from String to Object. If some properties
+ * defined for a component does not fulfill the property definition given by the annotation (type, range, etc.) a
+ * <code>PropertyException</code> is thrown. </li>
  * <p/>
- * Note: In most cases <code>newProperties</code> is called only once as a result of system configuration during
- * startup. But nevertheless it is possible (and sometimes necessary) to reconfigure a component while it's running.
- * Therefore, a well behaved component should react properly to multiple <code>newProperties</code> calls. </ul>
- * <p/>
- * <p><b>Connecting to other components</b> <p> Components often need to interact with other components in the system.
- * One of the design goals of Sphinx-4 is that it allows for very flexible hookup of components in the system.
- * Therefore, it is *not* considered good S4 style to hardcode which subcomponents a particular subcomponent is
- * interacting with.  Instead, the component should use the configuration manager to provide the hookup to another
- * component.
- * <p/>
- * For example, if a component needs to interact with a Linguist. Instead of explicitly setting which linguist is to be
- * used via a constructor or via a <code>setLinguist</code> call, the component should instead define a configuration
- * property for the linguist.  This would be done like so:
- * <p/>
- * <code> <pre>
- *     \@S4Component(type=Linguist.class)
- *     public static String PROP_LINGUIST = "linguist";
- * </pre> </code>
- * <p> The linguist is made available in the <code>newProperties</code> method, like so: <p>
- * <code> <pre>
- *     public void newProperties(PropertySheet propertySheet) {
- *      linguist = (Linguist) propertySheet.getComponent(PROP_LINGUIST);
- *     }
- * </pre> </code>
- * <p/>
- * This <code>getComponent</code> call will find the proper linguist based upon the configuration data.  Thus, if the
- * configuration for this component had the 'linguist' defined to be 'dynamicLexTreeLinguist', then the configuration
- * manager will look up and return a linguist with that name, creating and configuring it as necessary.  Of course, the
- * dynamicLexTreeLinguist itself may have a number of sub-components that will be created and configured as a result. If
- * the component doesn't exist (but was defined to mandatory) and no configuration information is found in the config
- * file for it, or if it is of the wrong type, a <code>PropertyException</code> will be thrown.
+ * <li> <b>Post Config</b> - After the fields have been initialised, the system calls the {@link Configurable#postConfig()}
+ * method. There other setup can be performed, such as deserialising types which are not configurable. </li>
+ * </ul>
  */
 public interface Configurable {
 
@@ -72,7 +44,8 @@ public interface Configurable {
      * Uses the configured variables, which are set up by the configuration
      * system before this method is called, to do any post variable configuration
      * setup.
-     * @throws PropertyException 
+     * @throws PropertyException
+     * @throws IOException As it may be a remote component, and RemoteException is a subclass of IOException.
      */
     default public void postConfig() throws PropertyException, IOException {
         

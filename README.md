@@ -53,15 +53,15 @@ parameters specified as properties.
 The Pipeline class that correspond to the component would look as follow:
 
     public class Pipeline implements Configurable {
-        @ConfigInteger(defaultValue=1)
-        public static final String PROP_NUM_THREADS="numThreads";
+        @Config
+        private int numThreads = 1;
     
-        @ConfigComponentList(type=PipelineStage.class)
-        public static final String PROP_STAGES="stages";
+        @Config(genericType=PipelineStage.class)
+        private List<PipelineStage> stages;
+        
+        private Pipeline() {}
     
-        public void newProperties(PropertySheet ps) {
-            int numThreads = ps.getInt(PROP_NUM_THREADS);
-            List<PipelineStage> stages = (List<PipelineStage>)ps.getComponentList(PROP_STAGES);
+        public void postConfig() {
             [... further initialization, parameter checking, etc ...]
         }
     }
