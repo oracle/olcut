@@ -8,7 +8,7 @@ package com.sun.labs.util.props;
  * @see ConfigurationManager#lookup(String,ComponentListener)
  * @see ConfigurationManager#lookupAll(Class, ComponentListener)
  */
-public interface ComponentListener {
+public interface ComponentListener<T extends Configurable> {
     
     
     /**
@@ -19,7 +19,7 @@ public interface ComponentListener {
      * whether it is interested in any particular instance of a component.
      * @param c the component that was added
      */
-    public void componentAdded(Configurable c);
+    public void componentAdded(T c);
     
     /**
      * Indicates that a component has been removed from the configuration.  This 
@@ -28,6 +28,6 @@ public interface ComponentListener {
      * @param c the component that was removed.  Note that it's not likely that you
      * can do much with this component except test it's class.
      */
-    public void componentRemoved(Configurable c);
+    public void componentRemoved(T c);
     
 }

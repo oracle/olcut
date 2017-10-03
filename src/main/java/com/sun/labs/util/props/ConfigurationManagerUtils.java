@@ -75,15 +75,13 @@ public class ConfigurationManagerUtils {
      * @param name the component name
      */
     public static void showConfig(ConfigurationManager cm, String name) {
-        //        Symbol symbol = cm.getsymbolTable.get(name);
-
         if(!cm.getComponentNames().contains(name)) {
             System.out.println("No component: " + name);
             return;
         }
         System.out.println(name + ":");
 
-        PropertySheet properties = cm.getPropertySheet(name);
+        PropertySheet<? extends Configurable> properties = cm.getPropertySheet(name);
 
         for(String propertyName : properties.getRegisteredProperties()) {
             System.out.print("    " + propertyName + " = ");
@@ -165,7 +163,7 @@ public class ConfigurationManagerUtils {
 
         // this iteration is a little hacky. It would be much better to maintain the links to a configurable in a special table
         for(String instanceName : cm.getComponentNames()) {
-            PropertySheet propSheet = cm.getPropertySheet(instanceName);
+            PropertySheet<? extends Configurable> propSheet = cm.getPropertySheet(instanceName);
 
             for(String propName : propSheet.getRegisteredProperties()) {
                 if(propSheet.getRaw(propName) == null) {

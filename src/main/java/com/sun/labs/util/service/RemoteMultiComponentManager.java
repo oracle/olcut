@@ -48,7 +48,7 @@ public class RemoteMultiComponentManager<T extends Configurable> extends RemoteC
     }
 
     private synchronized void getComponents() {
-        List<T> l = (List<T>)cm.lookupAll(clazz, this);
+        List<T> l = cm.lookupAll(clazz, this);
         if(l != null) {
             components = l.toArray((T[])Array.newInstance(clazz, 0));
         }

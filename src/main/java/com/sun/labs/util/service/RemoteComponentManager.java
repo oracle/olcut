@@ -31,7 +31,7 @@ import com.sun.labs.util.props.ConfigurationManager;
 /**
  * Manages connecting and reconnecting to a component
  */
-public class RemoteComponentManager<T extends Configurable> implements ComponentListener {
+public class RemoteComponentManager<T extends Configurable> implements ComponentListener<T> {
     protected ConfigurationManager cm;
     protected Class<T> clazz;
     private T component = null;
@@ -46,7 +46,7 @@ public class RemoteComponentManager<T extends Configurable> implements Component
     }
 
     private T lookup() {
-        return (T) cm.lookup(clazz, this);
+        return cm.lookup(clazz, this);
     }
 
     /**
@@ -55,21 +55,21 @@ public class RemoteComponentManager<T extends Configurable> implements Component
      */
     public T getComponent() {
         if(component == null) {
-            component = (T) cm.lookup(clazz, this);
+            component = cm.lookup(clazz, this);
         }
         return component;
     }
 
 
     @Override
-    public void componentAdded(Configurable c) {
+    public void componentAdded(T c) {
         if(component == null && clazz.isAssignableFrom(c.getClass())) {
-            component = (T) c;
+            component = c;
         }
     }
 
     @Override
-    public void componentRemoved(Configurable componentToRemove) {
+    public void componentRemoved(T componentToRemove) {
         if (component == componentToRemove) {
             component = null;
         }
