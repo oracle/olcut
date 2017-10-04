@@ -484,8 +484,8 @@ public class ConfigurationManager implements Cloneable {
      * 
      * @param c the class of the components that we want to look up.
      */
-    public List<String> listAll(Class c) {
-        List<String> ret = new ArrayList<String>();
+    public <T extends Configurable> List<String> listAll(Class<T> c) {
+        List<String> ret = new ArrayList<>();
         for(Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
             RawPropertyData rpd = e.getValue();
             try {
@@ -538,7 +538,7 @@ public class ConfigurationManager implements Cloneable {
             throw new IllegalArgumentException("tried to override existing component name");
         }
 
-        PropertySheet ps = getPropSheetInstanceFromClass(confClass, props, name);
+        PropertySheet<? extends Configurable> ps = getPropSheetInstanceFromClass(confClass, props, name);
         symbolTable.put(name, ps);
         rawPropertyMap.put(name, new RawPropertyData(name, confClass.getName()));
         addedComponents.put(name, ps);
@@ -817,7 +817,7 @@ public class ConfigurationManager implements Cloneable {
      * Instantiates the given <code>targetClass</code> and instruments it using default properties or the properties
      * given by the <code>defaultProps</code>.
      */
-    protected PropertySheet getPropSheetInstanceFromClass(Class<? extends Configurable> targetClass,
+    protected PropertySheet<? extends Configurable> getPropSheetInstanceFromClass(Class<? extends Configurable> targetClass,
                                                                  Map<String, Object> defaultProps,
                                                                  String componentName) {
         RawPropertyData rpd = new RawPropertyData(componentName,
@@ -979,8 +979,6 @@ public class ConfigurationManager implements Cloneable {
                 }
                 field.setAccessible(accessible);
             }
-        } catch (PropertyException ex) {
-            throw ex;
         } catch (IllegalAccessException ex) {
             throw new PropertyException(ex, configName, "Failed to read the ConfigurableName field");
         }
