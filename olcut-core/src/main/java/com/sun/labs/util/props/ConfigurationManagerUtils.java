@@ -172,11 +172,14 @@ public class ConfigurationManagerUtils {
 
                 Object o = propSheet.getRaw(propName);
                 if (o instanceof List) {
-                    List<String> compNames = (List<String>) o;
+                    List compNames = (List) o;
                     for(int i = 0; i < compNames.size(); i++) {
-                        String compName = compNames.get(i);
-                        if(compName.equals(oldName)) {
-                            compNames.set(i, newName);
+                        Object element = compNames.get(i);
+                        if (element instanceof String) {
+                            String compName = (String) element;
+                            if (compName.equals(oldName)) {
+                                compNames.set(i, newName);
+                            }
                         }
                     }
                 } else if (o instanceof Map) {
