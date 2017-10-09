@@ -24,14 +24,17 @@
 
 package com.sun.labs.util;
 
-public class Getopt {
+import java.util.logging.Logger;
 
-	String argList[] = null;        // the argument List to be parsed
-	String optStr = null;        // the string of arguments in the form "ab:" see getopt man
+public class Getopt {
+	private static final Logger logger = Logger.getLogger(Getopt.class.getName());
+
+	private String argList[] = null;        // the argument List to be parsed
+	private String optStr = null;        // the string of arguments in the form "ab:" see getopt man
 	public String optArg = null;    // argument of an option
 	public int optInd = 0;        // index of the option
-	int nbArgs = 0;        // number of args in the argList
-	int optPos = 1;        // position of option letter in current argument scanned
+	private int nbArgs = 0;        // number of args in the argList
+	private int optPos = 1;        // position of option letter in current argument scanned
 
 	static final int EOF = -1; // returned when no option left
 
@@ -45,7 +48,7 @@ public class Getopt {
 	}
 
 	private void optError(String msg, char optLetter) {
-		//System.err.println("Getopt: " + msg + " / " + optLetter);
+		logger.warning("Getopt: " + msg + " / " + optLetter);
 	}
 
 	public int getopt() {
@@ -115,64 +118,6 @@ public class Getopt {
 		return optLetter;
 	}
 
-	public static void main(String[] args) {  // test the class
-		System.out.println("---------- test 1 ------------");
-
-		String flags = "ab?c:d:xy";
-		String[] argv = {"-ab", "-c", "carg", "-xy",
-				"-cCARG", "--", "-a"};
-		Getopt getopt = new Getopt(argv, flags);
-
-		int c;
-		while (getopt.optInd < argv.length) {
-			c = getopt.getopt();
-			System.out.println((char) c + " " +
-					getopt.optArg + "(" + getopt.optInd +
-					")");
-		}
-		System.out.println("final optInd (" +
-				getopt.optInd + ")");
-
-		System.out.println("------------ test 2 ------------");
-
-		String[] argv1 = {"-ab", "carg", "kjh"};
-		getopt = new Getopt(argv1, flags);
-		getopt.optInd = 0;
-		while ((c = getopt.getopt()) != -1) {
-			System.out.println((char) c + " " +
-					getopt.optArg + "(" + getopt.optInd +
-					")");
-		}
-		System.out.println("final optInd (" +
-				getopt.optInd + ")");
-
-		System.out.println("------------ test 3 ------------");
-
-		String[] argv2 = {"-ab", "-d", "-x", "carg", "kjh"};
-		getopt = new Getopt(argv2, flags);
-		getopt.optInd = 0;
-		while ((c = getopt.getopt()) != -1) {
-			System.out.println((char) c + " " +
-					getopt.optArg + "(" + getopt.optInd +
-					")");
-		}
-		System.out.println("final optInd (" +
-				getopt.optInd + ")");
-
-		System.out.println("------------ test 4 ------------");
-
-		String[] argv3 = {"-ab", "-w", "-x", "carg", "kjh"};
-		getopt = new Getopt(argv3, flags);
-		getopt.optInd = 0;
-		while ((c = getopt.getopt()) != -1) {
-			System.out.println((char) c + " " +
-					getopt.optArg + "(" + getopt.optInd +
-					")");
-		}
-		System.out.println("final optInd (" +
-				getopt.optInd + ")");
-
-	}
 }
 
 
