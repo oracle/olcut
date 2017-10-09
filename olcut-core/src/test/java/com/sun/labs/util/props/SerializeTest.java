@@ -44,7 +44,9 @@ public class SerializeTest {
 
     @After
     public void tearDown() throws IOException {
-        Files.delete(serPath);
+        try {
+        	Files.delete(serPath);
+        }catch(Exception e) {}
     }
 
     @Test
