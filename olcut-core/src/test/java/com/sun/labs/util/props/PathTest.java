@@ -18,7 +18,10 @@ public class PathTest {
         ConfigurationManager cm = new ConfigurationManager(cu);
         PathConfigurable pc = (PathConfigurable) cm.lookup(
                 "pathTest");
-        assertEquals("/this/is/a/test/path", pc.getPath().toString());
+        String actualPath = pc.getPath().toString();
+        actualPath = actualPath.replace('\\', '/');
+        
+        assertEquals("/this/is/a/test/path", actualPath);
     }
 
 }
