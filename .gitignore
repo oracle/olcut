@@ -13,6 +13,9 @@ manifest.mf
 *.iml
 /.classpath
 /.project
+.classpath
+.project
+.settings
 
 # Subproject files
 olcut-core/target
