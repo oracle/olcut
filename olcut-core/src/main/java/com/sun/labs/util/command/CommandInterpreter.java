@@ -11,7 +11,7 @@
  */
 package com.sun.labs.util.command;
 
-import com.sun.labs.util.Utilities;
+import com.sun.labs.util.Util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -137,7 +137,7 @@ public class CommandInterpreter extends Thread {
             String histFile = System.getProperty("user.home")
                     + File.separator
                     + ".olcut_history";
-            String main = Utilities.getMainClassName();
+            String main = Util.getMainClassName();
             if(!main.isEmpty()) {
                 histFile += "_" + main;
             }
