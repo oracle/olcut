@@ -40,6 +40,14 @@ import java.util.regex.Pattern;
  */
 public class ConfigurationManager implements Cloneable {
 
+    public static final Option configFileOption = new Option() {
+        public String longName() { return "config-file"; }
+        public char charName() { return 'c'; }
+        public boolean mandatory() { return false; }
+        public String usage() { return "Path to the olcut config file."; }
+        public Class<? extends Option> annotationType() { return Option.class; }
+    };
+
     private List<ConfigurationChangeListener> changeListeners =
             new ArrayList<>();
 
@@ -139,8 +147,12 @@ public class ConfigurationManager implements Cloneable {
             optionFields.addAll(Options.getOptionFields(o));
         }
 
+        //
+        // Initialise the option checking with the config file option.
         HashMap<Character,Option> charNameMap = new HashMap<>();
         HashMap<String,Option> longNameMap = new HashMap<>();
+        charNameMap.put(configFileOption.charName(),configFileOption);
+        longNameMap.put(configFileOption.longName(),configFileOption);
 
         for (Field f : optionFields) {
             Option annotation = f.getAnnotation(Option.class);
