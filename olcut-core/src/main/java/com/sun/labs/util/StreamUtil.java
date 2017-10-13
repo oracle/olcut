@@ -29,7 +29,7 @@ public class StreamUtil {
 
     /**
      * Takes a stream and returns a stream which bounds the parallelism available
-     * based on the size of the {@link java.util.concurrent.ForkJoinPool} it is executing in.
+     * based on the size of the {@link ForkJoinPool} it is executing in.
      *
      * This is a workaround until the fix lands in Java 10, which will make all
      * {@link Stream}s have this property.

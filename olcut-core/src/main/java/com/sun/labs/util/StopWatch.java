@@ -31,6 +31,26 @@ import java.io.Serializable;
 public class StopWatch implements Serializable {
 
     /**
+     * The amount of time accumulated on the timer.
+     */
+    protected long time;
+
+    /**
+     * The amount of time for the last start/stop pair.
+     */
+    protected long lastTime;
+
+    /**
+     * The number of starts and stops since the last reset.
+     */
+    protected long clicks;
+
+    /**
+     * The last start time.
+     */
+    protected long lastStart;
+
+    /**
      * Creates a new stop watch.
      */
     public StopWatch() {
@@ -119,25 +139,4 @@ public class StopWatch implements Serializable {
 
         return String.format("%.2fh", h);
     }
-
-    /**
-     * The amount of time accumulated on the timer.
-     */
-    protected long time;
-
-    /**
-     * The amount of time for the last start/stop pair.
-     */
-    protected long lastTime;
-
-    /**
-     * The number of starts and stops since the last reset.
-     */
-    protected long clicks;
-
-    /**
-     * The last start time.
-     */
-    protected long lastStart;
-
 } // StopWatch
