@@ -17,8 +17,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Option {
 
-    Class<?> genericType() default Object.class;
-
     char charName() default '\0';
 
     String longName();
