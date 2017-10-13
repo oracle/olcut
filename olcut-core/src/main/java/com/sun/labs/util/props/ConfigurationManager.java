@@ -71,6 +71,10 @@ public class ConfigurationManager implements Cloneable {
 
     private MBeanServer mbs;
 
+    private String[] unnamedArguments = new String[0];
+
+    private String usage;
+
     /**
      * Creates a new empty configuration manager. This constructor is only of use in cases when a system configuration
      * is created during runtime.
@@ -117,6 +121,46 @@ public class ConfigurationManager implements Cloneable {
         if(sC != null) {
             this.showCreations = "true".equals(sC.getValue());
         }
+    }
+
+    public ConfigurationManager(String[] arguments, Options options) throws ArgumentException, PropertyException {
+        usage = validateOptions(options);
+    }
+
+    private String validateOptions(Options options) throws ArgumentException {
+        Set<Field> optionFields = new HashSet<>();
+        Set<Class<? extends Options>> allOptions = Options.getAllOptions(options.getClass());
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Usage: -c <configFile>,...,<configFile>\n");
+
+        for (Class<? extends Options> o : allOptions) {
+            builder.append(Options.getUsage(o));
+            optionFields.addAll(Options.getOptionFields(o));
+        }
+
+        HashMap<Character,Option> charNameMap = new HashMap<>();
+        HashMap<String,Option> longNameMap = new HashMap<>();
+
+        for (Field f : optionFields) {
+            Option annotation = f.getAnnotation(Option.class);
+            if (charNameMap.containsKey(annotation.charName())) {
+                throw new ArgumentException(charNameMap.get(annotation.charName())
+                        .longName(),annotation.longName(),"Two arguments have the same character");
+            }
+            if (longNameMap.containsKey(annotation.longName())) {
+                throw new ArgumentException(longNameMap.get(annotation.longName())
+                        .longName(),annotation.longName(),"Two arguments have the same long name");
+            }
+            charNameMap.put(annotation.charName(),annotation);
+            longNameMap.put(annotation.longName(),annotation);
+        }
+
+        return builder.toString();
+    }
+
+    public String usage() {
+        return usage;
     }
 
     /**
@@ -208,7 +252,16 @@ public class ConfigurationManager implements Cloneable {
      * Shuts down the configuration manager, which is a no-op on the standard version.
      */
     public synchronized void shutdown() { }
-    
+
+    /**
+     * Get any unnamed arguments that weren't parsed into an {@link Options}
+     * instance, or used to override a {@link Configurable} field.
+     * @return A string array of command line arguments.
+     */
+    public String[] getUnnamedArguments() {
+        return unnamedArguments;
+    }
+
     /**
      * Gets the raw properties associated with a given instance.
      * @param instanceName the name of the instance whose properties we want
