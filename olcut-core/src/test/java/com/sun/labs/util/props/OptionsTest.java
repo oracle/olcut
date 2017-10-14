@@ -32,10 +32,10 @@ class TestOptions implements Options {
 }
 
 class FileOptions implements Options {
-    @Option(charName='i', longName="inputFile", usage="Path to input file")
+    @Option(charName='i', longName="input-file", usage="Path to input file")
     public File inputFile;
 
-    @Option(charName='o', longName="outputFile", usage="Path to output file")
+    @Option(charName='o', longName="output-file", usage="Path to output file")
     public Path outputFile;
 
     public String getName() {
