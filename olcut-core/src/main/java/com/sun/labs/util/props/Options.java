@@ -27,18 +27,25 @@ public interface Options {
         builder.append("Char\t\tLong Name\t\tUsage\n");
         for (Field f : fields) {
             Option option = f.getAnnotation(Option.class);
-            if (option.charName() != '\0') {
-                builder.append(option.charName());
-            } else {
-                builder.append(' ');
-            }
-            builder.append("\t\t");
-            builder.append(option.longName());
-            builder.append("\t\t");
-            builder.append(option.usage());
-            builder.append('\n');
+            builder.append(Options.getOptionUsage(option));
         }
+        builder.append('\n');
 
+        return builder.toString();
+    }
+
+    public static String getOptionUsage(Option option) {
+        StringBuilder builder = new StringBuilder();
+        if (option.charName() != '\0') {
+            builder.append(option.charName());
+        } else {
+            builder.append(' ');
+        }
+        builder.append("\t\t");
+        builder.append(option.longName());
+        builder.append("\t\t");
+        builder.append(option.usage());
+        builder.append('\n');
         return builder.toString();
     }
 
