@@ -55,7 +55,7 @@ public class SaxLoader {
     private GlobalProperties globalProperties;
 
     /**
-     * Creates a loader that will load from the given location
+     * Creates a loader that will load from the given location.
      *
      * @param url the location to load
      * @param globalProperties the map of global properties
@@ -65,7 +65,7 @@ public class SaxLoader {
     }
 
     /**
-     * Creates a loader that will load from the given location
+     * Creates a loader that will load from the given location.
      *
      * @param url the location to load
      * @param globalProperties the map of global properties
@@ -77,6 +77,31 @@ public class SaxLoader {
             Map<String, RawPropertyData> existingRPD) {
         this.urlQueue = new LinkedList<>();
         this.urlQueue.add(url);
+        this.globalProperties = globalProperties;
+        this.existingRPD = existingRPD;
+    }
+
+    /**
+     * Creates a loader that will load from the given locations.
+     *
+     * @param urlQueue A queue of locations to load.
+     * @param globalProperties The map of global properties.
+     */
+    public SaxLoader(Queue<URL> urlQueue, GlobalProperties globalProperties) {
+        this(urlQueue,globalProperties,null);
+    }
+
+    /**
+     * Creates a loader that will load from the given locations.
+     *
+     * @param urlQueue A queue of locations to load.
+     * @param globalProperties The map of global properties.
+     * @param existingRPD The map of existing raw property data from previously
+     * loaded configuration files, which we might want when overriding elements
+     * in the configuration files that we're loading.
+     */
+    public SaxLoader(Queue<URL> urlQueue, GlobalProperties globalProperties, Map<String, RawPropertyData> existingRPD) {
+        this.urlQueue = urlQueue;
         this.globalProperties = globalProperties;
         this.existingRPD = existingRPD;
     }
