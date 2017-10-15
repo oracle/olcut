@@ -190,6 +190,7 @@ public class ConfigurationManager implements Cloneable {
         builder.append("Usage:\n\nBuilt-in Options\nChar\t\tLong Name\t\tUsage\n");
         builder.append(Options.getOptionUsage(configFileOption));
         builder.append(Options.getOptionUsage(usageOption));
+        builder.append('\n');
 
         for (Class<? extends Options> o : allOptions) {
             builder.append(Options.getUsage(o));
