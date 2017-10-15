@@ -1,6 +1,5 @@
 package com.sun.labs.util.props;
 
-
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.xml.stream.XMLStreamException;
