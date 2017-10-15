@@ -61,7 +61,7 @@ public class ConfigurationManager implements Cloneable {
     public static final char ARG_DELIMITER = ',';
 
     // **WARNING** - do not convert this into a Lambda, it doesn't work due to reflection issues.
-    public static Options EMPTY_OPTIONS = new Options(){ public String getName() { return ""; }};
+    public static final Options EMPTY_OPTIONS = new Options(){ public String getName() { return ""; }};
 
     private List<ConfigurationChangeListener> changeListeners =
             new ArrayList<>();
