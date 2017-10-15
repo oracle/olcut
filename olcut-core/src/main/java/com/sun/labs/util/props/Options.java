@@ -91,6 +91,7 @@ public interface Options {
      */
     public static Set<Class<? extends Options>> getAllOptions(Class<? extends Options> options) {
         Set<Class<? extends Options>> ret = new LinkedHashSet<>();
+        ret.add(options);
         Queue<Class> cq = new ArrayDeque<>();
         cq.add(options);
         while (!cq.isEmpty()) {
