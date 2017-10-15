@@ -207,7 +207,7 @@ public class ConfigurationManager implements Cloneable {
 
         for (Field f : optionFields) {
             Option annotation = f.getAnnotation(Option.class);
-            if (charNameMap.containsKey(annotation.charName())) {
+            if ((annotation.charName() != '\0') && charNameMap.containsKey(annotation.charName())) {
                 throw new ArgumentException(charNameMap.get(annotation.charName())
                         .longName(),annotation.longName(),"Two arguments have the same character");
             }
