@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -44,7 +45,15 @@ public class ConfigurationManager implements Cloneable {
         public String longName() { return "config-file"; }
         public char charName() { return 'c'; }
         public boolean mandatory() { return false; }
-        public String usage() { return "Path to the olcut config file."; }
+        public String usage() { return "A comma separated list of olcut config files."; }
+        public Class<? extends Option> annotationType() { return Option.class; }
+    };
+
+    public static final Option usageOption = new Option() {
+        public String longName() { return "usage"; }
+        public char charName() { return '\0'; }
+        public boolean mandatory() { return false; }
+        public String usage() { return "Write out this usage statement."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
@@ -73,7 +82,7 @@ public class ConfigurationManager implements Cloneable {
 
     protected boolean showCreations;
 
-    private List<URL> configURLs = new ArrayList<>();
+    private LinkedList<URL> configURLs = new LinkedList<>();
 
     private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
 
@@ -82,6 +91,8 @@ public class ConfigurationManager implements Cloneable {
     private String[] unnamedArguments = new String[0];
 
     private String usage;
+
+    private Map<String,Map<String,String>> configurableArguments = new HashMap<>();
 
     /**
      * Creates a new empty configuration manager. This constructor is only of use in cases when a system configuration
@@ -131,16 +142,54 @@ public class ConfigurationManager implements Cloneable {
         }
     }
 
-    public ConfigurationManager(String[] arguments, Options options) throws ArgumentException, PropertyException {
+    public ConfigurationManager(String[] arguments, Options options) throws ArgumentException, PropertyException, IOException {
+        // Validate the supplied Options struct is coherent and generate a usage statement.
         usage = validateOptions(options);
+
+        // Convert to list so we can remove elements.
+        List<String> argumentsList = new ArrayList<>(Arrays.asList(arguments));
+
+        //
+        // Parses out and sets arguments which are in the supplied options
+        List<URL> urls = parseOptionArguments(argumentsList,options);
+
+        configURLs.addAll(urls);
+        SaxLoader saxLoader = new SaxLoader(configURLs, globalProperties);
+        rawPropertyMap = saxLoader.load();
+        origGlobal = new GlobalProperties(globalProperties);
+        for(Map.Entry<String,SerializedObject> e : saxLoader.getSerializedObjects().entrySet()) {
+            e.getValue().setConfigurationManager(this);
+            serializedObjects.put(e.getKey(), e.getValue());
+        }
+        serializedObjects = saxLoader.getSerializedObjects();
+
+        ConfigurationManagerUtils.applySystemProperties(rawPropertyMap,
+                globalProperties);
+
+        // we can't config the configuration manager with itself so we
+        // do some of these config items manually.
+        GlobalProperty sC = globalProperties.get("showCreations");
+        if(sC != null) {
+            this.showCreations = "true".equals(sC.getValue());
+        }
+
+        //
+        // Parses out and sets arguments which override fields in a config file.
+        configurableArguments = parseConfigurableArguments(argumentsList);
+
+        if (argumentsList.size() != 0) {
+            unnamedArguments = argumentsList.toArray(unnamedArguments);
+        }
     }
 
-    private String validateOptions(Options options) throws ArgumentException {
+    public static String validateOptions(Options options) throws ArgumentException {
         Set<Field> optionFields = new HashSet<>();
         Set<Class<? extends Options>> allOptions = Options.getAllOptions(options.getClass());
         StringBuilder builder = new StringBuilder();
 
-        builder.append("Usage: -c <configFile>,...,<configFile>\n");
+        builder.append("Usage:\n\nBuilt-in Options\nChar\t\tLong Name\t\tUsage\n");
+        builder.append(Options.getOptionUsage(configFileOption));
+        builder.append(Options.getOptionUsage(usageOption));
 
         for (Class<? extends Options> o : allOptions) {
             builder.append(Options.getUsage(o));
@@ -153,6 +202,7 @@ public class ConfigurationManager implements Cloneable {
         HashMap<String,Option> longNameMap = new HashMap<>();
         charNameMap.put(configFileOption.charName(),configFileOption);
         longNameMap.put(configFileOption.longName(),configFileOption);
+        longNameMap.put(usageOption.longName(),usageOption);
 
         for (Field f : optionFields) {
             Option annotation = f.getAnnotation(Option.class);
@@ -169,6 +219,41 @@ public class ConfigurationManager implements Cloneable {
         }
 
         return builder.toString();
+    }
+
+    /**
+     * Parses out arguments which override fields in configured objects.
+     *
+     * Expects arguments of the form --@componentname.propertyname.
+     *
+     * Throws {@link ArgumentException} if the component name does not match a known component,
+     * or if the property name is not valid for that class.
+     *
+     * Removes the parsed arguments from the input.
+     *
+     * @param arguments The command line arguments.
+     * @return A map from component name to a map of propertyname to propertyvalue.
+     */
+    private Map<String,Map<String,String>> parseConfigurableArguments(List<String> arguments) throws ArgumentException {
+        Map<String,Map<String,String>> configOverrides = new HashMap<>();
+
+        return configOverrides;
+    }
+
+    /**
+     * Parses out the arguments into the supplied {@link Options}. Returns a list
+     * of config URLs for processing by the SAXLoader.
+     *
+     * Removes the parsed arguments from the input.
+     *
+     * @param arguments The command line arguments.
+     * @param options The Options to write the arguments to.
+     * @return A list of URLs pointing at olcut configuration files.
+     */
+    private List<URL> parseOptionArguments(List<String> arguments, Options options) throws ArgumentException {
+        List<URL> urls = new ArrayList<>();
+
+        return urls;
     }
 
     public String usage() {

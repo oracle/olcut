@@ -1,12 +1,13 @@
 package com.sun.labs.util.props;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Random;
 
 public class OptionsTest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         TestOptions options = new TestOptions();
 
