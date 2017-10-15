@@ -11,11 +11,20 @@ public class OptionsTest {
 
         TestOptions options = new TestOptions();
 
-        ConfigurationManager cm = new ConfigurationManager(args,options);
-
-        System.out.println(cm.usage());
+        ConfigurationManager cm;
+        try {
+            cm = new ConfigurationManager(args, options);
+        } catch (UsageException e) {
+            System.out.println(e.getMsg());
+            return;
+        }
 
         String[] unparsedArgs = cm.getUnnamedArguments();
+
+        System.out.println("Unparsed arguments:");
+        for (String s : unparsedArgs) {
+            System.out.println(s);
+        }
 
         String arg = "-c /path/to/config.xml,/path/to/otherconfig.xml --trainer trainername --@trainername.epochs 5";
     }

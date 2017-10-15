@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,6 +57,11 @@ public class ConfigurationManager implements Cloneable {
         public String usage() { return "Write out this usage statement."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
+
+    public static final char ARG_DELIMITER = ',';
+
+    // **WARNING** - do not convert this into a Lambda, it doesn't work due to reflection issues.
+    public static Options EMPTY_OPTIONS = new Options(){ public String getName() { return ""; }};
 
     private List<ConfigurationChangeListener> changeListeners =
             new ArrayList<>();
@@ -142,16 +148,25 @@ public class ConfigurationManager implements Cloneable {
         }
     }
 
-    public ConfigurationManager(String[] arguments, Options options) throws ArgumentException, PropertyException, IOException {
+    public ConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException, IOException {
+        this(arguments,EMPTY_OPTIONS);
+    }
+
+    public ConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException, IOException {
         // Validate the supplied Options struct is coherent and generate a usage statement.
         usage = validateOptions(options);
+
+        // Check if the user requested the usage statement.
+        if ((arguments.length == 1) && arguments[0].equals("--"+usageOption.longName())) {
+            throw new UsageException(usage);
+        }
 
         // Convert to list so we can remove elements.
         List<String> argumentsList = new ArrayList<>(Arrays.asList(arguments));
 
         //
-        // Parses out and sets arguments which are in the supplied options
-        List<URL> urls = parseOptionArguments(argumentsList,options);
+        // Parses out configuration files
+        List<URL> urls = parseConfigFiles(argumentsList);
 
         configURLs.addAll(urls);
         SaxLoader saxLoader = new SaxLoader(configURLs, globalProperties);
@@ -172,6 +187,10 @@ public class ConfigurationManager implements Cloneable {
         if(sC != null) {
             this.showCreations = "true".equals(sC.getValue());
         }
+
+        //
+        // Parses out and sets arguments which are in the supplied options
+        parseOptionArguments(argumentsList,options);
 
         //
         // Parses out and sets arguments which override fields in a config file.
@@ -242,23 +261,108 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
-     * Parses out the arguments into the supplied {@link Options}. Returns a list
-     * of config URLs for processing by the SAXLoader.
+     * Parses out the arguments into the supplied {@link Options}.
      *
      * Removes the parsed arguments from the input.
      *
      * @param arguments The command line arguments.
      * @param options The Options to write the arguments to.
-     * @return A list of URLs pointing at olcut configuration files.
      */
-    private List<URL> parseOptionArguments(List<String> arguments, Options options) throws ArgumentException {
+    private void parseOptionArguments(List<String> arguments, Options options) throws ArgumentException {
+
+    }
+
+    /**
+     * Parses out the config file argument.
+     *
+     * Removes the parsed arguments from the input.
+     * @param arguments The command line arguments.
+     * @return A list of URLs pointing to olcut config files.
+     * @throws ArgumentException If an argument is poorly formatted or missing a mandatory parameter.
+     */
+    private List<URL> parseConfigFiles(List<String> arguments) throws ArgumentException {
         List<URL> urls = new ArrayList<>();
+
+        String confStr = "-" + configFileOption.charName();
+        String longStr = "--" + configFileOption.longName();
+        Iterator<String> argsItr = arguments.iterator();
+        while (argsItr.hasNext()) {
+            String curArg = argsItr.next();
+            if (confStr.equals(curArg) || longStr.equals(curArg)) {
+                argsItr.remove();
+                if (argsItr.hasNext()) {
+                    String curParam = argsItr.next();
+                    if (!curParam.startsWith("-")) {
+                        List<String> urlList = parseStringList(curParam);
+                        urls.clear();
+                        for (String s : urlList) {
+                            URL url = ConfigurationManager.class.getResource(s);
+                            if (url == null) {
+                                File file = new File(s);
+                                if (file.exists()) {
+                                    try {
+                                        url = file.toURI().toURL();
+                                    } catch (MalformedURLException e) {
+                                        throw new ArgumentException(e, curArg,"Can't load config file: " + s);
+                                    }
+                                } else {
+                                    throw new ArgumentException(curArg,"Can't find config file: " + s);
+                                }
+                            }
+                            urls.add(url);
+                        }
+                        argsItr.remove();
+                    } else {
+                        throw new ArgumentException(curArg,"No parameter supplied for argument");
+                    }
+                } else {
+                    throw new ArgumentException(curArg,"No parameter supplied for argument");
+                }
+            }
+        }
 
         return urls;
     }
 
     public String usage() {
         return usage;
+    }
+
+    /**
+     * Parses a string into a list of string, respecting escaping of the delimiter, and also allowing quotes.
+     * @param input
+     * @return
+     */
+    public static List<String> parseStringList(String input) {
+        List<String> tokensList = new ArrayList<>();
+        boolean inQuotes = false;
+        boolean escaped = false;
+        StringBuilder buffer = new StringBuilder();
+        for (char c : input.toCharArray()) {
+            switch (c) {
+                case ARG_DELIMITER:
+                    if (inQuotes || escaped) {
+                        buffer.append(c);
+                    } else {
+                        tokensList.add(buffer.toString());
+                        buffer = new StringBuilder();
+                    }
+                    escaped = false;
+                    break;
+                case '\\':
+                    escaped = true;
+                    break;
+                case '\"':
+                    // Note fall through here to gather up the quotes.
+                    inQuotes = !inQuotes;
+                default:
+                    buffer.append(c);
+                    escaped = false;
+                    break;
+            }
+        }
+        tokensList.add(buffer.toString());
+        return tokensList;
     }
 
     /**
