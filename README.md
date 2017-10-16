@@ -114,6 +114,42 @@ the pipeline instances themselves need be duplicated.
                 <item>volumeStage</item>
             </propertylist>
         </component>
+        
+The supported list of annotated field types are:
+
+* Primitives
+    * boolean, Boolean
+    * byte, Byte
+    * short, Short
+    * int, Integer
+    * long, Long
+    * float, Float
+    * double, Double
+    * String
+* Primitive array types
+    * byte[]
+    * short[]
+    * int[]
+    * long[]
+    * float[]
+    * double[]
+* Configurable classes
+    * Configurable
+* Object array types
+    * String[]
+    * Configurable[]
+* Generic types - requires genericType argument to be set
+    * List
+    * EnumSet
+    * Set
+    * Map //Map<String,T>
+* Misc types
+    * AtomicInteger
+    * AtomicLong
+    * File
+    * Path
+    * Random
+    * Enum
 
 ## Global Properties
 
@@ -190,6 +226,13 @@ cm.addProperties(URL url) to mix in the configuration in a second file.  That
 file can make use of things like Global Properties and can inherit from
 components in the first file.
 
+It's also possible to chain load config files by adding a file tag.
+
+        <file name="more" value="more-config.xml"/>
+
+This adds the new file to be processed in the XML parser. Files can override 
+earlier properties.
+
 To support a standard or default configuration, a common practice is to include
 that configuration in the source tree for your project and package it in the
 jar or war file. You can then use getClass().getResource(...) to retrieve
@@ -199,7 +242,7 @@ the standard configuration file from within the jar file.
 ## Remote Components
 
 The configuration system can make use of Jini and RMI to help instantiate a
-distributed system.  Through extentions to the component definition in the
+distributed system.  Through extensions to the component definition in the
 configuration file, components can be registered as services in Jini.  When
 a component lists another component as a property, that component need not
 be on the same machine.  If it is remote, the configuration system will
