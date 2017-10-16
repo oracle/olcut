@@ -40,6 +40,17 @@ public class ArgumentParsingTest {
         assertEquals("Loading from " + name + " failed.", "c", slc.strings.get(2));
     }
 
+    @Test
+    public void testConfigurableOverride() throws IOException {
+        String[] args = new String[]{"--@listTest.strings","alpha,beta,gamma"};
+        ConfigurationManager cm = new ConfigurationManager(args);
+
+        StringListConfigurable slc = (StringListConfigurable) cm.lookup("listTest");
+        assertEquals("Configurable overriding failed.", "alpha", slc.strings.get(0));
+        assertEquals("Configurable overriding failed.", "beta", slc.strings.get(1));
+        assertEquals("Configurable overriding failed.", "gamma", slc.strings.get(2));
+    }
+
     @Test(expected=ArgumentException.class)
     public void testNoConfigParam() throws IOException {
         String[] args = new String[]{"-c"};
