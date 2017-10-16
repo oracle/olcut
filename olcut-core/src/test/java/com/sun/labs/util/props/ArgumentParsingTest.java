@@ -52,6 +52,13 @@ public class ArgumentParsingTest {
     }
 
     @Test(expected=ArgumentException.class)
+    public void testConfigurableOverrideFail() throws IOException {
+        String[] args = new String[]{"--@listTest.strings","alpha,beta,gamma"};
+        ConfigurationManager cm = new ConfigurationManager(args);
+        Assert.fail();
+    }
+
+    @Test(expected=ArgumentException.class)
     public void testNoConfigParam() throws IOException {
         String[] args = new String[]{"-c"};
         ConfigurationManager cm = new ConfigurationManager(args);
