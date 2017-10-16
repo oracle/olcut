@@ -42,7 +42,7 @@ public class ArgumentParsingTest {
 
     @Test
     public void testConfigurableOverride() throws IOException {
-        String[] args = new String[]{"--@listTest.strings","alpha,beta,gamma"};
+        String[] args = new String[]{"-c","stringListConfig.xml","--@listTest.strings","alpha,beta,gamma"};
         ConfigurationManager cm = new ConfigurationManager(args);
 
         StringListConfigurable slc = (StringListConfigurable) cm.lookup("listTest");
