@@ -60,8 +60,13 @@ public class ConfigurationManager implements Cloneable {
 
     public static final char ARG_DELIMITER = ',';
 
+    public static final char CONFIGURABLE_CHAR = '@';
+
+    public static final String CONFIGURABLE_OVERRIDE = "--" + CONFIGURABLE_CHAR;
+
     // **WARNING** - do not convert this into a Lambda, it doesn't work due to reflection issues.
-    public static final Options EMPTY_OPTIONS = new Options(){ public String getName() { return ""; }};
+    public static final Options EMPTY_OPTIONS = new Options(){ public String getName() { return ""; } };
+    //public static final Options EMPTY_OPTIONS = () -> "";
 
     private List<ConfigurationChangeListener> changeListeners =
             new ArrayList<>();
@@ -97,8 +102,6 @@ public class ConfigurationManager implements Cloneable {
     private String[] unnamedArguments = new String[0];
 
     private String usage;
-
-    private Map<String,Map<String,String>> configurableArguments = new HashMap<>();
 
     /**
      * Creates a new empty configuration manager. This constructor is only of use in cases when a system configuration
@@ -189,12 +192,14 @@ public class ConfigurationManager implements Cloneable {
         }
 
         //
-        // Parses out and sets arguments which are in the supplied options
-        parseOptionArguments(argumentsList,options);
+        // Parses out and sets arguments which override fields in a config file.
+        // Writes into the rpd for each component.
+        parseConfigurableArguments(argumentsList);
 
         //
-        // Parses out and sets arguments which override fields in a config file.
-        configurableArguments = parseConfigurableArguments(argumentsList);
+        // Parses out and sets arguments which are in the supplied options.
+        // Must be last as it can cause Configurable instantiation.
+        parseOptionArguments(argumentsList,options);
 
         if (argumentsList.size() != 0) {
             unnamedArguments = argumentsList.toArray(unnamedArguments);
@@ -249,15 +254,50 @@ public class ConfigurationManager implements Cloneable {
      * Throws {@link ArgumentException} if the component name does not match a known component,
      * or if the property name is not valid for that class.
      *
-     * Removes the parsed arguments from the input.
+     * Removes the parsed arguments from the input, and overwrites values in the rpd for each component.
      *
      * @param arguments The command line arguments.
-     * @return A map from component name to a map of propertyname to propertyvalue.
+     * @throws ArgumentException If an argument is poorly formatted, missing a mandatory parameter, or
+     *              does not override a field in a configurable.
      */
-    private Map<String,Map<String,String>> parseConfigurableArguments(List<String> arguments) throws ArgumentException {
-        Map<String,Map<String,String>> configOverrides = new HashMap<>();
+    private void parseConfigurableArguments(List<String> arguments) throws ArgumentException {
+        Iterator<String> argsItr = arguments.iterator();
+        while (argsItr.hasNext()) {
+            String curArg = argsItr.next();
 
-        return configOverrides;
+            // Check if it's an override for a configurable
+            if (curArg.startsWith(CONFIGURABLE_OVERRIDE)) {
+                String[] split = curArg.substring(3).split("\\.");
+                if (split.length == 2) {
+                    RawPropertyData rpd = rawPropertyMap.get(split[0]);
+                    if (rpd != null) {
+                        if (checkConfigurableField(rpd.getClassName(),split[1])) {
+                            // Found a valid configurable field, consume argument.
+                            argsItr.remove();
+                            if (argsItr.hasNext()) {
+                                String param = argsItr.next();
+                                List<String> list = parseStringList(param);
+                                if (list.size() == 1) {
+                                    rpd.add(split[1], list.get(0));
+                                } else {
+                                    rpd.add(split[1], list);
+                                }
+                                argsItr.remove();
+                            } else {
+                                throw new ArgumentException(curArg,"No parameter for argument");
+                            }
+                        } else {
+                            throw new ArgumentException(curArg,"Failed to find field " + split[1] + " in component " + split[0] + " with class " + rpd.getClassName());
+                        }
+                    } else {
+                        throw new ArgumentException(curArg,"Failed to find component " + split[0]);
+                    }
+                } else {
+                    throw new ArgumentException(curArg,"Failed to parse configurable override argument");
+                }
+            }
+        }
+
     }
 
     /**
@@ -267,6 +307,8 @@ public class ConfigurationManager implements Cloneable {
      *
      * @param arguments The command line arguments.
      * @param options The Options to write the arguments to.
+     * @throws ArgumentException If an argument is poorly formatted, missing a mandatory parameter, or not
+     *              present in the supplied Options.
      */
     private void parseOptionArguments(List<String> arguments, Options options) throws ArgumentException {
 
@@ -363,6 +405,33 @@ public class ConfigurationManager implements Cloneable {
         }
         tokensList.add(buffer.toString());
         return tokensList;
+    }
+
+    private boolean checkConfigurableField(String configurableClass, String fieldName) {
+        Class<? extends Configurable> clazz = null;
+        // catch is empty as this is only called with classes from RawPropertyData,
+        // which has already checked it's configurable.
+        try {
+            clazz = (Class<? extends Configurable>) Class.forName(configurableClass);
+        } catch (ClassNotFoundException e) {}
+        return checkConfigurableField(clazz,fieldName);
+    }
+
+    private boolean checkConfigurableField(Class<? extends Configurable> configurableClass, String fieldName) {
+        Set<Field> fields = PropertySheet.getAllFields(configurableClass);
+        boolean found = false;
+        for (Field f : fields) {
+            if (f.getName().equals(fieldName) && (f.getAnnotation(Config.class) != null)) {
+                if (!Map.class.isAssignableFrom(f.getType())) {
+                    found = true;
+                    break;
+                } else {
+                    logger.warning("Dude seriously, a Map? On the command line? Maps aren't supported.");
+                    break;
+                }
+            }
+        }
+        return found;
     }
 
     /**
