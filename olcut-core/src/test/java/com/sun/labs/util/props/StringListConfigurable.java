@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class StringListConfigurable implements Configurable {
 
-    @Config(genericType=String.class)
+    @Config
     public List<String> strings = new ArrayList<String>();
 
 }

@@ -98,34 +98,34 @@ public class AllFieldsConfigurable implements Configurable {
     public StringConfigurable[] configurableSubclassArrayField;
 
     //Generic types - requires genericType argument to be set
-    @Config(genericType=Double.class)
+    @Config
     public List<Double> listDoubleField;
-    @Config(genericType=String.class)
+    @Config
     public List<String> listStringField;
-    @Config(genericType=Random.class)
+    @Config
     public List<Random> listRandomField;
-    @Config(genericType=StringConfigurable.class)
+    @Config
     public List<StringConfigurable> listConfigurableSubclassField;
 
-    @Config(genericType=Double.class)
+    @Config
     public Set<Double> setDoubleField;
-    @Config(genericType=String.class)
+    @Config
     public Set<String> setStringField;
-    @Config(genericType=Path.class)
+    @Config
     public Set<Path> setPathField;
-    @Config(genericType=StringConfigurable.class)
+    @Config
     public Set<StringConfigurable> setConfigurableSubclassField;
 
-    @Config(genericType=Double.class)
+    @Config
     public Map<String, Double> mapDoubleField;
-    @Config(genericType=String.class)
+    @Config
     public Map<String, String> mapStringField;
-    @Config(genericType=File.class)
+    @Config
     public Map<String, File> mapFileField;
-    @Config(genericType=StringConfigurable.class)
+    @Config
     public Map<String, StringConfigurable> mapConfigurableSubclassField;
 
-    @Config(genericType=Type.class)
+    @Config
     public EnumSet<Type> enumSetField;
 
     //Misc types

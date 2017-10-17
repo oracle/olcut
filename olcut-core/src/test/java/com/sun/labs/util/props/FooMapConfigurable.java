@@ -7,7 +7,7 @@ import java.util.Map;
  */
 public class FooMapConfigurable implements Configurable {
 
-    @Config(genericType=FooConfigurable.class)
+    @Config
     public Map<String, FooConfigurable> map;
 
     @Override

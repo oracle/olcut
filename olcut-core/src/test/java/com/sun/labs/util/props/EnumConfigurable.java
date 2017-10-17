@@ -20,7 +20,7 @@ public class EnumConfigurable implements Configurable {
     @Config
     Type enum2 = Type.A;
 
-    @Config(genericType=EnumConfigurable.Type.class)
+    @Config
     EnumSet<Type> enumSet1 = EnumSet.of(Type.A,Type.F);
 
     @Override

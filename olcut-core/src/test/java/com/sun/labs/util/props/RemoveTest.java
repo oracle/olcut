@@ -60,7 +60,7 @@ public class RemoveTest {
     }
 
     @Test
-    public void removeProgramaticallyAddedUninstantiated() {
+    public void removeProgramaticallyAddedUninstantiated() throws IOException {
         ConfigurationManager cm = new ConfigurationManager();
         Map<String,Object> m = new HashMap<String,Object>();
         m.put("s", "foo");
@@ -77,7 +77,7 @@ public class RemoveTest {
     }
 
     @Test
-    public void removeProgramaticallyAddedInstantiated() {
+    public void removeProgramaticallyAddedInstantiated() throws IOException {
         ConfigurationManager cm = new ConfigurationManager();
         Map<String, Object> m = new HashMap<String, Object>();
         m.put("s", "foo");

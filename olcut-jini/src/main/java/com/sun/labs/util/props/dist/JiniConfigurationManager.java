@@ -1,15 +1,18 @@
 package com.sun.labs.util.props.dist;
 
+import com.sun.labs.util.props.ArgumentException;
 import com.sun.labs.util.props.ComponentListener;
 import com.sun.labs.util.props.ConfigWrapper;
 import com.sun.labs.util.props.Configurable;
 import com.sun.labs.util.props.ConfigurationChangeListener;
 import com.sun.labs.util.props.ConfigurationManager;
 import com.sun.labs.util.props.InternalConfigurationException;
+import com.sun.labs.util.props.Options;
 import com.sun.labs.util.props.PropertyException;
 import com.sun.labs.util.props.PropertySheet;
 import com.sun.labs.util.props.RawPropertyData;
 import com.sun.labs.util.props.Startable;
+import com.sun.labs.util.props.UsageException;
 
 import java.io.IOException;
 import java.net.URL;
@@ -39,7 +42,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * Creates a new empty configuration manager. This constructor is only of use in cases when a system configuration
      * is created during runtime.
      */
-    public JiniConfigurationManager() {
+    public JiniConfigurationManager() throws IOException {
         super();
     }
 
@@ -57,6 +60,14 @@ public class JiniConfigurationManager extends ConfigurationManager {
         //
         // Look up our distinguished registry name.
         setUpRegistry();
+    }
+
+    public JiniConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException, IOException {
+        super(arguments,EMPTY_OPTIONS);
+    }
+
+    public JiniConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException, IOException {
+        super(arguments,options);
     }
 
     /**

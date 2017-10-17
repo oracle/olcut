@@ -118,9 +118,9 @@ public class ConfigurationManagerUtils {
             GlobalProperties global)
             throws PropertyException {
         Properties props = System.getProperties();
-        for(Enumeration e = props.keys(); e.hasMoreElements();) {
-            String param = (String) e.nextElement();
-            String value = props.getProperty(param);
+        for (Map.Entry<Object,Object> e : props.entrySet()) {
+            String param = (String) e.getKey();
+            String value = (String) e.getValue();
 
             // search for params of the form component[param]=value
             // these go in the property sheet for the component

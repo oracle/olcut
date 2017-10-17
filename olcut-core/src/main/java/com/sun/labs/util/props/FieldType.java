@@ -59,10 +59,13 @@ public enum FieldType {
     
     private final static Map<Class<?>,FieldType> m = new HashMap<>();
     
-    public final static EnumSet<FieldType> listTypes = EnumSet.of(LIST, SET, ENUM_SET, BYTE_ARRAY, SHORT_ARRAY,
+    public final static EnumSet<FieldType> arrayTypes = EnumSet.of(BYTE_ARRAY, SHORT_ARRAY,
                                                                   INTEGER_ARRAY, LONG_ARRAY,
                                                                   FLOAT_ARRAY, DOUBLE_ARRAY, STRING_ARRAY,
                                                                   CONFIGURABLE_ARRAY);
+
+    public final static EnumSet<FieldType> listTypes = EnumSet.of(LIST,SET,ENUM_SET);
+
     public final static EnumSet<FieldType> simpleTypes = EnumSet.of(BOOLEAN, BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, STRING,
                                                                     CONFIGURABLE, ATOMIC_INTEGER,
                                                                     ATOMIC_LONG, FILE, PATH, RANDOM, ENUM);
@@ -102,5 +105,8 @@ public enum FieldType {
     public Class<?>[] getTypes() {
         return types;
     }
-    
+
+    public static boolean isBoolean(FieldType ft) {
+        return ft.equals(FieldType.BOOLEAN);
+    }
 }

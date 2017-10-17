@@ -17,15 +17,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Option {
 
-    char charName() default '\0';
+    char charName() default EMPTY_CHAR;
 
     String longName();
 
     String usage();
 
-    /**
-     * By default, options aren't mandatory.
-     */
-    boolean mandatory() default false;
-
+    public static char EMPTY_CHAR = '\0';
 }

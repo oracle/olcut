@@ -1,5 +1,7 @@
 package com.sun.labs.util.props;
 
+import com.sun.labs.util.Pair;
+
 import javax.management.MBeanServer;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -26,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
@@ -41,6 +44,7 @@ import java.util.regex.Pattern;
  * @see com.sun.labs.util.props.PropertySheet
  */
 public class ConfigurationManager implements Cloneable {
+    private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
 
     public static final Option configFileOption = new Option() {
         public String longName() { return "config-file"; }
@@ -54,7 +58,15 @@ public class ConfigurationManager implements Cloneable {
         public String longName() { return "usage"; }
         public char charName() { return '\0'; }
         public boolean mandatory() { return false; }
-        public String usage() { return "Write out this usage statement."; }
+        public String usage() { return "Write out this usage/help statement."; }
+        public Class<? extends Option> annotationType() { return Option.class; }
+    };
+
+    public static final Option helpOption = new Option() {
+        public String longName() { return "help"; }
+        public char charName() { return '\0'; }
+        public boolean mandatory() { return false; }
+        public String usage() { return "Write out this usage/help statement."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
@@ -62,10 +74,14 @@ public class ConfigurationManager implements Cloneable {
 
     public static final char CONFIGURABLE_CHAR = '@';
 
-    public static final String CONFIGURABLE_OVERRIDE = "--" + CONFIGURABLE_CHAR;
+    public static final String SHORT_ARG = "-";
+
+    public static final String LONG_ARG = "--";
+
+    public static final String CONFIGURABLE_OVERRIDE = LONG_ARG + CONFIGURABLE_CHAR;
 
     // **WARNING** - do not convert this into a Lambda, it doesn't work due to reflection issues.
-    public static final Options EMPTY_OPTIONS = new Options(){ public String getName() { return ""; } };
+    public static final Options EMPTY_OPTIONS = new Options(){ };
     //public static final Options EMPTY_OPTIONS = () -> "";
 
     private List<ConfigurationChangeListener> changeListeners =
@@ -95,8 +111,6 @@ public class ConfigurationManager implements Cloneable {
 
     private LinkedList<URL> configURLs = new LinkedList<>();
 
-    private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
-
     private MBeanServer mbs;
 
     private String[] unnamedArguments = new String[0];
@@ -107,17 +121,8 @@ public class ConfigurationManager implements Cloneable {
      * Creates a new empty configuration manager. This constructor is only of use in cases when a system configuration
      * is created during runtime.
      */
-    public ConfigurationManager() {
-
-        // we can't config the configuration manager with itself so we
-        // do some of these config items manually.
-        origGlobal = new GlobalProperties();
-        ConfigurationManagerUtils.applySystemProperties(rawPropertyMap,
-                                                        globalProperties);
-        GlobalProperty scGlobal = globalProperties.get("showCreations");
-        if(scGlobal != null) {
-            showCreations = "true".equals(scGlobal.getValue());
-        }
+    public ConfigurationManager() throws IOException {
+        this(new String[0]);
     }
 
     /**
@@ -129,7 +134,7 @@ public class ConfigurationManager implements Cloneable {
      */
     public ConfigurationManager(URL url) throws IOException,
             PropertyException {
-        
+
         configURLs.add(url);
         SaxLoader saxLoader = new SaxLoader(url, globalProperties);
         rawPropertyMap = saxLoader.load();
@@ -160,12 +165,12 @@ public class ConfigurationManager implements Cloneable {
         usage = validateOptions(options);
 
         // Check if the user requested the usage statement.
-        if ((arguments.length == 1) && arguments[0].equals("--"+usageOption.longName())) {
+        if ((arguments.length == 1) && (arguments[0].equals("--"+usageOption.longName()) || arguments[0].equals("--"+helpOption.longName()))) {
             throw new UsageException(usage);
         }
 
         // Convert to list so we can remove elements.
-        List<String> argumentsList = new ArrayList<>(Arrays.asList(arguments));
+        List<String> argumentsList = new LinkedList<>(Arrays.asList(arguments));
 
         //
         // Parses out configuration files
@@ -181,8 +186,10 @@ public class ConfigurationManager implements Cloneable {
         }
         serializedObjects = saxLoader.getSerializedObjects();
 
-        ConfigurationManagerUtils.applySystemProperties(rawPropertyMap,
-                globalProperties);
+        //
+        // Parses out and sets arguments which override fields in a config file.
+        // Writes into the rpd for each component.
+        parseConfigurableArguments(argumentsList);
 
         // we can't config the configuration manager with itself so we
         // do some of these config items manually.
@@ -192,14 +199,14 @@ public class ConfigurationManager implements Cloneable {
         }
 
         //
-        // Parses out and sets arguments which override fields in a config file.
-        // Writes into the rpd for each component.
-        parseConfigurableArguments(argumentsList);
-
-        //
         // Parses out and sets arguments which are in the supplied options.
-        // Must be last as it can cause Configurable instantiation.
-        parseOptionArguments(argumentsList,options);
+        // *Must* be last as it can cause Configurable instantiation.
+        // Throws an exception if there are unknown named arguments at this stage.
+        try {
+            parseOptionArguments(argumentsList, options);
+        } catch (IllegalAccessException e) {
+            throw new ArgumentException(e, "Failed to write argument into Options");
+        }
 
         if (argumentsList.size() != 0) {
             unnamedArguments = argumentsList.toArray(unnamedArguments);
@@ -228,10 +235,14 @@ public class ConfigurationManager implements Cloneable {
         charNameMap.put(configFileOption.charName(),configFileOption);
         longNameMap.put(configFileOption.longName(),configFileOption);
         longNameMap.put(usageOption.longName(),usageOption);
+        longNameMap.put(helpOption.longName(),helpOption);
 
         for (Field f : optionFields) {
             Option annotation = f.getAnnotation(Option.class);
-            if ((annotation.charName() != '\0') && charNameMap.containsKey(annotation.charName())) {
+            if (FieldType.getFieldType(f) == null) {
+                throw new ArgumentException(annotation.longName(),"Argument has an unsupported type " + f.getType().getName());
+            }
+            if ((annotation.charName() != Option.EMPTY_CHAR) && charNameMap.containsKey(annotation.charName())) {
                 throw new ArgumentException(charNameMap.get(annotation.charName())
                         .longName(),annotation.longName(),"Two arguments have the same character");
             }
@@ -265,7 +276,7 @@ public class ConfigurationManager implements Cloneable {
         while (argsItr.hasNext()) {
             String curArg = argsItr.next();
 
-            // Check if it's an override for a configurable
+            // Check if it's an override for a configurable or global property
             if (curArg.startsWith(CONFIGURABLE_OVERRIDE)) {
                 String[] split = curArg.substring(3).split("\\.");
                 if (split.length == 2) {
@@ -284,7 +295,7 @@ public class ConfigurationManager implements Cloneable {
                                 }
                                 argsItr.remove();
                             } else {
-                                throw new ArgumentException(curArg,"No parameter for argument");
+                                throw new ArgumentException(curArg,"No parameter for configurable override argument");
                             }
                         } else {
                             throw new ArgumentException(curArg,"Failed to find field " + split[1] + " in component " + split[0] + " with class " + rpd.getClassName());
@@ -292,8 +303,18 @@ public class ConfigurationManager implements Cloneable {
                     } else {
                         throw new ArgumentException(curArg,"Failed to find component " + split[0]);
                     }
+                } else if (split.length == 1) {
+                    // Override for global property
+                    argsItr.remove();
+                    if (argsItr.hasNext()) {
+                        String param = argsItr.next();
+                        globalProperties.setValue(split[0],param);
+                        argsItr.remove();
+                    } else {
+                        throw new ArgumentException(curArg,"No parameter for global property argument");
+                    }
                 } else {
-                    throw new ArgumentException(curArg,"Failed to parse configurable override argument");
+                    throw new ArgumentException(curArg,"Failed to parse configuration override argument");
                 }
             }
         }
@@ -310,8 +331,130 @@ public class ConfigurationManager implements Cloneable {
      * @throws ArgumentException If an argument is poorly formatted, missing a mandatory parameter, or not
      *              present in the supplied Options.
      */
-    private void parseOptionArguments(List<String> arguments, Options options) throws ArgumentException {
+    private void parseOptionArguments(List<String> arguments, Options options) throws ArgumentException, IllegalAccessException {
+        Map<String,Pair<Field,Object>> longNameMap = new HashMap<>();
+        Map<Character,Pair<Field,Object>> charNameMap = new HashMap<>();
 
+        Queue<Options> objectQueue = new LinkedList<>();
+        objectQueue.add(options);
+
+        //
+        // Populate the argument hashmaps with the field and object to write to.
+        while (!objectQueue.isEmpty()) {
+            Options o = objectQueue.poll();
+            Set<Field> fields = Options.getOptionFields(o.getClass());
+            for (Field f : fields) {
+                Option ann = f.getAnnotation(Option.class);
+                longNameMap.put(ann.longName(),new Pair<>(f,o));
+                if (ann.charName() != Option.EMPTY_CHAR) {
+                    charNameMap.put(ann.charName(),new Pair<>(f,o));
+                }
+            }
+            fields = Options.getOptions(o.getClass());
+            for (Field f : fields) {
+                boolean accessible = f.isAccessible();
+                f.setAccessible(true);
+                objectQueue.add((Options)f.get(o));
+                f.setAccessible(accessible);
+            }
+        }
+
+        Iterator<String> argsItr = arguments.iterator();
+        while (argsItr.hasNext()) {
+            String curArg = argsItr.next();
+
+            if (curArg.startsWith(LONG_ARG)) {
+                String argName = curArg.substring(2);
+                Pair<Field,Object> arg = longNameMap.get(argName);
+                if (arg != null) {
+                    Field f = arg.getA();
+                    FieldType ft = FieldType.getFieldType(f);
+                    // Consume argument.
+                    argsItr.remove();
+                    if (argsItr.hasNext()) {
+                        String param = argsItr.next();
+                        List<String> list = parseStringList(param);
+                        if (FieldType.arrayTypes.contains(ft)) {
+                            f.set(arg.getB(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, list));
+                        } else if (FieldType.listTypes.contains(ft)) {
+                            List<Class<?>> genericList = PropertySheet.getGenericClass(f);
+                            if (genericList.size() == 1) {
+                                f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, list));
+                            } else {
+                                throw new ArgumentException(curArg,"Unknown generic type in argument");
+                            }
+                        } else if (list.size() == 1) {
+                            f.set(arg.getB(),PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
+                        } else {
+                            throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
+                        }
+                        // Consume parameter.
+                        argsItr.remove();
+                    } else {
+                        throw new ArgumentException(curArg,"No parameter for argument");
+                    }
+                } else {
+                    throw new ArgumentException(curArg,"Unknown argument.");
+                }
+            } else if (curArg.startsWith(SHORT_ARG)) {
+                char[] args = curArg.substring(1).toCharArray();
+                if (args.length > 0) {
+                    argsItr.remove();
+                    //
+                    // We'll treat the last argument separately as it might have a parameter
+                    for (int i = 0; i < args.length - 1; i++) {
+                        Pair<Field,Object> arg = charNameMap.get(args[i]);
+                        if (arg != null) {
+                            Field f = arg.getA();
+                            FieldType ft = FieldType.getFieldType(f);
+                            if (FieldType.isBoolean(ft)) {
+                                f.set(arg.getB(),true);
+                            } else {
+                                throw new ArgumentException(curArg + " on element " + args[i], "Non boolean argument found where boolean expected");
+                            }
+                        } else {
+                            throw new ArgumentException(curArg + " on element " + args[i], "Unknown argument");
+                        }
+                    }
+
+                    Pair<Field,Object> arg = charNameMap.get(args[args.length-1]);
+                    if (arg != null) {
+                        Field f = arg.getA();
+                        FieldType ft = FieldType.getFieldType(f);
+                        if (FieldType.isBoolean(ft)) {
+                            f.set(arg.getB(),true);
+                        } else {
+                            // Now we need to accept the next parameter.
+                            curArg = args[args.length-1]+"";
+                            if (argsItr.hasNext()) {
+                                String param = argsItr.next();
+                                List<String> list = parseStringList(param);
+                                if (FieldType.arrayTypes.contains(ft)) {
+                                    f.set(arg.getB(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, list));
+                                } else if (FieldType.listTypes.contains(ft)) {
+                                    List<Class<?>> genericList = PropertySheet.getGenericClass(f);
+                                    if (genericList.size() == 1) {
+                                        f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, list));
+                                    } else {
+                                        throw new ArgumentException(curArg,"Unknown generic type in argument");
+                                    }
+                                } else if (list.size() == 1) {
+                                    f.set(arg.getB(),PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
+                                } else {
+                                    throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
+                                }
+                                // Consume parameter.
+                                argsItr.remove();
+                            } else {
+                                throw new ArgumentException(curArg,"No parameter for argument");
+                            }
+                        }
+                    }
+                } else {
+                    throw new ArgumentException(curArg, "Empty argument found.");
+                }
+            }
+        }
     }
 
     /**
@@ -1355,8 +1498,14 @@ public class ConfigurationManager implements Cloneable {
                 if (configAnnotation != null) {
                     propertyName = field.getName();
                     Class<?> fieldClass = field.getType();
-                    Class<?> genericType = configAnnotation.genericType();
                     FieldType ft = FieldType.getFieldType(fieldClass);
+                    List<Class<?>> genericList = PropertySheet.getGenericClass(field);
+                    Class<?> genericType = Object.class;
+                    if (genericList.size() == 1) {
+                        genericType = genericList.get(0);
+                    } else if (genericList.size() == 2){
+                        genericType = genericList.get(1);
+                    }
 
                     logger.log(Level.FINER, "field %s, class=%s, configurable? %s; genericType=%s configurable? %s",
                             new Object[]{field.getName(),
@@ -1367,53 +1516,47 @@ public class ConfigurationManager implements Cloneable {
                             });
 
                     if (FieldType.simpleTypes.contains(ft)) {
-                        m.put(propertyName, importSimpleField(fieldClass,name,field.getName(),field.get(configurable)));
+                        m.put(propertyName, importSimpleField(fieldClass, name, field.getName(), field.get(configurable)));
                     } else if (FieldType.listTypes.contains(ft)) {
-                        if (List.class.isAssignableFrom(fieldClass) || Set.class.isAssignableFrom(fieldClass)) {
-                            m.put(propertyName, importCollection(genericType, name, propertyName, (Collection) field.get(configurable)));
-                        } else if (fieldClass.isArray()) {
-                            Class arrayComponentType = fieldClass.getComponentType();
-                            if (Configurable.class.isAssignableFrom(arrayComponentType)) {
-                                m.put(propertyName, importCollection(Configurable.class, name, propertyName, Arrays.asList((Configurable[]) field.get(configurable))));
-                            } else {
-                                List<String> stringList = new ArrayList<>();
-                                //
-                                // Primitive array
-                                if (byte.class.isAssignableFrom(arrayComponentType)) {
-                                    for (byte b : (byte[]) field.get(configurable)) {
-                                        stringList.add("" + b);
-                                    }
-                                } else if (short.class.isAssignableFrom(arrayComponentType)) {
-                                    for (short s : (short[]) field.get(configurable)) {
-                                        stringList.add("" + s);
-                                    }
-                                } else if (int.class.isAssignableFrom(arrayComponentType)) {
-                                    for (int i : (int[]) field.get(configurable)) {
-                                        stringList.add("" + i);
-                                    }
-                                } else if (long.class.isAssignableFrom(arrayComponentType)) {
-                                    for (long l : (long[]) field.get(configurable)) {
-                                        stringList.add("" + l);
-                                    }
-                                } else if (float.class.isAssignableFrom(arrayComponentType)) {
-                                    for (float f : (float[]) field.get(configurable)) {
-                                        stringList.add("" + f);
-                                    }
-                                } else if (double.class.isAssignableFrom(arrayComponentType)) {
-                                    for (double d : (double[]) field.get(configurable)) {
-                                        stringList.add("" + d);
-                                    }
-                                } else if (String.class.isAssignableFrom(arrayComponentType)) {
-                                    stringList.addAll(Arrays.asList((String[]) field.get(configurable)));
-                                } else {
-                                    throw new PropertyException(name, "Unsupported array type " + fieldClass.toString());
-                                }
-                                m.put(propertyName, stringList);
-                            }
+                        m.put(propertyName, importCollection(genericType, name, propertyName, (Collection) field.get(configurable)));
+                    } else if (FieldType.arrayTypes.contains(ft)) {
+                        Class arrayComponentType = fieldClass.getComponentType();
+                        if (Configurable.class.isAssignableFrom(arrayComponentType)) {
+                            m.put(propertyName, importCollection(Configurable.class, name, propertyName, Arrays.asList((Configurable[]) field.get(configurable))));
                         } else {
-                            throw new PropertyException(name, "Unknown field type " +
-                                    fieldClass.toString() + " found when importing " +
-                                    name + " of class " + configurable.getClass().toString());
+                            List<String> stringList = new ArrayList<>();
+                            //
+                            // Primitive array
+                            if (byte.class.isAssignableFrom(arrayComponentType)) {
+                                for (byte b : (byte[]) field.get(configurable)) {
+                                    stringList.add("" + b);
+                                }
+                            } else if (short.class.isAssignableFrom(arrayComponentType)) {
+                                for (short s : (short[]) field.get(configurable)) {
+                                    stringList.add("" + s);
+                                }
+                            } else if (int.class.isAssignableFrom(arrayComponentType)) {
+                                for (int i : (int[]) field.get(configurable)) {
+                                    stringList.add("" + i);
+                                }
+                            } else if (long.class.isAssignableFrom(arrayComponentType)) {
+                                for (long l : (long[]) field.get(configurable)) {
+                                    stringList.add("" + l);
+                                }
+                            } else if (float.class.isAssignableFrom(arrayComponentType)) {
+                                for (float f : (float[]) field.get(configurable)) {
+                                    stringList.add("" + f);
+                                }
+                            } else if (double.class.isAssignableFrom(arrayComponentType)) {
+                                for (double d : (double[]) field.get(configurable)) {
+                                    stringList.add("" + d);
+                                }
+                            } else if (String.class.isAssignableFrom(arrayComponentType)) {
+                                stringList.addAll(Arrays.asList((String[]) field.get(configurable)));
+                            } else {
+                                throw new PropertyException(name, "Unsupported array type " + fieldClass.toString());
+                            }
+                            m.put(propertyName, stringList);
                         }
                     } else if (FieldType.mapTypes.contains(ft)) {
                         Map fieldMap = (Map) field.get(configurable);

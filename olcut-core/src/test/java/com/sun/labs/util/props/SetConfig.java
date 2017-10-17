@@ -7,13 +7,13 @@ import java.util.Set;
  */
 public class SetConfig implements Configurable {
 
-    @Config(genericType=java.lang.String.class)
+    @Config
     public Set<String> stringSet;
 
-    @Config(genericType=java.lang.Double.class)
+    @Config
     public Set<Double> doubleSet;
 
-    @Config(genericType=StringConfigurable.class)
+    @Config
     public Set<StringConfigurable> stringConfigurableSet;
 
     @Override
