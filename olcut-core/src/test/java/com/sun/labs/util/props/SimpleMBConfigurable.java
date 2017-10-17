@@ -19,7 +19,7 @@ public class SimpleMBConfigurable implements Configurable, ConfigurableMXBean {
     @Config
     private String b = "hello";
 
-    @Config(genericType=String.class)
+    @Config
     List<String> c = Arrays.asList("foo","bar");
 
     public String[] getProperties() {

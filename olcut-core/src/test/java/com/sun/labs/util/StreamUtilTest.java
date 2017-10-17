@@ -33,7 +33,7 @@ public class StreamUtilTest {
         Stream<Integer> bounded = wrapStream(StreamUtil.boundParallelism(arrayFactory(10000).parallel()),boundedCounter);
         List<Integer> otherOutput = fjp.submit(() -> bounded.map(a -> a + 5).collect(Collectors.toList())).get();
 
-        logger.info("Unbounded = " + unboundedCounter.get() + ", bounded = " + boundedCounter.get());
+        logger.finer("Unbounded = " + unboundedCounter.get() + ", bounded = " + boundedCounter.get());
         assertNotEquals("Parallelism wasn't bounded", boundedCounter.get(), unboundedCounter.get());
         assertEquals("Parallelism wasn't bounded", 2 << 2, boundedCounter.get());
     }

@@ -7,13 +7,13 @@ import java.util.List;
  */
 public class ListConfig implements Configurable {
 
-    @Config(genericType=String.class)
+    @Config
     public List<String> stringList;
 
-    @Config(genericType=Double.class)
+    @Config
     public List<Double> doubleList;
 
-    @Config(genericType=StringConfigurable.class)
+    @Config
     public List<StringConfigurable> stringConfigurableList;
 
     @Override

@@ -142,13 +142,13 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * A property for the jars that that class server will be serving, and
      * therefore the components of the codebase.
      */
-    @Config(genericType=String.class)
+    @Config
     private List<String> codebaseJars = new ArrayList<>();
     
     /**
      * A property for some extra paths to be served via the class server.
      */
-    @Config(genericType=String.class)
+    @Config
     private List<String> codebasePaths = new ArrayList<>();
 
     /**
@@ -166,7 +166,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     public String jiniConfigFile = null;
     private Configuration jiniConfig;
 
-    @Config(genericType=Integer.class)
+    @Config
     private Map<String,Integer> debugReportMap = new HashMap<>();
     
     /**

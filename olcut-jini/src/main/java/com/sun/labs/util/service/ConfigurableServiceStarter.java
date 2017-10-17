@@ -52,7 +52,7 @@ public class ConfigurableServiceStarter implements Configurable {
      * A configuration property for the services that we will be starting and
      * stopping.
      */
-    @Config(genericType=ConfigurableService.class)
+    @Config
     private List<ConfigurableService> services;
 
     private List<Thread> serviceThreads;

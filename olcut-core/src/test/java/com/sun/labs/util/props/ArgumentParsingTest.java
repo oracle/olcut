@@ -26,14 +26,15 @@ public class ArgumentParsingTest {
         loadFromArgs("-c",args);
         args = new String[]{"--config-file","stringListConfig.xml","--other-arguments","that-get-in-the-way"};
         loadFromArgs("--config-file",args);
-        args = new String[]{"--other-arguments","--config-file","stringListConfig.xml,componentListConfig.xml","--surrounding"};
+        args = new String[]{"-o","--config-file","stringListConfig.xml,componentListConfig.xml","-s"};
         loadFromArgs("--config-file with multiple files",args);
-        args = new String[]{"--other-arguments","--config-file","componentListConfig.xml","--surrounding","-c","stringListConfig.xml"};
+        args = new String[]{"-o","--config-file","componentListConfig.xml","-s","-c","stringListConfig.xml"};
         loadFromArgs("overriding --config-file with -c",args);
     }
 
     public void loadFromArgs(String name, String[] args) throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(args);
+        ParsingOptions o = new ParsingOptions();
+        ConfigurationManager cm = new ConfigurationManager(args,o);
         StringListConfigurable slc = (StringListConfigurable) cm.lookup("listTest");
         assertEquals("Loading from " + name + " failed.", "a", slc.strings.get(0));
         assertEquals("Loading from " + name + " failed.", "b", slc.strings.get(1));
@@ -49,6 +50,16 @@ public class ArgumentParsingTest {
         assertEquals("Configurable overriding failed.", "alpha", slc.strings.get(0));
         assertEquals("Configurable overriding failed.", "beta", slc.strings.get(1));
         assertEquals("Configurable overriding failed.", "gamma", slc.strings.get(2));
+    }
+
+    @Test
+    public void testGlobalOverride() throws IOException {
+        String[] args = new String[]{"-c","globalPropertyConfig.xml","--@a","apollo","--@monkeys","gibbons"};
+        ConfigurationManager cm = new ConfigurationManager(args);
+
+        assertEquals("Global property overriding failed.","apollo",cm.getGlobalProperty("a"));
+        assertEquals("Global property overriding failed.","gibbons",cm.getGlobalProperty("monkeys"));
+        assertEquals("Global property overriding failed.","beta",cm.getGlobalProperty("b"));
     }
 
     @Test(expected=ArgumentException.class)
@@ -98,8 +109,6 @@ public class ArgumentParsingTest {
 }
 
 class DuplicateCharOptions implements Options {
-    public String getName() { return "DuplicateCharOptions"; }
-
     @Option(charName = 'd', longName="dvorak", usage="test hard")
     public String dvorak;
 
@@ -108,11 +117,20 @@ class DuplicateCharOptions implements Options {
 }
 
 class DuplicateLongOptions implements Options {
-    public String getName() { return "DuplicateLongOptions"; }
-
     @Option(charName = 'v', longName="dvorak", usage="test hard")
     public String dvorak;
 
     @Option(charName = 'd', longName="dvorak", usage="test hard 2: test harder")
     public String dvorak2;
+}
+
+class ParsingOptions implements Options {
+    @Option(charName = 'o', longName="other", usage="test hard")
+    public boolean other;
+
+    @Option(charName = 's', longName="surrounding", usage="test hard 2: test harder")
+    public boolean surrounding;
+
+    @Option(longName="other-arguments", usage="test hard with a vengeance")
+    public String otherArguments;
 }

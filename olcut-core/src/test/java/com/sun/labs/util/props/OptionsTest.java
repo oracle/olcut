@@ -13,7 +13,7 @@ public class OptionsTest {
 
         ConfigurationManager cm;
         try {
-            cm = new ConfigurationManager(args, options);
+            cm = new ConfigurationManager(args);
         } catch (UsageException e) {
             System.out.println(e.getMsg());
             return;
@@ -32,25 +32,24 @@ public class OptionsTest {
 }
 
 class TestOptions implements Options {
-    FileOptions things;
-    OtherOptions stuff;
+    FileOptions foo;
+    OtherOptions bar;
 
     @Option(charName='p', longName="pi", usage="Changes the value of pi. Warning, may break mathematics.")
     public double pi = Math.PI;
-
-    public String getName() { return "TestOptions"; }
 }
 
-class FileOptions implements Options {
+class FileOptions extends IOOptions {
     @Option(charName='i', longName="input-file", usage="Path to input file")
     public File inputFile;
 
     @Option(charName='o', longName="output-file", usage="Path to output file")
     public Path outputFile;
+}
 
-    public String getName() {
-        return "File Options";
-    }
+class IOOptions implements Options {
+    @Option(charName='f', longName="baz", usage="quux")
+    public String baz;
 }
 
 class OtherOptions implements Options {
@@ -59,8 +58,5 @@ class OtherOptions implements Options {
 
     @Option(charName='a', longName="output-string", usage="String to output")
     public String outputString;
-
-    public String getName() {
-        return "Other Options";
-    }
 }
+

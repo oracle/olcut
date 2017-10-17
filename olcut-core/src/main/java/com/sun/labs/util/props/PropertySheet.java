@@ -13,6 +13,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
@@ -329,20 +331,33 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
 
                 //
                 // We'll handle things that have list or arrays with items separately.
-                if (FieldType.listTypes.contains(ft)) {
+                if (FieldType.arrayTypes.contains(ft)) {
                     List vals = (List) ps.propValues.get(f.getName());
-                    f.set(o, parseListField(f.getName(), f.getType(), configAnnotation, ft, ps, vals));
+                    f.set(o, parseArrayField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), f.getType(), ft, vals));
+                } else if (FieldType.listTypes.contains(ft)) {
+                    List<Class<?>> genericList = getGenericClass(f);
+                    if (genericList.size() == 1) {
+                        List vals = (List) ps.propValues.get(f.getName());
+                        f.set(o, parseListField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), f.getType(), genericList.get(0), ft, vals));
+                    } else {
+                        throw new PropertyException(ps.getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
+                    }
                 } else if (FieldType.simpleTypes.contains(ft)) {
                     //
                     // We'll use flattenProp so that we take care of any variables
                     // in the single value.
                     String val = ps.flattenProp(f.getName());
-                    f.set(o, parseSimpleField(f.getName(), f.getType(), ft, ps, val));
+                    f.set(o, parseSimpleField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), f.getType(), ft, val));
                 } else if (FieldType.mapTypes.contains(ft)){
                     //
                     // Last option is a map, as it's not a single value or a list.
-                    Map<String, String> mapVals = (Map<String, String>) ps.propValues.get(f.getName());
-                    f.set(o, parseMapField(f.getName(), configAnnotation, ps, mapVals));
+                    List<Class<?>> genericList = getGenericClass(f);
+                    if (genericList.size() == 2) {
+                        Map<String, String> mapVals = (Map<String, String>) ps.propValues.get(f.getName());
+                        f.set(o, parseMapField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), genericList.get(1), mapVals));
+                    } else {
+                        throw new PropertyException(ps.getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
+                    }
                 } else {
                     throw new PropertyException(ps.getInstanceName(), f.getName(), "Unknown field type " + ft.toString());
                 }
@@ -364,19 +379,18 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map parseMapField(String fieldName, Config fieldAnnotation, PropertySheet ps, Map<String,String> input) {
-        Class<?> genericType = fieldAnnotation.genericType();
+    public static Map parseMapField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> genericType, Map<String,String> input) {
         FieldType genericft = FieldType.getFieldType(genericType);
         Map map = new HashMap<>();
         for (Map.Entry<String, String> e : input.entrySet()) {
-            String newVal = ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(ps.instanceName, fieldName, e.getValue());
-            map.put(e.getKey(), parseSimpleField(fieldName, genericType, genericft, ps, newVal));
+            String newVal = cm.getGlobalProperties().replaceGlobalProperties(instanceName, fieldName, e.getValue());
+            map.put(e.getKey(), parseSimpleField(cm, instanceName, fieldName, genericType, genericft, newVal));
         }
         return map;
     }
 
     @SuppressWarnings("unchecked")
-    private static Object parseListField(String fieldName, Class<?> fieldClass, Config fieldAnnotation, FieldType ft, PropertySheet ps, List input) {
+    public static Object parseArrayField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, FieldType ft, List input) {
         //
         // This dance happens as some of the list types support class values,
         // and this is the first place where FieldType meets the value loaded
@@ -386,11 +400,11 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         List<Class<?>> removeList = new ArrayList<>();
         for (Object val : input) {
             if (val instanceof String) {
-                replaced.add(ps.getConfigurationManager().getGlobalProperties().replaceGlobalProperties(ps.instanceName, fieldName, (String) val));
+                replaced.add(cm.getGlobalProperties().replaceGlobalProperties(instanceName, fieldName, (String) val));
             } else if (val instanceof Class) {
                 classVals.add((Class<?>) val);
             } else {
-                throw new PropertyException(ps.instanceName,fieldName,"Unknown type loaded from property, found " + val.getClass().getName());
+                throw new PropertyException(instanceName,fieldName,"Unknown type loaded from property, found " + val.getClass().getName());
             }
         }
 
@@ -405,18 +419,18 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                 List<Configurable> configurableList = new ArrayList<>();
                 Class<?> configArrayType = fieldClass.getComponentType();
                 for (String name : replaced) {
-                    Configurable c = ps.getConfigurationManager().lookup(name);
+                    Configurable c = cm.lookup(name);
                     if (c == null) {
-                        throw new PropertyException(ps.getInstanceName(), fieldName, fieldName + " looked up an unknown configurable called " + name);
+                        throw new PropertyException(instanceName, fieldName, fieldName + " looked up an unknown configurable called " + name);
                     }
                     configurableList.add(c);
                 }
                 for (Class c : classVals) {
                     if (configArrayType.isAssignableFrom(c)) {
-                        configurableList.addAll(ps.getConfigurationManager().lookupAll(c, null));
+                        configurableList.addAll(cm.lookupAll(c, null));
                         removeList.add(c);
                     } else {
-                        throw new PropertyException(ps.instanceName, fieldName, "Unassignable class " + c.getName() + " to configArrayType " + configArrayType.getName());
+                        throw new PropertyException(instanceName, fieldName, "Unassignable class " + c.getName() + " to configArrayType " + configArrayType.getName());
                     }
                 }
                 Configurable[] cos = (Configurable[]) Array.newInstance(configArrayType, configurableList.size());
@@ -434,7 +448,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     }
                     output = ia;
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a byte", replaced.toString()));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a byte", replaced.toString()));
                 }
                 break;
             case SHORT_ARRAY:
@@ -446,7 +460,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     }
                     output = ia;
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a short", replaced.toString()));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a short", replaced.toString()));
                 }
                 break;
             case INTEGER_ARRAY:
@@ -458,7 +472,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     }
                     output = ia;
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not an integer", replaced.toString()));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not an integer", replaced.toString()));
                 }
                 break;
             case LONG_ARRAY:
@@ -470,7 +484,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     }
                     output = la;
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not an array of long", replaced.toString()));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not an array of long", replaced.toString()));
                 }
                 break;
             case FLOAT_ARRAY:
@@ -482,7 +496,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     }
                     output = fa;
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s does not specify an array of float", replaced.toString()));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s does not specify an array of float", replaced.toString()));
                 }
                 break;
             case DOUBLE_ARRAY:
@@ -494,74 +508,95 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     }
                     output = da;
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s does not specify an array of double", replaced.toString()));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s does not specify an array of double", replaced.toString()));
                 }
                 break;
+        }
+        classVals.removeAll(removeList);
+        if (classVals.size() > 0) {
+            throw new PropertyException(instanceName,fieldName,"Found class values in a primitive array");
+        }
+        return output;
+    }
+    @SuppressWarnings("unchecked")
+    public static Object parseListField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, Class<?> genericClass, FieldType ft, List input) {
+        //
+        // This dance happens as some of the list types support class values,
+        // and this is the first place where FieldType meets the value loaded
+        // from the xml file, so we have to check it.
+        List<String> replaced = new ArrayList<>();
+        List<Class<?>> classVals = new ArrayList<>();
+        List<Class<?>> removeList = new ArrayList<>();
+        for (Object val : input) {
+            if (val instanceof String) {
+                replaced.add(cm.getGlobalProperties().replaceGlobalProperties(instanceName, fieldName, (String) val));
+            } else if (val instanceof Class) {
+                classVals.add((Class<?>) val);
+            } else {
+                throw new PropertyException(instanceName,fieldName,"Unknown type loaded from property, found " + val.getClass().getName());
+            }
+        }
+
+        //
+        // Now go through the valid list types and assign the output field.
+        Object output = null;
+        FieldType genericft;
+        switch (ft) {
             case ENUM_SET:
                 try {
-                    Class<Enum> enumType = (Class<Enum>) fieldAnnotation.genericType();
+                    Class<Enum> enumType = (Class<Enum>) genericClass;
                     EnumSet s = EnumSet.noneOf(enumType);
                     for (String v : replaced) {
                         s.add(Enum.valueOf(enumType, v.toUpperCase()));
                     }
                     output = s;
                 } catch (ClassCastException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("The supplied type %s is not an Enum type", fieldAnnotation.genericType().toString()));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("The supplied type %s is not an Enum type", genericClass.getName()));
                 } catch (IllegalArgumentException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s has values not in %s", replaced.toString(), fieldClass));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s has values not in %s", replaced.toString(), fieldClass));
                 }
                 break;
             case LIST:
-                try {
-                    Class<?> genericType = fieldAnnotation.genericType();
-                    FieldType genericft = FieldType.getFieldType(genericType);
-                    List list = new ArrayList(replaced.size());
-                    for (String v : replaced) {
-                        list.add(parseSimpleField(fieldName, genericType, genericft, ps, v));
-                    }
-                    for (Class c : classVals) {
-                        if (genericType.isAssignableFrom(c)) {
-                            list.addAll(ps.getConfigurationManager().lookupAll(c, null));
-                            removeList.add(c);
-                        } else {
-                            throw new PropertyException(ps.instanceName, fieldName, "Unassignable class " + c.getName() + " to genericType " + genericType.getName());
-                        }
-                    }
-                    output = list;
-                } catch (ClassCastException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("The supplied genericType %s does not match the type of the object", fieldAnnotation.genericType().toString()));
+                genericft = FieldType.getFieldType(genericClass);
+                List list = new ArrayList(replaced.size());
+                for (String v : replaced) {
+                    list.add(parseSimpleField(cm, instanceName, fieldName, genericClass, genericft, v));
                 }
+                for (Class c : classVals) {
+                    if (genericClass.isAssignableFrom(c)) {
+                        list.addAll(cm.lookupAll(c, null));
+                        removeList.add(c);
+                    } else {
+                        throw new PropertyException(instanceName, fieldName, "Unassignable class " + c.getName() + " to genericType " + genericClass.getName());
+                    }
+                }
+                output = list;
                 break;
             case SET:
-                try {
-                    Class<?> genericType = fieldAnnotation.genericType();
-                    FieldType genericft = FieldType.getFieldType(genericType);
-                    Set set = new HashSet(replaced.size());
-                    for (String v : replaced) {
-                        set.add(parseSimpleField(fieldName, genericType, genericft, ps, v));
-                    }
-                    for (Class c : classVals) {
-                        if (genericType.isAssignableFrom(c)) {
-                            set.addAll(ps.getConfigurationManager().lookupAll(c, null));
-                            removeList.add(c);
-                        } else {
-                            throw new PropertyException(ps.instanceName, fieldName, "Unassignable class " + c.getName() + " to genericType " + genericType.getName());
-                        }
-                    }
-                    output = set;
-                } catch (ClassCastException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("The supplied genericType %s does not match the type of the object", fieldAnnotation.genericType().toString()));
+                genericft = FieldType.getFieldType(genericClass);
+                Set set = new HashSet(replaced.size());
+                for (String v : replaced) {
+                    set.add(parseSimpleField(cm, instanceName, fieldName, genericClass, genericft, v));
                 }
+                for (Class c : classVals) {
+                    if (genericClass.isAssignableFrom(c)) {
+                        set.addAll(cm.lookupAll(c, null));
+                        removeList.add(c);
+                    } else {
+                        throw new PropertyException(instanceName, fieldName, "Unassignable class " + c.getName() + " to genericClass " + genericClass.getName());
+                    }
+                }
+                output = set;
                 break;
         }
         classVals.removeAll(removeList);
         if (classVals.size() > 0) {
-            throw new PropertyException(ps.instanceName,fieldName,"Found class values in a primitive array");
+            throw new PropertyException(instanceName,fieldName,"Found class values in a primitive array");
         }
         return output;
     }
 
-    private static Object parseSimpleField(String fieldName, Class<?> fieldClass, FieldType ft, PropertySheet ps, String val) {
+    public static Object parseSimpleField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, FieldType ft, String val) {
         switch (ft) {
             case STRING:
                 return val;
@@ -571,49 +606,49 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                 try {
                     return Byte.parseByte(val);
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a byte", val));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a byte", val));
                 }
             case SHORT:
                 try {
                     return Short.parseShort(val);
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a short", val));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a short", val));
                 }
             case INTEGER:
                 try {
                     return Integer.parseInt(val);
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not an integer", val));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not an integer", val));
                 }
             case ATOMIC_INTEGER:
                 try {
                     return new AtomicInteger(Integer.parseInt(val));
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not an integer", val));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not an integer", val));
                 }
             case LONG:
                 try {
                     return Long.parseLong(val);
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a long", val));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a long", val));
                 }
             case ATOMIC_LONG:
                 try {
                     return new AtomicLong(Long.parseLong(val));
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a long", val));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a long", val));
                 }
             case FLOAT:
                 try {
                     return Float.parseFloat(val);
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not an float", val));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not an float", val));
                 }
             case DOUBLE:
                 try {
                     return Double.parseDouble(val);
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a double", val));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a double", val));
                 }
             case FILE:
                 return new File(val);
@@ -623,22 +658,22 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                 try {
                     return new Random(Integer.parseInt(val));
                 } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("The seed %s is not an integer", val));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("The seed %s is not an integer", val));
                 }
             case ENUM:
                 try {
                     return Enum.valueOf((Class<Enum>) fieldClass, val);
                 } catch (IllegalArgumentException ex) {
-                    throw new PropertyException(ex, ps.instanceName, fieldName, String.format("%s is not a value of %s", val, fieldClass));
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a value of %s", val, fieldClass));
                 }
             case CONFIGURABLE:
-                Configurable comp = ps.getConfigurationManager().lookup(val);
+                Configurable comp = cm.lookup(val);
                 if (comp == null) {
-                    throw new PropertyException(ps.getInstanceName(), fieldName, fieldName + " looked up an unknown component called " + val);
+                    throw new PropertyException(instanceName, fieldName, fieldName + " looked up an unknown component called " + val);
                 }
                 return comp;
             default:
-                throw new PropertyException(ps.getInstanceName(), fieldName, fieldName + " was not a simple configurable field");
+                throw new PropertyException(instanceName, fieldName, fieldName + " was not a simple configurable field");
         }
     }
 
@@ -669,18 +704,54 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     }
                 } else {
                     FieldType ft = FieldType.getFieldType(f);
-                    if (FieldType.listTypes.contains(ft)) {
-                        return parseListField(f.getName(),f.getType(),fieldAnnotation,ft,this,(List)propValues.get(f.getName()));
+                    List<Class<?>> genericList = getGenericClass(f);
+                    if (FieldType.arrayTypes.contains(ft)) {
+                        return parseArrayField(getConfigurationManager(), instanceName, f.getName(), f.getType(), ft, (List) propValues.get(f.getName()));
+                    } else if (FieldType.listTypes.contains(ft)) {
+                        if (genericList.size() == 1) {
+                            return parseListField(getConfigurationManager(), instanceName, f.getName(), f.getType(), genericList.get(0), ft, (List) propValues.get(f.getName()));
+                        } else {
+                            throw new PropertyException(getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
+                        }
                     } else if (FieldType.simpleTypes.contains(ft)) {
-                        return parseSimpleField(f.getName(),f.getType(),ft,this, flattenProp(f.getName()));
+                        return parseSimpleField(getConfigurationManager(), instanceName, f.getName(),f.getType(),ft, flattenProp(f.getName()));
                     } else {
-                        return parseMapField(f.getName(),fieldAnnotation,this, (Map<String,String>)propValues.get(f.getName()));
+                        if (genericList.size() == 2) {
+                            return parseMapField(getConfigurationManager(), instanceName, f.getName(), genericList.get(1), (Map<String, String>) propValues.get(f.getName()));
+                        } else {
+                            throw new PropertyException(getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
+                        }
                     }
                 }
             }
 
         }
         return null;
+    }
+
+    /**
+     * Extracts the classes representing the generic type parameters for the supplied field.
+     *
+     * It ignores types which aren't classes. If you've got those, you're on your own.
+     *
+     * @param f The field to inspect.
+     * @return A list of classes representing the generic types.
+     */
+    public static List<Class<?>> getGenericClass(Field f) {
+        List<Class<?>> list = new ArrayList<>();
+
+        Type genericType = f.getGenericType();
+
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) genericType;
+            for (Type t : pt.getActualTypeArguments()) {
+                if (t instanceof Class) {
+                    list.add((Class<?>)t);
+                }
+            }
+        }
+
+        return list;
     }
 
     public void clearOwner() {

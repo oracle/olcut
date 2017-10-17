@@ -7,7 +7,7 @@ import java.util.Map;
  */
 public class MapConfigurable implements Configurable {
 
-    @Config(genericType=java.lang.String.class)
+    @Config
     public Map<String,String> map;
 
 }

@@ -17,8 +17,6 @@ import java.lang.annotation.Target;
 @ConfigProperty
 public @interface Config {
 
-    Class<?> genericType() default Object.class;
-
     /**
      * By default, configuration variables aren't mandatory.
      */
