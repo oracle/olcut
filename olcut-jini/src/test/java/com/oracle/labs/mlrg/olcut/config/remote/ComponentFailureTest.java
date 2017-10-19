@@ -99,7 +99,7 @@ public class ComponentFailureTest {
             return;
         }
 
-        assertTrue(client.getNewPropsCalls() == 2);
+        assertTrue(client.getNewPropsCalls() == 1);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class ComponentFailureTest {
             t.join();
         } catch(InterruptedException ie) {
         }
-        assertTrue(client.getNewPropsCalls() == 2);
+        assertTrue(client.getNewPropsCalls() == 1);
         sops += ((RegistryConfigurableImpl) server).getIOPCount();
         assertTrue(client.getOpCount() == sops);
     }

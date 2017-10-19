@@ -865,12 +865,11 @@ public class ConfigurationManager implements Cloneable {
         //
         // Get the property sheet for this component.
         PropertySheet<? extends Configurable> ps = getPropertySheet(instanceName);
-        
-        if(ps == null) {
-            return null;
-        }
 
         logger.log(Level.FINER,"lookup: %s", instanceName);
+        if(ps == null) {
+            throw new PropertyException(instanceName,"Failed to find component.");
+        }
 
         Configurable ret = ps.getOwner(reuseComponent);
 

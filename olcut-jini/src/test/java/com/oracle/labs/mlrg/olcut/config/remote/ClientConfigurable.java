@@ -41,8 +41,6 @@ public class ClientConfigurable implements Configurable, Runnable {
             } catch(InterruptedException ie) {
 
             }
-
-
         }
         log.info("Client done!");
     }

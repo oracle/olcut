@@ -4,6 +4,7 @@
  */
 package com.oracle.labs.mlrg.olcut.config.remote;
 
+import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.util.SimpleLabsLogFormatter;
 
 import java.io.IOException;
@@ -155,7 +156,7 @@ public class RegistryTest {
         assertEquals(((RegistryConfigurableImpl) rc1).recs.get(0), "test");
     }
 
-    @Test
+    @Test(expected= PropertyException.class)
     public void testRegisterAndLookupWithNonMatchingEntries() throws IOException {
 
         //
@@ -170,11 +171,8 @@ public class RegistryTest {
         URL cu2 = getClass().getResource("clientConfig.xml");
         cm2 = new JiniConfigurationManager(cu2);
         RegistryConfigurable rc2 = (RegistryConfigurable) cm2.lookup("servercompWithNonMatchingEntries");
-       
-        //
-        // The match should have failed, due to the non-matching entries.      
-        assertNull(rc2);
 
+        fail("Found a component which shouldn't have matched.");
    }
 
 }

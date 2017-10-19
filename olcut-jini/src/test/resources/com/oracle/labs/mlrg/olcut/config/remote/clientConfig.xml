@@ -9,7 +9,7 @@
 -->
 
 <config>
-    <property name="showCreations" value="true"/>
+    <property name="showCreations" value="false"/>
 
     <!-- A registry that won't serve any classes -->
     <component name="registry" type="com.oracle.labs.mlrg.olcut.config.remote.ComponentRegistry">
@@ -17,9 +17,9 @@
             <item>olcut-test</item>
         </propertylist>
         <property name="securityPolicy" value="src/test/resources/jsk-all.policy"/>
-        <property name="lookupTries" value="2"/>
-        <property name="lookupWait" value="2"/>
-        <property name="registryPort" value="4011"/>
+        <property name="lookupTries" value="5"/>
+        <property name="lookupWait" value="50"/>
+        <property name="registryPort" value="4012"/>
     </component>
     
     <component name="failtest" type="com.oracle.labs.mlrg.olcut.config.remote.ClientConfigurable">
@@ -44,7 +44,7 @@
     but they won't actually match -->
     <component name="servercompWithNonMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable" entries="serverNonMatchingEntries"/>
     
-    <component name="servercompWithPartialMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable" entries="serverNonMatchingEntries"/>
+    <component name="servercompWithPartialMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable" entries="serverPartialMatchingEntries"/>
     
     <!-- Configuration entries to use for successful matching -->
     <component name="serverEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">

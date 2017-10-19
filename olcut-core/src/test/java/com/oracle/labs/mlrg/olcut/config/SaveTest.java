@@ -159,8 +159,11 @@ public class SaveTest {
         cm1.save(f, true);
         assertEquals(0, cm1.getNumConfigured());
         ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
-        BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
-        assertNull(bc2);
+        BasicConfigurable bc2;
+        try {
+            bc2 = (BasicConfigurable) cm2.lookup("a");
+            fail("Found removed component");
+        } catch (PropertyException e) {}
 
         bc1 = (BasicConfigurable) cm1.lookup("b");
         bc2 = (BasicConfigurable) cm2.lookup("b");
@@ -176,8 +179,11 @@ public class SaveTest {
         assertEquals(0, cm1.getNumConfigured());
 
         ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
-        BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
-        assertNull(bc2);
+        BasicConfigurable bc2;
+        try{
+            bc2 = (BasicConfigurable) cm2.lookup("a");
+            fail("Found a removed component");
+        } catch (PropertyException e) { }
 
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("b");
         bc2 = (BasicConfigurable) cm2.lookup("b");
@@ -199,12 +205,16 @@ public class SaveTest {
         assertEquals(((Integer) m.get("i")).intValue(), Integer.parseInt(ps.getRaw("i").toString()));
         assertEquals((Double) m.get("d"), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
         cm1.save(f, false);
-        BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("c");
-        assertNull(bc1);
-        
+        try{
+            BasicConfigurable bc = (BasicConfigurable) cm1.lookup("c");
+            fail("Found a removed component");
+        } catch (PropertyException e) { }
+
         ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
-        BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("c");
-        assertNull(bc2);
+        try{
+            BasicConfigurable bc = (BasicConfigurable) cm2.lookup("c");
+            fail("Found a removed component");
+        } catch (PropertyException e) { }
     }
 
     @Test

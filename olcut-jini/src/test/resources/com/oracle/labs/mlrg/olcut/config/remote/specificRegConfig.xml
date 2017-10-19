@@ -9,7 +9,7 @@
 -->
 
 <config>
-    <property name="showCreations" value="true"/>
+    <property name="showCreations" value="false"/>
 
     <!-- A component registry with an explicit registry host -->
     <component name="registry" type="com.oracle.labs.mlrg.olcut.config.remote.ComponentRegistry">
