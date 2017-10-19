@@ -3,6 +3,7 @@ package com.sun.labs.util.props;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Random;
 
 public class OptionsTest {
@@ -13,7 +14,7 @@ public class OptionsTest {
 
         ConfigurationManager cm;
         try {
-            cm = new ConfigurationManager(args);
+            cm = new ConfigurationManager(args,options);
         } catch (UsageException e) {
             System.out.println(e.getMsg());
             return;
@@ -49,7 +50,7 @@ class FileOptions extends IOOptions {
 
 class IOOptions implements Options {
     @Option(charName='f', longName="baz", usage="quux")
-    public String baz;
+    public List<String> baz;
 }
 
 class OtherOptions implements Options {

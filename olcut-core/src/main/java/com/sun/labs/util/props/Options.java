@@ -2,9 +2,11 @@ package com.sun.labs.util.props;
 
 import java.lang.reflect.Field;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
@@ -15,40 +17,78 @@ import java.util.Set;
  */
 public interface Options {
 
-    public static String getUsage(Class<? extends Options> options) {
+    public static final ArrayList<String> header = new ArrayList<>(Arrays.asList("Char","Long Name","Type","Usage"));
+
+    public static String formatUsage(ArrayList<ArrayList<String>> usageList) {
+        int[] maxWidth = new int[4];
+
+        for (ArrayList<String> a : usageList) {
+            if (a.size() == 4) {
+                if (maxWidth[0] < a.get(0).length()) {
+                    maxWidth[0] = a.get(0).length();
+                }
+                if (maxWidth[1] < a.get(1).length()) {
+                    maxWidth[1] = a.get(1).length();
+                }
+                if (maxWidth[2] < a.get(2).length()) {
+                    maxWidth[2] = a.get(2).length();
+                }
+                if (maxWidth[3] < a.get(3).length()) {
+                    maxWidth[3] = a.get(3).length();
+                }
+            }
+        }
+
+        String formatString = "%"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %-"+maxWidth[3]+"s\n";
+        StringBuilder builder = new StringBuilder();
+
+        for (ArrayList<String> a : usageList) {
+            if (a.size() == 4) {
+                builder.append(String.format(formatString,a.get(0),a.get(1),a.get(2),a.get(3)));
+            } else {
+                // Must be Option class name
+                builder.append("\n");
+                builder.append(a.get(0));
+                builder.append("\n\n");
+            }
+        }
+
+        return builder.toString();
+    }
+
+    public static ArrayList<ArrayList<String>> getUsage(Class<? extends Options> options) {
+        ArrayList<ArrayList<String>> list = new ArrayList<>();
         Set<Field> fields = getOptionFields(options);
         if (fields.size() == 0) {
-            return "";
+            return list;
         } else {
-            StringBuilder builder = new StringBuilder();
+            list.add(new ArrayList<>(Arrays.asList(options.getSimpleName())));
 
-            builder.append(options.getSimpleName());
-            builder.append('\n');
-
-            builder.append("Char\t\tLong Name\t\tUsage\n");
+            list.add(header);
             for (Field f : fields) {
                 Option option = f.getAnnotation(Option.class);
-                builder.append(Options.getOptionUsage(option));
+                list.add(Options.getOptionUsage(option,f));
             }
-            builder.append('\n');
 
-            return builder.toString();
+            return list;
         }
     }
 
-    public static String getOptionUsage(Option option) {
-        StringBuilder builder = new StringBuilder();
+    public static ArrayList<String> getOptionUsage(Option option, Field f) {
+        return getOptionUsage(option,f.getGenericType().getTypeName());
+    }
+
+    public static ArrayList<String> getOptionUsage(Option option, String type) {
+        ArrayList<String> output = new ArrayList<>();
         if (option.charName() != Option.EMPTY_CHAR) {
-            builder.append(option.charName());
+            output.add(""+option.charName());
         } else {
-            builder.append(' ');
+            output.add(" ");
         }
-        builder.append("\t\t");
-        builder.append(option.longName());
-        builder.append("\t\t");
-        builder.append(option.usage());
-        builder.append('\n');
-        return builder.toString();
+        output.add(option.longName());
+        output.add(type);
+        output.add(option.usage());
+        return output;
     }
 
     /**

@@ -19,7 +19,8 @@
         <property name="lookupWait" value="10"/>
         <property name="csDirs" value="target/classes:target/test-classes"/>
         <property name="securityPolicy" value="src/test/resources/jsk-all.policy"/>
-        <property name="codebase" value="http://${gp.hostName}:1104/"/>
+        <!--<property name="codebase" value="http://${gp.hostName}:1104/"/>-->
+        <property name="registryPort" value="4011"/>
     </component>
     
     <component name="serverEntries" type="com.sun.labs.util.props.dist.ConfigurationEntries">
