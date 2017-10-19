@@ -340,6 +340,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                         List vals = (List) ps.propValues.get(f.getName());
                         f.set(o, parseListField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), f.getType(), genericList.get(0), ft, vals));
                     } else {
+                        f.setAccessible(accessible);
                         throw new PropertyException(ps.getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
                     }
                 } else if (FieldType.simpleTypes.contains(ft)) {
@@ -356,21 +357,25 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                         Map<String, String> mapVals = (Map<String, String>) ps.propValues.get(f.getName());
                         f.set(o, parseMapField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), genericList.get(1), mapVals));
                     } else {
+                        f.setAccessible(accessible);
                         throw new PropertyException(ps.getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
                     }
                 } else {
+                    f.setAccessible(accessible);
                     throw new PropertyException(ps.getInstanceName(), f.getName(), "Unknown field type " + ft.toString());
                 }
             } else if (nameAnnotation != null) {
                 if (String.class.isAssignableFrom(f.getType())) {
                     f.set(o, ps.getInstanceName());
                 } else {
+                    f.setAccessible(accessible);
                     throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigurableName to non-String type " + f.getType().getName());
                 }
             } else if (cmAnnotation != null) {
                 if (ConfigurationManager.class.isAssignableFrom(f.getType())) {
                     f.set(o, ps.getConfigurationManager());
                 } else {
+                    f.setAccessible(accessible);
                     throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigManager to non-ConfigurationManager type " + f.getType().getName());
                 }
             }

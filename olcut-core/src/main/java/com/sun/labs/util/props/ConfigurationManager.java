@@ -206,6 +206,8 @@ public class ConfigurationManager implements Cloneable {
             parseOptionArguments(argumentsList, options);
         } catch (IllegalAccessException e) {
             throw new ArgumentException(e, "Failed to write argument into Options");
+        } catch (InstantiationException e) {
+            throw new ArgumentException(e, "Failed to instantiate a field of Options.");
         }
 
         if (argumentsList.size() != 0) {
@@ -218,15 +220,19 @@ public class ConfigurationManager implements Cloneable {
         Set<Class<? extends Options>> allOptions = Options.getAllOptions(options.getClass());
         StringBuilder builder = new StringBuilder();
 
-        builder.append("Usage:\n\nBuilt-in Options\nChar\t\tLong Name\t\tUsage\n");
-        builder.append(Options.getOptionUsage(configFileOption));
-        builder.append(Options.getOptionUsage(usageOption));
-        builder.append('\n');
+        builder.append("Usage:\n\n");
+        ArrayList<ArrayList<String>> usageList = new ArrayList<>();
+        usageList.add(new ArrayList<>(Arrays.asList("Built-in Options")));
+        usageList.add(Options.header);
+        usageList.add(Options.getOptionUsage(configFileOption,"java.lang.String"));
+        usageList.add(Options.getOptionUsage(usageOption,""));
 
         for (Class<? extends Options> o : allOptions) {
-            builder.append(Options.getUsage(o));
+            usageList.addAll(Options.getUsage(o));
             optionFields.addAll(Options.getOptionFields(o));
         }
+
+        builder.append(Options.formatUsage(usageList));
 
         //
         // Initialise the option checking with the config file option.
@@ -331,7 +337,7 @@ public class ConfigurationManager implements Cloneable {
      * @throws ArgumentException If an argument is poorly formatted, missing a mandatory parameter, or not
      *              present in the supplied Options.
      */
-    private void parseOptionArguments(List<String> arguments, Options options) throws ArgumentException, IllegalAccessException {
+    private void parseOptionArguments(List<String> arguments, Options options) throws ArgumentException, IllegalAccessException, InstantiationException {
         Map<String,Pair<Field,Object>> longNameMap = new HashMap<>();
         Map<Character,Pair<Field,Object>> charNameMap = new HashMap<>();
 
@@ -354,6 +360,10 @@ public class ConfigurationManager implements Cloneable {
             for (Field f : fields) {
                 boolean accessible = f.isAccessible();
                 f.setAccessible(true);
+                if (f.get(o) != null) {
+                    logger.fine("Warning: overwriting Options field.");
+                }
+                f.set(o,f.getType().newInstance());
                 objectQueue.add((Options)f.get(o));
                 f.setAccessible(accessible);
             }
@@ -372,6 +382,8 @@ public class ConfigurationManager implements Cloneable {
                     // Consume argument.
                     argsItr.remove();
                     if (argsItr.hasNext()) {
+                        boolean accessible = f.isAccessible();
+                        f.setAccessible(true);
                         String param = argsItr.next();
                         List<String> list = parseStringList(param);
                         if (FieldType.arrayTypes.contains(ft)) {
@@ -381,15 +393,18 @@ public class ConfigurationManager implements Cloneable {
                             if (genericList.size() == 1) {
                                 f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, list));
                             } else {
+                                f.setAccessible(accessible);
                                 throw new ArgumentException(curArg,"Unknown generic type in argument");
                             }
                         } else if (list.size() == 1) {
                             f.set(arg.getB(),PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
                         } else {
+                            f.setAccessible(accessible);
                             throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
                         }
                         // Consume parameter.
                         argsItr.remove();
+                        f.setAccessible(accessible);
                     } else {
                         throw new ArgumentException(curArg,"No parameter for argument");
                     }
@@ -406,12 +421,16 @@ public class ConfigurationManager implements Cloneable {
                         Pair<Field,Object> arg = charNameMap.get(args[i]);
                         if (arg != null) {
                             Field f = arg.getA();
+                            boolean accessible = f.isAccessible();
+                            f.setAccessible(true);
                             FieldType ft = FieldType.getFieldType(f);
                             if (FieldType.isBoolean(ft)) {
                                 f.set(arg.getB(),true);
                             } else {
+                                f.setAccessible(accessible);
                                 throw new ArgumentException(curArg + " on element " + args[i], "Non boolean argument found where boolean expected");
                             }
+                            f.setAccessible(accessible);
                         } else {
                             throw new ArgumentException(curArg + " on element " + args[i], "Unknown argument");
                         }
@@ -420,6 +439,8 @@ public class ConfigurationManager implements Cloneable {
                     Pair<Field,Object> arg = charNameMap.get(args[args.length-1]);
                     if (arg != null) {
                         Field f = arg.getA();
+                        boolean accessible = f.isAccessible();
+                        f.setAccessible(true);
                         FieldType ft = FieldType.getFieldType(f);
                         if (FieldType.isBoolean(ft)) {
                             f.set(arg.getB(),true);
@@ -441,14 +462,17 @@ public class ConfigurationManager implements Cloneable {
                                 } else if (list.size() == 1) {
                                     f.set(arg.getB(),PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
                                 } else {
+                                    f.setAccessible(accessible);
                                     throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
                                 }
                                 // Consume parameter.
                                 argsItr.remove();
                             } else {
+                                f.setAccessible(accessible);
                                 throw new ArgumentException(curArg,"No parameter for argument");
                             }
                         }
+                        f.setAccessible(accessible);
                     }
                 } else {
                     throw new ArgumentException(curArg, "Empty argument found.");

@@ -35,14 +35,6 @@ public class ClientConfigurable implements Configurable, Runnable {
                 opCount++;
                 log.info(Thread.currentThread().getName() + " iteration " + i);
             } catch(RemoteException rx) {
-                pause = true;
-                while(pause) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch(InterruptedException ie) {
-
-                    }
-                }
             }
             try {
                 Thread.sleep(500);
