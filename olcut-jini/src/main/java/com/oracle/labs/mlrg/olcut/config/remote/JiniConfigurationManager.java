@@ -59,10 +59,18 @@ public class JiniConfigurationManager extends ConfigurationManager {
 
     public JiniConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException, IOException {
         super(arguments,EMPTY_OPTIONS);
+
+        //
+        // Look up our distinguished registry name.
+        setUpRegistry();
     }
 
     public JiniConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException, IOException {
         super(arguments,options);
+
+        //
+        // Look up our distinguished registry name.
+        setUpRegistry();
     }
 
     /**
@@ -87,7 +95,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
         if(ps == null) {
             return;
         }
-        if(ps.getOwnerClass().getCanonicalName().equals("com.oracle.labs.mlrg.olcut.config.remote.ComponentRegistry")) {
+        if(ComponentRegistry.class.isAssignableFrom(ps.getOwnerClass())) {
             registry = (ComponentRegistry) lookup("registry");
         }
     }
@@ -233,7 +241,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
         // for a component.
         if(registry != null && !ps.isExportable() &&
                 ((ps.size() == 0 && ps.implementsRemote()) || ps.isImportable())) {
-            logger.log(Level.INFO, "Attempted to lookup in registry");
+            logger.log(Level.FINER, "Attempted to lookup in registry");
             ret = registry.lookup(ps, cl);
         }
 

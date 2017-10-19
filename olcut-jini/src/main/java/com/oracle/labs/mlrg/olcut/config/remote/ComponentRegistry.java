@@ -331,7 +331,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                             "Properties at URL " + hostString +
                                     " do not include registryHost property");
                 } else {
-                    logger.info("Got registry host: " + registryHost + " from properties");
+                    logger.fine("Got registry host: " + registryHost + " from properties");
                 }
             } catch(MalformedURLException ex) {
                 //
@@ -366,6 +366,11 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                     new LeaseRenewalManager());
             sdm.getDiscoveryManager().addDiscoveryListener(this);
             logger.finer("Got SDM " + sdm);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } catch(IOException ioe) {
             throw new PropertyException(ioe, name,
                     "serviceDiscoveryManager",
@@ -748,12 +753,12 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      */
     public void shutdown() {
 
-        logger.info("Shutting down component registry");
+        logger.fine("Shutting down component registry");
         for(ServiceRegistration sr : registrations) {
             try {
                 sr.getLease().cancel();
             } catch(UnknownLeaseException ex) {
-                logger.log(Level.WARNING,"Unknown lease when cancelling",ex);
+                logger.log(Level.WARNING,"Unknown lease when cancelling");
             } catch(RemoteException ex) {
                 logger.warning("Error cancelling lease");
             }
@@ -785,7 +790,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     }
 
     public void notify(LeaseRenewalEvent e) {
-        logger.info("Lease renewed: " + e);
+        logger.fine("Lease renewed: " + e);
     }
 
     public void serviceAdded(ServiceDiscoveryEvent e) {

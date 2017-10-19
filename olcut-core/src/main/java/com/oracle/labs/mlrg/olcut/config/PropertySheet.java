@@ -206,9 +206,6 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
 
     public synchronized T getOwner(ComponentListener<T> cl, boolean reuseComponent) {
         try {
-            // TODO: remove this once the Jini tests pass.
-            logger.setLevel(Level.ALL);
-
             if (!isInstantiated() || !reuseComponent) {
 
                 //

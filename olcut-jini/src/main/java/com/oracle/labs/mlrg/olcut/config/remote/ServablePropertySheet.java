@@ -91,9 +91,6 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
 
     @Override
     public synchronized T getOwner(ComponentListener<T> cl, boolean reuseComponent) {
-        // TODO: remove this once the Jini tests pass.
-        logger.setLevel(Level.ALL);
-
         if (!isInstantiated() || !reuseComponent) {
 
             ComponentRegistry registry = jcm.getComponentRegistry();
@@ -110,8 +107,8 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
                 } else if (size() == 0 && isImportable()) {
                     //
                     // We needed to look something up and no success,
-                    // so return null.
-                    return null;
+                    // so throw exception.
+                    throw new PropertyException(instanceName,"Failed to lookup instance.");
                 }
             }
 

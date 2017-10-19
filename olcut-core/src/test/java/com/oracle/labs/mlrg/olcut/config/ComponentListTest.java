@@ -130,8 +130,6 @@ public class ComponentListTest {
         try {
             ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearraybroken");
             fail("Did not throw PropertyException when asking for unknown element in configurable array.");
-        } catch (PropertyException e) {
-            assertEquals("stringArray",e.getProperty());
-        }
+        } catch (PropertyException e) { }
     }
 }

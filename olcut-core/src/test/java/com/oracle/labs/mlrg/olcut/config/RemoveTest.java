@@ -42,8 +42,10 @@ public class RemoveTest {
         assertEquals(bc.s, ps.getRaw("s"));
         assertEquals(bc.i, Integer.parseInt(ps.getRaw("i").toString()));
         assertEquals(bc.d, Double.parseDouble(ps.getRaw("d").toString()), 0.001);
-        BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
-        assertNull(nbc);
+        try {
+            BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
+            fail("Found a removed component");
+        } catch (PropertyException e) { }
     }
 
     @Test
@@ -55,8 +57,10 @@ public class RemoveTest {
         assertEquals("one", ps.getRaw("s"));
         assertEquals(2, Integer.parseInt(ps.getRaw("i").toString()));
         assertEquals(3.0, Double.parseDouble(ps.getRaw("d").toString()), 0.001);
-        BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
-        assertNull(nbc);
+        try{
+            BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
+            fail("Found a removed component");
+        } catch (PropertyException e) { }
     }
 
     @Test
@@ -72,8 +76,10 @@ public class RemoveTest {
         assertEquals(m.get("s"), ps.getRaw("s"));
         assertEquals(((Integer) m.get("i")).intValue(), Integer.parseInt(ps.getRaw("i").toString()));
         assertEquals((Double) m.get("d"), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
-        BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
-        assertNull(bc);
+        try{
+            BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
+            fail("Found a removed component");
+        } catch (PropertyException e) { }
     }
 
     @Test
