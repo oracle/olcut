@@ -3,9 +3,10 @@
 
 The OLCUT provides a set of useful cross-project tools.  It has its roots in
 the Sphinx 4 speech recognizer but has been significantly extended.  Functionality
-is basically divided into three areas:
+is basically divided into four areas:
 
-* A Runtime Configuration / Local and Distributed Initialization system
+* A Runtime Configuration & Options parsing system
+* A distributed version of the above, allowing components to be instantiated over RMI & Jini.
 * A modular Command Interpreter with history and tab completion
 * Odds & Ends of useful utilities
 
@@ -56,7 +57,7 @@ The Pipeline class that correspond to the component would look as follow:
         @Config
         private int numThreads = 1;
     
-        @Config(genericType=PipelineStage.class)
+        @Config
         private List<PipelineStage> stages;
         
         private Pipeline() {}
@@ -66,11 +67,8 @@ The Pipeline class that correspond to the component would look as follow:
         }
     }
 
-In the above example, the names of the properties are annotated with their
-configuration types.  By convention, the static types are named as all caps with
-underscores between words and the property names and corresponding instance
-variables (if desired) are named with camel case. The config system will parse
-the values in the config
+In the above example, the properties are annotated with their
+configuration types.  The config system will parse the values in the config
 file to convert them to the desired type and will throw an exception if
 they are not the right type.  It also checks that only parameters defined in
 the object are included in the configuration file.  Properties may be tagged
@@ -138,7 +136,7 @@ The supported list of annotated field types are:
 * Object array types
     * String[]
     * Configurable[]
-* Generic types - requires genericType argument to be set
+* Generic types - the generic type must be a supported non-generic non-array type.
     * List
     * EnumSet
     * Set
@@ -159,7 +157,7 @@ In the above "main" example, the name of the pipeline to load is hard-coded
 into the main program.  Rather than having to add a command-line parameter,
 you might specify a global property that names which pipeline to use.
 
-        <property name="targetPipeline" value="fancyPipeline"/>
+    <property name="targetPipeline" value="fancyPipeline"/>
 
 Then in your main program you could use the following:
 
@@ -198,7 +196,9 @@ can be changed simply by specifying a system property on the command line.
 Global Properties may also be override programmatically prior to retrieving
 components from a ConfigurationManager.
 
-    cm.setGlobalProperty("outputDir", "/tmp");
+    cm.setGlobalProperty("outputDir", "/tmp"); 
+
+They can also be set by using the Options system described below.
 
 ## Inheritance
 
@@ -214,7 +214,7 @@ but changes the number of processing threads.
 bigFancyPipeline will use the same stages as fancyPipeline but will have more
 threads.
 
-## Even More Options
+## Other configuration aspects
 
 This section describes some other useful features or patterns.
 
@@ -238,6 +238,84 @@ that configuration in the source tree for your project and package it in the
 jar or war file. You can then use getClass().getResource(...) to retrieve
 the standard configuration file from within the jar file.
 
+## Command line arguments
+
+The configuration system has a parser for command line arguments. These come in
+two forms: overrides for configurable fields/global properties, and options written
+to a supplied struct.
+
+To get started instantiate a ConfigurationManager with a reference to an options struct
+and the String array of arguments.
+
+    class CLOptions extends Options {
+        @Option(charName='i',longName="input",usage="Input file")
+        public File inputFile;
+        @Option(charName='t',longName="trainer",usage="Trainer object")
+        public Trainer trainer;
+        @Option(charName='o',longName="output",usage="Output path")
+        public Path outputFile;
+        
+        public Options otherOptions;
+    }
+
+    Options o = new CLOptions();
+    ConfigurationManager cm = new ConfigurationManager(args,o);
+    String[] unparsedArguments = cm.getUnnamedArguments();
+
+Then the manager will validate that the options object doesn't have conflicting names, and
+parse the arguments into the object. Any references to Configurable classes will be instantiated
+after appropriate overrides have been applied. Any remaining unnamed arguments will
+be stored in the configuration manager for future use. Unknown named arguments will throw
+an instance of ArgumentException, as will errors with parsing etc.
+
+The ConfigurationManager by default provides three arguments: 
+
+* "-c" or "--config-file", which accepts a comma separated list of configuration files.
+* "--usage" or "--help", which generates an exception that contains the usage message.
+     
+The usage statement is generated from the supplied Options object.
+If the user supplies "--usage" or "--help" the ConfigurationManager throws UsageException
+which has the usage statement as the message.
+
+    String[] usageArgs = new String[]{"--usage"};
+    String[] helpArgs = new String[]{"--help"};
+    
+    try {
+        cm = new ConfigurationManager(usageArgs,o);
+    } catch (UsageException e) {
+        System.out.println(e.getMsg());
+        return;
+    }
+
+### Options objects
+
+The supplied Options object needs to implement Options. Options is a tag interface, with
+no mandatory methods. The processing system looks at the fields of the Options object, if
+the field is a subclass of Options it's added to the processing queue. If the field has an
+@Option annotation then the character, long name, field type and usage statement are
+extracted for further processing. The @Option annotation supports all the types supported
+by the config system, except for Map. Map isn't supported because seriously who wants to parse
+that out of a String. List, Set and the array types are supported as comma separated lists.
+The comma can be escaped by quoting or by a backslash if it's required for a String.
+Configurable objects are looked up by the supplied name, a PropertyException is thrown
+if the object cannot be found.
+
+### Overriding configurable fields
+
+Overriding configurable fields and global properties has a specific syntax. Each 
+argument must be of the form "--@componentname.fieldname" or "--@propertyname". This
+overwrites the appropriate field in a component, throwing ArgumentException if the component
+isn't found. For a global property it writes directly to the global property map, even if
+that property was not defined in the configuration file.
+
+    String[] args = new String[]{"-c","/path/to/config/file.xml",
+                                 "--input","/path/to/input",
+                                 "--trainer","trainername",
+                                 "--output","/path/to/output"
+                                 "--@trainername.epochs","5"};
+                                 
+If the above arguments are supplied then the trainer object will be instantiated with
+the epochs field set to the value 5.
 
 ## Remote Components
 
