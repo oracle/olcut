@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Description:
+        A configuration file for testing path configurations.
+-->
+
+<config>
+
+    <component name="pathTest" type="com.oracle.labs.mlrg.olcut.config.PathConfigurable">
+        <property name="test" value="/this/is/a/test/path"/>
+    </component>
+
+</config>
