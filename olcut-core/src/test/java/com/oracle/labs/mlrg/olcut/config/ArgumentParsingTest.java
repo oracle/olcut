@@ -289,8 +289,8 @@ class AllOfTheOptions implements Options {
         o.upsilon = new HashSet<>(); o.upsilon.addAll(Arrays.asList("foo","bar","quux"));
         o.phi = new AtomicInteger(123456);
         o.chi = new AtomicLong(1234567890L);
-        o.psi = new File("/tmp/file.txt");
-        o.omega = Paths.get("/tmp/path.txt");
+        o.psi = new File("file.txt");
+        o.omega = Paths.get("path.txt");
         o.a = new Random(1);
         o.b = Foo.BAZ;
 
@@ -345,9 +345,9 @@ class AllOfTheOptions implements Options {
         a.add("-v");
         a.add(chi.get() + "");
         a.add("-w");
-        a.add(psi.getAbsolutePath() + "");
+        a.add(psi.getName() + "");
         a.add("-x");
-        a.add(omega.toAbsolutePath().toString() + "");
+        a.add(omega.getFileName() + "");
         a.add("-y");
         a.add(this.a.nextInt() + "");
         a.add("-z");
