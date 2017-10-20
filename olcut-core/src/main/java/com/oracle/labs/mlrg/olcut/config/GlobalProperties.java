@@ -14,20 +14,13 @@ public class GlobalProperties extends HashMap<String, GlobalProperty> {
     /**
      * A set of distinguished properties that we would like to have.
      */
-    private static Map<String, GlobalProperty> distinguished;
+    private static Map<String, GlobalProperty> distinguished = new HashMap<>();
 
     static {
-        distinguished = new HashMap<String, GlobalProperty>();
-        try {
-            distinguished.put("gp.hostName", new GlobalProperty(ConfigurationManagerUtils.getHostName()));
-        } catch(Exception e) {
-
-        }
+        distinguished.put("gp.hostName", new LazyGlobalProperty(ConfigurationManagerUtils::getHostName));
     }
 
-    public GlobalProperties() {
-
-    }
+    public GlobalProperties() { }
 
     public GlobalProperties(GlobalProperties globalProperties) {
         for(String key : globalProperties.keySet()) {
@@ -90,7 +83,7 @@ public class GlobalProperties extends HashMap<String, GlobalProperty> {
             //
             // Get the recursive replacement for this value.
             GlobalProperty prop = get(m.group(1));
-            String replace = prop == null ? null : prop.value.toString();
+            String replace = prop == null ? null : prop.getValue();
             if(replace == null) {
                 throw new PropertyException(instanceName, propName,
                                             "Unknown global property:  " +
