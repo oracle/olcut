@@ -18,12 +18,14 @@ public class ConfigurationManagerUtils {
 
     /**
      * Return the local hostname.
-     * @return the local hostname.
-     * @throws UnknownHostException if no IP address for the local
-     *         host could be found.
+     * @return the local hostname or localhost if it's unknown.
      */
-    public static String getHostName() throws UnknownHostException {
-        return java.net.InetAddress.getLocalHost().getCanonicalHostName();
+    public static String getHostName()  {
+        try {
+            return java.net.InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            return "localhost";
+        }
     }
 
     /**

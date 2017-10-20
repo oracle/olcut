@@ -27,46 +27,57 @@ public class GlobalProperty {
         }
     }
 
-    Object value;
+    protected String value = null;
 
+    protected GlobalProperty() {}
 
-    public GlobalProperty(Object value) {
+    public GlobalProperty(GlobalProperty other) {
+        this.value = other.value;
+    }
+
+    public GlobalProperty(String value) {
         this.value = value;
     }
 
-
-    public Object getValue() {
+    public String getValue() {
         return value;
     }
 
-
-    public void setValue(Object value) {
+    public void setValue(String value) {
         this.value = value;
     }
 
-
+    @Override
     public String toString() {
-        return value != null ? value.toString() : null;
+        return value;
     }
 
-
+    /**
+     * This uses getValue to ensure subclassing works.
+     * @return True if the values of the two GlobalProperty objects are the same.
+     */
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof GlobalProperty)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         GlobalProperty that = (GlobalProperty) o;
+        String tmpValue = getValue();
+        String otherValue = that.getValue();
 
-//        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-        // note: will be fixed as soon as we have typed global properties
-
-        return true;
+        return tmpValue != null ? tmpValue.equals(otherValue) : otherValue == null;
     }
 
-
+    /**
+     * This uses getValue to ensure subclassing works.
+     * @return The hashcode of the value.
+     */
+    @Override
     public int hashCode() {
-        return (value != null ? value.hashCode() : 0);
+        String tmpValue = getValue();
+        return tmpValue != null ? tmpValue.hashCode() : 0;
     }
-    
+
     /**
      * Tests whether the given string is a global property.  This requires a 
      * match against the whole string.
