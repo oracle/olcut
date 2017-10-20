@@ -246,11 +246,24 @@ public class ConfigurationManager implements Cloneable {
         for (Field f : optionFields) {
             Option annotation = f.getAnnotation(Option.class);
             if (FieldType.getFieldType(f) == null) {
-                throw new ArgumentException(annotation.longName(),"Argument has an unsupported type " + f.getType().getName());
+                throw new ArgumentException(annotation.longName(),
+                        "Argument has an unsupported type " + f.getType().getName());
+            }
+            if (annotation.charName() == '-') {
+                throw new ArgumentException(annotation.longName(),"'-' is a reserved character.");
+            }
+            if (annotation.longName().startsWith("@")) {
+                throw new ArgumentException(annotation.longName(),
+                        "Arguments starting '--@' are reserved for the configuration system.");
             }
             if ((annotation.charName() != Option.EMPTY_CHAR) && charNameMap.containsKey(annotation.charName())) {
-                throw new ArgumentException(charNameMap.get(annotation.charName())
-                        .longName(),annotation.longName(),"Two arguments have the same character");
+                if (annotation.charName() == configFileOption.charName()) {
+                    throw new ArgumentException("config-file",annotation.longName(),
+                            "The -"+configFileOption.charName()+" argument is reserved for the configuration system");
+                } else {
+                    throw new ArgumentException(charNameMap.get(annotation.charName())
+                            .longName(), annotation.longName(), "Two arguments have the same character");
+                }
             }
             if (longNameMap.containsKey(annotation.longName())) {
                 throw new ArgumentException(longNameMap.get(annotation.longName())
