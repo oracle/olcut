@@ -64,6 +64,18 @@ public class ArgumentParsingTest {
     }
 
     @Test
+    public void testConfigurableOverrideAndLoad() throws IOException {
+        OverridingOptions o = new OverridingOptions();
+        String[] args = new String[]{"-c","stringListConfig.xml","--string-list-configurable","listTest","--@listTest.strings","alpha,beta,gamma"};
+        ConfigurationManager cm = new ConfigurationManager(args,o);
+
+        StringListConfigurable slc = o.slc;
+        assertEquals("Configurable overriding failed.", "alpha", slc.strings.get(0));
+        assertEquals("Configurable overriding failed.", "beta", slc.strings.get(1));
+        assertEquals("Configurable overriding failed.", "gamma", slc.strings.get(2));
+    }
+
+    @Test
     public void testGlobalOverride() throws IOException {
         String[] args = new String[]{"-c","globalPropertyConfig.xml","--@a","apollo","--@monkeys","gibbons"};
         ConfigurationManager cm = new ConfigurationManager(args);
@@ -161,6 +173,11 @@ class DuplicateLongOptions implements Options {
 
     @Option(charName = 'd', longName="dvorak", usage="test hard 2: test harder")
     public String dvorak2;
+}
+
+class OverridingOptions implements Options {
+    @Option(charName = 's', longName="string-list-configurable", usage="String list configurable")
+    public StringListConfigurable slc;
 }
 
 class ParsingOptions implements Options {
