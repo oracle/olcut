@@ -4,9 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A global property of the sphinx configuration system
- *
- * @author Holger Brandl
+ * A global property of the olcut configuration system.
  */
 public class GlobalProperty {
 

@@ -17,26 +17,30 @@ import java.io.IOException;
 /**
  * Defines the interface that must be implemented by any configurable component.  The life cycle of a
  * {@link Configurable} is as follows:
- * <p/>
+ * <p>
  * <ul><li> <b>Class Parsing</b> The class file is parsed in order to determine all its configurable properties.  These
  * are defined using {@link Config} annotations on fields. Only types defined in {@link FieldType} are recognised. Only
  * names of annotated properties will be allowed by the configuration system later on. Optionally the user can
  * annotate a {@link String} field with {@link ConfigurableName} which will have the name from the xml file written
  * into it. If required the {@link ConfigurationManager} can be stored by annotating an appropriate field with
  * {@link ConfigManager}.</li>
- * <p/>
+ * </p>
+ * <p>
  * <li> <b>Construction</b> - The (empty, optionally private) constructor is called in order to instantiate the component.
  * Typically the constructor does little, if any work, since the component has not been configured yet. </li>
- * <p/>
+ * </p>
+ * <p>
  * <li> <b>Configuration</b> - Shortly after instantiation, the component's fields are written by inserting parsed
  * values from a {@link PropertySheet}. The PropertySheet is usually derived from an external configuration file, but
  * can be constructed programmatically as a {@link java.util.Map} from String to Object. If some properties
  * defined for a component does not fulfill the property definition given by the annotation (type, range, etc.) a
  * <code>PropertyException</code> is thrown. </li>
- * <p/>
+ * </p>
+ * <p>
  * <li> <b>Post Config</b> - After the fields have been initialised, the system calls the {@link Configurable#postConfig()}
  * method. There other setup can be performed, such as deserialising types which are not configurable. </li>
  * </ul>
+ * </p>
  */
 public interface Configurable {
 

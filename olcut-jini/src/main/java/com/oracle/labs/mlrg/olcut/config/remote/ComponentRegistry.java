@@ -870,7 +870,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     /**
      * A main program that will dump the components registered in a component
      * registry.  The group to use for discovery should be defined on the command
-     * line using -Dgroup=&lt;groupname&gt.
+     * line using -Dgroup=&lt;groupname&gt;.
      */
     public static void main(String[] args) throws Exception {
         //
