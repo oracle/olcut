@@ -913,7 +913,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      * of a <code>Configurable</code>-class
      *
      * @param propertySheet of type PropertySheet
-     * @param configurable of type Class<? extends Configurable>
+     * @param configurable of type <code>Class&lt;? extends Configurable&gt;</code>
      */
     public static <T extends Configurable> void processAnnotations(PropertySheet<T> propertySheet,
             Class<T> configurable) throws PropertyException {

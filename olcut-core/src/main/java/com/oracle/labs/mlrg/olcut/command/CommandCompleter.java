@@ -19,8 +19,6 @@ public class CommandCompleter implements Completer {
      * Create a CommandCompletor given the map that maps command names to their
      * command objects. The live map of commands must be provided if this
      * completor is to reflect commands added after instantiation.
-     *
-     * @param commands
      */
     public CommandCompleter(Map<String,CommandInterface> cmdMap, Deque<LayeredCommandInterpreter> interpreters) {
         this.cmdMap = cmdMap;

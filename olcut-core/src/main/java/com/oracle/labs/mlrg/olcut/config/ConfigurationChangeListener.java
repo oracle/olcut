@@ -3,7 +3,6 @@ package com.oracle.labs.mlrg.olcut.config;
 /**
  * Describes all methods necessary to process change events of a <code>ConfigurationManager</code>.
  *
- * @author Holger Brandl
  * @see ConfigurationManager
  */
 

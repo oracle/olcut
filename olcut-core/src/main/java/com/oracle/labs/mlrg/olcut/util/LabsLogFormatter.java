@@ -17,11 +17,11 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 /**
- * Provides a log formatter for use with sphinx. This formatter generates nicer looking console messages than the
+ * Provides a log formatter. This formatter generates nicer looking console messages than the
  * default formatter. To use the formatter, set the property
- * <p/>
- * java.util.logging.ConsoleHandler.formatter to com.oracle.labs.mlrg.olcut.util.LabsLogFormatter
- * <p/>
+ *
+ * <code>java.util.logging.ConsoleHandler.formatter</code> to <code>com.oracle.labs.mlrg.olcut.util.LabsLogFormatter</code>
+ *
  * This is typically done in a custom logger.properties file
  */
 public class LabsLogFormatter extends Formatter {

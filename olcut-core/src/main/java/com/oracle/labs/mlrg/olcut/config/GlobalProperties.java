@@ -7,7 +7,6 @@ import java.util.regex.Matcher;
 /**
  * A collection of global properties used within a system configuration
  *
- * @author Holger Brandl
  * @see ConfigurationManager
  */
 public class GlobalProperties extends HashMap<String, GlobalProperty> {

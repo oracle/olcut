@@ -29,7 +29,7 @@ public class ConfigurationManagerUtils {
     /**
      * This method will automatically rename all components of <code>subCM</code> for which there is component named the
      * same in the <code>baseCM</code> .
-     * <p/>
+     *
      * Note: This is ie. required when merging two system configurations into one.
      *
      * @return A map which maps all renamed component names to their new names.
