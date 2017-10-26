@@ -57,6 +57,7 @@ public interface Options {
 
     public static ArrayList<ArrayList<String>> getUsage(Class<? extends Options> options) {
         ArrayList<ArrayList<String>> list = new ArrayList<>();
+        ArrayList<ArrayList<String>> optionsList = new ArrayList<>();
         Set<Field> fields = getOptionFields(options);
         if (fields.size() == 0) {
             return list;
@@ -66,8 +67,23 @@ public interface Options {
             list.add(header);
             for (Field f : fields) {
                 Option option = f.getAnnotation(Option.class);
-                list.add(Options.getOptionUsage(option,f));
+                optionsList.add(Options.getOptionUsage(option,f));
             }
+
+            optionsList.sort((ArrayList<String> a, ArrayList<String> b) -> {
+                if (a.get(0).charAt(0) == b.get(0).charAt(0)) {
+                    return a.get(1).compareTo(b.get(1));
+                } else {
+                    if (a.get(0).charAt(0) == Option.SPACE_CHAR) {
+                        return +1;
+                    } else if (b.get(0).charAt(0) == Option.SPACE_CHAR) {
+                        return -1;
+                    } else {
+                        return a.get(0).compareTo(b.get(0));
+                    }
+                }
+            });
+            list.addAll(optionsList);
 
             return list;
         }
@@ -82,7 +98,7 @@ public interface Options {
         if (option.charName() != Option.EMPTY_CHAR) {
             output.add(""+option.charName());
         } else {
-            output.add(" ");
+            output.add(""+Option.SPACE_CHAR);
         }
         output.add(option.longName());
         output.add(type);
