@@ -208,9 +208,9 @@ class AllOfTheOptions implements Options {
     private float zeta;
     @Option(charName = 'g', longName="eta", usage="")
     private double eta;
-    @Option(charName = 'h', longName="theta", usage="")
+    @Option(longName="theta", usage="")
     private String theta;
-    @Option(charName = 'i', longName="iota", usage="")
+    @Option(longName="iota", usage="")
     private byte[] iota;
     @Option(charName = 'j', longName="kappa", usage="")
     private short[] kappa;

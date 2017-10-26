@@ -24,4 +24,5 @@ public @interface Option {
     String usage();
 
     public static char EMPTY_CHAR = '\0';
+    public static char SPACE_CHAR = ' ';
 }
