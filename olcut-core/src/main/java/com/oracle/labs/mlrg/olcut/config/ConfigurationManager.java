@@ -249,8 +249,8 @@ public class ConfigurationManager implements Cloneable {
                 throw new ArgumentException(annotation.longName(),
                         "Argument has an unsupported type " + f.getType().getName());
             }
-            if (annotation.charName() == '-') {
-                throw new ArgumentException(annotation.longName(),"'-' is a reserved character.");
+            if (annotation.charName() == '-' || annotation.charName() == Option.SPACE_CHAR) {
+                throw new ArgumentException(annotation.longName(),"'-' and ' ' are reserved characters.");
             }
             if (annotation.longName().startsWith("@")) {
                 throw new ArgumentException(annotation.longName(),
