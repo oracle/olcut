@@ -42,4 +42,12 @@ public class StringConfig implements Configurable, Serializable {
             return false;
         }
     }
+
+    @Override
+    public int hashCode() {
+        int result = one.hashCode();
+        result = 31 * result + two.hashCode();
+        result = 31 * result + three.hashCode();
+        return result;
+    }
 }

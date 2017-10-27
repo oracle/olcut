@@ -23,11 +23,11 @@ import static org.junit.Assert.*;
  *
  * @author sg93990
  */
-public class ProgramatticConfigurableTest {
+public class ProgrammaticConfigurableTest {
 
-    private static final Logger logger = Logger.getLogger(ProgramatticConfigurableTest.class.getName());
+    private static final Logger logger = Logger.getLogger(ProgrammaticConfigurableTest.class.getName());
 
-    public ProgramatticConfigurableTest() {
+    public ProgrammaticConfigurableTest() {
     }
 
     @BeforeClass
@@ -189,6 +189,7 @@ public class ProgramatticConfigurableTest {
         assertEquals("one", sc.one);
         assertEquals("two", sc.two);
         assertEquals("three", sc.three);
-        logger.info(String.format("f: %s", f));
+        //logger.info(String.format("f: %s", f));
+        f.deleteOnExit();
     }
 }

@@ -5,13 +5,16 @@
 
 package com.sun.labs.util.props;
 
-import java.io.IOException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -41,67 +44,60 @@ public class EnumConfigTest {
     @Test
     public void both() throws IOException {
         ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("both");
-        assertEquals(EnumConfigurable.Type.A, ec.enum1);
-        assertEquals(EnumConfigurable.Type.B, ec.enum2);
+        EnumConfig ec = (EnumConfig) cm.lookup("both-config");
+        assertEquals(EnumConfig.Type.A, ec.enum1);
+        assertEquals(EnumConfig.Type.B, ec.enum2);
     }
 
     @Test public void set1() throws IOException {
         ConfigurationManager cm = new ConfigurationManager(getClass().
                 getResource("enumConfig.xml"));
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("set1");
-        assertEquals(EnumConfigurable.Type.A, ec.enum1);
-        assertEquals(EnumConfigurable.Type.B, ec.enum2);
-        assertTrue("Missing A", ec.enumSet1.contains(EnumConfigurable.Type.A));
-        assertTrue("Missing B", ec.enumSet1.contains(EnumConfigurable.Type.B));
+        EnumConfig ec = (EnumConfig) cm.lookup("set1-config");
+        assertEquals(EnumConfig.Type.A, ec.enum1);
+        assertEquals(EnumConfig.Type.B, ec.enum2);
+        assertTrue("Missing A", ec.enumSet1.contains(EnumConfig.Type.A));
+        assertTrue("Missing B", ec.enumSet1.contains(EnumConfig.Type.B));
         assertTrue("Too big: " + ec.enumSet1, ec.enumSet1.size() == 2);
     }
 
     @Test public void defaultSet() throws IOException {
         ConfigurationManager cm = new ConfigurationManager(getClass().
                 getResource("enumConfig.xml"));
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("both");
-        assertEquals(EnumConfigurable.Type.A, ec.enum1);
-        assertEquals(EnumConfigurable.Type.B, ec.enum2);
-        assertTrue("Missing A", ec.enumSet1.contains(EnumConfigurable.Type.A));
-        assertTrue("Missing F", ec.enumSet1.contains(EnumConfigurable.Type.F));
+        EnumConfig ec = (EnumConfig) cm.lookup("both-config");
+        assertEquals(EnumConfig.Type.A, ec.enum1);
+        assertEquals(EnumConfig.Type.B, ec.enum2);
+        assertTrue("Missing A", ec.enumSet1.contains(EnumConfig.Type.A));
+        assertTrue("Missing F", ec.enumSet1.contains(EnumConfig.Type.F));
         assertTrue("Too big: " + ec.enumSet1, ec.enumSet1.size() == 2);
     }
 
-    @Test(expected =
-    com.sun.labs.util.props.InternalConfigurationException.class)
+    @Test(expected=PropertyException.class)
     public void badSetValue() throws IOException {
         ConfigurationManager cm = new ConfigurationManager(getClass().
                 getResource("enumConfig.xml"));
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("badset");
+        EnumConfig ec = (EnumConfig) cm.lookup("badset-config");
     }
 
     @Test
     public void defaultValue() throws IOException {
         ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("default");
-        assertEquals(EnumConfigurable.Type.A, ec.enum1);
-        assertEquals(EnumConfigurable.Type.A, ec.enum2);
-    }
-    
-    @Test(expected=com.sun.labs.util.props.InternalConfigurationException.class)
-    public void noRequired() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("norequired");
+        EnumConfig ec = (EnumConfig) cm.lookup("default-config");
+        assertEquals(EnumConfig.Type.A, ec.enum1);
+        assertEquals(EnumConfig.Type.A, ec.enum2);
     }
 
-    @Test(expected=com.sun.labs.util.props.InternalConfigurationException.class)
+    @Test(expected=PropertyException.class)
     public void badValue() throws IOException {
         ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("badvalue");
+        EnumConfig ec = (EnumConfig) cm.lookup("badvalue-config");
     }
 
     @Test
     public void globalValue() throws IOException {
         ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("global");
-        assertEquals(EnumConfigurable.Type.A, ec.enum1);
-        assertEquals(EnumConfigurable.Type.A, ec.enum2);
+        EnumConfig ec = (EnumConfig) cm.lookup("global-config");
+        assertEquals(EnumConfig.Type.A, ec.enum1);
+        assertEquals(EnumConfig.Type.A, ec.enum2);
     }
     
 }

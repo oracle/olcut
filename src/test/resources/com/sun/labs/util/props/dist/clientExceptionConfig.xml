@@ -17,7 +17,7 @@
         <propertylist name="groupList">
             <item>Aura</item>
         </propertylist>
-        <property name="securityPolicy" value="${home}/jini/jsk-all.policy"/>
+        <property name="securityPolicy" value="src/test/resources/jsk-all.policy"/>
     </component>
     
     <!-- This component has no properties, which means that we're going to want to 

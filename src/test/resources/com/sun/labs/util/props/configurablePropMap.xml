@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+
+<config>
+
+    <component name="foo1" type="com.sun.labs.util.props.FooConfigurable">
+        <property name="name" value="foo1"/>
+        <property name="value" value="1"/>
+    </component>
+
+    <component name="foo2" type="com.sun.labs.util.props.FooConfigurable">
+        <property name="name" value="foo2"/>
+        <property name="value" value="2"/>
+    </component>
+
+    <component name="fooMap" type="com.sun.labs.util.props.FooMapConfigurable">
+        <propertymap name="map">
+            <entry key="first" value="foo1"/>
+            <entry key="second" value="foo2"/>
+        </propertymap>
+    </component>
+</config>
