@@ -14,7 +14,10 @@ package com.oracle.labs.mlrg.olcut.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * Provides a log formatter. This formatter generates nicer looking console messages than the
@@ -25,9 +28,9 @@ import java.util.logging.LogRecord;
  * This is typically done in a custom logger.properties file
  */
 public class SimpleLabsLogFormatter extends Formatter {
+    private static final Logger logger = Logger.getLogger(SimpleLabsLogFormatter.class.getName());
 
     private boolean terse;
-
 
     /**
      * Sets the level of output
@@ -38,7 +41,6 @@ public class SimpleLabsLogFormatter extends Formatter {
         this.terse = terse;
     }
 
-
     /**
      * Retrieves the level of output
      *
@@ -47,7 +49,6 @@ public class SimpleLabsLogFormatter extends Formatter {
     public boolean getTerse() {
         return terse;
     }
-
 
     /**
      * Formats the given log record and return the formatted string.
@@ -74,6 +75,22 @@ public class SimpleLabsLogFormatter extends Formatter {
                 msg = msg + "\n" + sw.toString();
             }
             return msg + "\n";
+        }
+    }
+
+    public static void setAllLogFormatters() {
+        setAllLogFormatters(Level.ALL);
+    }
+
+    public static void setAllLogFormatters(Level level) {
+        for (Handler h : Logger.getLogger("").getHandlers()) {
+            h.setLevel(level);
+            h.setFormatter(new SimpleLabsLogFormatter());
+            try {
+                h.setEncoding("utf-8");
+            } catch (Exception ex) {
+                logger.severe("Error setting output encoding");
+            }
         }
     }
 
