@@ -183,10 +183,10 @@ public class ConfigurationManager implements Cloneable {
      * @return an input stream for that location, or null if we couldn't find
      * any.
      */
-    public InputStream getInputStreamForLocation(String location) {
+    public static InputStream getInputStreamForLocation(String location) {
         //
         // First, see if it's a resource on our classpath.
-        InputStream ret = this.getClass().getResourceAsStream(location);
+        InputStream ret = ConfigurationManager.class.getResourceAsStream(location);
         if (ret == null) {
             try {
                 //
