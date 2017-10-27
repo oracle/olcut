@@ -35,11 +35,27 @@
             <type>com.sun.labs.util.props.SimpleConfigurable</type>
         </propertylist>
     </component>
-    
+
     <component name="combotyped" type="com.sun.labs.util.props.ListConfigurable">
         <propertylist name="list">
             <item>simp</item>
             <type>com.sun.labs.util.props.StringConfigurable</type>
+        </propertylist>
+    </component>
+
+    <component name="stringconfigurablearray" type="com.sun.labs.util.props.ArrayStringConfigurable">
+        <propertylist name="stringArray">
+            <item>strings</item>
+            <item>strings2</item>
+            <item>strings3</item>
+        </propertylist>
+    </component>
+
+    <component name="stringconfigurablearraybroken" type="com.sun.labs.util.props.ArrayStringConfigurable">
+        <propertylist name="stringArray">
+            <item>strings</item>
+            <item>monkeys</item>
+            <item>gibbons</item>
         </propertylist>
     </component>
     

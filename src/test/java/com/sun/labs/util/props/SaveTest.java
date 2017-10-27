@@ -39,6 +39,36 @@ public class SaveTest {
     }
 
     @Test
+    public void saveAllWithInstantiationGeneric() throws IOException {
+        URL cu = getClass().getResource("genericConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        SetConfig s1 = (SetConfig) cm1.lookup("correctSetConfig");
+        cm1.save(f, true);
+        assertEquals(3, cm1.getNumConfigured());
+        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        SetConfig s2 = (SetConfig) cm2.lookup("correctSetConfig");
+        assertEquals(s1, s2);
+        ListConfig l1 = (ListConfig) cm1.lookup("correctListConfig");
+        ListConfig l2 = (ListConfig) cm2.lookup("correctListConfig");
+        assertEquals(l1, l2);
+    }
+
+    @Test
+    public void saveAllWithNoInstantiationGeneric() throws IOException {
+        URL cu = getClass().getResource("genericConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        cm1.save(f, true);
+        assertEquals(0, cm1.getNumConfigured());
+        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        SetConfig s1 = (SetConfig) cm1.lookup("correctSetConfig");
+        SetConfig s2 = (SetConfig) cm2.lookup("correctSetConfig");
+        assertEquals(s1, s2);
+        ListConfig l1 = (ListConfig) cm1.lookup("correctListConfig");
+        ListConfig l2 = (ListConfig) cm2.lookup("correctListConfig");
+        assertEquals(l1, l2);
+    }
+
+    @Test
     public void saveAllWithInstantiation() throws IOException {
         URL cu = getClass().getResource("basicConfig.xml");
         ConfigurationManager cm1 = new ConfigurationManager(cu);

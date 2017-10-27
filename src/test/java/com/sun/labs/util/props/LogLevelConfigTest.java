@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -29,7 +30,8 @@ public class LogLevelConfigTest {
     @AfterClass
     public static void tearDownClass() throws Exception {
     }
-    
+
+    @Ignore
     @Test
     public void testLogLevel() throws IOException {
         URL cu = getClass().getResource("logLevelConfig.xml");
@@ -37,6 +39,7 @@ public class LogLevelConfigTest {
         SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simplewarn");
     }
 
+    @Ignore
     @Test
     public void testGlobalLogLevel() throws IOException {
         URL cu = getClass().getResource("logLevelConfig.xml");
@@ -45,6 +48,7 @@ public class LogLevelConfigTest {
         assertEquals(sc.getLogLevel(), Level.INFO);
     }
 
+    @Ignore
     @Test
     public void testWarnLevel() throws IOException {
         URL cu = getClass().getResource("logLevelConfig.xml");
@@ -53,6 +57,7 @@ public class LogLevelConfigTest {
         assertEquals(sc.getLogLevel(), Level.WARNING);
     }
 
+    @Ignore
     @Test
     public void testSevereLevel() throws IOException {
         URL cu = getClass().getResource("logLevelConfig.xml");
@@ -61,6 +66,7 @@ public class LogLevelConfigTest {
         assertEquals(sc.getLogLevel(), Level.SEVERE);
     }
 
+    @Ignore
     @Test(expected=com.sun.labs.util.props.PropertyException.class)
     public void testBadLevel() throws IOException {
         URL cu = getClass().getResource("logLevelConfig.xml");
@@ -68,17 +74,12 @@ public class LogLevelConfigTest {
         SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simplebad");
     }
 
+    @Ignore
     @Test(expected=com.sun.labs.util.props.PropertyException.class)
     public void testBadGlobalLevel() throws IOException {
         URL cu = getClass().getResource("logLevelConfig2.xml");
         ConfigurationManager cm = new ConfigurationManager(cu);
         SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simpleglobal");
     }
-
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
 
 }

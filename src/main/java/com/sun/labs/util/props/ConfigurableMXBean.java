@@ -21,7 +21,7 @@ public interface ConfigurableMXBean {
      * that to be the case.
      * 
      * @return the names of the properties.
-     * @see PropertySheet.getPropertyNames
+     * @see PropertySheet#getPropertyNames
      */
     public String[] getProperties();
 

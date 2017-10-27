@@ -706,9 +706,6 @@ public class CommandInterpreter extends Thread {
 
     /**
      * Dumps the commands in the interpreter
-     *
-     * @param numbered if true number the commands
-     *
      */
     protected void dumpCommands() {
         int count = dumpGroup(commandGroups.get(STANDARD_COMMANDS_GROUP_NAME), 0);
@@ -970,6 +967,8 @@ public class CommandInterpreter extends Thread {
                     String[].class,
                     Integer.class,
                     int.class,
+                    Short.class,
+                    short.class,
                     Long.class,
                     long.class,
                     Float.class,
@@ -1070,6 +1069,8 @@ public class CommandInterpreter extends Thread {
                         break;
                     } else if (currParam == Integer.class || currParam == int.class) {
                         invokeParams[i] = Integer.parseInt(arg);
+                    } else if (currParam == Short.class || currParam == short.class) {
+                        invokeParams[i] = Short.parseShort(arg);
                     } else if (currParam == Long.class || currParam == long.class) {
                         invokeParams[i] = Long.parseLong(arg);
                     } else if (currParam == Float.class || currParam == float.class) {

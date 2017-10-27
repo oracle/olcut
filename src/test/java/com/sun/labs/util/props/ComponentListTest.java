@@ -107,4 +107,31 @@ public class ComponentListTest {
         assertTrue(simp == 1);
         assertTrue(string == 3);
     }
+
+    @Test
+    public void stringConfigurableArrayTest() throws IOException {
+        URL cu = getClass().getResource("componentListConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(cu);
+        ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearray");
+        StringConfigurable[] l = lc.getArray();
+        assertTrue(l.length == 3);
+        String firstOne = l[0].one;
+        assertEquals("alpha",firstOne);
+        String secondOne = l[1].one;
+        assertEquals("one",secondOne);
+        String thirdOne = l[2].one;
+        assertEquals("un",thirdOne);
+    }
+
+    @Test
+    public void stringConfigurableBrokenArrayTest() throws IOException {
+        URL cu = getClass().getResource("componentListConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(cu);
+        try {
+            ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearraybroken");
+            fail("Did not throw PropertyException when asking for unknown element in configurable array.");
+        } catch (PropertyException e) {
+            assertEquals("stringArray",e.getProperty());
+        }
+    }
 }
