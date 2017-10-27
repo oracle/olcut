@@ -331,9 +331,9 @@ class AllOfTheOptions implements Options {
         a.add(zeta + "");
         a.add("-g");
         a.add(eta + "");
-        a.add("-h");
+        a.add("--theta");
         a.add(theta + "");
-        a.add("-i");
+        a.add("--iota");
         a.add(iota[0]+","+iota[1]+","+iota[2]);
         a.add("-j");
         a.add(kappa[0]+","+kappa[1]+","+kappa[2]);
