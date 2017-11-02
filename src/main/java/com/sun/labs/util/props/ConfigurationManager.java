@@ -213,6 +213,43 @@ public class ConfigurationManager implements Cloneable {
         return ret;
     }
 
+    /**
+     * Gets a URL for a given location.
+     * <P>
+     * We'll try to use the location as a resource, and failing that a URL, and
+     * failing that, a file.
+     * @param location the location provided.
+     * @return a URL to that location, or null if we couldn't find
+     * any.
+     */
+    public static URL getURLForLocation(String location) {
+        //
+        // First, see if it's a resource on our classpath.
+        URL ret = ConfigurationManager.class.getResource(location);
+        if (ret == null) {
+            try {
+                //
+                // Nope. See if it's a valid URL and open that.
+                ret = new URL(location);
+            } catch (MalformedURLException ex) {
+                try {
+                    //
+                    // Not a valid URL, so try it as a file name.
+                    ret = new File(location).toURI().toURL();
+                } catch (MalformedURLException ex1) {
+                    //
+                    // Couldn't open the file, we're done.
+                    return null;
+                }
+            } catch (IOException ex) {
+                //
+                // No joy.
+                logger.warning("Cannot open location " + location);
+                return null;
+            }
+        }
+        return ret;
+    }
 
     
     /**
