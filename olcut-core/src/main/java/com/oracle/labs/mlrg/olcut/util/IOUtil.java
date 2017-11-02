@@ -1,0 +1,505 @@
+package com.oracle.labs.mlrg.olcut.util;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+public abstract class IOUtil {
+    private static final Logger logger = Logger.getLogger(IOUtil.class.getName());
+    public static final int BUFFER_SIZE = 1000000;
+
+    public static List<String> getLinesFromString(String text) {
+        BufferedReader reader = new BufferedReader(new StringReader(text));
+        List<String> lines = new ArrayList<>();
+        String line;
+        try {
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return lines;
+    }
+
+    
+    public static List<String> getLines(String path) {
+        return getLines(path, -1);
+    }
+
+    public static List<String> getLines(String path, String encoding) {
+        return getLines(path, -1, encoding);
+    }
+
+    public static List<String> getLines(String path, int count) {
+        return getLines(path, count, "UTF-8");
+    }
+
+    public static List<String> getLines(String path, int count, String encoding) {
+        try {
+            BufferedReader reader = getReader(path, encoding);
+            List<String> list = getLines(reader, count);
+            reader.close();
+            return list;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static List<String> getLines(BufferedReader reader, int count) {
+        try {
+            List<String> lines = new ArrayList<>();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+                if (count > 0 && lines.size() == count) {
+                    return lines;
+                }
+            }
+            return lines;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static BufferedReader getReader(String path) {
+        return getReader(path, "UTF-8");
+    }
+
+    public static BufferedReader getReader(String path, String charSet) {
+        try {
+            return new BufferedReader(new InputStreamReader(getInputStream(path), charSet),BUFFER_SIZE);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static BufferedReader getReader(URI uri, String charSet) {
+        try {
+            InputStream is = uri.toURL().openStream();
+            return new BufferedReader(new InputStreamReader(is, charSet),BUFFER_SIZE);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static BufferedReader getReader(Path path, String charSet) {
+        try {
+            InputStream is = new FileInputStream(path.toFile());
+            return new BufferedReader(new InputStreamReader(is, charSet),BUFFER_SIZE);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Makes a reader wrapped around the string. Either zipped or not.
+     * @param filename The input filename.
+     * @param zipped Is the file zipped?
+     * @return A BufferedReader wrapped around the appropriate stream.
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    public static BufferedReader getReader(String filename, String charSet, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+        return getReader(new File(filename), charSet, zipped);
+    }
+
+    /**
+     * Makes a reader wrapped around the string. Either zipped or not.
+     * @param zipped Is the file zipped?
+     * @return A BufferedReader wrapped around the appropriate stream.
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    public static BufferedReader getReader(File file, String charSet, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+        BufferedReader fileReader;
+        if (zipped) {
+            fileReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file)), charSet),BUFFER_SIZE);
+        } else {
+            fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charSet),BUFFER_SIZE);
+        }
+        return fileReader;
+    }
+
+
+    /**
+     * Makes a writer wrapped around the string. Either zipped or not.
+     * @param filename The output filename.
+     * @param zipped Is the file zipped?
+     * @return A PrintWriter wrapped around the appropriate stream.
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    public static PrintWriter getWriter(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+        PrintWriter fileWriter;
+        if (zipped) {
+            fileWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(filename)), "UTF-8"),BUFFER_SIZE));
+        } else {
+            fileWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), "UTF-8"),BUFFER_SIZE));
+        }
+        return fileWriter;
+    }
+
+    /**
+     * Makes a writer wrapped around the string. Either zipped or not.
+     * @param filename The output filename.
+     * @param zipped Is the file zipped?
+     * @return A PrintWriter wrapped around the appropriate stream.
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    public static ObjectOutputStream getOutputStream(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+        ObjectOutputStream objectWriter;
+        if (zipped) {
+            objectWriter = new ObjectOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(filename),BUFFER_SIZE)));
+        } else {
+            objectWriter = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename),BUFFER_SIZE));
+        }
+        return objectWriter;
+    }
+
+    /**
+     * Makes a ObjectInputStream wrapped around the string. Either zipped or not.
+     * @param filename The input filename.
+     * @param zipped Is the file zipped?
+     * @return A ObjectInputStream wrapped around the appropriate stream.
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    public static ObjectInputStream getInputStream(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+        ObjectInputStream objectReader;
+        if (zipped) {
+            objectReader = new ObjectInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(filename),BUFFER_SIZE)));
+        } else {
+            objectReader = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename),BUFFER_SIZE));
+        }
+        return objectReader;
+    }
+
+    /**
+     * Makes a ObjectInputStream wrapped around the string. Either zipped or not.
+     * @param file The input File.
+     * @param zipped Is the file zipped?
+     * @return A ObjectInputStream wrapped around the appropriate stream.
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    public static ObjectInputStream getInputStream(File file, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+        ObjectInputStream objectReader;
+        if (zipped) {
+            objectReader = new ObjectInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file),BUFFER_SIZE)));
+        } else {
+            objectReader = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file),BUFFER_SIZE));
+        }
+        return objectReader;
+    }
+
+    public static InputStream getInputStream(String path) {
+        try {
+            InputStream in = IOUtil.class.getResourceAsStream(path);
+            if (in == null) {
+                File file = new File(path);
+                in = new FileInputStream(file);
+            }
+            return new BufferedInputStream(in, 100000);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static InputStream getInputStream(File file) {
+        try {
+            InputStream in = new FileInputStream(file);
+            return new BufferedInputStream(in, 100000);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String toString(String path) {
+        return toString(path, "UTF-8");
+    }
+
+    public static String toString(String path, String charSet) {
+        String str = null;
+        try {
+            str = fromResource(path, charSet);
+            if (str != null) {
+                return str;
+            }
+        } catch (Exception e) {
+        }
+
+        str = fromFile(path, charSet);
+        if (str != null) {
+            return str;
+        }
+
+        throw new RuntimeException("contents not readable: " + path);
+    }
+
+    public static String fromResource(String path, String charSet) {
+        return fromInputStream(IOUtil.class.getResourceAsStream(path), charSet);
+    }
+
+    public static String fromPath(Path path) {
+        return fromFile(path.toFile(), "UTF-8");
+    }
+
+    public static String fromPath(Path path, String charSet) {
+        return fromFile(path.toFile(), charSet);
+    }
+
+    public static String fromFile(String path, String charSet) {
+        return fromFile(new File(path), charSet);
+    }
+
+    public static String fromFile(File file, String charSet) {
+        try {
+            if (file.length() == 0) {
+                return "";
+            }
+            return fromInputStream(new FileInputStream(file), charSet);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static String fromUri(URI uri, String charSet) {
+        try {
+            return fromInputStream(uri.toURL().openStream(), charSet);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static String fromInputStream(InputStream in, String charSet) {
+        Scanner scanner = null;
+        BufferedInputStream bis = null;
+        try {
+            bis = new BufferedInputStream(in, 100000);
+            scanner = new Scanner(bis, charSet);
+            String content = scanner.useDelimiter("\\Z").next();
+            return content;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (scanner != null) {
+                scanner.close();
+            }
+        }
+    }
+
+    public static <T extends Serializable> void serialize(T object, String path) {
+        serialize(object, path, 1024 * 64);
+    }
+
+    public static <T extends Serializable> void serialize(T object, String path, int bufferSize) {
+        try {
+            File file = new File(path);
+            file.getParentFile().mkdirs();
+            ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(path), bufferSize));
+            oos.writeObject(object);
+            oos.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T extends Serializable> T deserialize(String path) {
+        return deserialize(getInputStream(path));
+    }
+
+    public static <T extends Serializable> T deserialize(File path) {
+        return deserialize(getInputStream(path));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Serializable> T deserialize(InputStream stream) {
+        try {
+            ObjectInputStream ois = new ObjectInputStream(stream);
+            T object = (T) ois.readObject();
+            ois.close();
+            return object;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static PrintStream getPrintStream(String path) {
+        return getPrintStream(path, 1000000);
+    }
+
+    public static PrintStream getPrintStream(String path, int bufferSize) {
+        try {
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(path), bufferSize);
+            return new PrintStream(bos, false);
+        } catch (FileNotFoundException fnfe) {
+            throw new RuntimeException(fnfe);
+        }
+    }
+
+    public static PrintStream getPrintStream(File file, int bufferSize) {
+        try {
+            file.getParentFile().mkdirs();
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file), bufferSize);
+            return new PrintStream(bos, false);
+        } catch (FileNotFoundException fnfe) {
+            throw new RuntimeException(fnfe);
+        }
+    }
+
+    public static OutputStream getOutputStream(String path) {
+        return getOutputStream(path, 100000);
+    }
+
+    public static OutputStream getOutputStream(String path, int bufferSize) {
+        try {
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(path), bufferSize);
+            return bos;
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Iterator<Path> getPaths(Path listPath, Path rootPath) {
+        List<String> lines = getLines(listPath.toString());
+        List<Path> paths = new ArrayList<>();
+        for (String line : lines) {
+            Path path = Paths.get(rootPath.toString(), line);
+            paths.add(path);
+        }
+        return paths.iterator();
+    }
+
+    public static Iterator<Path> getPaths(String path, String suffix) {
+        return getPaths(path, new String[] { suffix });
+    }
+
+    public static Iterator<Path> getPaths(String path, String[] suffixes) {
+        return getPaths(Paths.get(path), suffixes);
+    }
+
+    public static Iterator<Path> getPaths(Path path, String[] suffixes) {
+        try {
+            Predicate<Path> filter;
+
+            if (suffixes != null && suffixes.length > 0) {
+                filter = p -> {
+                    String pathName = p.toString();
+                    for (String suffix : suffixes) {
+                        if (pathName.endsWith(suffix)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                };
+            } else {
+                filter = p -> true;
+            }
+            return Files.walk(path).filter(filter).iterator();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Iterator<Path> getPaths(List<String> fileNames, Path parentPath) {
+        return new NamesPathIterator(fileNames.iterator(), parentPath);
+    }
+
+    public static class NamesPathIterator implements Iterator<Path>{
+
+        private Iterator<String> fileNames;
+        private Path parentPath;
+        
+        public NamesPathIterator(Iterator<String> fileNames, Path parentPath) {
+            super();
+            this.fileNames = fileNames;
+            this.parentPath = parentPath;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return fileNames.hasNext();
+        }
+
+        @Override
+        public Path next() {
+            if(hasNext()) {
+                return Paths.get(parentPath.toString(), fileNames.next());
+            }
+            throw new NoSuchElementException();
+        }
+        
+    }
+
+    public static Iterator<String> getStringPaths(Iterator<Path> paths) {
+        return new StringPathIterator(paths);
+    }
+
+    public static class StringPathIterator implements Iterator<String> {
+        private Iterator<Path> paths;
+
+        public StringPathIterator(Iterator<Path> paths) {
+            super();
+            this.paths = paths;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return paths.hasNext();
+        }
+
+        @Override
+        public String next() {
+            return paths.next().toString();
+        }
+    }
+    
+    public static URI createClasspathURI(String resourcePath) {
+        try {
+            return new URI("classpath:" + resourcePath);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+}
