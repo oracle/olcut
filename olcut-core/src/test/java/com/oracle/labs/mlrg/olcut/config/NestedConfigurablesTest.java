@@ -17,7 +17,7 @@ public class NestedConfigurablesTest {
 
     @Test
     public void testLoadFromXML() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("nestedConfigurablesConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("nestedConfigurablesConfig.xml");
         FooUserConfigurable user = (FooUserConfigurable) cm.lookup("user");
         assertNotNull(user);
         FooConfigurable foo = user.getFoo();
@@ -28,13 +28,12 @@ public class NestedConfigurablesTest {
 
     @Test
     public void testSave() throws IOException {
-        URL cu = getClass().getResource("nestedConfigurablesConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("nestedConfigurablesConfig.xml");
         FooUserConfigurable u1 = (FooUserConfigurable) cm1.lookup("user");
         File tmp = mkTmp();
         cm1.save(tmp);
         assertEquals(2, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(tmp.toURI().toURL());
+        ConfigurationManager cm2 = new ConfigurationManager(tmp.toString());
         FooUserConfigurable u2 = (FooUserConfigurable) cm2.lookup("user");
         assertEquals(u1.getFoo(), u2.getFoo());
     }
@@ -47,7 +46,7 @@ public class NestedConfigurablesTest {
         assertEquals(2, cm1.getNumConfigured());
         File tmp = mkTmp();
         cm1.save(tmp);
-        ConfigurationManager cm2 = new ConfigurationManager(tmp.toURI().toURL());
+        ConfigurationManager cm2 = new ConfigurationManager(tmp.toString());
         FooUserConfigurable u2 = (FooUserConfigurable) cm2.lookup("user");
         assertEquals(u1.getFoo(), u2.getFoo());
     }

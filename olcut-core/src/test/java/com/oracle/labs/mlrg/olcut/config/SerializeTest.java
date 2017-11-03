@@ -51,14 +51,14 @@ public class SerializeTest {
 
     @Test
     public void deserializeComponent() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("stringConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         cm.setGlobalProperty("serFile", serPath.toString());
         StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
         ac.one = "one";
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serPath.toFile()))) {
             oos.writeObject(ac);
         }
-        cm = new ConfigurationManager(getClass().getResource("stringConfig.xml"));
+        cm = new ConfigurationManager("stringConfig.xml");
         cm.setGlobalProperty("serFile", serPath.toString());
         ac = (StringConfigurable) cm.lookup("ac");
         assertEquals(ac.one, "one");
@@ -72,14 +72,14 @@ public class SerializeTest {
      */
     @Test
     public void deserializeComponentAndReuse() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("stringConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         cm.setGlobalProperty("serFile", serPath.toString());
         StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
         ac.one = "one";
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serPath.toFile()))) {
             oos.writeObject(ac);
         }
-        cm = new ConfigurationManager(getClass().getResource("stringConfig.xml"));
+        cm = new ConfigurationManager("stringConfig.xml");
         cm.setGlobalProperty("serFile", serPath.toString());
         ac = (StringConfigurable) cm.lookup("ac");
         assertEquals(ac.one, "one");
@@ -96,7 +96,7 @@ public class SerializeTest {
 
     @Test
     public void deserializeObject() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("stringConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         cm.setGlobalProperty("serFile", serPath.toString());
         StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
         ac.one = "one";
@@ -111,7 +111,7 @@ public class SerializeTest {
 
     @Test
     public void deserializeObjectAndReuse() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("stringConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         cm.setGlobalProperty("serFile", serPath.toString());
         StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
         ac.one = "one";
@@ -132,7 +132,7 @@ public class SerializeTest {
 
     @Test(expected=PropertyException.class)
     public void checkBadSerialisedClass() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("stringConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         cm.setGlobalProperty("serFile", serPath.toString());
         StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
         ac.one = "one";

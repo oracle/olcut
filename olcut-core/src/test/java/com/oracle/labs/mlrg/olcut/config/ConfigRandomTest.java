@@ -14,8 +14,7 @@ public class ConfigRandomTest {
 
     @Test
     public void configRandom() throws IOException {
-        URL cu = getClass().getResource("randomConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("randomConfig.xml");
         RandomConfigurable r = (RandomConfigurable) cm.lookup("random");
         int first = r.one.nextInt();
         int second = r.two.nextInt();

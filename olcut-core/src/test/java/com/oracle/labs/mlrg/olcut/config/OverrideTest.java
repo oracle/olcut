@@ -41,8 +41,7 @@ public class OverrideTest {
 
     @Test
     public void overrideWithSameType() throws IOException {
-        URL cu = getClass().getResource("overrideConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("overrideConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         assertEquals("a", sc.one);
         assertEquals("b", sc.two);
@@ -55,8 +54,7 @@ public class OverrideTest {
 
     @Test
     public void doubleOverride() throws IOException {
-        URL cu = getClass().getResource("overrideConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("overrideConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         assertEquals("a", sc.one);
         assertEquals("b", sc.two);
@@ -73,8 +71,7 @@ public class OverrideTest {
     
     @Test
     public void overrideWithSubType() throws IOException {
-        URL cu = getClass().getResource("overrideConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("overrideConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         assertEquals("a", sc.one);
         assertEquals("b", sc.two);

@@ -35,8 +35,7 @@ public class TypeConfigTest {
 
     @Test
     public void defaultValues() throws IOException {
-        URL cu = getClass().getResource("typeConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("typeConfig.xml");
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("default");
         assertEquals(bc1.s, "default");
         assertEquals(bc1.i, 16);
@@ -49,8 +48,7 @@ public class TypeConfigTest {
 
     @Test
     public void configuredTypes() throws IOException {
-        URL cu = getClass().getResource("typeConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("typeConfig.xml");
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         assertEquals(bc1.s, "one");
         assertEquals(bc1.i, 2);
@@ -63,8 +61,7 @@ public class TypeConfigTest {
     
     @Test
     public void listTypes() throws IOException {
-        URL cu = getClass().getResource("typeConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("typeConfig.xml");
         ListTypeConfigurable lc1 = (ListTypeConfigurable) cm1.lookup("l1");
         Configurable[] cl = lc1.getList();
         BasicConfigurable bc1 = (BasicConfigurable) cl[0];

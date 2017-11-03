@@ -24,7 +24,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void configurablePropMap() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("configurablePropMap.xml"));
+        ConfigurationManager cm = new ConfigurationManager("configurablePropMap.xml");
 
         FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("fooMap");
 
@@ -37,23 +37,21 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void saveAllWithInstantiationGeneric() throws IOException {
-        URL cu = getClass().getResource("configurablePropMap.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("configurablePropMap.xml");
         FooMapConfigurable s1 = (FooMapConfigurable) cm1.lookup("fooMap");
         cm1.save(f, true);
         assertEquals(3, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
         FooMapConfigurable s2 = (FooMapConfigurable) cm2.lookup("fooMap");
         assertEquals(s1, s2);
     }
 
     @Test
     public void saveAllWithNoInstantiationGeneric() throws IOException {
-        URL cu = getClass().getResource("configurablePropMap.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("configurablePropMap.xml");
         cm1.save(f, true);
         assertEquals(0, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
         FooMapConfigurable s1 = (FooMapConfigurable) cm1.lookup("fooMap");
         FooMapConfigurable s2 = (FooMapConfigurable) cm2.lookup("fooMap");
         assertEquals(s1, s2);

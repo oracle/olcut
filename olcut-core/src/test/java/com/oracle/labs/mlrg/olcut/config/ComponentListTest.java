@@ -26,8 +26,7 @@ public class ComponentListTest {
 
     @Test
     public void componentListTest() throws IOException {
-        URL cu = getClass().getResource("componentListConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("componentListConfig.xml");
         ListConfigurable lc = (ListConfigurable) cm.lookup("simple");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 2);
@@ -38,8 +37,7 @@ public class ComponentListTest {
 
     @Test(expected = PropertyException.class)
     public void badComponentListTest() throws IOException {
-        URL cu = getClass().getResource("componentListConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("componentListConfig.xml");
         ListConfigurable lc = (ListConfigurable) cm.lookup("bad");
         for (Configurable c : lc.getList()) {
             assertNotNull(c);
@@ -48,8 +46,7 @@ public class ComponentListTest {
 
     @Test
     public void simpleTypedTest() throws IOException {
-        URL cu = getClass().getResource("componentListConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("componentListConfig.xml");
         ListConfigurable lc = (ListConfigurable) cm.lookup("typed");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 3);
@@ -61,8 +58,7 @@ public class ComponentListTest {
 
     @Test
     public void dualTypedTest() throws IOException {
-        URL cu = getClass().getResource("componentListConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("componentListConfig.xml");
         ListConfigurable lc = (ListConfigurable) cm.lookup("dualtyped");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 5);
@@ -86,8 +82,7 @@ public class ComponentListTest {
 
     @Test
     public void comboTypedTest() throws IOException {
-        URL cu = getClass().getResource("componentListConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("componentListConfig.xml");
         ListConfigurable lc = (ListConfigurable) cm.lookup("combotyped");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 4);
@@ -110,8 +105,7 @@ public class ComponentListTest {
 
     @Test
     public void stringConfigurableArrayTest() throws IOException {
-        URL cu = getClass().getResource("componentListConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("componentListConfig.xml");
         ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearray");
         StringConfigurable[] l = lc.getArray();
         assertTrue(l.length == 3);
@@ -123,13 +117,10 @@ public class ComponentListTest {
         assertEquals("un",thirdOne);
     }
 
-    @Test
+    @Test(expected=PropertyException.class)
     public void stringConfigurableBrokenArrayTest() throws IOException {
-        URL cu = getClass().getResource("componentListConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
-        try {
-            ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearraybroken");
-            fail("Did not throw PropertyException when asking for unknown element in configurable array.");
-        } catch (PropertyException e) { }
+        ConfigurationManager cm = new ConfigurationManager("componentListConfig.xml");
+        ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearraybroken");
+        fail("Did not throw PropertyException when asking for unknown element in configurable array.");
     }
 }

@@ -144,14 +144,7 @@ public class ConfigurableServiceStarter implements Configurable {
         final ConfigurableServiceStarter starter;
         String configFile = args[0];
         try {
-            //
-            // See if we can get a resource for the configuration file first.
-            // This is mostly a convenience.
-            URL cu = ConfigurableServiceStarter.class.getResource(configFile);
-            if (cu == null) {
-                cu = (new File(configFile)).toURI().toURL();
-            }
-            final ConfigurationManager cm = new ConfigurationManager(cu);
+            final ConfigurationManager cm = new ConfigurationManager(configFile);
             starter = (ConfigurableServiceStarter) cm.lookup(args[1]);
 
             if (starter == null) {

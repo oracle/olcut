@@ -22,7 +22,7 @@ public class HelloClient {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         //
         // Set up the Java logging with our log formatter, which is nicer
@@ -41,20 +41,8 @@ public class HelloClient {
         //
         // Read the configuration file.
         String configFileName = args[0];
-        ConfigurationManager cm = null;
-        try {
-            //
-            // See if we can get a resource for the configuration file first.
-            // This is mostly a convenience.
-            URL cu = ConfigurableServiceStarter.class.getResource(configFileName);
-            if (cu == null) {
-                cu = (new File(configFileName)).toURI().toURL();
-            }
-            cm = new ConfigurationManager(cu);
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, String.format("Error reading config file"), ex);
-        }
-        
+        ConfigurationManager cm = new ConfigurationManager(configFileName);
+
         if(cm == null) {
             System.err.println("No configuration manager!");
             return;

@@ -34,8 +34,7 @@ public class RemoveTest {
 
     @Test
     public void testInstantiatedRemove() throws IOException {
-        URL cu = getClass().getResource("basicConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("basicConfig.xml");
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
@@ -50,8 +49,7 @@ public class RemoveTest {
 
     @Test
     public void testUninstantiatedRemove() throws IOException {
-        URL cu = getClass().getResource("basicConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("basicConfig.xml");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
         assertEquals("one", ps.getRaw("s"));
@@ -100,8 +98,7 @@ public class RemoveTest {
 
     @Test
     public void removeUninstantiatedWithEmbeddedComponents() throws IOException {
-        URL cu = getClass().getResource("importConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("importConfig.xml");
         PropertySheet ps = cm.getPropertySheet("l1");
         assertEquals(cm.getNumConfigured(), 0);
     }

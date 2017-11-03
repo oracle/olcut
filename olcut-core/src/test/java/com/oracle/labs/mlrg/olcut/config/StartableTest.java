@@ -32,8 +32,7 @@ public class StartableTest {
 
     @Test
     public void simpleTest() throws IOException {
-        URL cu = getClass().getResource("startableConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("startableConfig.xml");
         StartableConfigurable sc = (StartableConfigurable) cm.lookup("startme");
         assertTrue(!sc.isDone());
         sc.join();

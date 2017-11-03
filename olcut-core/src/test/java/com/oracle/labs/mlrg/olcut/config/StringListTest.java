@@ -43,8 +43,7 @@ public class StringListTest {
 
     @Test
     public void getStrings() throws IOException {
-        URL cu = getClass().getResource("stringListConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("stringListConfig.xml");
         StringListConfigurable slc = (StringListConfigurable) cm.lookup(
                 "listTest");
         assertEquals("a", slc.strings.get(0));
@@ -54,8 +53,7 @@ public class StringListTest {
     
     @Test
     public void setStrings() throws IOException {
-        URL cu = getClass().getResource("stringListConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("stringListConfig.xml");
         PropertySheet ps = cm.getPropertySheet("listTest");
         List<String> l = new ArrayList<>();
         l.add("d");

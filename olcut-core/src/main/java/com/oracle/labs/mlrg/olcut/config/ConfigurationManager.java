@@ -126,40 +126,55 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
+     * Creates a new configuration manager. Initial properties are loaded from the given location. No need to keep the notion
+     * of 'context' around anymore we will just pass around this property manager.
+     *
+     * @param path place to load initial properties from
+     * @throws java.io.IOException if an error occurs while loading properties from the location
+     */
+    public ConfigurationManager(String path) throws IOException, PropertyException {
+        this(new String[]{"-"+configFileOption.charName(),path},EMPTY_OPTIONS);
+    }
+
+    /**
      * Creates a new configuration manager. Initial properties are loaded from the given URL. No need to keep the notion
      * of 'context' around anymore we will just pass around this property manager.
      *
-     * @param url place to load initial properties from
+     * @param url URL to load initial properties from
      * @throws java.io.IOException if an error occurs while loading properties from the URL
      */
-    public ConfigurationManager(URL url) throws IOException,
-            PropertyException {
-
-        configURLs.add(url);
-        SaxLoader saxLoader = new SaxLoader(url, globalProperties);
-        rawPropertyMap = saxLoader.load();
-        origGlobal = new GlobalProperties(globalProperties);
-        for(Map.Entry<String,SerializedObject> e : saxLoader.getSerializedObjects().entrySet()) {
-            e.getValue().setConfigurationManager(this);
-            serializedObjects.put(e.getKey(), e.getValue());
-        }
-        serializedObjects = saxLoader.getSerializedObjects();
-
-        ConfigurationManagerUtils.applySystemProperties(rawPropertyMap,
-                                                        globalProperties);
-
-        // we can't config the configuration manager with itself so we
-        // do some of these config items manually.
-        GlobalProperty sC = globalProperties.get("showCreations");
-        if(sC != null) {
-            this.showCreations = "true".equals(sC.getValue());
-        }
+    public ConfigurationManager(URL url) throws IOException, PropertyException {
+        this(new String[]{"-"+configFileOption.charName(),url.toString()},EMPTY_OPTIONS);
     }
 
+    /**
+     * Creates a new configuration manager. Used when all the command line arguments are either: requests for the usage
+     * statement, configuration file options, or unnamed.
+     * @param arguments An array of command line arguments.
+     * @throws UsageException Thrown when the user requested the usage string.
+     * @throws ArgumentException Thrown when an argument fails to parse.
+     * @throws PropertyException Thrown when an invalid property is loaded.
+     * @throws IOException Thrown when the configuration file cannot be read.
+     */
     public ConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException, IOException {
         this(arguments,EMPTY_OPTIONS);
     }
 
+    /**
+     * Creates a new configuration manager.
+     *
+     * This constructor performs a sequence of operations:
+     * - It validates the supplied options struct to make sure it does not have duplicate option names.
+     * - Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.
+     * - Parses any configuration overrides and applies them to the configuration manager.
+     * - Parses out options for the supplied struct and writes them into the struct.
+     * @param arguments An array of command line arguments.
+     * @param options An object to write the parsed argument values into.
+     * @throws UsageException Thrown when the user requested the usage string.
+     * @throws ArgumentException Thrown when an argument fails to parse.
+     * @throws PropertyException Thrown when an invalid property is loaded.
+     * @throws IOException Thrown when the configuration file cannot be read.
+     */
     public ConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException, IOException {
         // Validate the supplied Options struct is coherent and generate a usage statement.
         usage = validateOptions(options);
@@ -657,46 +672,6 @@ public class ConfigurationManager implements Cloneable {
             mbs = ManagementFactory.getPlatformMBeanServer();
         }
         return mbs;
-    }
-    
-    /**
-     * Gets an input stream for a given location. We can use the stream
-     * to deserialize objects that are part of our configuration.
-     * <P>
-     * We'll try to use the location as a resource, and failing that a URL, and
-     * failing that, a file.
-     * @param location the location provided.
-     * @return an input stream for that location, or null if we couldn't find
-     * any.
-     */
-    public InputStream getInputStreamForLocation(String location) {
-        //
-        // First, see if it's a resource on our classpath.
-        InputStream ret = this.getClass().getResourceAsStream(location);
-        if (ret == null) {
-            try {
-                //
-                // Nope. See if it's a valid URL and open that.
-                URL sfu = new URL(location);
-                ret = sfu.openStream();
-            } catch (MalformedURLException ex) {
-                try {
-                    //
-                    // Not a valid URL, so try it as a file name.
-                    ret = new FileInputStream(location);
-                } catch (FileNotFoundException ex1) {
-                    //
-                    // Couldn't open the file, we're done.
-                    return null;
-                }
-            } catch (IOException ex) {
-                //
-                // No joy.
-                logger.warning("Cannot open serialized form " + location);
-                return null;
-            }
-        }
-        return ret;
     }
 
     /**

@@ -64,8 +64,7 @@ public class MBeanTest {
 
     @Test
     public void registerMBean() throws IOException {
-        URL cu = getClass().getResource("mbeanConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("registerTest");
         assertNotNull("Couldn't lookup registerTest", smbc);
         assertEquals(smbc.getValue("a"), "10");
@@ -73,8 +72,7 @@ public class MBeanTest {
 
     @Test
     public void retrieveProperty() throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-        URL cu = getClass().getResource("mbeanConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("registerTest");
         assertNotNull("Couldn't lookup registerTest", smbc);
 
@@ -88,8 +86,7 @@ public class MBeanTest {
     @Test
     public void retrieveList()
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-        URL cu = getClass().getResource("mbeanConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
         assertNotNull("Couldn't lookup listTest", smbc);
 
@@ -104,8 +101,7 @@ public class MBeanTest {
     @Test
     public void modifyProperty() 
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-        URL cu = getClass().getResource("mbeanConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
         assertNotNull("Couldn't lookup listTest", smbc);
 
@@ -123,8 +119,7 @@ public class MBeanTest {
     @Test
     public void modifyList()
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-        URL cu = getClass().getResource("mbeanConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
         assertNotNull("Couldn't lookup listTest", smbc);
 
@@ -143,8 +138,7 @@ public class MBeanTest {
     @Test
     public void modifyAll()
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-        URL cu = getClass().getResource("mbeanConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
         assertNotNull("Couldn't lookup listTest", smbc);
 

@@ -13,8 +13,7 @@ public class GenericConfigTest {
 
     @Test
     public void correctListConfig() throws IOException {
-        URL cu = getClass().getResource("genericConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("genericConfig.xml");
         ListConfig s = (ListConfig) cm.lookup("correctListConfig");
 
         Assert.assertEquals("StringList has an incorrect number of values", 4,s.stringList.size());
@@ -37,15 +36,13 @@ public class GenericConfigTest {
 
     @Test(expected=PropertyException.class)
     public void incorrectListConfig() throws IOException {
-        URL cu = getClass().getResource("genericConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
-        SetConfig s = (SetConfig) cm.lookup("incorrectListConfig");
+        ConfigurationManager cm = new ConfigurationManager("genericConfig.xml");
+        ListConfig l = (ListConfig) cm.lookup("incorrectListConfig");
     }
 
     @Test
     public void correctSetConfig() throws IOException {
-        URL cu = getClass().getResource("genericConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("genericConfig.xml");
         SetConfig s = (SetConfig) cm.lookup("correctSetConfig");
 
         Assert.assertEquals("StringSet has an incorrect number of values", 3,s.stringSet.size());
@@ -68,8 +65,7 @@ public class GenericConfigTest {
 
     @Test(expected=PropertyException.class)
     public void incorrectSetConfig() throws IOException {
-        URL cu = getClass().getResource("genericConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("genericConfig.xml");
         SetConfig s = (SetConfig) cm.lookup("incorrectSetConfig");
     }
 }

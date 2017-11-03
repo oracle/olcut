@@ -22,8 +22,7 @@ public class PropertyChainingTest {
     
     @Test
     public void chainLoading() throws IOException {
-        URL cu = getClass().getResource("propertyChainingConfigA.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("propertyChainingConfigA.xml");
         String stringA = cm.getGlobalProperty("stringA");
         String stringB = cm.getGlobalProperty("stringB");
         String stringC = cm.getGlobalProperty("stringC");
@@ -40,8 +39,7 @@ public class PropertyChainingTest {
 
     @Test
     public void overlay() throws IOException {
-        URL cu = getClass().getResource("propertyChainingConfigA.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("propertyChainingConfigA.xml");
         String globalA = cm.getGlobalProperty("a");
         String globalB = cm.getGlobalProperty("b");
         String globalC = cm.getGlobalProperty("c");

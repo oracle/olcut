@@ -14,8 +14,7 @@ public class PostConfigTest {
 
     @Test
     public void postConfigTest() throws IOException {
-        URL cu = getClass().getResource("postConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("postConfig.xml");
         PostConfigurable p = (PostConfigurable) cm.lookup("post");
         Assert.assertEquals("Monkeys",p.one);
         Assert.assertEquals("Gorillas",p.two);

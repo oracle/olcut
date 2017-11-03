@@ -888,16 +888,16 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
             System.err.println(String.format("System property group must be specified"));
             return;
         }
-        URL configURL;
+        String configString;
         if(args.length > 0) {
-            configURL = (new File(args[0])).toURI().toURL();
+            configString = args[0];
         } else {
-            configURL = ComponentRegistry.class.getResource("registryConfig.xml");
+            configString = "registryConfig.xml";
         }
-        JiniConfigurationManager cm = new JiniConfigurationManager(configURL);
+        JiniConfigurationManager cm = new JiniConfigurationManager(configString);
         ComponentRegistry cr = cm.getComponentRegistry();
         if(cr == null) {
-            System.err.println(String.format("No component registry defined in %s", configURL));
+            System.err.println(String.format("No component registry defined in %s", configString));
         }
         Thread.sleep(3000);
         Map<String,List<String>> m = cr.dumpJiniServices();
