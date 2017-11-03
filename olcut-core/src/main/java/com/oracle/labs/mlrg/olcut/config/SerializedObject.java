@@ -1,5 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.util.IOUtil;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +41,7 @@ public class SerializedObject<T> {
     public T getObject() throws PropertyException {
         if (object == null) {
             String actualLocation = configurationManager.getGlobalProperties().replaceGlobalProperties(name, null, location);
-            InputStream serStream = configurationManager.getInputStreamForLocation(actualLocation);
+            InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
             try {
                 Class<T> objectClass = (Class<T>) Class.forName(className);
                 if (serStream != null) {

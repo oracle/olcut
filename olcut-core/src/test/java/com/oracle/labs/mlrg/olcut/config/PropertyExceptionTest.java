@@ -31,15 +31,13 @@ public class PropertyExceptionTest {
      */
     @Test(expected=PropertyException.class)
     public void unknownPropertyException() throws PropertyException, IOException {
-        URL cu = getClass().getResource("undefinedPropertyConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("undefinedPropertyConfig.xml");
         SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simple");
     }
     
     @Test(expected=PropertyException.class)
     public void unknownPropertyWithKnownPropertyException() throws PropertyException, IOException {
-        URL cu = getClass().getResource("undefinedPropertyConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("undefinedPropertyConfig.xml");
         SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simple2");
     }
 }

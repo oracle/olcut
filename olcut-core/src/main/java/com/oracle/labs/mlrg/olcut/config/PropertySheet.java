@@ -1,5 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.util.IOUtil;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.xml.stream.XMLStreamException;
@@ -212,7 +214,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                 // Should we load a serialized form?
                 if (serializedForm != null) {
                     String actualLocation = cm.getGlobalProperties().replaceGlobalProperties(instanceName, null, serializedForm);
-                    InputStream serStream = cm.getInputStreamForLocation(actualLocation);
+                    InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
                     if (serStream != null) {
                         try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
                             Object deser = ois.readObject();

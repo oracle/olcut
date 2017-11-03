@@ -42,13 +42,12 @@ public class ImportConfigTest {
 
     @Test
     public void importSimple() throws IOException {
-        URL cu = getClass().getResource("importConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("importConfig.xml");
         StringConfigurable sc1 = (StringConfigurable) cm1.lookup("b");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(sc1, "a");
         cm2.save(f);
-        cm2 = new ConfigurationManager(f.toURI().toURL());
+        cm2 = new ConfigurationManager(f.toString());
         StringConfigurable sc2 = (StringConfigurable) cm2.lookup("a");
         assertEquals(sc1.one, sc2.one);
         assertEquals(sc1.two, sc2.two);
@@ -57,39 +56,36 @@ public class ImportConfigTest {
 
     @Test
     public void importEnum() throws IOException {
-        URL cu = getClass().getResource("enumConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("enumConfig.xml");
         EnumConfigurable ec1 = (EnumConfigurable) cm1.lookup("both");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(ec1, "both");
         cm2.save(f);
-        cm2 = new ConfigurationManager(f.toURI().toURL());
+        cm2 = new ConfigurationManager(f.toString());
         EnumConfigurable ec2 = (EnumConfigurable) cm1.lookup("both");
         assertEquals(ec1, ec2);
     }
 
     @Test
     public void importEnumNonDefault() throws IOException {
-        URL cu = getClass().getResource("enumConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("enumConfig.xml");
         EnumConfigurable ec1 = (EnumConfigurable) cm1.lookup("set1");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(ec1, "set1");
         cm2.save(f);
-        cm2 = new ConfigurationManager(f.toURI().toURL());
+        cm2 = new ConfigurationManager(f.toString());
         EnumConfigurable ec2 = (EnumConfigurable) cm1.lookup("set1");
         assertEquals(ec1, ec2);
     }
 
     @Test
     public void importCombo() throws IOException {
-        URL cu = getClass().getResource("importConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("importConfig.xml");
         ComboConfigurable cc1 = (ComboConfigurable) cm1.lookup("a");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(cc1, "a");
         cm2.save(f);
-        cm2 = new ConfigurationManager(f.toURI().toURL());
+        cm2 = new ConfigurationManager(f.toString());
         ComboConfigurable cc2 = (ComboConfigurable) cm2.lookup("a");
         assertEquals(cc1.alpha, cc2.alpha);
         assertEquals(cc1.sc.one, cc2.sc.one);
@@ -99,13 +95,12 @@ public class ImportConfigTest {
 
     @Test
     public void importMultiCombo() throws IOException {
-        URL cu = getClass().getResource("importConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("importConfig.xml");
         L1Configurable l1 = (L1Configurable) cm1.lookup("l1");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(l1, "l1");
         cm2.save(f);
-        cm2 = new ConfigurationManager(f.toURI().toURL());
+        cm2 = new ConfigurationManager(f.toString());
         L1Configurable l1n = (L1Configurable) cm2.lookup("l1");
         assertEquals(l1.s, l1n.s);
         assertEquals(l1.c.s, l1n.c.s);
@@ -117,13 +112,12 @@ public class ImportConfigTest {
 
     @Test
     public void importMultiNonDefaultCombo() throws IOException {
-        URL cu = getClass().getResource("importConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("importConfig.xml");
         L1Configurable l1 = (L1Configurable) cm1.lookup("l1");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(l1, "l11");
         cm2.save(f);
-        cm2 = new ConfigurationManager(f.toURI().toURL());
+        cm2 = new ConfigurationManager(f.toString());
         L1Configurable l1n = (L1Configurable) cm2.lookup("l11");
         assertEquals(l1.s, l1n.s);
         assertEquals(l1.c.s, l1n.c.s);
@@ -135,14 +129,13 @@ public class ImportConfigTest {
 
     @Test
     public void importStringList() throws IOException {
-        URL cu = getClass().getResource("stringListConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("stringListConfig.xml");
         StringListConfigurable sl1 = (StringListConfigurable) cm1.lookup(
                 "listTest");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(sl1, "listTest");
         cm2.save(f);
-        cm2 = new ConfigurationManager(f.toURI().toURL());
+        cm2 = new ConfigurationManager(f.toString());
         StringListConfigurable sl2 = (StringListConfigurable) cm1.lookup(
                 "listTest");
 
@@ -153,13 +146,12 @@ public class ImportConfigTest {
 
     @Test
     public void importSimpleComponentList() throws IOException {
-        URL cu = getClass().getResource("importConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("importConfig.xml");
         ListConfigurable lc1 = (ListConfigurable) cm1.lookup("simpleList");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(lc1, "simpleList");
         cm2.save(f);
-        cm2 = new ConfigurationManager(f.toURI().toURL());
+        cm2 = new ConfigurationManager(f.toString());
         ListConfigurable lc2 = (ListConfigurable) cm2.lookup("simpleList");
         SimpleConfigurable sc1 = (SimpleConfigurable) lc1.list.get(0);
         SimpleConfigurable sc2 = (SimpleConfigurable) lc2.list.get(0);
@@ -174,13 +166,12 @@ public class ImportConfigTest {
 
     @Test
     public void importSingleEmbeddedComponentList() throws IOException {
-        URL cu = getClass().getResource("importConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("importConfig.xml");
         ListConfigurable lc1 = (ListConfigurable) cm1.lookup("singleEmbeddedList");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(lc1, "singleEmbeddedList");
         cm2.save(f);
-        cm2 = new ConfigurationManager(f.toURI().toURL());
+        cm2 = new ConfigurationManager(f.toString());
         ListConfigurable lc2 = (ListConfigurable) cm2.lookup("singleEmbeddedList");
 
         StringConfigurable stc1 = (StringConfigurable) lc1.list.get(0);
@@ -200,13 +191,12 @@ public class ImportConfigTest {
 
     @Test
     public void importMultiEmbeddedComponentList() throws IOException {
-        URL cu = getClass().getResource("importConfig.xml");
-        ConfigurationManager cm1 = new ConfigurationManager(cu);
+        ConfigurationManager cm1 = new ConfigurationManager("importConfig.xml");
         ListConfigurable lc1 = (ListConfigurable) cm1.lookup("multiEmbeddedList");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(lc1, "multiEmbeddedList");
         cm2.save(f);
-        cm2 = new ConfigurationManager(f.toURI().toURL());
+        cm2 = new ConfigurationManager(f.toString());
         ListConfigurable lc2 = (ListConfigurable) cm2.lookup("multiEmbeddedList");
 
         L1Configurable l1 = (L1Configurable) lc1.list.get(0);

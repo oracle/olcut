@@ -1,6 +1,5 @@
-package com.oracle.labs.mlrg.olcut;
+package com.oracle.labs.mlrg.olcut.util;
 
-import com.oracle.labs.mlrg.olcut.util.StreamUtil;
 import org.junit.Test;
 
 import java.util.Arrays;

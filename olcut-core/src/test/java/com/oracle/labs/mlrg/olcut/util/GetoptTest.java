@@ -1,4 +1,4 @@
-package com.oracle.labs.mlrg.olcut;
+package com.oracle.labs.mlrg.olcut.util;
 
 import com.oracle.labs.mlrg.olcut.util.Getopt;
 import org.junit.Test;

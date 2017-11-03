@@ -14,8 +14,7 @@ public class PathTest {
 
     @Test
     public void test() throws IOException {
-        URL cu = getClass().getResource("pathConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("pathConfig.xml");
         PathConfigurable pc = (PathConfigurable) cm.lookup(
                 "pathTest");
         String actualPath = pc.getPath().toString();

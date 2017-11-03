@@ -16,8 +16,7 @@ public class MapTest {
 
     @Test
     public void mapTest() throws IOException {
-        URL cu = getClass().getResource("mapConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("mapConfig.xml");
         MapConfigurable m = (MapConfigurable) cm.lookup("mapTest");
         Map<String,String> map = m.map;
         Assert.assertEquals("stuff",map.get("things"));

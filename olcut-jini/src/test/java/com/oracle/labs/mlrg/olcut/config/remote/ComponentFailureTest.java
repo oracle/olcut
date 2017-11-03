@@ -64,15 +64,13 @@ public class ComponentFailureTest {
     public void simpleKillService() throws PropertyException, IOException {
         //
         // Register in one manager.
-        URL cu = getClass().getResource("serverConfig.xml");
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         RegistryConfigurable server = (RegistryConfigurable) cm1.lookup("servercomp");
         assertNotNull(server);
 
         //
         // Lookup in another.
-        URL cu2 = getClass().getResource("clientConfig.xml");
-        cm2 = new JiniConfigurationManager(cu2);
+        cm2 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/clientConfig.xml");
         ClientConfigurable client = (ClientConfigurable) cm2.lookup("failtest");
         Thread t = new Thread(client);
         t.setName("client-thread");
@@ -87,7 +85,7 @@ public class ComponentFailureTest {
         //
         // Kill the server and re-register.
         cm1.shutdown();
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         server = (RegistryConfigurable) cm1.lookup("servercomp");
         assertNotNull(server);
 
@@ -106,8 +104,7 @@ public class ComponentFailureTest {
     public void killService() throws PropertyException, IOException {
         //
         // Register in one manager.
-        URL cu = getClass().getResource("serverConfig.xml");
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         RegistryConfigurable server = (RegistryConfigurable) cm1.lookup("servercomp");
         assertNotNull(server);
 
@@ -115,8 +112,7 @@ public class ComponentFailureTest {
 
         //
         // Lookup in another.
-        URL cu2 = getClass().getResource("clientConfig.xml");
-        cm2 = new JiniConfigurationManager(cu2);
+        cm2 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/clientConfig.xml");
         ClientConfigurable client = (ClientConfigurable) cm2.lookup("failtest");
         Thread t = new Thread(client);
         t.setName("client-thread");
@@ -137,7 +133,7 @@ public class ComponentFailureTest {
         assertTrue(client.getOpCount() == ((RegistryConfigurableImpl) server).getIOPCount());
         sops = ((RegistryConfigurableImpl) server).getIOPCount();
 
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         server = (RegistryConfigurable) cm1.lookup("servercomp");
         assertNotNull(server);
 

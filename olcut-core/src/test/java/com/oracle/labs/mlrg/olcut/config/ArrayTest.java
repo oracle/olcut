@@ -13,8 +13,7 @@ public class ArrayTest {
 
     @Test
     public void arrayTest() throws IOException {
-        URL cu = getClass().getResource("arrayConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("arrayConfig.xml");
         ArrayConfigurable ac = (ArrayConfigurable) cm.lookup("a");
         assertArrayEquals("int array not equal",new int[]{1,2,3},ac.intArray);
         assertArrayEquals("long array not equal",new long[]{9223372036854775807L,9223372036854775806L,5L},ac.longArray);

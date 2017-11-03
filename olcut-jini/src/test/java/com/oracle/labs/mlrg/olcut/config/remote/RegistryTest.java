@@ -61,24 +61,21 @@ public class RegistryTest {
 
     @Test
     public void testRegister() throws IOException {
-        URL cu = getClass().getResource("serverConfig.xml");
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         RegistryConfigurable rc = (RegistryConfigurable) cm1.lookup("servercomp");
         assertNotNull(rc);
     }
 
     @Test
     public void testRegisterWithEntries() throws IOException {
-        URL cu = getClass().getResource("serverConfig.xml");
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         RegistryConfigurable rc = (RegistryConfigurable) cm1.lookup("servercompWithEntries");
         assertNotNull(rc);
     }
 
     @Test
     public void testSpecificRegister() throws IOException {
-        URL cu = getClass().getResource("specificRegConfig.xml");
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/specificRegConfig.xml");
         RegistryConfigurable rc = (RegistryConfigurable) cm1.lookup("servercomp");
         cm1.shutdown();
         assertNotNull(rc);
@@ -89,15 +86,13 @@ public class RegistryTest {
 
         //
         // Register in one manager.
-        URL cu = getClass().getResource("serverConfig.xml");
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         RegistryConfigurable rc1 = (RegistryConfigurable) cm1.lookup("servercomp");
         assertNotNull(rc1);
 
         //
         // Lookup in another.
-        URL cu2 = getClass().getResource("clientConfig.xml");
-        cm2 = new JiniConfigurationManager(cu2);
+        cm2 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/clientConfig.xml");
         RegistryConfigurable rc2 = (RegistryConfigurable) cm2.lookup("servercomp");
 
         assertEquals(rc2.stringOp("test"), "Received: test");
@@ -113,15 +108,13 @@ public class RegistryTest {
 
         //
         // Register in one manager.
-        URL cu = getClass().getResource("serverConfig.xml");
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         RegistryConfigurable rc1 = (RegistryConfigurable) cm1.lookup("servercompWithEntries");
         assertNotNull(rc1);
 
         //
         // Lookup in another.
-        URL cu2 = getClass().getResource("clientConfig.xml");
-        cm2 = new JiniConfigurationManager(cu2);
+        cm2 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/clientConfig.xml");
         RegistryConfigurable rc2 = (RegistryConfigurable) cm2.lookup("servercompWithEntries");
 
         assertEquals(rc2.stringOp("test"), "Received: test");
@@ -137,15 +130,13 @@ public class RegistryTest {
 
         //
         // Register in one manager.
-        URL cu = getClass().getResource("serverConfig.xml");
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         RegistryConfigurable rc1 = (RegistryConfigurable) cm1.lookup("servercompWithEntries");
         assertNotNull(rc1);
 
         //
         // Lookup in another.
-        URL cu2 = getClass().getResource("clientConfig.xml");
-        cm2 = new JiniConfigurationManager(cu2);
+        cm2 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/clientConfig.xml");
         RegistryConfigurable rc2 = (RegistryConfigurable) cm2.lookup("servercompWithPartialMatchingEntries");
         assertNotNull(rc2);
         assertEquals(rc2.stringOp("test"), "Received: test");
@@ -161,15 +152,13 @@ public class RegistryTest {
 
         //
         // Register in one manager.
-        URL cu = getClass().getResource("serverConfig.xml");
-        cm1 = new JiniConfigurationManager(cu);
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         RegistryConfigurable rc1 = (RegistryConfigurable) cm1.lookup("servercompWithEntries");
         assertNotNull(rc1);
 
         //
         // Lookup in another.
-        URL cu2 = getClass().getResource("clientConfig.xml");
-        cm2 = new JiniConfigurationManager(cu2);
+        cm2 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/clientConfig.xml");
         RegistryConfigurable rc2 = (RegistryConfigurable) cm2.lookup("servercompWithNonMatchingEntries");
 
         fail("Found a component which shouldn't have matched.");

@@ -43,15 +43,14 @@ public class EnumConfigurableTest {
 
     @Test
     public void both() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("both");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.B, ec.enum2);
     }
 
     @Test public void set1() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().
-                getResource("enumConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("set1");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.B, ec.enum2);
@@ -61,8 +60,7 @@ public class EnumConfigurableTest {
     }
 
     @Test public void defaultSet() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().
-                getResource("enumConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("both");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.B, ec.enum2);
@@ -73,14 +71,13 @@ public class EnumConfigurableTest {
 
     @Test(expected=PropertyException.class)
     public void badSetValue() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().
-                getResource("enumConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("badset");
     }
 
     @Test
     public void defaultValue() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("default");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.A, ec.enum2);
@@ -88,13 +85,13 @@ public class EnumConfigurableTest {
 
     @Test(expected=PropertyException.class)
     public void badValue() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("badvalue");
     }
 
     @Test
     public void globalValue() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("enumConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("global");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.A, ec.enum2);

@@ -55,8 +55,7 @@ public class ProgrammaticConfigurableTest {
      */
     @Test
     public void addDefaultStringConfigurable() throws IOException {
-        URL cu = getClass().getResource("stringConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         cm.addConfigurable(StringConfigurable.class, "c");
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
         assertEquals("", sc.one);
@@ -69,8 +68,7 @@ public class ProgrammaticConfigurableTest {
      */
     @Test
     public void addStringConfigurable() throws IOException {
-        URL cu = getClass().getResource("stringConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         Map<String,Object> m = new HashMap<String, Object>();
         for(String s : new String[] {"one", "two", "three"}) {
             m.put(s, s);
@@ -88,8 +86,7 @@ public class ProgrammaticConfigurableTest {
      */
     @Test
     public void addPartialStringConfigurable() throws IOException {
-        URL cu = getClass().getResource("stringConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         Map<String,Object> m = new HashMap<String, Object>();
         for(String s : new String[] {"one"}) {
             m.put(s, s);
@@ -115,8 +112,7 @@ public class ProgrammaticConfigurableTest {
      */
     @Test(expected=PropertyException.class)
     public void addConfigurableWithBadProperty() throws IOException {
-        URL cu = getClass().getResource("basicConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("basicConfig.xml");
         Map<String,Object> m = new HashMap<String, Object>();
         m.put("s", "one");
         m.put("i", "two");
@@ -133,8 +129,7 @@ public class ProgrammaticConfigurableTest {
      */
     @Test
     public void addAlreadyNamedStringConfigurable() throws IOException {
-        URL cu = getClass().getResource("stringConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         Map<String,Object> m = new HashMap<String, Object>();
         for(String s : new String[] {"one", "two", "three"}) {
             m.put(s, s);
@@ -152,8 +147,7 @@ public class ProgrammaticConfigurableTest {
      */
     @Test(expected=IllegalArgumentException.class)
     public void addAlreadyNamedAndInstatiatedStringConfigurable() throws IOException {
-        URL cu = getClass().getResource("stringConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         Map<String,Object> m = new HashMap<String, Object>();
         for(String s : new String[] {"one", "two", "three"}) {
@@ -168,8 +162,7 @@ public class ProgrammaticConfigurableTest {
 
         //
         // Add a component.
-        URL cu = getClass().getResource("stringConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         Map<String, Object> m = new HashMap<String, Object>();
         for(String s : new String[]{"one", "two", "three"}) {
             m.put(s, s);
@@ -180,11 +173,10 @@ public class ProgrammaticConfigurableTest {
         // Write the file.
         File f = File.createTempFile("config", ".xml");
         cm.save(f);
-        cu = f.toURI().toURL();
 
         //
         // Re-read the file.
-        cm = new ConfigurationManager(cu);
+        cm = new ConfigurationManager(f.toString());
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
         assertEquals("one", sc.one);
         assertEquals("two", sc.two);

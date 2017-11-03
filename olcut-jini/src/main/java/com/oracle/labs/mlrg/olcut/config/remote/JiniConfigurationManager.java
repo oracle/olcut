@@ -25,6 +25,8 @@ import java.util.logging.Logger;
  * Manages a set of <code>Configurable</code>s, their parametrization and the relationships between them. Configurations
  * can be specified either by xml or on-the-fly during runtime.
  *
+ * This configuration manager has a Jini component registry and can look up or serve classes over the network.
+ *
  * @see Configurable
  * @see PropertySheet
  */
@@ -34,7 +36,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
     private ComponentRegistry registry;
 
     /**
-     * Creates a new empty configuration manager. This constructor is only of use in cases when a system configuration
+     * Creates a new empty jini configuration manager. This constructor is only of use in cases when a system configuration
      * is created during runtime.
      */
     public JiniConfigurationManager() throws IOException {
@@ -42,7 +44,23 @@ public class JiniConfigurationManager extends ConfigurationManager {
     }
 
     /**
-     * Creates a new configuration manager. Initial properties are loaded from the given URL. No need to keep the notion
+     * Creates a jini new configuration manager. Initial properties are loaded from the given location. No need to keep the notion
+     * of 'context' around anymore we will just pass around this property manager.
+     *
+     * @param location place to load initial properties from
+     * @throws IOException if an error occurs while loading properties from the URL
+     */
+    public JiniConfigurationManager(String location) throws IOException,
+            PropertyException {
+        super(location);
+
+        //
+        // Look up our distinguished registry name.
+        setUpRegistry();
+    }
+
+    /**
+     * Creates a new jini configuration manager. Initial properties are loaded from the given location. No need to keep the notion
      * of 'context' around anymore we will just pass around this property manager.
      *
      * @param url place to load initial properties from
@@ -57,6 +75,15 @@ public class JiniConfigurationManager extends ConfigurationManager {
         setUpRegistry();
     }
 
+    /**
+     * Creates a new Jini configuration manager. Used when all the command line arguments are either: requests for the usage
+     * statement, configuration file options, or unnamed.
+     * @param arguments An array of command line arguments.
+     * @throws UsageException Thrown when the user requested the usage string.
+     * @throws ArgumentException Thrown when an argument fails to parse.
+     * @throws PropertyException Thrown when an invalid property is loaded.
+     * @throws IOException Thrown when the configuration file cannot be read.
+     */
     public JiniConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException, IOException {
         super(arguments,EMPTY_OPTIONS);
 
@@ -65,6 +92,22 @@ public class JiniConfigurationManager extends ConfigurationManager {
         setUpRegistry();
     }
 
+    /**
+     * Creates a new jini configuration manager.
+     *
+     * This constructor performs a sequence of operations:
+     * - It validates the supplied options struct to make sure it does not have duplicate option names.
+     * - Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.
+     * - Parses any configuration overrides and applies them to the configuration manager.
+     * - Parses out options for the supplied struct and writes them into the struct.
+     * - Instantiates a jini component registry.
+     * @param arguments An array of command line arguments.
+     * @param options An object to write the parsed argument values into.
+     * @throws UsageException Thrown when the user requested the usage string.
+     * @throws ArgumentException Thrown when an argument fails to parse.
+     * @throws PropertyException Thrown when an invalid property is loaded.
+     * @throws IOException Thrown when the configuration file cannot be read.
+     */
     public JiniConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException, IOException {
         super(arguments,options);
 

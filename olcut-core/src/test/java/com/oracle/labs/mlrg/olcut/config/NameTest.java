@@ -15,8 +15,7 @@ public class NameTest {
 
     @Test
     public void configurableNameTest() throws IOException {
-        URL cu = getClass().getResource("componentListConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("componentListConfig.xml");
         ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearray");
         assertEquals("stringconfigurablearray",lc.getName());
         StringConfigurable[] l = lc.getArray();
@@ -31,8 +30,7 @@ public class NameTest {
 
     @Test
     public void componentNameTest() throws IOException {
-        URL cu = getClass().getResource("nameConfig.xml");
-        ConfigurationManager cm = new ConfigurationManager(cu);
+        ConfigurationManager cm = new ConfigurationManager("nameConfig.xml");
         NamedConfigurable nc = (NamedConfigurable) cm.lookup("monkeys");
         assertEquals("monkeys",nc.getName());
     }

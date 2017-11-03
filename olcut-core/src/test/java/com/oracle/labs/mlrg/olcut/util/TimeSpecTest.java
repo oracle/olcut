@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package com.oracle.labs.mlrg.olcut;
+package com.oracle.labs.mlrg.olcut.util;
 
 import java.util.concurrent.TimeUnit;
 

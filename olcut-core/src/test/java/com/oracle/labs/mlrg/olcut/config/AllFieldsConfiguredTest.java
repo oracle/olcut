@@ -33,17 +33,17 @@ public class AllFieldsConfiguredTest {
 
     @Test
     public void loadConfig() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("allConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
         assertTrue("Failed to load all-config",ac!=null);
     }
 
     @Test
     public void saveConfig() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(getClass().getResource("allConfig.xml"));
+        ConfigurationManager cm1 = new ConfigurationManager("allConfig.xml");
         AllFieldsConfigurable ac1 = (AllFieldsConfigurable) cm1.lookup("all-config");
         cm1.save(f, true);
-        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
         AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
         assertEquals("Two all configs aren't equal",ac1,ac2);
     }
@@ -54,14 +54,14 @@ public class AllFieldsConfiguredTest {
         ConfigurationManager cm1 = new ConfigurationManager();
         cm1.importConfigurable(ac,"all-config");
         cm1.save(f);
-        ConfigurationManager cm2 = new ConfigurationManager(f.toURI().toURL());
+        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
         AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
         assertEquals("Imported config not equal to generated object",ac,ac2);
     }
 
     @Test
     public void getTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(getClass().getResource("allConfig.xml"));
+        ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
         PropertySheet ps = cm.getPropertySheet("all-config");
 
         boolean boolField = (Boolean) ps.get("boolField");

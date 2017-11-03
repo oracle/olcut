@@ -1,5 +1,7 @@
 package com.oracle.labs.mlrg.olcut.util;
 
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -20,8 +22,10 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -443,6 +447,84 @@ public abstract class IOUtil {
 
     public static Iterator<Path> getPaths(List<String> fileNames, Path parentPath) {
         return new NamesPathIterator(fileNames.iterator(), parentPath);
+    }
+
+    /**
+     * Gets an input stream for a given location. We can use the stream
+     * to deserialize objects that are part of our configuration.
+     * <P>
+     * We'll try to use the location as a resource, and failing that a URL, and
+     * failing that, a file.
+     * @param location the location provided.
+     * @return an input stream for that location, or null if we couldn't find
+     * any.
+     */
+    public static InputStream getInputStreamForLocation(String location) {
+        //
+        // First, see if it's a resource on our classpath.
+        InputStream ret = IOUtil.class.getResourceAsStream(location);
+        if (ret == null) {
+            try {
+                //
+                // Nope. See if it's a valid URL and open that.
+                URL sfu = new URL(location);
+                ret = sfu.openStream();
+            } catch (MalformedURLException ex) {
+                try {
+                    //
+                    // Not a valid URL, so try it as a file name.
+                    ret = new FileInputStream(location);
+                } catch (FileNotFoundException ex1) {
+                    //
+                    // Couldn't open the file, we're done.
+                    return null;
+                }
+            } catch (IOException ex) {
+                //
+                // No joy.
+                logger.warning("Cannot open serialized form " + location);
+                return null;
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Gets a URL for a given location.
+     * <P>
+     * We'll try to use the location as a resource, and failing that a URL, and
+     * failing that, a file.
+     * @param location the location provided.
+     * @return a URL to that location, or null if we couldn't find
+     * any.
+     */
+    public static URL getURLForLocation(String location) {
+        //
+        // First, see if it's a resource on our classpath.
+        URL ret = IOUtil.class.getResource(location);
+        if (ret == null) {
+            try {
+                //
+                // Nope. See if it's a valid URL and open that.
+                ret = new URL(location);
+            } catch (MalformedURLException ex) {
+                try {
+                    //
+                    // Not a valid URL, so try it as a file name.
+                    ret = new File(location).toURI().toURL();
+                } catch (MalformedURLException ex1) {
+                    //
+                    // Couldn't open the file, we're done.
+                    return null;
+                }
+            } catch (IOException ex) {
+                //
+                // No joy.
+                logger.warning("Cannot open location " + location);
+                return null;
+            }
+        }
+        return ret;
     }
 
     public static class NamesPathIterator implements Iterator<Path>{
