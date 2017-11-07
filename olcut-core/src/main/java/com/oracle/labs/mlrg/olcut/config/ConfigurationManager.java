@@ -1384,6 +1384,14 @@ public class ConfigurationManager implements Cloneable {
 
             xmlWriter.writeCharacters(System.lineSeparator());
 
+            for (Map.Entry<String, SerializedObject> e : serializedObjects.entrySet()) {
+                xmlWriter.writeEmptyElement("serialized");
+                xmlWriter.writeAttribute("name",e.getValue().getName());
+                xmlWriter.writeAttribute("type",e.getValue().getClassName());
+                xmlWriter.writeAttribute("location",e.getValue().getLocation());
+                xmlWriter.writeCharacters(System.lineSeparator());
+            }
+
             //
             // A copy of the raw property data that we can use to keep track of what's
             // been written.

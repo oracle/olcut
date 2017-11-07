@@ -32,6 +32,18 @@ public class SerializedObject<T> {
     public void setConfigurationManager(ConfigurationManager configurationManager) {
         this.configurationManager = configurationManager;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public String getClassName() {
+        return className;
+    }
     
     /**
      * Gets the deserialized object that we represent.
