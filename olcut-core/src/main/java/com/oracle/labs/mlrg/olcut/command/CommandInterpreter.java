@@ -67,6 +67,8 @@ public class CommandInterpreter extends Thread {
 
     public static final String UNGROUPED_COMMANDS_GROUP_NAME = "Ungrouped";
 
+    private static final String MSG_COMMAND_NOT_FOUND = "ERR  CMD_NOT_FOUND";
+
     /**
      * Commands for this interpreter.
      */
@@ -1284,7 +1286,7 @@ public class CommandInterpreter extends Thread {
                             args.length);
                     return execute(newArgs, false);
                 }
-                response = "ERR  CMD_NOT_FOUND";
+                response = MSG_COMMAND_NOT_FOUND;
             }
 
             totalCommands++;
@@ -1499,6 +1501,10 @@ public class CommandInterpreter extends Thread {
                 if(!response.equals("OK")) {
                     putResponse(response);
                 }
+                if (response.equals(MSG_COMMAND_NOT_FOUND)) {
+                    putResponse("Failed to find a command, stopping.");
+                    break;
+                }
             }
             fr.close();
             return true;
@@ -1518,16 +1524,12 @@ public class CommandInterpreter extends Thread {
 
             while((inputLine = br.readLine()) != null) {
                 final String currLine = inputLine;
-                Callable<Void> cmd = new Callable<Void>() {
-                    @Override
-                    public Void call() throws Exception {
-                        String response
-                                = CommandInterpreter.this.execute(currLine);
-                        if(!response.equals("OK")) {
-                            putResponse(response);
-                        }
-                        return null;
+                Callable<Boolean> cmd = () -> {
+                    String response = CommandInterpreter.this.execute(currLine);
+                    if(!response.equals("OK")) {
+                        putResponse(response);
                     }
+                    return !response.equals(MSG_COMMAND_NOT_FOUND);
                 };
                 exec.submit(cmd);
             }
