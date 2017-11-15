@@ -4,6 +4,7 @@ package com.oracle.labs.mlrg.olcut.util;
  * A mutable version of java.lang.Long.
  */
 public class MutableLong extends Number {
+    private static final long serialVersionUID = 1L;
 
     private long value;
 
