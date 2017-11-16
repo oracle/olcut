@@ -12,6 +12,7 @@ import java.util.logging.Logger;
  * @param <T2> The type of the second object.
  */
 public class Pair<T1, T2> implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private static final Logger logger = Logger.getLogger(Pair.class.getName());
     

@@ -493,9 +493,55 @@ still provide Completers even if the arguments are not otherwise specified.
 
 ## Date parser
 
+A parser for dates in a bunch of standard formats without complaining, 
+returning a Java Date object.
+
 ## Getopt
+
+Please use the new arguments processing. This is still here if you need 
+something small and stupid simple.
+
+## Channel, File and IO utils
+
+ChannelUtil has helpers for interacting with java.nio.channels. FileUtil has 
+methods for operating on directories. IOUtil has many many functions for
+building Input and OutputStreams of various kinds.
 
 ## Log formatter
 
+There are two java.util.logging log formatters that have a nice single line 
+logging output. They also have a static method that sets all the loggers to 
+use the appropriate formatter, which makes integrating them simpler.
+
+## LRACache
+
+A least recently accessed cache.
+
+## MutableLong
+
+For counting things in Maps when you don't want to unbox and rebox a 
+long with every update.
+
+## Pair
+
+It's a pair class. The fields are final and it has equals and hash code so
+you can use it as a key in a map or store it in a set.
+
 ## Stop watch timer
+
+StopWatch and NanoWatch provide timers, at millisecond or nanosecond granularity.
+
+## Sort utils
+Provides a sort function which returns the indices that the input elements
+should be rearranged. Very useful for finding the original position of a
+sorted object without zipping it yourself.
+
+## Stream utils
+In Java 8 the stream API can run inside a Fork-Join Pool to bound the parallelism,
+but it does not bound the computation of the chunk size correctly. This class
+provides a bounded stream which knows how many threads are allocated, and so 
+calculates the correct work chunk size. It also has methods for zipping two 
+streams, and a special spliterator which chunks work appropriately for reading
+from a IO system like a DB or a file.
+
 
