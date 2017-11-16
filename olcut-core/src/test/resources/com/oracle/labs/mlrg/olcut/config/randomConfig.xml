@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Description:
+        A configuration file for testing random number generator configurations.
+-->
+
+<config>
+    
+    <component name="random" type="com.oracle.labs.mlrg.olcut.config.RandomConfigurable">
+        <property name="one" value="10"/>
+        <property name="two" value="20"/>
+    </component>
+
+</config>

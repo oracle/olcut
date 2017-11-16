@@ -10,6 +10,13 @@ manifest.mf
 
 # Intellij files
 .idea/
-olcut.iml
+*.iml
 /.classpath
 /.project
+.classpath
+.project
+.settings
+
+# Subproject files
+olcut-core/target
+olcut-jini/target

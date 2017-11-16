@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Document   : startableConfig.xml
+    Created on : December 17, 2007, 4:16 PM
+    Author     : stgreen
+    Description:
+        A configuration for a startable component.
+-->
+
+<config>
+    <!-- A component that will be started at configuration time -->
+    <component name="startme" type="com.oracle.labs.mlrg.olcut.config.StartableConfigurable">
+        <property name="numReps" value="5"/>
+        <property name="add" value="foo"/>
+    </component>
+</config>

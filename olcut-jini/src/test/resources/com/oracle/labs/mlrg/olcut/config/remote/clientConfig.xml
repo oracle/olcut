@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Document   : clientConfig.xml
+    Created on : December 17, 2007, 4:16 PM
+    Author     : stgreen
+    Description:
+        A configuration for the client-side components.
+-->
+
+<config>
+    <property name="showCreations" value="false"/>
+
+    <!-- A registry that won't serve any classes -->
+    <component name="registry" type="com.oracle.labs.mlrg.olcut.config.remote.ComponentRegistry">
+        <propertylist name="groupList">
+            <item>olcut-test</item>
+        </propertylist>
+        <property name="securityPolicy" value="src/test/resources/jsk-all.policy"/>
+        <property name="lookupTries" value="5"/>
+        <property name="lookupWait" value="50"/>
+        <property name="registryPort" value="4012"/>
+    </component>
+    
+    <component name="failtest" type="com.oracle.labs.mlrg.olcut.config.remote.ClientConfigurable">
+        <property name="value" value="bar"/>
+        <property name="count" value="30"/>
+        <property name="comp" value="servercomp"/>
+    </component>
+    
+    <!-- This component has no properties, which means that we're going to want to 
+    load it from the lookup service.  We could have also specified importable="true" 
+    in the component tag to get this behavior. -->
+    <component name="servercomp" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable"/>
+    
+    <!-- This component has no properties, which means that we're going to want to 
+    load it from the lookup service.  We could have also specified importable="true" 
+    in the component tag to get this behavior. We'll use the server entries for matching-->
+    <component name="servercompWithEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable" entries="serverEntries"/>
+    
+    <!-- This component has no properties, which means that we're going to want to 
+    load it from the lookup service.  We could have also specified importable="true" 
+    in the component tag to get this behavior. We'll use the server entries for matching, 
+    but they won't actually match -->
+    <component name="servercompWithNonMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable" entries="serverNonMatchingEntries"/>
+    
+    <component name="servercompWithPartialMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable" entries="serverPartialMatchingEntries"/>
+    
+    <!-- Configuration entries to use for successful matching -->
+    <component name="serverEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">
+        <propertylist name="entries">
+            <item>firstEntry</item>
+            <item>secondEntry</item>
+        </propertylist>
+    </component>
+
+    <!-- Configuration entries to use for unsuccessful matching -->
+    <component name="serverNonMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">
+        <propertylist name="entries">
+            <item>firstEntry</item>
+            <item>thirdEntry</item>
+        </propertylist>
+    </component>
+    
+    <!-- Configuration entries to use for partial matching -->
+    <component name="serverPartialMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">
+        <propertylist name="entries">
+            <item>firstEntry</item>
+        </propertylist>
+    </component>
+
+    <component name="firstEntry" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntry">
+        <property name="data" value="data1"/>
+    </component>
+
+    <component name="secondEntry" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntry">
+        <property name="data" value="data2"/>
+    </component>
+
+    <component name="thirdEntry" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntry">
+        <property name="data" value="data3"/>
+    </component>
+
+</config>
