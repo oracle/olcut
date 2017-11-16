@@ -17,7 +17,7 @@ import java.io.PrintWriter;
 /**
  * String utilities.
  */
-public class StringUtil {
+public abstract class StringUtil {
 
     // Unconstructable.
     private StringUtil() { }

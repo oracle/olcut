@@ -18,7 +18,7 @@ import java.util.stream.StreamSupport;
 
 /**
  */
-public class StreamUtil {
+public abstract class StreamUtil {
     /**
      * An object instance representing no value, that cannot be an actual
      * data element of a stream.  Used when processing streams that can contain

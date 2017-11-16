@@ -515,6 +515,7 @@ public abstract class IOUtil {
                 } catch (MalformedURLException ex1) {
                     //
                     // Couldn't open the file, we're done.
+                    logger.warning("Cannot open location " + location);
                     return null;
                 }
             } catch (IOException ex) {

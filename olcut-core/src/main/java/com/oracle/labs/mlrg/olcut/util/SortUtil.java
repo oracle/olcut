@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 /**
  *
  */
-public class SortUtil {
+public abstract class SortUtil {
 
     public static int[] where(int[] input, IntPredicate func) {
         Integer[] ixs = new Integer[input.length];
