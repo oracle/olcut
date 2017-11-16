@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Description:
+        A configuration file for testing subclassing.
+-->
+
+<config>
+    
+    <component name="stringConfigSubclass" type="com.oracle.labs.mlrg.olcut.config.StringleConfigurable">
+        <property name="one" value="a"/>
+        <property name="two" value="b"/>
+        <property name="three" value="c"/>
+        <property name="four" value="d"/>
+        <property name="five" value="e"/>
+    </component>
+
+</config>

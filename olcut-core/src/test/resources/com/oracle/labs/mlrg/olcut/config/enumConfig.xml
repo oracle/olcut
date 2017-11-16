@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Document   : componentListConfig.xml
+    Created on : December 11, 2007, 7:58 AM
+    Author     : stgreen
+    Description:
+        A configuration file to test enumerated properties.
+-->
+
+<config>
+    
+    <property name="globA" value="A"/>
+
+    <component name="both" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+        <property name="enum1" value="A"/>
+        <property name="enum2" value="B"/>
+    </component>
+
+    <component name="set1" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+        <property name="enum1" value="A"/>
+        <property name="enum2" value="B"/>
+        <propertylist name="enumSet1">
+            <item>A</item>
+            <item>B</item>
+        </propertylist>
+    </component>
+
+    <component name="badset" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+        <property name="enum1" value="A"/>
+        <property name="enum2" value="B"/>
+        <propertylist name="enumSet1">
+            <item>A</item>
+            <item>R</item>
+        </propertylist>
+    </component>
+
+    <component name="default" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+        <property name="enum1" value="A"/>
+    </component>
+
+    <component name="norequired" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+        <property name="enum2" value="B"/>
+    </component>
+
+    <component name="badvalue" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+        <property name="enum1" value="Gargle"/>
+    </component>
+
+    <component name="global" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+        <property name="enum1" value="${globA}"/>
+    </component>
+
+</config>
