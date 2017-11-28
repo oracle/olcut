@@ -72,6 +72,12 @@ public class ConfigurationManager implements Cloneable {
 
     public static final char ARG_DELIMITER = ',';
 
+    public static final char ESCAPE_CHAR = '\\';
+
+    public static final char WIN_ESCAPE_CHAR = '^';
+
+    public static final boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+
     public static final char CONFIGURABLE_CHAR = '@';
 
     public static final String SHORT_ARG = "-";
@@ -575,27 +581,53 @@ public class ConfigurationManager implements Cloneable {
         boolean inQuotes = false;
         boolean escaped = false;
         StringBuilder buffer = new StringBuilder();
-        for (char c : input.toCharArray()) {
-            switch (c) {
-                case ARG_DELIMITER:
-                    if (inQuotes || escaped) {
+        if (isWindows) {
+            for (char c : input.toCharArray()) {
+                switch (c) {
+                    case ARG_DELIMITER:
+                        if (inQuotes || escaped) {
+                            buffer.append(c);
+                        } else {
+                            tokensList.add(buffer.toString());
+                            buffer = new StringBuilder();
+                        }
+                        escaped = false;
+                        break;
+                    case WIN_ESCAPE_CHAR:
+                        escaped = true;
+                        break;
+                    case '\"':
+                        // Note fall through here to gather up the quotes.
+                        inQuotes = !inQuotes;
+                    default:
                         buffer.append(c);
-                    } else {
-                        tokensList.add(buffer.toString());
-                        buffer = new StringBuilder();
-                    }
-                    escaped = false;
-                    break;
-                case '\\':
-                    escaped = true;
-                    break;
-                case '\"':
-                    // Note fall through here to gather up the quotes.
-                    inQuotes = !inQuotes;
-                default:
-                    buffer.append(c);
-                    escaped = false;
-                    break;
+                        escaped = false;
+                        break;
+                }
+            }
+        } else {
+            for (char c : input.toCharArray()) {
+                switch (c) {
+                    case ARG_DELIMITER:
+                        if (inQuotes || escaped) {
+                            buffer.append(c);
+                        } else {
+                            tokensList.add(buffer.toString());
+                            buffer = new StringBuilder();
+                        }
+                        escaped = false;
+                        break;
+                    case ESCAPE_CHAR:
+                        escaped = true;
+                        break;
+                    case '\"':
+                        // Note fall through here to gather up the quotes.
+                        inQuotes = !inQuotes;
+                    default:
+                        buffer.append(c);
+                        escaped = false;
+                        break;
+                }
             }
         }
         tokensList.add(buffer.toString());
