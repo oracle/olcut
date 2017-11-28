@@ -24,7 +24,9 @@ public class ArgumentParsingTest {
 
     @Test
     public void testStringSplitting() {
-        String a = "nasty,input,string\\,with spaces,\"quoted,commas\",and\\,other things.";
+        String unix = "nasty,input,string\\,with spaces,\"quoted,commas\",and\\,other things.";
+        String win = "nasty,input,string^,with spaces,\"quoted,commas\",and^,other things.";
+        String a = System.getProperty("os.name").toLowerCase().startsWith("windows") ? win : unix;
         List<String> expectedOutput = Arrays.asList("nasty","input","string,with spaces","\"quoted,commas\"","and,other things.");
 
         List<String> output = ConfigurationManager.parseStringList(a);
