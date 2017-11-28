@@ -1,11 +1,5 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.util.IOUtil;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +30,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import com.oracle.labs.mlrg.olcut.util.IOUtil;
 
 /**
  * A property sheet which defines a collection of properties for a single

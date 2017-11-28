@@ -1,19 +1,20 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.net.URL;
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.Assert.*;
 
 public class SaveTest {
 
