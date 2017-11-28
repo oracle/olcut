@@ -1,7 +1,8 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import org.junit.Before;
-import org.junit.Test;
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,9 +16,8 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests reading and writing all valid fields from a config file.

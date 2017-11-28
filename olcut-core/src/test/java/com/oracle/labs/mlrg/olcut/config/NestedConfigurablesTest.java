@@ -1,14 +1,14 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import org.junit.Test;
-
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.logging.Logger;
+
+import org.junit.Test;
 
 /**
  * Test ConfigurationManager behavior for a Configurable with 1+ inner Configurable.

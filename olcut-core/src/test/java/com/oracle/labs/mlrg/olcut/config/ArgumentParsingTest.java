@@ -1,7 +1,6 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +17,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ArgumentParsingTest {
 

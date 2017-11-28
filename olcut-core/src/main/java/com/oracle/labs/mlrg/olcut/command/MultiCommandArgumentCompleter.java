@@ -5,9 +5,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import jline.console.ConsoleReader;
 import jline.console.completer.ArgumentCompleter;
 import jline.console.completer.Completer;
-import jline.console.ConsoleReader;
 import jline.internal.Log;
 
 /**

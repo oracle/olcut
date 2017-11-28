@@ -1,15 +1,16 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 
 /**
  *

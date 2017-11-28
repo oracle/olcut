@@ -5,15 +5,16 @@
 
 package com.oracle.labs.mlrg.olcut.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.concurrent.TimeUnit;
 
-import com.oracle.labs.mlrg.olcut.util.TimeSpec;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Tests for time specifications.
