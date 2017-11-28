@@ -585,4 +585,7 @@ public abstract class IOUtil {
         }
     }
 
+    public static String replaceBackSlashes(String path) {
+    	return path.replaceAll("\\\\", "/");
+    }
 }

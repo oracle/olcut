@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.Assert.*;
 
 /**
@@ -41,7 +42,7 @@ public class ConfigurablePropertyMapTest {
         FooMapConfigurable s1 = (FooMapConfigurable) cm1.lookup("fooMap");
         cm1.save(f, true);
         assertEquals(3, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         FooMapConfigurable s2 = (FooMapConfigurable) cm2.lookup("fooMap");
         assertEquals(s1, s2);
     }
@@ -51,7 +52,7 @@ public class ConfigurablePropertyMapTest {
         ConfigurationManager cm1 = new ConfigurationManager("configurablePropMap.xml");
         cm1.save(f, true);
         assertEquals(0, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         FooMapConfigurable s1 = (FooMapConfigurable) cm1.lookup("fooMap");
         FooMapConfigurable s2 = (FooMapConfigurable) cm2.lookup("fooMap");
         assertEquals(s1, s2);
