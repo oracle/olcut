@@ -1,12 +1,12 @@
 package com.oracle.labs.mlrg.olcut.util;
 
-import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertArrayEquals;
+import org.junit.Test;
 
 /**
  *

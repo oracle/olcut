@@ -1,11 +1,5 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.util.Pair;
-
-import javax.management.MBeanServer;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,6 +26,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.management.MBeanServer;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import com.oracle.labs.mlrg.olcut.util.Pair;
 
 /**
  * Manages a set of <code>Configurable</code>s, their parametrization and the relationships between them. Configurations

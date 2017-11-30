@@ -1,6 +1,7 @@
 package com.oracle.labs.mlrg.olcut.util;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -15,8 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import org.junit.Test;
 
 public class StreamUtilTest {
     private static final Logger logger = Logger.getLogger(StreamUtilTest.class.getName());
