@@ -17,6 +17,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.Assert.*;
 
 /**
@@ -176,7 +178,7 @@ public class ProgrammaticConfigurableTest {
 
         //
         // Re-read the file.
-        cm = new ConfigurationManager(f.toString());
+        cm = new ConfigurationManager(replaceBackSlashes(f.toString()));
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
         assertEquals("one", sc.one);
         assertEquals("two", sc.two);
