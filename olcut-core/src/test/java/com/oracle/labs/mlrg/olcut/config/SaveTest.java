@@ -11,6 +11,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.Assert.*;
 
 public class SaveTest {
@@ -44,7 +46,7 @@ public class SaveTest {
         SetConfig s1 = (SetConfig) cm1.lookup("correctSetConfig");
         cm1.save(f, true);
         assertEquals(3, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         SetConfig s2 = (SetConfig) cm2.lookup("correctSetConfig");
         assertEquals(s1, s2);
         ListConfig l1 = (ListConfig) cm1.lookup("correctListConfig");
@@ -57,7 +59,7 @@ public class SaveTest {
         ConfigurationManager cm1 = new ConfigurationManager("genericConfig.xml");
         cm1.save(f, true);
         assertEquals(0, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         SetConfig s1 = (SetConfig) cm1.lookup("correctSetConfig");
         SetConfig s2 = (SetConfig) cm2.lookup("correctSetConfig");
         assertEquals(s1, s2);
@@ -72,7 +74,7 @@ public class SaveTest {
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         cm1.save(f, true);
         assertEquals(1, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
         assertEquals(bc1, bc2);
         bc1 = (BasicConfigurable) cm1.lookup("b");
@@ -85,7 +87,7 @@ public class SaveTest {
         ConfigurationManager cm1 = new ConfigurationManager("basicConfig.xml");
         cm1.save(f, true);
         assertEquals(0, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
         assertEquals(bc1, bc2);
@@ -105,7 +107,7 @@ public class SaveTest {
         cm1.addConfigurable(BasicConfigurable.class, "c", m);
         cm1.save(f, true);
         assertEquals(1, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
         assertEquals(bc1, bc2);
         bc1 = (BasicConfigurable) cm1.lookup("b");
@@ -129,7 +131,7 @@ public class SaveTest {
         cm1.save(f, true);
         assertEquals(0, cm1.getNumConfigured());
         
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
         assertEquals(bc1, bc2);
@@ -151,7 +153,7 @@ public class SaveTest {
         cm1.removeConfigurable("a");
         cm1.save(f, true);
         assertEquals(0, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc2;
         try {
             bc2 = (BasicConfigurable) cm2.lookup("a");
@@ -170,7 +172,7 @@ public class SaveTest {
         cm1.save(f, true);
         assertEquals(0, cm1.getNumConfigured());
 
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc2;
         try{
             bc2 = (BasicConfigurable) cm2.lookup("a");
@@ -201,7 +203,7 @@ public class SaveTest {
             fail("Found a removed component");
         } catch (PropertyException e) { }
 
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         try{
             BasicConfigurable bc = (BasicConfigurable) cm2.lookup("c");
             fail("Found a removed component");
@@ -216,7 +218,7 @@ public class SaveTest {
         cm.importConfigurable(sc, "testStringConfig");
         cm.save(f, false);
 
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         StringConfigurable sc2 = (StringConfigurable) cm2.lookup("testStringConfig");
         assertEquals(sc,sc2);
     }
@@ -240,7 +242,7 @@ public class SaveTest {
         cm1.importConfigurable(sc1,"nastyString");
         cm1.save(f);
 
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         StringConfigurable sc2 = (StringConfigurable) cm2.lookup("nastyString");
         assertEquals(sc1,sc2);
     }

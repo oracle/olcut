@@ -133,8 +133,9 @@ public class ConfigurationManager implements Cloneable {
      * @throws java.io.IOException if an error occurs while loading properties from the location
      */
     public ConfigurationManager(String path) throws IOException, PropertyException {
-        this(new String[]{"-"+configFileOption.charName(),path},EMPTY_OPTIONS);
+    	this(new String[]{"-"+configFileOption.charName(),path},EMPTY_OPTIONS);
     }
+
 
     /**
      * Creates a new configuration manager. Initial properties are loaded from the given URL. No need to keep the notion

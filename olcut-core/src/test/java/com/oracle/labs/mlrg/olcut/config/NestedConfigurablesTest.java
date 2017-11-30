@@ -1,6 +1,8 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import org.junit.Test;
+
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -33,7 +35,7 @@ public class NestedConfigurablesTest {
         File tmp = mkTmp();
         cm1.save(tmp);
         assertEquals(2, cm1.getNumConfigured());
-        ConfigurationManager cm2 = new ConfigurationManager(tmp.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(tmp.toString()));
         FooUserConfigurable u2 = (FooUserConfigurable) cm2.lookup("user");
         assertEquals(u1.getFoo(), u2.getFoo());
     }
@@ -46,7 +48,7 @@ public class NestedConfigurablesTest {
         assertEquals(2, cm1.getNumConfigured());
         File tmp = mkTmp();
         cm1.save(tmp);
-        ConfigurationManager cm2 = new ConfigurationManager(tmp.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(tmp.toString()));
         FooUserConfigurable u2 = (FooUserConfigurable) cm2.lookup("user");
         assertEquals(u1.getFoo(), u2.getFoo());
     }
