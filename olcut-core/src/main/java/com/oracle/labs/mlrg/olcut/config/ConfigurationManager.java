@@ -219,6 +219,8 @@ public class ConfigurationManager implements Cloneable {
         // Throws an exception if there are unknown named arguments at this stage.
         try {
             parseOptionArguments(argumentsList, options);
+        } catch (PropertyException e) {
+            throw new ArgumentException(e, e.getMsg() + "\n\n" + usage);
         } catch (IllegalAccessException e) {
             throw new ArgumentException(e, "Failed to write argument into Options");
         } catch (InstantiationException e) {
