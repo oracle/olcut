@@ -7,11 +7,8 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
@@ -76,7 +73,7 @@ public class ConfigurationManager implements Cloneable {
 
     public static final char WIN_ESCAPE_CHAR = '^';
 
-    public static final boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+    public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
     public static final char CONFIGURABLE_CHAR = '@';
 
@@ -584,7 +581,7 @@ public class ConfigurationManager implements Cloneable {
         boolean inQuotes = false;
         boolean escaped = false;
         StringBuilder buffer = new StringBuilder();
-        if (isWindows) {
+        if (IS_WINDOWS) {
             for (char c : input.toCharArray()) {
                 switch (c) {
                     case ARG_DELIMITER:
