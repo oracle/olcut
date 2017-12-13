@@ -7,6 +7,8 @@ import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -550,7 +552,11 @@ public class ConfigurationManager implements Cloneable {
                                         throw new ArgumentException(e, curArg,"Can't load config file: " + s);
                                     }
                                 } else {
-                                    throw new ArgumentException(curArg,"Can't find config file: " + s);
+                                    try {
+                                        url = (new URI(s)).toURL();
+                                    } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
+                                        throw new ArgumentException(curArg,"Can't find config file: " + s);
+                                    }
                                 }
                             }
                             urls.add(url);
