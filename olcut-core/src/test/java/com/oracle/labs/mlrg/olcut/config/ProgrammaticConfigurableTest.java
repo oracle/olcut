@@ -4,20 +4,22 @@
  */
 package com.oracle.labs.mlrg.olcut.config;
 
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
-import java.util.Map;
 import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -176,7 +178,7 @@ public class ProgrammaticConfigurableTest {
 
         //
         // Re-read the file.
-        cm = new ConfigurationManager(f.toString());
+        cm = new ConfigurationManager(replaceBackSlashes(f.toString()));
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
         assertEquals("one", sc.one);
         assertEquals("two", sc.two);

@@ -1,10 +1,9 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.net.URL;
 
 /**
  *

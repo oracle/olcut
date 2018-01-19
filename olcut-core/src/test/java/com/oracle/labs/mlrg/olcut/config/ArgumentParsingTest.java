@@ -1,7 +1,6 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,13 +17,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ArgumentParsingTest {
 
     @Test
     public void testStringSplitting() {
-        String a = "nasty,input,string\\,with spaces,\"quoted,commas\",and\\,other things.";
+        String unix = "nasty,input,string\\,with spaces,\"quoted,commas\",and\\,other things.";
+        String win = "nasty,input,string^,with spaces,\"quoted,commas\",and^,other things.";
+        String a = System.getProperty("os.name").toLowerCase().startsWith("windows") ? win : unix;
         List<String> expectedOutput = Arrays.asList("nasty","input","string,with spaces","\"quoted,commas\"","and,other things.");
 
         List<String> output = ConfigurationManager.parseStringList(a);

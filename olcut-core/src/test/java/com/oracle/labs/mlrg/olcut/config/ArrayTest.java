@@ -1,10 +1,10 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.io.IOException;
-import java.net.URL;
-import static org.junit.Assert.assertArrayEquals;
+
+import org.junit.Test;
 
 /**
  * A set of tests for array types using Config

@@ -1,11 +1,11 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.util.IOUtil;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+
+import com.oracle.labs.mlrg.olcut.util.IOUtil;
 
 /**
  * A class to hold the information for a serialized Object that is defined in a

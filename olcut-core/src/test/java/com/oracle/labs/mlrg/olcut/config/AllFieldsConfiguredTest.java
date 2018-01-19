@@ -1,7 +1,8 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import org.junit.Before;
-import org.junit.Test;
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +16,8 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests reading and writing all valid fields from a config file.
@@ -43,7 +44,7 @@ public class AllFieldsConfiguredTest {
         ConfigurationManager cm1 = new ConfigurationManager("allConfig.xml");
         AllFieldsConfigurable ac1 = (AllFieldsConfigurable) cm1.lookup("all-config");
         cm1.save(f, true);
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
         assertEquals("Two all configs aren't equal",ac1,ac2);
     }
@@ -54,7 +55,7 @@ public class AllFieldsConfiguredTest {
         ConfigurationManager cm1 = new ConfigurationManager();
         cm1.importConfigurable(ac,"all-config");
         cm1.save(f);
-        ConfigurationManager cm2 = new ConfigurationManager(f.toString());
+        ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
         assertEquals("Imported config not equal to generated object",ac,ac2);
     }
