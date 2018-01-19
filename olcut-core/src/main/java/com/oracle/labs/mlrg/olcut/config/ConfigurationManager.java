@@ -1,21 +1,14 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.util.Pair;
-
-import javax.management.MBeanServer;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +28,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.management.MBeanServer;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import com.oracle.labs.mlrg.olcut.util.Pair;
 
 /**
  * Manages a set of <code>Configurable</code>s, their parametrization and the relationships between them. Configurations
@@ -71,6 +71,12 @@ public class ConfigurationManager implements Cloneable {
     };
 
     public static final char ARG_DELIMITER = ',';
+
+    public static final char ESCAPE_CHAR = '\\';
+
+    public static final char WIN_ESCAPE_CHAR = '^';
+
+    public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
     public static final char CONFIGURABLE_CHAR = '@';
 
@@ -133,8 +139,9 @@ public class ConfigurationManager implements Cloneable {
      * @throws java.io.IOException if an error occurs while loading properties from the location
      */
     public ConfigurationManager(String path) throws IOException, PropertyException {
-        this(new String[]{"-"+configFileOption.charName(),path},EMPTY_OPTIONS);
+    	this(new String[]{"-"+configFileOption.charName(),path},EMPTY_OPTIONS);
     }
+
 
     /**
      * Creates a new configuration manager. Initial properties are loaded from the given URL. No need to keep the notion
@@ -219,6 +226,8 @@ public class ConfigurationManager implements Cloneable {
         // Throws an exception if there are unknown named arguments at this stage.
         try {
             parseOptionArguments(argumentsList, options);
+        } catch (PropertyException e) {
+            throw new ArgumentException(e, e.getMsg() + "\n\n" + usage);
         } catch (IllegalAccessException e) {
             throw new ArgumentException(e, "Failed to write argument into Options");
         } catch (InstantiationException e) {
@@ -543,7 +552,11 @@ public class ConfigurationManager implements Cloneable {
                                         throw new ArgumentException(e, curArg,"Can't load config file: " + s);
                                     }
                                 } else {
-                                    throw new ArgumentException(curArg,"Can't find config file: " + s);
+                                    try {
+                                        url = (new URI(s)).toURL();
+                                    } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
+                                        throw new ArgumentException(curArg,"Can't find config file: " + s);
+                                    }
                                 }
                             }
                             urls.add(url);
@@ -575,27 +588,53 @@ public class ConfigurationManager implements Cloneable {
         boolean inQuotes = false;
         boolean escaped = false;
         StringBuilder buffer = new StringBuilder();
-        for (char c : input.toCharArray()) {
-            switch (c) {
-                case ARG_DELIMITER:
-                    if (inQuotes || escaped) {
+        if (IS_WINDOWS) {
+            for (char c : input.toCharArray()) {
+                switch (c) {
+                    case ARG_DELIMITER:
+                        if (inQuotes || escaped) {
+                            buffer.append(c);
+                        } else {
+                            tokensList.add(buffer.toString());
+                            buffer = new StringBuilder();
+                        }
+                        escaped = false;
+                        break;
+                    case WIN_ESCAPE_CHAR:
+                        escaped = true;
+                        break;
+                    case '\"':
+                        // Note fall through here to gather up the quotes.
+                        inQuotes = !inQuotes;
+                    default:
                         buffer.append(c);
-                    } else {
-                        tokensList.add(buffer.toString());
-                        buffer = new StringBuilder();
-                    }
-                    escaped = false;
-                    break;
-                case '\\':
-                    escaped = true;
-                    break;
-                case '\"':
-                    // Note fall through here to gather up the quotes.
-                    inQuotes = !inQuotes;
-                default:
-                    buffer.append(c);
-                    escaped = false;
-                    break;
+                        escaped = false;
+                        break;
+                }
+            }
+        } else {
+            for (char c : input.toCharArray()) {
+                switch (c) {
+                    case ARG_DELIMITER:
+                        if (inQuotes || escaped) {
+                            buffer.append(c);
+                        } else {
+                            tokensList.add(buffer.toString());
+                            buffer = new StringBuilder();
+                        }
+                        escaped = false;
+                        break;
+                    case ESCAPE_CHAR:
+                        escaped = true;
+                        break;
+                    case '\"':
+                        // Note fall through here to gather up the quotes.
+                        inQuotes = !inQuotes;
+                    default:
+                        buffer.append(c);
+                        escaped = false;
+                        break;
+                }
             }
         }
         tokensList.add(buffer.toString());

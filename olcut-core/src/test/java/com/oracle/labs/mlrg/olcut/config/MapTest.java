@@ -1,11 +1,10 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import java.io.IOException;
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.Map;
 
 /**
  * Tests the extraction of {@link java.util.Map} objects from a {@link PropertySheet}.

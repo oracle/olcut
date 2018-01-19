@@ -11,8 +11,6 @@
  */
 package com.oracle.labs.mlrg.olcut.command;
 
-import com.oracle.labs.mlrg.olcut.util.Util;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -45,12 +43,15 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import jline.console.completer.Completer;
+
+import com.oracle.labs.mlrg.olcut.util.Util;
+
 import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
 import jline.console.completer.FileNameCompleter;
-import jline.console.history.History;
 import jline.console.completer.NullCompleter;
 import jline.console.history.FileHistory;
+import jline.console.history.History;
 
 /**
  * This class is a command interpreter. It reads strings from an input stream,
