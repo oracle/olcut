@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.PushbackInputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -452,6 +454,11 @@ public abstract class IOUtil {
      * <P>
      * We'll try to use the location as a resource, and failing that a URL, and
      * failing that, a file.
+     * <p>
+     * If the resource that is to be opened as an InputStream appears to be
+     * a gzip file (based on its magic number), a GZipInputStream will
+     * automatically be wrapped in to decompress the stream.
+     * 
      * @param location the location provided.
      * @return an input stream for that location, or null if we couldn't find
      * any.
@@ -481,6 +488,38 @@ public abstract class IOUtil {
                 // No joy.
                 logger.warning("Cannot open serialized form " + location);
                 return null;
+            }
+        }
+        
+        //
+        // If we have an input stream here, check for a magic number at
+        // the beginning of the file and wrap it in gzip if we need it.
+        if (ret != null) {
+            //
+            // A pushback input stream lets us peek at the first couple bytes
+            // and put them back after checking the magic number.
+            PushbackInputStream pis = new PushbackInputStream(ret, 2);
+            try {
+                byte[] magic = new byte[2];
+                int len = pis.read(magic);
+                if (len > 0) {
+                    pis.unread(magic, 0, len);
+                    //
+                    // Check the bytes we read
+                    if (magic[0] == (byte)GZIPInputStream.GZIP_MAGIC && magic[1] == (byte)(GZIPInputStream.GZIP_MAGIC >> 8)) {
+                        //
+                        // This is GZIP. Wrap the pushback input stream. We can't
+                        // use the old "ret" because we've already read a couple
+                        // bytes out of it.
+                        ret = new GZIPInputStream(pis);
+                    } else {
+                        ret = pis;
+                    }
+                }
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Error while reading input stream for gzip." +
+                        " Position in stream uncertain.", e);
+                ret = pis;                
             }
         }
         return ret;
