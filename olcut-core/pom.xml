@@ -5,7 +5,7 @@
         <groupId>com.oracle.labs.mlrg.olcut</groupId>
         <artifactId>olcut</artifactId>
         <version>4.0.2-SNAPSHOT</version>
-	<relativePath>..</relativePath>
+		<relativePath>..</relativePath>
     </parent>
     <name>olcut-core</name>
     <artifactId>olcut-core</artifactId>
