@@ -338,7 +338,9 @@ public abstract class IOUtil {
     public static <T extends Serializable> void serialize(T object, String path, int bufferSize) {
         try {
             File file = new File(path);
-            file.getParentFile().mkdirs();
+            if (file.getParentFile() != null) {
+                file.getParentFile().mkdirs();
+            }
             ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(path), bufferSize));
             oos.writeObject(object);
             oos.close();

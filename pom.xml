@@ -140,7 +140,6 @@
 				<configuration>
 					<show>public</show>
 					<failOnError>false</failOnError>
-					<aggregate>true</aggregate>
 					<linksource>true</linksource>
 					<nohelp>true</nohelp>
 				</configuration>
