@@ -72,7 +72,7 @@ public class JsonLoader implements ConfigLoader {
 
     @Override
     public String getExtension() {
-        return "xml";
+        return "json";
     }
 
     public Map<String, RawPropertyData> getPropertyMap() {
