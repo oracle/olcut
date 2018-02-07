@@ -20,3 +20,4 @@ manifest.mf
 # Subproject files
 olcut-core/target
 olcut-jini/target
+olcut-json/target

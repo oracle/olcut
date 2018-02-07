@@ -14,6 +14,7 @@
     </properties>
     <modules>
         <module>olcut-core</module>
+        <module>olcut-json</module>
         <module>olcut-jini</module>
     </modules>
 
@@ -123,6 +124,16 @@
             <version>${jsk.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -144,21 +155,21 @@
 					<nohelp>true</nohelp>
 				</configuration>
 			</plugin>
-            <plugin>
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jdeps-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>jdkinternals</goal> <!-- verify main classes -->
-                            <goal>test-jdkinternals</goal> <!-- verify test classes -->
+                            <goal>jdkinternals</goal>  verify main classes
+                            <goal>test-jdkinternals</goal>  verify test classes
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
                 </configuration>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
