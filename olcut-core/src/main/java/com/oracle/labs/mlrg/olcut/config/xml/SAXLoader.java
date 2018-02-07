@@ -10,7 +10,7 @@
  * WARRANTIES.
  *
  */
-package com.oracle.labs.mlrg.olcut.config;
+package com.oracle.labs.mlrg.olcut.config.xml;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,16 +19,21 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
+import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
+import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
+import com.oracle.labs.mlrg.olcut.config.SerializedObject;
+import com.oracle.labs.mlrg.olcut.config.URLLoader;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -38,110 +43,72 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Loads configuration from an XML file
+ * Loads configuration from an XML file.
  */
-public class SaxLoader {
+public class SAXLoader implements ConfigLoader {
 
-    private static final Logger logger = Logger.getLogger(SaxLoader.class.getName());
+    private static final Logger logger = Logger.getLogger(SAXLoader.class.getName());
 
-    private URL curURL;
+    private final URLLoader parent;
 
-    private Queue<URL> urlQueue;
+    private final Map<String, RawPropertyData> rpdMap;
 
-    private Map<String, RawPropertyData> rpdMap;
-
-    private Map<String, RawPropertyData> existingRPD;
+    private final Map<String, RawPropertyData> existingRPD;
     
-    private Map<String, SerializedObject> serializedObjects = new HashMap<>();
+    private final Map<String, SerializedObject> serializedObjects;
     
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
-    /**
-     * Creates a loader that will load from the given location.
-     *
-     * @param url the location to load
-     * @param globalProperties the map of global properties
-     */
-    public SaxLoader(URL url, GlobalProperties globalProperties) {
-        this(url, globalProperties, null);
-    }
+    private final XMLReader xr;
 
-    /**
-     * Creates a loader that will load from the given location.
-     *
-     * @param url the location to load
-     * @param globalProperties the map of global properties
-     * @param existingRPD the map of existing raw property data from previously
-     * loaded configuration files, which we might want when overriding elements
-     * in the configuration file that we're loading.
-     */
-    public SaxLoader(URL url, GlobalProperties globalProperties,
-            Map<String, RawPropertyData> existingRPD) {
-        this.urlQueue = new LinkedList<>();
-        this.urlQueue.add(url);
-        this.globalProperties = globalProperties;
+    public SAXLoader(URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD,
+                     Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) throws ParserConfigurationException, SAXException {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        xr = factory.newSAXParser().getXMLReader();
+        ConfigSAXHandler handler = new ConfigSAXHandler();
+        xr.setContentHandler(handler);
+        xr.setErrorHandler(handler);
+
+        this.parent = parent;
+        this.rpdMap = rpdMap;
         this.existingRPD = existingRPD;
-    }
-
-    /**
-     * Creates a loader that will load from the given locations.
-     *
-     * @param urlQueue A queue of locations to load.
-     * @param globalProperties The map of global properties.
-     */
-    public SaxLoader(Queue<URL> urlQueue, GlobalProperties globalProperties) {
-        this(urlQueue,globalProperties,null);
-    }
-
-    /**
-     * Creates a loader that will load from the given locations.
-     *
-     * @param urlQueue A queue of locations to load.
-     * @param globalProperties The map of global properties.
-     * @param existingRPD The map of existing raw property data from previously
-     * loaded configuration files, which we might want when overriding elements
-     * in the configuration files that we're loading.
-     */
-    public SaxLoader(Queue<URL> urlQueue, GlobalProperties globalProperties, Map<String, RawPropertyData> existingRPD) {
-        this.urlQueue = urlQueue;
+        this.serializedObjects = serializedObjects;
         this.globalProperties = globalProperties;
-        this.existingRPD = existingRPD;
     }
 
     /**
      * Loads a set of configuration data from the location
      *
-     * @return a map keyed by component name containing RawPropertyData objects
      * @throws IOException if an I/O or parse error occurs
      */
-    public Map<String, RawPropertyData> load() throws PropertyException, IOException {
-        rpdMap = new HashMap<>();
+    @Override
+    public void load(URL url) throws ConfigLoaderException, IOException {
         InputStream is = null;
         try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            XMLReader xr = factory.newSAXParser().getXMLReader();
-            ConfigHandler handler = new ConfigHandler();
-            xr.setContentHandler(handler);
-            xr.setErrorHandler(handler);
-            while (!urlQueue.isEmpty()) {
-                curURL = urlQueue.poll();
-                is = curURL.openStream();
-                xr.parse(new InputSource(is));
-                is.close();
-            }
+            is = url.openStream();
+            xr.parse(new InputSource(is));
+            is.close();
         } catch (SAXParseException e) {
             String msg = "Error while parsing line " + e.getLineNumber()
-                    + " of " + curURL + ": " + e.getMessage();
-            throw new PropertyException(e, msg);
+                    + " of " + url + ": " + e.getMessage();
+            throw new ConfigLoaderException(e, msg);
         } catch (SAXException e) {
-            throw new PropertyException(e, "Problem with XML: " + e);
-        } catch (ParserConfigurationException | IOException e) {
-            throw new PropertyException(e, e.getMessage());
+            throw new ConfigLoaderException(e, "Problem with XML: " + e);
+        } catch (IOException e) {
+            throw new ConfigLoaderException(e, e.getMessage());
         } finally {
             if (is != null) {
                 is.close();
             }
         }
+    }
+
+    @Override
+    public String getExtension() {
+        return "xml";
+    }
+
+    public Map<String, RawPropertyData> getPropertyMap() {
         return rpdMap;
     }
 
@@ -149,11 +116,15 @@ public class SaxLoader {
         return serializedObjects;
     }
 
+    public GlobalProperties getGlobalProperties() {
+        return globalProperties;
+    }
+
     /**
      * A SAX XML Handler implementation that builds up the map of raw property
      * data objects
      */
-    class ConfigHandler extends DefaultHandler {
+    class ConfigSAXHandler extends DefaultHandler {
 
         RawPropertyData rpd = null;
 
@@ -178,10 +149,10 @@ public class SaxLoader {
         public void startElement(String uri, String localName, String qName,
                 Attributes attributes) throws SAXException {
             switch (qName) {
-                case "config":
+                case CONFIG:
                     // nothing to do
                     break;
-                case "component":
+                case COMPONENT:
                     String curComponent = attributes.getValue("name");
                     String curType = attributes.getValue("type");
                     String override = attributes.getValue("inherit");
@@ -268,7 +239,7 @@ public class SaxLoader {
                     rpd.setEntriesName(entriesName);
                     rpd.setSerializedForm(serializedForm);
                     break;
-                case "property": {
+                case PROPERTY: {
                     String name = attributes.getValue("name");
                     String value = attributes.getValue("value");
                     if (attributes.getLength() != 2 || name == null || value == null) {
@@ -290,7 +261,7 @@ public class SaxLoader {
                     }
                     break;
                 }
-                case "propertylist":
+                case PROPERTYLIST:
                     itemListName = attributes.getValue("name");
                     if (attributes.getLength() != 1 || itemListName == null) {
                         throw new SAXParseException("list element must only have "
@@ -298,8 +269,8 @@ public class SaxLoader {
                     }
                     itemList = new ArrayList<>();
                     break;
-                case "item":
-                case "type":
+                case ITEM:
+                case TYPE:
                     if (attributes.getLength() != 0) {
                         throw new SAXParseException("unknown 'item' attribute",
                                 locator);
@@ -308,7 +279,7 @@ public class SaxLoader {
                     }
                     curItem = new StringBuilder();
                     break;
-                case "propertymap":
+                case PROPERTYMAP:
                     mapName = attributes.getValue("name");
                     if (attributes.getLength() != 1 || mapName == null) {
                         throw new SAXParseException("map element must only have "
@@ -316,7 +287,7 @@ public class SaxLoader {
                     }
                     entryMap = new HashMap<String, String>();
                     break;
-                case "entry": {
+                case ENTRY: {
                     String key = attributes.getValue("key");
                     String value = attributes.getValue("value");
                     if (attributes.getLength() != 2 || key == null || value == null) {
@@ -330,7 +301,7 @@ public class SaxLoader {
                     entryMap.put(key.trim(), value.trim());
                     break;
                 }
-                case "file": {
+                case FILE: {
                     String name = attributes.getValue("name");
                     String value = attributes.getValue("value");
                     if (attributes.getLength() != 2 || name == null || value == null) {
@@ -340,11 +311,11 @@ public class SaxLoader {
                     if (rpd == null) {
                         // we are not in a component so add this to the processing queue
                         try {
-                            URL newURL = SaxLoader.class.getResource(value);
+                            URL newURL = ConfigurationManager.class.getResource(value);
                             if (newURL == null) {
                                 newURL = (new File(value)).toURI().toURL();
                             }
-                            urlQueue.add(newURL);
+                            parent.addURL(newURL);
                         } catch (MalformedURLException ex) {
                             throw new SAXParseException("Incorrectly formatted file element " + name + " with value " + value, locator, ex);
                         }
@@ -354,7 +325,7 @@ public class SaxLoader {
                     }
                     break;
                 }
-                case "serialized": {
+                case SERIALIZED: {
                     String name = attributes.getValue("name");
                     String type = attributes.getValue("type");
                     String location = attributes.getValue("location");
@@ -388,15 +359,15 @@ public class SaxLoader {
         public void endElement(String uri, String localName, String qName)
                 throws SAXParseException {
             switch (qName) {
-                case "component":
+                case COMPONENT:
                     rpdMap.put(rpd.getName(), rpd);
                     rpd = null;
                     overriding = false;
                     break;
-                case "property":
+                case PROPERTY:
                     // nothing to do
                     break;
-                case "propertylist":
+                case PROPERTYLIST:
                     if (rpd.contains(itemListName)) {
                         throw new SAXParseException("Duplicate property: "
                                 + itemListName, locator);
@@ -405,11 +376,11 @@ public class SaxLoader {
                         itemList = null;
                     }
                     break;
-                case "item":
+                case ITEM:
                     itemList.add(curItem.toString().trim());
                     curItem = null;
                     break;
-                case "type":
+                case TYPE:
                     try {
                         itemList.add(Class.forName(curItem.toString()));
                     } catch (ClassNotFoundException cnfe) {
@@ -417,7 +388,7 @@ public class SaxLoader {
                                 + curItem.toString() + " in property list " + itemListName, locator);
                     }
                     break;
-                case "propertymap":
+                case PROPERTYMAP:
                     if (rpd.contains(mapName)) {
                         throw new SAXParseException("Duplicate property: "
                                 + mapName, locator);

@@ -33,8 +33,6 @@ import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import com.oracle.labs.mlrg.olcut.util.IOUtil;
 
@@ -945,16 +943,18 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         }
     }
 
-    protected void save(XMLStreamWriter xmlWriter) throws XMLStreamException {
+    public void save(ConfigWriter configWriter) throws ConfigWriterException {
         Collection<String> registeredProperties = getRegisteredProperties();
+        Map<String,String> attributes = new HashMap<>();
         if (registeredProperties.size() > 0) {
-            xmlWriter.writeStartElement("component");
-            xmlWriter.writeAttribute("name", instanceName);
-            xmlWriter.writeAttribute("type", getConfigurableClass().getName());
-            xmlWriter.writeAttribute("export", "" + isExportable());
-            xmlWriter.writeAttribute("import", "" + isImportable());
-            xmlWriter.writeCharacters(System.lineSeparator());
+            configWriter.writeStartElement("component");
+            configWriter.writeAttribute("name", instanceName);
+            configWriter.writeAttribute("type", getConfigurableClass().getName());
+            configWriter.writeAttribute("export", "" + isExportable());
+            configWriter.writeAttribute("import", "" + isImportable());
+            configWriter.writeRaw(System.lineSeparator());
 
+            configWriter.writeArrayStart("properties");
             for (String propName : registeredProperties) {
                 if (getRaw(propName) == null) {
                     continue;
@@ -963,65 +963,72 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                 if ((val instanceof List)) {
                     //
                     // Must be a string or component list
-                    xmlWriter.writeCharacters("\t");
-                    xmlWriter.writeStartElement("propertylist");
-                    xmlWriter.writeAttribute("name",propName);
-                    xmlWriter.writeCharacters(System.lineSeparator());
+                    configWriter.writeRaw("\t");
+                    configWriter.writeStartElement("propertylist");
+                    configWriter.writeAttribute("name",propName);
+                    configWriter.writeRaw(System.lineSeparator());
+                    configWriter.writeArrayStart("list");
                     for (Object o : (List) val) {
                         if (o instanceof Class) {
-                            xmlWriter.writeCharacters("\t\t");
-                            xmlWriter.writeStartElement("type");
-                            xmlWriter.writeCharacters(((Class) o).getName());
-                            xmlWriter.writeEndElement();
-                            xmlWriter.writeCharacters(System.lineSeparator());
+                            configWriter.writeRaw("\t\t");
+                            configWriter.writeStartElement("type");
+                            configWriter.writeMember(((Class) o).getName());
+                            configWriter.writeEndElement();
+                            configWriter.writeRaw(System.lineSeparator());
                         } else {
-                            xmlWriter.writeCharacters("\t\t");
-                            xmlWriter.writeStartElement("item");
-                            xmlWriter.writeCharacters(o.toString());
-                            xmlWriter.writeEndElement();
-                            xmlWriter.writeCharacters(System.lineSeparator());
+                            configWriter.writeRaw("\t\t");
+                            configWriter.writeStartElement("item");
+                            configWriter.writeMember(o.toString());
+                            configWriter.writeEndElement();
+                            configWriter.writeRaw(System.lineSeparator());
                         }
                     }
-                    xmlWriter.writeCharacters("\t");
-                    xmlWriter.writeEndElement();
-                    xmlWriter.writeCharacters(System.lineSeparator());
+                    configWriter.writeArrayEnd();
+                    configWriter.writeRaw("\t");
+                    configWriter.writeEndElement();
+                    configWriter.writeRaw(System.lineSeparator());
                 } else if (val instanceof Map) {
                     //
                     // Must be a string,string map
-                    xmlWriter.writeCharacters("\t");
-                    xmlWriter.writeStartElement("propertymap");
-                    xmlWriter.writeAttribute("name",propName);
-                    xmlWriter.writeCharacters(System.lineSeparator());
+                    configWriter.writeRaw("\t");
+                    configWriter.writeStartElement("propertymap");
+                    configWriter.writeAttribute("name",propName);
+                    configWriter.writeRaw(System.lineSeparator());
+                    configWriter.writeArrayStart("list");
                     for (Map.Entry<String, String> e : ((Map<String, String>) val).entrySet()) {
-                        xmlWriter.writeCharacters("\t\t");
-                        xmlWriter.writeEmptyElement("entry");
-                        xmlWriter.writeAttribute("key",e.getKey());
-                        xmlWriter.writeAttribute("value",e.getValue());
-                        xmlWriter.writeCharacters(System.lineSeparator());
+                        configWriter.writeRaw("\t\t");
+                        attributes.clear();
+                        attributes.put("key",e.getKey());
+                        attributes.put("value",e.getValue());
+                        configWriter.writeElement("entry",attributes);
+                        configWriter.writeRaw(System.lineSeparator());
                     }
-                    xmlWriter.writeCharacters("\t");
-                    xmlWriter.writeEndElement();
-                    xmlWriter.writeCharacters(System.lineSeparator());
+                    configWriter.writeArrayEnd();
+                    configWriter.writeRaw("\t");
+                    configWriter.writeEndElement();
+                    configWriter.writeRaw(System.lineSeparator());
                 } else {
                     //
                     // Standard property
-                    xmlWriter.writeCharacters("\t");
-                    xmlWriter.writeEmptyElement("property");
-                    xmlWriter.writeAttribute("name",propName);
-                    xmlWriter.writeAttribute("value",getRaw(propName).toString());
-                    xmlWriter.writeCharacters(System.lineSeparator());
+                    configWriter.writeRaw("\t");
+                    attributes.clear();
+                    attributes.put("name",propName);
+                    attributes.put("value",getRaw(propName).toString());
+                    configWriter.writeElement("property",attributes);
+                    configWriter.writeRaw(System.lineSeparator());
                 }
             }
+            configWriter.writeArrayEnd();
 
-            xmlWriter.writeEndElement();
-            xmlWriter.writeCharacters(System.lineSeparator());
+            configWriter.writeEndElement();
+            configWriter.writeRaw(System.lineSeparator());
         } else {
-            xmlWriter.writeEmptyElement("component");
-            xmlWriter.writeAttribute("name", instanceName);
-            xmlWriter.writeAttribute("type", getConfigurableClass().getName());
-            xmlWriter.writeAttribute("export", "" + isExportable());
-            xmlWriter.writeAttribute("import", "" + isImportable());
-            xmlWriter.writeCharacters(System.lineSeparator());
+            attributes.clear();
+            attributes.put("name",instanceName);
+            attributes.put("type",getConfigurableClass().getName());
+            attributes.put("export",""+isExportable());
+            attributes.put("import",""+isImportable());
+            configWriter.writeRaw(System.lineSeparator());
         }
     }
 

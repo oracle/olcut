@@ -30,10 +30,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.management.MBeanServer;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
+import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
 /**
@@ -90,28 +88,35 @@ public class ConfigurationManager implements Cloneable {
     public static final Options EMPTY_OPTIONS = new Options(){ };
     //public static final Options EMPTY_OPTIONS = () -> "";
 
+    /**
+     * Used to support new config file formats at runtime.
+     * Initialised with xml.
+     */
+    private static Map<String,FileFormatFactory> formatFactoryMap = new HashMap<>();
+
+    static {
+        formatFactoryMap.put("xml",new XMLConfigFactory());
+    }
+
     private List<ConfigurationChangeListener> changeListeners =
             new ArrayList<>();
 
     protected Map<String, PropertySheet<? extends Configurable>> symbolTable =
             new LinkedHashMap<>();
 
-    protected Map<String, RawPropertyData> rawPropertyMap =
-            new LinkedHashMap<>();
-    
-    private Map<ConfigWrapper,PropertySheet<? extends Configurable>> configuredComponents =
+    protected Map<ConfigWrapper,PropertySheet<? extends Configurable>> configuredComponents =
             new LinkedHashMap<>();
 
-    private Map<String,PropertySheet<? extends Configurable>> addedComponents =
+    protected Map<String,PropertySheet<? extends Configurable>> addedComponents =
             new LinkedHashMap<>();
 
-    private GlobalProperties globalProperties = new GlobalProperties();
-    
-    private Map<String,SerializedObject> serializedObjects = new HashMap<>();
-    
-    private Map<String,Object> deserializedObjects = new HashMap<>();
+    protected final Map<String, RawPropertyData> rawPropertyMap;
 
-    private GlobalProperties origGlobal;
+    protected final GlobalProperties globalProperties;
+    
+    protected final Map<String,SerializedObject> serializedObjects;
+
+    protected final GlobalProperties origGlobal;
 
     protected boolean showCreations;
 
@@ -127,7 +132,7 @@ public class ConfigurationManager implements Cloneable {
      * Creates a new empty configuration manager. This constructor is only of use in cases when a system configuration
      * is created during runtime.
      */
-    public ConfigurationManager() throws IOException {
+    public ConfigurationManager() throws PropertyException, ConfigLoaderException {
         this(new String[0]);
     }
 
@@ -138,7 +143,7 @@ public class ConfigurationManager implements Cloneable {
      * @param path place to load initial properties from
      * @throws java.io.IOException if an error occurs while loading properties from the location
      */
-    public ConfigurationManager(String path) throws IOException, PropertyException {
+    public ConfigurationManager(String path) throws PropertyException, ConfigLoaderException {
     	this(new String[]{"-"+configFileOption.charName(),path},EMPTY_OPTIONS);
     }
 
@@ -150,7 +155,7 @@ public class ConfigurationManager implements Cloneable {
      * @param url URL to load initial properties from
      * @throws java.io.IOException if an error occurs while loading properties from the URL
      */
-    public ConfigurationManager(URL url) throws IOException, PropertyException {
+    public ConfigurationManager(URL url) throws PropertyException, ConfigLoaderException {
         this(new String[]{"-"+configFileOption.charName(),url.toString()},EMPTY_OPTIONS);
     }
 
@@ -163,7 +168,7 @@ public class ConfigurationManager implements Cloneable {
      * @throws PropertyException Thrown when an invalid property is loaded.
      * @throws IOException Thrown when the configuration file cannot be read.
      */
-    public ConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException, IOException {
+    public ConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
         this(arguments,EMPTY_OPTIONS);
     }
 
@@ -182,7 +187,7 @@ public class ConfigurationManager implements Cloneable {
      * @throws PropertyException Thrown when an invalid property is loaded.
      * @throws IOException Thrown when the configuration file cannot be read.
      */
-    public ConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException, IOException {
+    public ConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
         // Validate the supplied Options struct is coherent and generate a usage statement.
         usage = validateOptions(options);
 
@@ -198,15 +203,20 @@ public class ConfigurationManager implements Cloneable {
         // Parses out configuration files
         List<URL> urls = parseConfigFiles(argumentsList);
 
+        //
+        // Load the configuration files. loadConfiguration can be overridden
+        // to allow non-xml config files.
         configURLs.addAll(urls);
-        SaxLoader saxLoader = new SaxLoader(configURLs, globalProperties);
-        rawPropertyMap = saxLoader.load();
-        origGlobal = new GlobalProperties(globalProperties);
-        for(Map.Entry<String,SerializedObject> e : saxLoader.getSerializedObjects().entrySet()) {
+        URLLoader loader = new URLLoader(configURLs,formatFactoryMap);
+        loader.load();
+        rawPropertyMap = loader.getPropertyMap();
+        globalProperties = loader.getGlobalProperties();
+        serializedObjects = new HashMap<>();
+        for(Map.Entry<String,SerializedObject> e : loader.getSerializedObjects().entrySet()) {
             e.getValue().setConfigurationManager(this);
             serializedObjects.put(e.getKey(), e.getValue());
         }
-        serializedObjects = saxLoader.getSerializedObjects();
+        origGlobal = new GlobalProperties(globalProperties);
 
         //
         // Parses out and sets arguments which override fields in a config file.
@@ -237,6 +247,19 @@ public class ConfigurationManager implements Cloneable {
         if (argumentsList.size() != 0) {
             unnamedArguments = argumentsList.toArray(unnamedArguments);
         }
+    }
+
+    private ConfigurationManager(Map<String, RawPropertyData> newrpm, GlobalProperties newgp, List<ConfigurationChangeListener> newcl, Map<String, PropertySheet<? extends Configurable>> newSymbolTable, Map<String, SerializedObject> newSerializedObjects, GlobalProperties newOrigGlobal) {
+        this.rawPropertyMap = newrpm;
+        this.globalProperties = newgp;
+        this.changeListeners = newcl;
+        this.symbolTable = newSymbolTable;
+        this.serializedObjects = newSerializedObjects;
+        this.origGlobal = newOrigGlobal;
+    }
+
+    public static void addFileFormatFactory(FileFormatFactory f) {
+        formatFactoryMap.put(f.getExtension(),f);
     }
 
     public static String validateOptions(Options options) throws ArgumentException {
@@ -298,6 +321,9 @@ public class ConfigurationManager implements Cloneable {
         }
 
         return builder.toString();
+    }
+
+    protected void loadConfiguration() throws IOException {
     }
 
     /**
@@ -672,16 +698,17 @@ public class ConfigurationManager implements Cloneable {
      * Adds a set of properties at the given URL to the current configuration
      * manager.
      */
-    public void addProperties(URL url) throws IOException, PropertyException {
+    public void addProperties(URL url) throws IOException, ConfigLoaderException {
         configURLs.add(url);
 
         //
         // We'll make local global properties and raw property data containers
         // so that we can manage the merge ourselves.
-        GlobalProperties tgp = new GlobalProperties();
-        SaxLoader saxLoader = new SaxLoader(url, tgp, rawPropertyMap);
-        Map<String, RawPropertyData> trpm = saxLoader.load();
-        for(Map.Entry<String,SerializedObject> e : saxLoader.getSerializedObjects().entrySet()) {
+        URLLoader loader = new URLLoader(configURLs,formatFactoryMap);
+        loader.load();
+        GlobalProperties tgp = loader.getGlobalProperties();
+        Map<String, RawPropertyData> trpm = loader.getPropertyMap();
+        for(Map.Entry<String,SerializedObject> e : loader.getSerializedObjects().entrySet()) {
             e.getValue().setConfigurationManager(this);
             serializedObjects.put(e.getKey(), e.getValue());
         }
@@ -1302,19 +1329,17 @@ public class ConfigurationManager implements Cloneable {
     /** Creates a deep copy of the given CM instance. */
     // This is not tested yet !!!
     public Object clone() throws CloneNotSupportedException {
-        ConfigurationManager cloneCM = (ConfigurationManager) super.clone();
-
-        cloneCM.changeListeners = new ArrayList<>();
-        cloneCM.symbolTable = new LinkedHashMap<>();
+        Map<String,RawPropertyData> newrpm = new HashMap<>(rawPropertyMap);
+        GlobalProperties newgp = new GlobalProperties(globalProperties);
+        List<ConfigurationChangeListener> newcl = new ArrayList<>(changeListeners);
+        Map<String, PropertySheet<? extends Configurable>> newSymbolTable = new LinkedHashMap<>();
         for(String compName : symbolTable.keySet()) {
-            cloneCM.symbolTable.put(compName, (PropertySheet<? extends Configurable>) symbolTable.get(compName).clone());
+            newSymbolTable.put(compName, (PropertySheet<? extends Configurable>) symbolTable.get(compName).clone());
         }
+        Map<String,SerializedObject> newSerializedObjects = new HashMap<>();
+        GlobalProperties newOrigGlobal = new GlobalProperties(origGlobal);
 
-        cloneCM.globalProperties = new GlobalProperties(globalProperties);
-        cloneCM.rawPropertyMap = new HashMap<>(rawPropertyMap);
-
-
-        return cloneCM;
+        return new ConfigurationManager(newrpm,newgp,newcl,newSymbolTable,newSerializedObjects,newOrigGlobal);
     }
 
     /**
@@ -1374,8 +1399,11 @@ public class ConfigurationManager implements Cloneable {
      *                 if an error occurs while writing to the file
      */
     public void save(File file, boolean writeAll) throws IOException {
+        String filename = file.getName();
+        int i = filename.lastIndexOf('.');
+        String extension = i > 0 ? filename.substring(i+1).toLowerCase() : "";
         FileOutputStream fos = new FileOutputStream(file);
-        save(fos, writeAll);
+        save(fos, extension, writeAll);
         fos.close();
     }
 
@@ -1389,80 +1417,87 @@ public class ConfigurationManager implements Cloneable {
      * will be written.
      * @throws IOException 
      */
-    public void save(OutputStream writer, boolean writeAll) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newFactory();
-
-        try {
-            XMLStreamWriter xmlWriter = factory.createXMLStreamWriter(writer,"utf-8");
-            xmlWriter.writeStartDocument("utf-8","1.0");
-            xmlWriter.writeCharacters(System.lineSeparator());
-            xmlWriter.writeComment("OLCUT configuration file");
-            xmlWriter.writeCharacters(System.lineSeparator());
-
-            xmlWriter.writeStartElement("config");
-            xmlWriter.writeCharacters(System.lineSeparator());
-
-            //
-            // Write out the global properties.
-            Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
-
-            for(String propName : origGlobal.keySet()) {
-                //
-                // Changed to lookup in globalProperties as this has
-                // any values overridden on the command line.
-                String propVal = globalProperties.get(propName).toString();
-
-                Matcher matcher = pattern.matcher(propName);
-                propName = matcher.matches() ? matcher.group(1) : propName;
-
-                xmlWriter.writeEmptyElement("property");
-                xmlWriter.writeAttribute("name",propName);
-                xmlWriter.writeAttribute("value",propVal);
-                xmlWriter.writeCharacters(System.lineSeparator());
-            }
-
-            xmlWriter.writeCharacters(System.lineSeparator());
-
-            for (Map.Entry<String, SerializedObject> e : serializedObjects.entrySet()) {
-                xmlWriter.writeEmptyElement("serialized");
-                xmlWriter.writeAttribute("name",e.getValue().getName());
-                xmlWriter.writeAttribute("type",e.getValue().getClassName());
-                xmlWriter.writeAttribute("location",e.getValue().getLocation());
-                xmlWriter.writeCharacters(System.lineSeparator());
-            }
-
-            //
-            // A copy of the raw property data that we can use to keep track of what's
-            // been written.
-            Set<String> allNames = new HashSet<String>(rawPropertyMap.keySet());
-            for(PropertySheet ps : configuredComponents.values()) {
-                ps.save(xmlWriter);
-                xmlWriter.writeCharacters(System.lineSeparator());
-                allNames.remove(ps.getInstanceName());
-            }
-
-            for(PropertySheet ps : addedComponents.values()) {
-                ps.save(xmlWriter);
-                xmlWriter.writeCharacters(System.lineSeparator());
-                allNames.remove(ps.getInstanceName());
-            }
-
-            //
-            // If we're supposed to, write the rest of the stuff.
-            if(writeAll) {
-                for(String instanceName : allNames) {
-                    PropertySheet ps = getPropertySheet(instanceName);
-                    ps.save(xmlWriter);
-                    xmlWriter.writeCharacters(System.lineSeparator());
-                }
-            }
-
-            xmlWriter.writeEndElement();
-            xmlWriter.writeEndDocument();
-            xmlWriter.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Error generating XML file.", e);
+    public void save(OutputStream writer, String extension, boolean writeAll) throws IOException {
+        FileFormatFactory factory = formatFactoryMap.get(extension);
+        if (factory == null) {
+            throw new IllegalArgumentException("Extension " + extension + " does not have a registered FileFormatFactory.");
         }
+        try {
+            ConfigWriter configWriter = factory.getWriter(writer);
+            write(configWriter,writeAll);
+        } catch (ConfigWriterException e) {
+            throw new IOException("Error generating " + extension + " file.", e);
+        }
+    }
+
+    /**
+     * Writes out the configuration to the supplied writer. Closes the writer.
+     * @param writer
+     * @param writeAll
+     * @throws ConfigWriterException
+     */
+    protected void write(ConfigWriter writer, boolean writeAll) throws ConfigWriterException {
+        Map<String,String> attributes = new HashMap<>();
+        writer.writeStartDocument();
+        //
+        // Write out the global properties.
+        Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
+
+        for(String propName : origGlobal.keySet()) {
+            //
+            // Changed to lookup in globalProperties as this has
+            // any values overridden on the command line.
+            String propVal = globalProperties.get(propName).toString();
+
+            Matcher matcher = pattern.matcher(propName);
+            propName = matcher.matches() ? matcher.group(1) : propName;
+
+            attributes.clear();
+            attributes.put(ConfigLoader.NAME,propName);
+            attributes.put(ConfigLoader.VALUE,propVal);
+            writer.writeElement(ConfigLoader.PROPERTY, attributes);
+            writer.writeRaw(System.lineSeparator());
+        }
+
+        writer.writeRaw(System.lineSeparator());
+
+        for (Map.Entry<String, SerializedObject> e : serializedObjects.entrySet()) {
+            attributes.clear();
+            attributes.put(ConfigLoader.NAME,e.getValue().getName());
+            attributes.put(ConfigLoader.TYPE,e.getValue().getClassName());
+            attributes.put(ConfigLoader.LOCATION,e.getValue().getLocation());
+            writer.writeElement(ConfigLoader.SERIALIZED,attributes);
+            writer.writeRaw(System.lineSeparator());
+        }
+
+        //
+        // A copy of the raw property data that we can use to keep track of what's
+        // been written.
+        Set<String> allNames = new HashSet<String>(rawPropertyMap.keySet());
+        for(PropertySheet ps : configuredComponents.values()) {
+            ps.save(writer);
+            writer.writeRaw(System.lineSeparator());
+            allNames.remove(ps.getInstanceName());
+        }
+
+        for(PropertySheet ps : addedComponents.values()) {
+            ps.save(writer);
+            writer.writeRaw(System.lineSeparator());
+            allNames.remove(ps.getInstanceName());
+        }
+
+        //
+        // If we're supposed to, write the rest of the stuff.
+        if(writeAll) {
+            for(String instanceName : allNames) {
+                PropertySheet ps = getPropertySheet(instanceName);
+                ps.save(writer);
+                writer.writeRaw(System.lineSeparator());
+            }
+        }
+
+        writer.writeEndDocument();
+        writer.close();
     }
 
     protected <T extends Configurable> PropertySheet<T> getNewPropertySheet(T conf, String name, ConfigurationManager cm, RawPropertyData rpd) {
