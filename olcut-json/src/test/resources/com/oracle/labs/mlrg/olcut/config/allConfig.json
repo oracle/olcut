@@ -1,0 +1,588 @@
+{
+  "config": [
+    {
+      "config-type": "property",
+      "name": "second-path",
+      "value": "/tmp/second-path.txt"
+    },
+    {
+      "config-type": "property",
+      "name": "third-path",
+      "value": "/tmp/third-path.txt"
+    },
+    {
+      "config-type": "property",
+      "name": "first-path",
+      "value": "/tmp/first-path.txt"
+    },
+    {
+      "config-type": "property",
+      "name": "third-file",
+      "value": "/tmp/third-file.txt"
+    },
+    {
+      "config-type": "property",
+      "name": "first-file",
+      "value": "/tmp/first-file.txt"
+    },
+    {
+      "config-type": "property",
+      "name": "second-file",
+      "value": "/tmp/second-file.txt"
+    },
+    {
+      "config-type": "component",
+      "name": "second-configurable",
+      "type": "com.oracle.labs.mlrg.olcut.config.json.StringConfigurable",
+      "export": "false",
+      "import": "false",
+      "properties": [
+        {
+          "config-type": "property",
+          "name": "one",
+          "value": "alpha"
+        },
+        {
+          "config-type": "property",
+          "name": "two",
+          "value": "beta"
+        },
+        {
+          "config-type": "property",
+          "name": "three",
+          "value": "gamma"
+        }
+      ]
+    },
+    {
+      "config-type": "component",
+      "name": "first-configurable",
+      "type": "com.oracle.labs.mlrg.olcut.config.json.StringConfigurable",
+      "export": "false",
+      "import": "false",
+      "properties": [
+        {
+          "config-type": "property",
+          "name": "one",
+          "value": "A"
+        },
+        {
+          "config-type": "property",
+          "name": "two",
+          "value": "B"
+        },
+        {
+          "config-type": "property",
+          "name": "three",
+          "value": "C"
+        }
+      ]
+    },
+    {
+      "config-type": "component",
+      "name": "all-config",
+      "type": "com.oracle.labs.mlrg.olcut.config.json.AllFieldsConfigurable",
+      "export": "false",
+      "import": "false",
+      "properties": [
+        {
+          "config-type": "property",
+          "name": "floatField",
+          "value": "3.14159"
+        },
+        {
+          "config-type": "propertymap",
+          "name": "mapConfigurableSubclassField",
+          "list": [
+            {
+              "config-type": "entry",
+              "value": "third-configurable",
+              "key": "third"
+            },
+            {
+              "config-type": "entry",
+              "value": "first-configurable",
+              "key": "first"
+            },
+            {
+              "config-type": "entry",
+              "value": "second-configurable",
+              "key": "second"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "doubleField",
+          "value": "3.141592653589793"
+        },
+        {
+          "config-type": "property",
+          "name": "configurableSubclassField",
+          "value": "second-configurable"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "setPathField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "first-path"
+            },
+            {
+              "config-type": "item",
+              "member": "second-path"
+            }
+          ]
+        },
+        {
+          "config-type": "propertymap",
+          "name": "mapDoubleField",
+          "list": [
+            {
+              "config-type": "entry",
+              "value": "2.71828",
+              "key": "e"
+            },
+            {
+              "config-type": "entry",
+              "value": "3.14159",
+              "key": "pi"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "byteField",
+          "value": "123"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "listStringField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "e"
+            },
+            {
+              "config-type": "item",
+              "member": "pi"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "atomicLongField",
+          "value": "123456789"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "listRandomField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "1234"
+            },
+            {
+              "config-type": "item",
+              "member": "12345"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "pathField",
+          "value": "/tmp/a-path.txt"
+        },
+        {
+          "config-type": "property",
+          "name": "intField",
+          "value": "12345"
+        },
+        {
+          "config-type": "property",
+          "name": "FloatField",
+          "value": "3.14159"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "setDoubleField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "2.71828"
+            },
+            {
+              "config-type": "item",
+              "member": "3.14159"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "boolField",
+          "value": "true"
+        },
+        {
+          "config-type": "property",
+          "name": "LongField",
+          "value": "123456789"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "listDoubleField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "2.71828"
+            },
+            {
+              "config-type": "item",
+              "member": "3.14159"
+            }
+          ]
+        },
+        {
+          "config-type": "propertylist",
+          "name": "setConfigurableSubclassField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "first-configurable"
+            },
+            {
+              "config-type": "item",
+              "member": "second-configurable"
+            }
+          ]
+        },
+        {
+          "config-type": "propertylist",
+          "name": "longArrayField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "9223372036854775807"
+            },
+            {
+              "config-type": "item",
+              "member": "9223372036854775806"
+            },
+            {
+              "config-type": "item",
+              "member": "5"
+            }
+          ]
+        },
+        {
+          "config-type": "propertylist",
+          "name": "listConfigurableSubclassField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "first-configurable"
+            },
+            {
+              "config-type": "item",
+              "member": "second-configurable"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "DoubleField",
+          "value": "3.141592653589793"
+        },
+        {
+          "config-type": "property",
+          "name": "randomField",
+          "value": "12345"
+        },
+        {
+          "config-type": "property",
+          "name": "BoolField",
+          "value": "true"
+        },
+        {
+          "config-type": "property",
+          "name": "longField",
+          "value": "123456789"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "shortArrayField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "12345"
+            },
+            {
+              "config-type": "item",
+              "member": "2345"
+            },
+            {
+              "config-type": "item",
+              "member": "345"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "atomicIntegerField",
+          "value": "1"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "doubleArrayField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "1e-16"
+            },
+            {
+              "config-type": "item",
+              "member": "2e-16"
+            },
+            {
+              "config-type": "item",
+              "member": "3.16"
+            }
+          ]
+        },
+        {
+          "config-type": "propertylist",
+          "name": "stringArrayField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "gibbons"
+            },
+            {
+              "config-type": "item",
+              "member": "baboons"
+            },
+            {
+              "config-type": "item",
+              "member": "gorillas"
+            }
+          ]
+        },
+        {
+          "config-type": "propertymap",
+          "name": "mapStringField",
+          "list": [
+            {
+              "config-type": "entry",
+              "value": "A",
+              "key": "first"
+            },
+            {
+              "config-type": "entry",
+              "value": "B",
+              "key": "second"
+            }
+          ]
+        },
+        {
+          "config-type": "propertymap",
+          "name": "mapFileField",
+          "list": [
+            {
+              "config-type": "entry",
+              "value": "third-file",
+              "key": "third"
+            },
+            {
+              "config-type": "entry",
+              "value": "first-file",
+              "key": "first"
+            },
+            {
+              "config-type": "entry",
+              "value": "second-file",
+              "key": "second"
+            }
+          ]
+        },
+        {
+          "config-type": "propertylist",
+          "name": "intArrayField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "123456"
+            },
+            {
+              "config-type": "item",
+              "member": "23456"
+            },
+            {
+              "config-type": "item",
+              "member": "3456"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "shortField",
+          "value": "1234"
+        },
+        {
+          "config-type": "property",
+          "name": "configurableField",
+          "value": "first-configurable"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "configurableArrayField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "first-configurable"
+            },
+            {
+              "config-type": "item",
+              "member": "second-configurable"
+            }
+          ]
+        },
+        {
+          "config-type": "propertylist",
+          "name": "configurableSubclassArrayField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "first-configurable"
+            },
+            {
+              "config-type": "item",
+              "member": "second-configurable"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "integerField",
+          "value": "12345"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "setStringField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "e"
+            },
+            {
+              "config-type": "item",
+              "member": "pi"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "ByteField",
+          "value": "123"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "floatArrayField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "1.1f"
+            },
+            {
+              "config-type": "item",
+              "member": "2.3"
+            },
+            {
+              "config-type": "item",
+              "member": "3.5"
+            }
+          ]
+        },
+        {
+          "config-type": "propertylist",
+          "name": "enumSetField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "A"
+            },
+            {
+              "config-type": "item",
+              "member": "C"
+            },
+            {
+              "config-type": "item",
+              "member": "E"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "fileField",
+          "value": "/tmp/a-file.txt"
+        },
+        {
+          "config-type": "property",
+          "name": "ShortField",
+          "value": "1234"
+        },
+        {
+          "config-type": "property",
+          "name": "stringField",
+          "value": "monkeys"
+        },
+        {
+          "config-type": "propertylist",
+          "name": "byteArrayField",
+          "list": [
+            {
+              "config-type": "item",
+              "member": "123"
+            },
+            {
+              "config-type": "item",
+              "member": "23"
+            },
+            {
+              "config-type": "item",
+              "member": "3"
+            }
+          ]
+        },
+        {
+          "config-type": "property",
+          "name": "enumField",
+          "value": "F"
+        }
+      ]
+    },
+    {
+      "config-type": "component",
+      "name": "third-configurable",
+      "type": "com.oracle.labs.mlrg.olcut.config.json.StringConfigurable",
+      "export": "false",
+      "import": "false",
+      "properties": [
+        {
+          "config-type": "property",
+          "name": "one",
+          "value": "uno"
+        },
+        {
+          "config-type": "property",
+          "name": "two",
+          "value": "dos"
+        },
+        {
+          "config-type": "property",
+          "name": "three",
+          "value": "tres"
+        }
+      ]
+    }
+  ]
+}
