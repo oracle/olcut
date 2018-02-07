@@ -1028,6 +1028,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
             attributes.put("type",getConfigurableClass().getName());
             attributes.put("export",""+isExportable());
             attributes.put("import",""+isImportable());
+            configWriter.writeElement(ConfigLoader.PROPERTY,attributes);
             configWriter.writeRaw(System.lineSeparator());
         }
     }
