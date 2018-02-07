@@ -14,6 +14,7 @@ public interface ConfigLoader {
     public static final String PROPERTYLIST = "propertylist";
     public static final String PROPERTYMAP = "propertymap";
     public static final String NAME = "name";
+    public static final String KEY = "key";
     public static final String VALUE = "value";
     public static final String SERIALIZED = "serialized";
     public static final String TYPE = "type";
@@ -21,6 +22,12 @@ public interface ConfigLoader {
     public static final String ENTRY = "entry";
     public static final String FILE = "file";
     public static final String LOCATION = "location";
+    public static final String PROPERTIES = "properties";
+    public static final String INHERIT = "inherit";
+    public static final String EXPORT = "export";
+    public static final String IMPORT = "import";
+    public static final String ENTRIES = "entries";
+    public static final String LEASETIME = "leasetime";
 
     public void load(URL url) throws ConfigLoaderException, IOException;
 
