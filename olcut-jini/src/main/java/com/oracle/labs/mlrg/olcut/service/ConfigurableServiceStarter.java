@@ -24,6 +24,7 @@
 
 package com.oracle.labs.mlrg.olcut.service;
 
+import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.util.LabsLogFormatter;
 import com.oracle.labs.mlrg.olcut.config.Config;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
@@ -164,7 +165,7 @@ public class ConfigurableServiceStarter implements Configurable {
             });
 
             starter.waitForServices();
-        } catch (IOException | PropertyException ex) {
+        } catch (ConfigLoaderException | PropertyException ex) {
             logger.log(Level.SEVERE, "Error parsing configuration file: " + configFile, ex);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Other error", ex);
