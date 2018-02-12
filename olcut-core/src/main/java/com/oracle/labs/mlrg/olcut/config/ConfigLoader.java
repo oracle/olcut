@@ -28,6 +28,10 @@ public interface ConfigLoader {
     public static final String IMPORT = "import";
     public static final String ENTRIES = "entries";
     public static final String LEASETIME = "leasetime";
+    public static final String GLOBALPROPERTIES = "global-properties";
+    public static final String COMPONENTS = "components";
+    public static final String SERIALIZEDOBJECTS = "serialized-objects";
+    public static final String FILES = "config-files";
 
     public void load(URL url) throws ConfigLoaderException, IOException;
 

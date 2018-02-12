@@ -1437,12 +1437,12 @@ public class ConfigurationManager implements Cloneable {
      * @throws ConfigWriterException
      */
     protected void write(ConfigWriter writer, boolean writeAll) throws ConfigWriterException {
-        Map<String,String> attributes = new HashMap<>();
         writer.writeStartDocument();
         //
         // Write out the global properties.
         Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
 
+        Map<String,String> properties = new HashMap<>();
         for(String propName : origGlobal.keySet()) {
             //
             // Changed to lookup in globalProperties as this has
@@ -1452,37 +1452,26 @@ public class ConfigurationManager implements Cloneable {
             Matcher matcher = pattern.matcher(propName);
             propName = matcher.matches() ? matcher.group(1) : propName;
 
-            attributes.clear();
-            attributes.put(ConfigLoader.NAME,propName);
-            attributes.put(ConfigLoader.VALUE,propVal);
-            writer.writeElement(ConfigLoader.PROPERTY, attributes);
-            writer.writeRaw(System.lineSeparator());
+            properties.put(propName,propVal);
+        }
+        writer.writeGlobalProperties(properties);
+
+        if (!serializedObjects.isEmpty()) {
+            writer.writeSerializedObjects(serializedObjects);
         }
 
-        writer.writeRaw(System.lineSeparator());
-
-        for (Map.Entry<String, SerializedObject> e : serializedObjects.entrySet()) {
-            attributes.clear();
-            attributes.put(ConfigLoader.NAME,e.getValue().getName());
-            attributes.put(ConfigLoader.TYPE,e.getValue().getClassName());
-            attributes.put(ConfigLoader.LOCATION,e.getValue().getLocation());
-            writer.writeElement(ConfigLoader.SERIALIZED,attributes);
-            writer.writeRaw(System.lineSeparator());
-        }
-
+        writer.writeStartComponents();
         //
         // A copy of the raw property data that we can use to keep track of what's
         // been written.
-        Set<String> allNames = new HashSet<String>(rawPropertyMap.keySet());
+        Set<String> allNames = new HashSet<>(rawPropertyMap.keySet());
         for(PropertySheet ps : configuredComponents.values()) {
             ps.save(writer);
-            writer.writeRaw(System.lineSeparator());
             allNames.remove(ps.getInstanceName());
         }
 
         for(PropertySheet ps : addedComponents.values()) {
             ps.save(writer);
-            writer.writeRaw(System.lineSeparator());
             allNames.remove(ps.getInstanceName());
         }
 
@@ -1492,9 +1481,9 @@ public class ConfigurationManager implements Cloneable {
             for(String instanceName : allNames) {
                 PropertySheet ps = getPropertySheet(instanceName);
                 ps.save(writer);
-                writer.writeRaw(System.lineSeparator());
             }
         }
+        writer.writeEndComponents();
 
         writer.writeEndDocument();
         writer.close();

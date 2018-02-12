@@ -90,6 +90,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         exportable = rpd.isExportable();
         importable = rpd.isImportable();
         serializedForm = rpd.getSerializedForm();
+        this.rpd = rpd;
 
         processAnnotations(this, confClass);
 
@@ -946,91 +947,30 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     public void save(ConfigWriter configWriter) throws ConfigWriterException {
         Collection<String> registeredProperties = getRegisteredProperties();
         Map<String,String> attributes = new HashMap<>();
-        if (registeredProperties.size() > 0) {
-            configWriter.writeStartElement("component");
-            configWriter.writeAttribute("name", instanceName);
-            configWriter.writeAttribute("type", getConfigurableClass().getName());
-            configWriter.writeAttribute("export", "" + isExportable());
-            configWriter.writeAttribute("import", "" + isImportable());
-            configWriter.writeRaw(System.lineSeparator());
+        Map<String,Object> properties = new HashMap<>();
 
-            configWriter.writeArrayStart("properties");
-            for (String propName : registeredProperties) {
-                if (getRaw(propName) == null) {
-                    continue;
-                }  // if the property was not defined within the xml file
-                Object val = getRaw(propName);
-                if ((val instanceof List)) {
-                    //
-                    // Must be a string or component list
-                    configWriter.writeRaw("\t");
-                    configWriter.writeStartElement("propertylist");
-                    configWriter.writeAttribute("name",propName);
-                    configWriter.writeRaw(System.lineSeparator());
-                    configWriter.writeArrayStart("list");
-                    for (Object o : (List) val) {
-                        if (o instanceof Class) {
-                            configWriter.writeRaw("\t\t");
-                            configWriter.writeStartElement("type");
-                            configWriter.writeMember(((Class) o).getName());
-                            configWriter.writeEndElement();
-                            configWriter.writeRaw(System.lineSeparator());
-                        } else {
-                            configWriter.writeRaw("\t\t");
-                            configWriter.writeStartElement("item");
-                            configWriter.writeMember(o.toString());
-                            configWriter.writeEndElement();
-                            configWriter.writeRaw(System.lineSeparator());
-                        }
-                    }
-                    configWriter.writeArrayEnd();
-                    configWriter.writeRaw("\t");
-                    configWriter.writeEndElement();
-                    configWriter.writeRaw(System.lineSeparator());
-                } else if (val instanceof Map) {
-                    //
-                    // Must be a string,string map
-                    configWriter.writeRaw("\t");
-                    configWriter.writeStartElement("propertymap");
-                    configWriter.writeAttribute("name",propName);
-                    configWriter.writeRaw(System.lineSeparator());
-                    configWriter.writeArrayStart("list");
-                    for (Map.Entry<String, String> e : ((Map<String, String>) val).entrySet()) {
-                        configWriter.writeRaw("\t\t");
-                        attributes.clear();
-                        attributes.put("key",e.getKey());
-                        attributes.put("value",e.getValue());
-                        configWriter.writeElement("entry",attributes);
-                        configWriter.writeRaw(System.lineSeparator());
-                    }
-                    configWriter.writeArrayEnd();
-                    configWriter.writeRaw("\t");
-                    configWriter.writeEndElement();
-                    configWriter.writeRaw(System.lineSeparator());
-                } else {
-                    //
-                    // Standard property
-                    configWriter.writeRaw("\t");
-                    attributes.clear();
-                    attributes.put("name",propName);
-                    attributes.put("value",getRaw(propName).toString());
-                    configWriter.writeElement("property",attributes);
-                    configWriter.writeRaw(System.lineSeparator());
-                }
-            }
-            configWriter.writeArrayEnd();
-
-            configWriter.writeEndElement();
-            configWriter.writeRaw(System.lineSeparator());
-        } else {
-            attributes.clear();
-            attributes.put("name",instanceName);
-            attributes.put("type",getConfigurableClass().getName());
-            attributes.put("export",""+isExportable());
-            attributes.put("import",""+isImportable());
-            configWriter.writeElement(ConfigLoader.PROPERTY,attributes);
-            configWriter.writeRaw(System.lineSeparator());
+        attributes.put(ConfigLoader.NAME,instanceName);
+        attributes.put(ConfigLoader.TYPE,getConfigurableClass().getName());
+        attributes.put(ConfigLoader.IMPORT,""+isImportable());
+        attributes.put(ConfigLoader.EXPORT,""+isExportable());
+        if (rpd.getLeaseTime() > 0) {
+            attributes.put(ConfigLoader.LEASETIME, "" + rpd.getLeaseTime());
         }
+        if (serializedForm != null) {
+            attributes.put(ConfigLoader.SERIALIZED,serializedForm);
+        }
+        if (rpd.getEntriesName() != null) {
+            attributes.put(ConfigLoader.ENTRIES,rpd.getEntriesName());
+        }
+
+        for (String propName : registeredProperties) {
+            Object propVal = getRaw(propName);
+            if (propVal != null) {
+                properties.put(propName,propVal);
+            }
+        }
+
+        configWriter.writeComponent(attributes,properties);
     }
 
 }

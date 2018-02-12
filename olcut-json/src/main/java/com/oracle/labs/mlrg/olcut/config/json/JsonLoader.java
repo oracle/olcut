@@ -21,7 +21,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,48 +93,45 @@ public class JsonLoader implements ConfigLoader {
         ObjectMapper mapper = new ObjectMapper();
         try {
             parser.nextToken(); // now currentToken == START_OBJECT
-            parser.nextToken(); // now currentToken == CONFIG
+            if (parser.nextToken() == null) {
+                throw new ConfigLoaderException("Failed to parse JSON, did not start with " + ConfigLoader.CONFIG + " object.");
+            } // now currentToken == CONFIG
             if (parser.currentName().equals(ConfigLoader.CONFIG)) {
-                if (parser.nextToken() == JsonToken.START_ARRAY) {
-                    while (parser.nextToken() == JsonToken.START_OBJECT) {
-                        ObjectNode node = mapper.readTree(parser);
-                        String nodeType = node.get(JsonLoader.CONFIG_TYPE).textValue();
-                        switch (nodeType) {
-                            case PROPERTY:
-                                parseGlobalProperty(node);
-                                break;
-                            case FILE:
-                                parseFile(node);
-                                break;
-                            case COMPONENT:
-                                parseComponent(node);
-                                break;
-                            case SERIALIZED:
-                                parseSerializedObject(node);
-                                break;
-                            default:
-                                throw new ConfigLoaderException("Unknown node type " + nodeType);
-                        }
+                parser.nextToken();
+                ObjectNode node = mapper.readTree(parser);
+                ObjectNode globalPropertiesNode = (ObjectNode) node.get(ConfigLoader.GLOBALPROPERTIES);
+                ArrayNode filesNode = (ArrayNode) node.get(ConfigLoader.FILES);
+                ArrayNode serializedObjectsNode = (ArrayNode) node.get(ConfigLoader.SERIALIZEDOBJECTS);
+                ArrayNode componentsNode = (ArrayNode) node.get(ConfigLoader.COMPONENTS);
+                if (globalPropertiesNode != null) {
+                    Iterator<Entry<String,JsonNode>> itr = globalPropertiesNode.fields();
+                    while (itr.hasNext()) {
+                        Entry<String,JsonNode> e = itr.next();
+                        globalProperties.setValue(e.getKey(),e.getValue().textValue());
                     }
-                } else {
-                    throw new ConfigLoaderException("Did not start with " + ConfigLoader.CONFIG + " array.");
                 }
+                if (filesNode != null) {
+                    for (JsonNode file : filesNode) {
+                        parseFile((ObjectNode)file);
+                    }
+                }
+                if (serializedObjectsNode != null) {
+                    for (JsonNode serialized : serializedObjectsNode) {
+                        parseSerializedObject((ObjectNode)serialized);
+                    }
+                }
+                if (componentsNode != null) {
+                    for (JsonNode component : componentsNode) {
+                        parseComponent((ObjectNode)component);
+                    }
+                }
+
             } else {
-                throw new ConfigLoaderException("Did not start with " + ConfigLoader.CONFIG + " array.");
+                throw new ConfigLoaderException("Did not start with " + ConfigLoader.CONFIG + " object.");
             }
         } catch (IOException | ClassCastException e) {
             throw new ConfigLoaderException(e);
         }
-    }
-
-    protected void parseGlobalProperty(ObjectNode node) {
-        JsonNode name = node.get(ConfigLoader.NAME);
-        JsonNode value = node.get(ConfigLoader.VALUE);
-        if (name == null || value == null) {
-            throw new ConfigLoaderException("Property element must have "
-                    + "'name' and 'value' attributes, found " + node.toString());
-        }
-        globalProperties.setValue(name.textValue(), value.textValue());
     }
 
     protected void parseComponent(ObjectNode node) {
@@ -219,104 +218,90 @@ public class JsonLoader implements ConfigLoader {
         String serializedForm = serializedFormNode != null ? serializedFormNode.textValue() : null;
         rpd.setSerializedForm(serializedForm);
 
-        ArrayNode properties = (ArrayNode) node.get(ConfigLoader.PROPERTIES);
-        for (JsonNode n : properties) {
-            ObjectNode propNode = (ObjectNode) n;
-            String nodeType = propNode.get(JsonLoader.CONFIG_TYPE).textValue();
-            JsonNode name;
-            JsonNode value;
-            ArrayNode list;
-            switch (nodeType) {
-                case PROPERTY:
-                    name = propNode.get(ConfigLoader.NAME);
-                    value = propNode.get(ConfigLoader.VALUE);
-                    if (name == null || value == null) {
-                        throw new ConfigLoaderException("Property element must have "
-                                + "'name' and 'value' attributes, found " + node.toString());
-                    }
-                    rpd.add(name.textValue(),value.textValue());
-                    break;
-                case PROPERTYLIST:
-                    name = propNode.get(ConfigLoader.NAME);
-                    list = (ArrayNode) propNode.get(JsonLoader.LIST);
-                    ArrayList valueList = new ArrayList();
-                    for (JsonNode element : list) {
-                        ObjectNode listNode = (ObjectNode) element;
-                        String elementType = listNode.get(JsonLoader.CONFIG_TYPE).textValue();
-                        String member = listNode.get(JsonLoader.MEMBER).textValue();
-                        if (elementType != null) {
-                            switch (elementType) {
+        ObjectNode properties = (ObjectNode) node.get(ConfigLoader.PROPERTIES);
+        // properties is null if there are no properties specified in the json
+        if (properties != null) {
+            Iterator<Entry<String, JsonNode>> fieldsItr = properties.fields();
+            while (fieldsItr.hasNext()) {
+                Entry<String, JsonNode> e = fieldsItr.next();
+                String propName = e.getKey();
+                if (e.getValue() instanceof ArrayNode) {
+                    // Must be list
+                    ArrayList listOutput = new ArrayList();
+                    ArrayNode listNode = (ArrayNode) e.getValue();
+                    for (JsonNode element : listNode) {
+                        if (element.size() > 1) {
+                            throw new ConfigLoaderException("Too many elements in a propertylist item, found " + element);
+                        }
+                        Iterator<Entry<String, JsonNode>> listElementItr = element.fields();
+                        while (listElementItr.hasNext()) {
+                            Entry<String, JsonNode> elementEntry = listElementItr.next();
+                            String elementName = elementEntry.getKey();
+                            switch (elementName) {
                                 case ConfigLoader.ITEM:
-                                    valueList.add(member);
+                                    listOutput.add(elementEntry.getValue().textValue());
                                     break;
                                 case ConfigLoader.TYPE:
                                     try {
-                                        valueList.add(Class.forName(member));
+                                        listOutput.add(Class.forName(elementEntry.getValue().textValue()));
                                     } catch (ClassNotFoundException cnfe) {
                                         throw new ConfigLoaderException("Unable to find class "
-                                                + member + " in component " + curComponent + ", propertylist " + name);
+                                                + elementEntry.getValue().textValue() + " in component " + curComponent + ", propertylist " + propName);
                                     }
                                     break;
                                 default:
-                                    throw new ConfigLoaderException("Unknown node in component " + curComponent + ", propertylist " + name + ", node = " + node.toString());
+                                    throw new ConfigLoaderException("Unknown node in component " + curComponent + ", propertylist " + propName + ", node = " + e.getValue().toString());
                             }
+                        }
+                    }
+                    rpd.add(propName, listOutput);
+                } else if (e.getValue() instanceof ObjectNode) {
+                    // Must be map
+                    Map<String, String> mapOutput = new HashMap<>();
+                    Iterator<Entry<String, JsonNode>> mapElementItr = e.getValue().fields();
+                    while (mapElementItr.hasNext()) {
+                        Entry<String, JsonNode> mapEntry = mapElementItr.next();
+                        if (mapEntry.getValue().isTextual()) {
+                            mapOutput.put(mapEntry.getKey(), mapEntry.getValue().textValue());
                         } else {
-                            throw new ConfigLoaderException("Unknown node in component " + curComponent + ", propertylist " + name + ", node = " + node.toString());
+                            throw new ConfigLoaderException("Unknown node in component " + curComponent + ", propertymap " + propName + ", node = " + e.getValue().toString());
                         }
                     }
-                    rpd.add(name.textValue(),valueList);
-                    break;
-                case PROPERTYMAP:
-                    name = propNode.get(ConfigLoader.NAME);
-                    list = (ArrayNode) propNode.get(JsonLoader.LIST);
-                    Map<String,String> map = new HashMap<>();
-
-                    for (JsonNode element : list) {
-                        ObjectNode listNode = (ObjectNode) element;
-                        JsonNode key = listNode.get(ConfigLoader.KEY);
-                        value = listNode.get(ConfigLoader.VALUE);
-                        if (key == null || value == null) {
-                            throw new ConfigLoaderException("Entry element must have "
-                                    + "'key' and 'value' attributes, found " + node.toString());
-                        } else if (map.containsKey(key.textValue())) {
-                            throw new ConfigLoaderException("Repeated entry in map, key = " + key + " already exists in component " + curComponent);
-                        }
-                        map.put(key.textValue(), value.textValue());
-                    }
-                    rpd.add(name.textValue(),map);
-                    break;
-                default:
-                    throw new ConfigLoaderException("Unknown node in component " + curComponent + ", node = " + node.toString());
+                    rpd.add(propName, mapOutput);
+                } else {
+                    // Generic property.
+                    rpd.add(propName, e.getValue().textValue());
+                }
             }
         }
         rpdMap.put(rpd.getName(),rpd);
     }
 
     protected void parseFile(ObjectNode node) {
-        String name = node.get(ConfigLoader.NAME).textValue();
-        String value = node.get(ConfigLoader.VALUE).textValue();
+        JsonNode name = node.get(ConfigLoader.NAME);
+        JsonNode value = node.get(ConfigLoader.VALUE);
         if (name == null || value == null) {
             throw new ConfigLoaderException("File element must have "
                     + "'name' and 'value' attributes, found " + node.toString());
         }
         try {
-            URL newURL = ConfigurationManager.class.getResource(value);
+            URL newURL = ConfigurationManager.class.getResource(value.textValue());
             if (newURL == null) {
-                newURL = (new File(value)).toURI().toURL();
+                newURL = (new File(value.textValue())).toURI().toURL();
             }
             parent.addURL(newURL);
         } catch (MalformedURLException ex) {
-            throw new ConfigLoaderException(ex, "Incorrectly formatted file element " + name + " with value " + value);
+            throw new ConfigLoaderException(ex, "Incorrectly formatted file element " + name.textValue() + " with value " + value.textValue());
         }
     }
 
     protected void parseSerializedObject(ObjectNode node) {
-        String name = node.get(ConfigLoader.NAME).textValue();
-        String type = node.get(ConfigLoader.TYPE).textValue();
-        String location = node.get(ConfigLoader.LOCATION).textValue();
+        JsonNode name = node.get(ConfigLoader.NAME);
+        JsonNode type = node.get(ConfigLoader.TYPE);
+        JsonNode location = node.get(ConfigLoader.LOCATION);
         if ((name == null) || (type == null) || (location == null)) {
             throw new ConfigLoaderException("Serialized element must have 'name', 'type' and 'location' elements, found " + node.toString());
         }
-        serializedObjects.put(name, new SerializedObject(name, location, type));
+        serializedObjects.put(name.textValue(), new SerializedObject(name.textValue(), location.textValue(), type.textValue()));
     }
 }
