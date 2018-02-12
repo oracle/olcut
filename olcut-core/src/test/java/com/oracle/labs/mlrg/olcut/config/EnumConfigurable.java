@@ -15,13 +15,13 @@ public class EnumConfigurable implements Configurable {
     public enum Type { A, B, C, D, E, F};
 
     @Config
-    Type enum1;
+    public Type enum1;
 
     @Config
-    Type enum2 = Type.A;
+    public Type enum2 = Type.A;
 
     @Config
-    EnumSet<Type> enumSet1 = EnumSet.of(Type.A,Type.F);
+    public EnumSet<Type> enumSet1 = EnumSet.of(Type.A,Type.F);
 
     @Override
     public boolean equals(Object obj) {

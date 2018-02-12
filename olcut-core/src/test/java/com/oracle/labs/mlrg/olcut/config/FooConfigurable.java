@@ -8,7 +8,8 @@ public class FooConfigurable implements Configurable {
     @Config
     public String name;
 
-    @Config int value;
+    @Config
+    public int value;
 
     public FooConfigurable(String name, int value) {
         this.name = name;
