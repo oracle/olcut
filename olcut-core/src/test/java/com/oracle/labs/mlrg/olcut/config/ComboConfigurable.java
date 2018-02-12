@@ -10,9 +10,9 @@ public class ComboConfigurable implements Configurable {
     private static final Logger logger = Logger.getLogger(ComboConfigurable.class.getName());
 
     @Config
-    String alpha = "alpha";
+    public String alpha = "alpha";
 
     @Config
-    StringConfigurable sc;
+    public StringConfigurable sc;
 
 }

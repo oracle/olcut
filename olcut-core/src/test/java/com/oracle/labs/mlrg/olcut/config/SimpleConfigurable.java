@@ -10,7 +10,7 @@ public class SimpleConfigurable implements Configurable {
     private static final Logger logger = Logger.getLogger(SimpleConfigurable.class.getName());
 
     @Config
-    int simple = 1;
+    public int simple = 1;
 
     public Level getLogLevel() {
         return logger.getLevel();

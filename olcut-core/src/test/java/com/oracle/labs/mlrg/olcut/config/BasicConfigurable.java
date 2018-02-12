@@ -10,25 +10,25 @@ public class BasicConfigurable implements Configurable {
     private static final Logger logger = Logger.getLogger(BasicConfigurable.class.getName());
     
     @Config
-    String s = "default";
+    public String s = "default";
 
     @Config
-    int i = 16;
+    public int i = 16;
     
     @Config
-    Integer bigI = 17;
+    public Integer bigI = 17;
 
     @Config
-    long l = 18;
+    public long l = 18;
     
     @Config
-    Long bigL = 19L;
+    public Long bigL = 19L;
     
     @Config
-    double d = 21;
+    public double d = 21;
     
     @Config
-    Double bigD = 22d;
+    public Double bigD = 22d;
 
     @Override
     public boolean equals(Object o) {
