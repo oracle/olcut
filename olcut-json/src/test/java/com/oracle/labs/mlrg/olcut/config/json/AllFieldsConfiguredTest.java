@@ -1,8 +1,10 @@
 package com.oracle.labs.mlrg.olcut.config.json;
 
+import com.oracle.labs.mlrg.olcut.config.AllFieldsConfigurable;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
+import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import org.junit.Before;
 import org.junit.Test;
 

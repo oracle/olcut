@@ -1,0 +1,18 @@
+{
+  "config" : {
+    "global-properties" : { },
+    "components" : [ {
+      "name" : "stringConfigSubclass",
+      "type" : "com.oracle.labs.mlrg.olcut.config.StringleConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "four" : "d",
+        "one" : "a",
+        "five" : "e",
+        "two" : "b",
+        "three" : "c"
+      }
+    } ]
+  }
+}
