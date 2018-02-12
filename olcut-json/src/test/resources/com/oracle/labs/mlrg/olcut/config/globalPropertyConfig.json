@@ -1,0 +1,128 @@
+{
+  "config": {
+    "global-properties": {
+      "a": "alpha",
+      "b": "beta",
+      "c": "charlie",
+      "aprime" : "${a}",
+      "adprime" : "${aprime}",
+      "foo" : "${a}/bar",
+      "home" : "${user.home}/Projects/LabsUtil",
+      "apath" : "/tmp/${a}"
+    },
+    "components": [
+      {
+        "name": "unknown",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "${d}",
+          "two": "${e}",
+          "three": "${f}"
+        }
+      },
+      {
+        "name": "badlyformed",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "${a${b}}",
+          "two": "${b$}",
+          "three": "${a c}"
+        }
+      },
+      {
+        "name": "simple",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "${a}",
+          "two": "${b}",
+          "three": "${c}"
+        }
+      },
+      {
+        "name": "compound",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "${a}/${b}",
+          "two": "${b}${c}",
+          "three": "${c}:${a}"
+        }
+      },
+      {
+        "name": "nonglobal",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "${a",
+          "two": "$b}",
+          "three": "$c"
+        }
+      },
+      {
+        "name": "recurse",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "${a}",
+          "two": "${aprime}",
+          "three": "${adprime}"
+        }
+      },
+      {
+        "name": "recurse2",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "${foo}",
+          "two": "x",
+          "three": "y"
+        }
+      },
+      {
+        "name": "recurse3",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "${apath}",
+          "two": "${apath}/bpath",
+          "three": "y"
+        }
+      },
+      {
+        "name": "compoundrecurse",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "one ${b}/${aprime}",
+          "two": "two ${c}/${aprime}/${b}/${adprime}",
+          "three": "three ${adprime}/${b}/${c}"
+        }
+      },
+      {
+        "name": "sysprops",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "${home}/jini/jsk-all.policy",
+          "two": "two",
+          "three": "three"
+        }
+      },
+      {
+        "name": "distinguished",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "${gp.hostName}",
+          "two": "two",
+          "three": "three"
+        }
+      },
+      {
+        "name": "listTest",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringListConfigurable",
+        "properties": {
+          "strings" : [
+            { "item" : "${a}" },
+            { "item" : "${b}" },
+            { "item" : "${a}/${b}" },
+            { "item" : "intro/${b}" },
+            { "item" : "${a}/extro" }
+          ]
+        }
+      }
+    ]
+  }
+}
