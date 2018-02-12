@@ -2,6 +2,7 @@ package com.oracle.labs.mlrg.olcut.config.json;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriter;
@@ -37,6 +38,7 @@ public class JsonConfigFactory implements FileFormatFactory {
     public ConfigWriter getWriter(OutputStream writer) throws ConfigWriterException {
         try {
             JsonGenerator jsonWriter = factory.createGenerator(writer);
+            jsonWriter.setPrettyPrinter(new DefaultPrettyPrinter());
             return new JsonConfigWriter(jsonWriter);
         } catch (IOException e) {
             throw new ConfigWriterException(e);
