@@ -1443,7 +1443,7 @@ public class ConfigurationManager implements Cloneable {
         Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
 
         Map<String,String> properties = new HashMap<>();
-        for(String propName : origGlobal.keySet()) {
+        for (String propName : origGlobal.keySet()) {
             //
             // Changed to lookup in globalProperties as this has
             // any values overridden on the command line.
@@ -1465,19 +1465,19 @@ public class ConfigurationManager implements Cloneable {
         // A copy of the raw property data that we can use to keep track of what's
         // been written.
         Set<String> allNames = new HashSet<>(rawPropertyMap.keySet());
-        for(PropertySheet ps : configuredComponents.values()) {
+        for (PropertySheet ps : configuredComponents.values()) {
             ps.save(writer);
             allNames.remove(ps.getInstanceName());
         }
 
-        for(PropertySheet ps : addedComponents.values()) {
+        for (PropertySheet ps : addedComponents.values()) {
             ps.save(writer);
             allNames.remove(ps.getInstanceName());
         }
 
         //
         // If we're supposed to, write the rest of the stuff.
-        if(writeAll) {
+        if (writeAll) {
             for(String instanceName : allNames) {
                 PropertySheet ps = getPropertySheet(instanceName);
                 ps.save(writer);
