@@ -45,11 +45,13 @@ public class JsonConfigWriter implements ConfigWriter {
     @Override
     public void writeGlobalProperties(Map<String, String> props) throws ConfigWriterException {
         try {
-            writer.writeObjectFieldStart(ConfigLoader.GLOBALPROPERTIES);
-            for (Entry<String,String> e : props.entrySet()) {
-                writer.writeStringField(e.getKey(),e.getValue());
+            if (!props.isEmpty()) {
+                writer.writeObjectFieldStart(ConfigLoader.GLOBALPROPERTIES);
+                for (Entry<String, String> e : props.entrySet()) {
+                    writer.writeStringField(e.getKey(), e.getValue());
+                }
+                writer.writeEndObject();
             }
-            writer.writeEndObject();
         } catch (IOException e) {
             throw new ConfigWriterException(e);
         }
@@ -58,15 +60,17 @@ public class JsonConfigWriter implements ConfigWriter {
     @Override
     public void writeSerializedObjects(Map<String, SerializedObject> map) throws ConfigWriterException {
         try {
-            writer.writeArrayFieldStart(ConfigLoader.SERIALIZEDOBJECTS);
-            for (Entry<String,SerializedObject> e : map.entrySet()) {
-                writer.writeStartObject();
-                writer.writeStringField(ConfigLoader.NAME,e.getValue().getName());
-                writer.writeStringField(ConfigLoader.TYPE,e.getValue().getClassName());
-                writer.writeStringField(ConfigLoader.LOCATION,e.getValue().getLocation());
-                writer.writeEndObject();
+            if (!map.isEmpty()) {
+                writer.writeArrayFieldStart(ConfigLoader.SERIALIZEDOBJECTS);
+                for (Entry<String, SerializedObject> e : map.entrySet()) {
+                    writer.writeStartObject();
+                    writer.writeStringField(ConfigLoader.NAME, e.getValue().getName());
+                    writer.writeStringField(ConfigLoader.TYPE, e.getValue().getClassName());
+                    writer.writeStringField(ConfigLoader.LOCATION, e.getValue().getLocation());
+                    writer.writeEndObject();
+                }
+                writer.writeEndArray();
             }
-            writer.writeEndArray();
         } catch (IOException e) {
             throw new ConfigWriterException(e);
         }
