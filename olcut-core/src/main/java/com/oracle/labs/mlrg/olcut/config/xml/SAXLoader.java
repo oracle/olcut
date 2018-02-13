@@ -153,16 +153,16 @@ public class SAXLoader implements ConfigLoader {
                     // nothing to do
                     break;
                 case COMPONENT:
-                    String curComponent = attributes.getValue("name");
-                    String curType = attributes.getValue("type");
-                    String override = attributes.getValue("inherit");
-                    String export = attributes.getValue("export");
-                    String entriesName = attributes.getValue("entries");
-                    String serializedForm = attributes.getValue("serialized");
+                    String curComponent = attributes.getValue(ConfigLoader.NAME);
+                    String curType = attributes.getValue(ConfigLoader.TYPE);
+                    String override = attributes.getValue(ConfigLoader.INHERIT);
+                    String export = attributes.getValue(ConfigLoader.EXPORT);
+                    String entriesName = attributes.getValue(ConfigLoader.ENTRIES);
+                    String serializedForm = attributes.getValue(ConfigLoader.SERIALIZED);
                     boolean exportable = export != null && Boolean.valueOf(export);
-                    String imp = attributes.getValue("import");
+                    String imp = attributes.getValue(ConfigLoader.IMPORT);
                     boolean importable = imp != null && Boolean.valueOf(imp);
-                    String lt = attributes.getValue("leasetime");
+                    String lt = attributes.getValue(ConfigLoader.LEASETIME);
                     if (export == null && lt != null) {
                         throw new SAXParseException("lease timeout "
                                 + lt
@@ -240,8 +240,8 @@ public class SAXLoader implements ConfigLoader {
                     rpd.setSerializedForm(serializedForm);
                     break;
                 case PROPERTY: {
-                    String name = attributes.getValue("name");
-                    String value = attributes.getValue("value");
+                    String name = attributes.getValue(ConfigLoader.NAME);
+                    String value = attributes.getValue(ConfigLoader.VALUE);
                     if (attributes.getLength() != 2 || name == null || value == null) {
                         throw new SAXParseException("property element must only have "
                                 + "'name' and 'value' attributes",
@@ -262,7 +262,7 @@ public class SAXLoader implements ConfigLoader {
                     break;
                 }
                 case PROPERTYLIST:
-                    itemListName = attributes.getValue("name");
+                    itemListName = attributes.getValue(ConfigLoader.NAME);
                     if (attributes.getLength() != 1 || itemListName == null) {
                         throw new SAXParseException("list element must only have "
                                 + "the 'name' attribute", locator);
@@ -280,16 +280,16 @@ public class SAXLoader implements ConfigLoader {
                     curItem = new StringBuilder();
                     break;
                 case PROPERTYMAP:
-                    mapName = attributes.getValue("name");
+                    mapName = attributes.getValue(ConfigLoader.NAME);
                     if (attributes.getLength() != 1 || mapName == null) {
                         throw new SAXParseException("map element must only have "
                                 + "the 'name' attribute", locator);
                     }
-                    entryMap = new HashMap<String, String>();
+                    entryMap = new HashMap<>();
                     break;
                 case ENTRY: {
-                    String key = attributes.getValue("key");
-                    String value = attributes.getValue("value");
+                    String key = attributes.getValue(ConfigLoader.KEY);
+                    String value = attributes.getValue(ConfigLoader.VALUE);
                     if (attributes.getLength() != 2 || key == null || value == null) {
                         throw new SAXParseException("entry element must only have "
                                 + "'key' and 'value' attributes", locator);
@@ -302,8 +302,8 @@ public class SAXLoader implements ConfigLoader {
                     break;
                 }
                 case FILE: {
-                    String name = attributes.getValue("name");
-                    String value = attributes.getValue("value");
+                    String name = attributes.getValue(ConfigLoader.NAME);
+                    String value = attributes.getValue(ConfigLoader.VALUE);
                     if (attributes.getLength() != 2 || name == null || value == null) {
                         throw new SAXParseException("file element must only have "
                                 + "'name' and 'value' attributes", locator);
@@ -326,9 +326,9 @@ public class SAXLoader implements ConfigLoader {
                     break;
                 }
                 case SERIALIZED: {
-                    String name = attributes.getValue("name");
-                    String type = attributes.getValue("type");
-                    String location = attributes.getValue("location");
+                    String name = attributes.getValue(ConfigLoader.NAME);
+                    String type = attributes.getValue(ConfigLoader.TYPE);
+                    String location = attributes.getValue(ConfigLoader.LOCATION);
                     if ((attributes.getLength() != 3) || (name == null) || (type == null) || (location == null)) {
                         throw new SAXParseException("serialized element must only have 'name', 'type' and 'location' elements", locator);
                     }
