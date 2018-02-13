@@ -29,7 +29,7 @@ public class XMLConfigWriter implements ConfigWriter {
             writer.writeCharacters(System.lineSeparator());
             writer.writeComment("OLCUT configuration file");
             writer.writeCharacters(System.lineSeparator());
-            writer.writeStartElement("config");
+            writer.writeStartElement(ConfigLoader.CONFIG);
             writer.writeCharacters(System.lineSeparator());
         } catch (XMLStreamException e) {
             throw new ConfigWriterException(e);
@@ -110,13 +110,13 @@ public class XMLConfigWriter implements ConfigWriter {
                         for (Object o : (List) value) {
                             if (o instanceof Class) {
                                 writer.writeCharacters("\t\t");
-                                writer.writeStartElement("type");
+                                writer.writeStartElement(ConfigLoader.TYPE);
                                 writer.writeCharacters(((Class) o).getName());
                                 writer.writeEndElement();
                                 writer.writeCharacters(System.lineSeparator());
                             } else {
                                 writer.writeCharacters("\t\t");
-                                writer.writeStartElement("item");
+                                writer.writeStartElement(ConfigLoader.ITEM);
                                 writer.writeCharacters(o.toString());
                                 writer.writeEndElement();
                                 writer.writeCharacters(System.lineSeparator());

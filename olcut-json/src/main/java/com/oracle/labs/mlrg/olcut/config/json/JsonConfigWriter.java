@@ -26,7 +26,7 @@ public class JsonConfigWriter implements ConfigWriter {
     public void writeStartDocument() throws ConfigWriterException {
         try {
             writer.writeStartObject();
-            writer.writeObjectFieldStart("config");
+            writer.writeObjectFieldStart(ConfigLoader.CONFIG);
         } catch (IOException e) {
             throw new ConfigWriterException(e);
         }

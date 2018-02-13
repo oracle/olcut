@@ -34,10 +34,6 @@ public class JsonLoader implements ConfigLoader {
 
     private static final Logger logger = Logger.getLogger(JsonLoader.class.getName());
 
-    public static final String CONFIG_TYPE = "config-type";
-    public static final String MEMBER = "member";
-    public static final String LIST = "list";
-
     private final JsonFactory factory;
 
     private final URLLoader parent;
