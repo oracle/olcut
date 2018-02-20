@@ -19,5 +19,5 @@ manifest.mf
 
 # Subproject files
 olcut-core/target
-olcut-jini/target
-olcut-json/target
+olcut-config-jini/target
+olcut-config-json/target
