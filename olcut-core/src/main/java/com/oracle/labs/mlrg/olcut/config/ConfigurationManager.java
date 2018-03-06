@@ -141,7 +141,7 @@ public class ConfigurationManager implements Cloneable {
      * of 'context' around anymore we will just pass around this property manager.
      *
      * @param path place to load initial properties from
-     * @throws java.io.IOException if an error occurs while loading properties from the location
+     * @throws ConfigLoaderException if an error occurs while loading properties from the location
      */
     public ConfigurationManager(String path) throws PropertyException, ConfigLoaderException {
     	this(new String[]{"-"+configFileOption.charName(),path},EMPTY_OPTIONS);
@@ -153,7 +153,7 @@ public class ConfigurationManager implements Cloneable {
      * of 'context' around anymore we will just pass around this property manager.
      *
      * @param url URL to load initial properties from
-     * @throws java.io.IOException if an error occurs while loading properties from the URL
+     * @throws ConfigLoaderException if an error occurs while loading properties from the URL
      */
     public ConfigurationManager(URL url) throws PropertyException, ConfigLoaderException {
         this(new String[]{"-"+configFileOption.charName(),url.toString()},EMPTY_OPTIONS);
@@ -166,7 +166,7 @@ public class ConfigurationManager implements Cloneable {
      * @throws UsageException Thrown when the user requested the usage string.
      * @throws ArgumentException Thrown when an argument fails to parse.
      * @throws PropertyException Thrown when an invalid property is loaded.
-     * @throws IOException Thrown when the configuration file cannot be read.
+     * @throws ConfigLoaderException Thrown when the configuration file cannot be read.
      */
     public ConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
         this(arguments,EMPTY_OPTIONS);
@@ -185,7 +185,7 @@ public class ConfigurationManager implements Cloneable {
      * @throws UsageException Thrown when the user requested the usage string.
      * @throws ArgumentException Thrown when an argument fails to parse.
      * @throws PropertyException Thrown when an invalid property is loaded.
-     * @throws IOException Thrown when the configuration file cannot be read.
+     * @throws ConfigLoaderException Thrown when the configuration file cannot be read.
      */
     public ConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
         // Validate the supplied Options struct is coherent and generate a usage statement.
