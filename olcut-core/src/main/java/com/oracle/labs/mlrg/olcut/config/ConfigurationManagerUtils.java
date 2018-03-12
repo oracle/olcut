@@ -288,4 +288,7 @@ public class ConfigurationManagerUtils {
         return url;
     }
 
+    public static String getUserName() {
+        return System.getProperty("user.name");
+    }
 }
