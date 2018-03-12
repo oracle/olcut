@@ -18,6 +18,7 @@ public class GlobalProperties extends HashMap<String, GlobalProperty> {
 
     static {
         distinguished.put("gp.hostName", new LazyGlobalProperty(ConfigurationManagerUtils::getHostName));
+        distinguished.put("gp.username", new LazyGlobalProperty(ConfigurationManagerUtils::getUserName));
     }
 
     public GlobalProperties() { }
