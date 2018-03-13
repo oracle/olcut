@@ -1,5 +1,9 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
+import com.oracle.labs.mlrg.olcut.util.Pair;
+
+import javax.management.MBeanServer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -29,10 +33,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.management.MBeanServer;
-
-import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
-import com.oracle.labs.mlrg.olcut.util.Pair;
+import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
 
 /**
  * Manages a set of <code>Configurable</code>s, their parametrization and the relationships between them. Configurations
@@ -460,7 +461,7 @@ public class ConfigurationManager implements Cloneable {
                                 throw new ArgumentException(curArg,"Unknown generic type in argument");
                             }
                         } else if (list.size() == 1) {
-                            f.set(arg.getB(),PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
+                            f.set(arg.getB(), PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
                         } else {
                             f.setAccessible(accessible);
                             throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
@@ -523,7 +524,7 @@ public class ConfigurationManager implements Cloneable {
                                         throw new ArgumentException(curArg,"Unknown generic type in argument");
                                     }
                                 } else if (list.size() == 1) {
-                                    f.set(arg.getB(),PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
+                                    f.set(arg.getB(), PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
                                 } else {
                                     f.setAccessible(accessible);
                                     throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
@@ -682,16 +683,53 @@ public class ConfigurationManager implements Cloneable {
         boolean found = false;
         for (Field f : fields) {
             if (f.getName().equals(fieldName) && (f.getAnnotation(Config.class) != null)) {
-                if (!Map.class.isAssignableFrom(f.getType())) {
-                    found = true;
+                if (Map.class.isAssignableFrom(f.getType())) {
+                    logger.warning("Dude seriously, a Map? On the command line? Maps aren't supported.");
                     break;
                 } else {
-                    logger.warning("Dude seriously, a Map? On the command line? Maps aren't supported.");
+                    found = true;
                     break;
                 }
             }
         }
         return found;
+    }
+
+    private StoredFieldType getStoredFieldType(String configurableClass, String fieldName) {
+        Class<? extends Configurable> clazz = null;
+        // catch is empty as this is only called with classes from RawPropertyData,
+        // which has already checked it's configurable.
+        try {
+            clazz = (Class<? extends Configurable>) Class.forName(configurableClass);
+        } catch (ClassNotFoundException e) {}
+        return getStoredFieldType(clazz,fieldName);
+    }
+
+    private StoredFieldType getStoredFieldType(Class<? extends Configurable> configurableClass, String fieldName) {
+        Set<Field> fields = PropertySheet.getAllFields(configurableClass);
+        for (Field f : fields) {
+            if (f.getName().equals(fieldName) && (f.getAnnotation(Config.class) != null)) {
+                FieldType ft = FieldType.getFieldType(f);
+                if (ft == null) {
+                    return StoredFieldType.NONE;
+                }
+                logger.log(Level.FINEST,"Found field of type " + ft.name());
+                //
+                // We'll handle things that have list or arrays with items separately.
+                if (FieldType.arrayTypes.contains(ft)) {
+                    return StoredFieldType.LIST;
+                } else if (FieldType.listTypes.contains(ft)) {
+                    return StoredFieldType.LIST;
+                } else if (FieldType.simpleTypes.contains(ft)) {
+                    return StoredFieldType.STRING;
+                } else if (FieldType.mapTypes.contains(ft)){
+                    return StoredFieldType.MAP;
+                } else {
+                    return StoredFieldType.NONE;
+                }
+            }
+        }
+        return StoredFieldType.NONE;
     }
 
     /**
@@ -726,6 +764,92 @@ public class ConfigurationManager implements Cloneable {
         }
         
         ConfigurationManagerUtils.applySystemProperties(trpm, tgp);
+    }
+
+    /**
+     * Overrides a simple property in a specific configurable in this configuration manager.
+     *
+     * Throws {@link PropertyException} if the configurable/property doesn't exist, has already been instantiated, or isn't a simple property.
+     * @param componentName The name of the component.
+     * @param propertyName The name of the property/field.
+     * @param value The value to set it to.
+     */
+    public void overrideConfigurableProperty(String componentName, String propertyName, String value) {
+        RawPropertyData rpd = rawPropertyMap.get(componentName);
+        if (rpd != null) {
+            if (!symbolTable.containsKey(componentName)) {
+                StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
+                if (type == StoredFieldType.STRING) {
+                    rpd.add(propertyName, value);
+                } else if (type == StoredFieldType.NONE) {
+                    throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.getClassName());
+                } else {
+                    throw new PropertyException(componentName, propertyName, "Incompatible field type, found " + type);
+                }
+            } else {
+                throw new PropertyException(componentName, "Properties can only be overridden before the object is constructed.");
+            }
+        } else {
+            throw new PropertyException(componentName, "Failed to find component " + componentName);
+        }
+    }
+
+    /**
+     * Overrides a list/array/set property in a specific configurable in this configuration manager.
+     * <p>
+     * Throws {@link PropertyException} if the configurable/property doesn't exist, has already been instantiated, or isn't a list/array/set.
+     *
+     * @param componentName The name of the component.
+     * @param propertyName  The name of the property/field.
+     * @param value         The value to set it to.
+     */
+    public void overrideConfigurableProperty(String componentName, String propertyName, List<String> value) {
+        RawPropertyData rpd = rawPropertyMap.get(componentName);
+        if (rpd != null) {
+            if (!symbolTable.containsKey(componentName)) {
+                StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
+                if (type == StoredFieldType.LIST) {
+                    rpd.add(propertyName, value);
+                } else if (type == StoredFieldType.NONE) {
+                    throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.getClassName());
+                } else {
+                    throw new PropertyException(componentName, propertyName, "Incompatible field type, found " + type);
+                }
+            } else {
+                throw new PropertyException(componentName, "Properties can only be overridden before the object is constructed.");
+            }
+        } else {
+            throw new PropertyException(componentName, "Failed to find component " + componentName);
+        }
+    }
+
+    /**
+     * Overrides a map property in a specific configurable in this configuration manager.
+     * <p>
+     * Throws {@link PropertyException} if the configurable/property doesn't exist, has already been instantiated, or isn't a map.
+     *
+     * @param componentName The name of the component.
+     * @param propertyName  The name of the property/field.
+     * @param value         The value to set it to.
+     */
+    public void overrideConfigurableProperty(String componentName, String propertyName, Map<String, String> value) {
+        RawPropertyData rpd = rawPropertyMap.get(componentName);
+        if (rpd != null) {
+            if (!symbolTable.containsKey(componentName)) {
+                StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
+                if (type == StoredFieldType.MAP) {
+                    rpd.add(propertyName, value);
+                } else if (type == StoredFieldType.NONE) {
+                    throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.getClassName());
+                } else {
+                    throw new PropertyException(componentName, propertyName, "Incompatible field type, found " + type);
+                }
+            } else {
+                throw new PropertyException(componentName, "Properties can only be overridden before the object is constructed.");
+            }
+        } else {
+            throw new PropertyException(componentName, "Failed to find component " + componentName);
+        }
     }
 
     /**

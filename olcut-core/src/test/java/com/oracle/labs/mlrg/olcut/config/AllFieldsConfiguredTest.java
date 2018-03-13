@@ -1,6 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -8,10 +9,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -75,6 +78,30 @@ public class AllFieldsConfiguredTest {
         assertEquals("StringConfigurable not constructed correctly",new StringConfigurable("A","B","C"), sc);
 
         assertTrue("Returned a value for an invalid field name", ps.get("monkeys") == null);
+    }
+
+    @Test
+    public void overrideTest() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
+
+        // Override various properties.
+        cm.overrideConfigurableProperty("all-config","boolField","false");
+        cm.overrideConfigurableProperty("all-config","doubleArrayField", Arrays.asList("3.14","2.77","1.0"));
+        // This rearranges the elements of listConfigurableSubclassField
+        cm.overrideConfigurableProperty("all-config","listConfigurableSubclassField", Arrays.asList("second-configurable","first-configurable"));
+        Map<String,String> newMap = new HashMap<>();
+        newMap.put("one","1.0");
+        newMap.put("two","2.0");
+        cm.overrideConfigurableProperty("all-config","mapDoubleField",newMap);
+
+        AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
+
+        assertEquals(false,ac.boolField);
+        assertArrayEquals(new double[]{3.14,2.77,1.0},ac.doubleArrayField,1e-10);
+        assertEquals(new StringConfigurable("alpha","beta","gamma"),ac.listConfigurableSubclassField.get(0));
+        assertEquals(new StringConfigurable("A","B","C"),ac.listConfigurableSubclassField.get(1));
+        assertEquals(new Double(1.0),ac.mapDoubleField.get("one"));
+        assertEquals(new Double(2.0),ac.mapDoubleField.get("two"));
     }
 
     public AllFieldsConfigurable generateConfigurable() {

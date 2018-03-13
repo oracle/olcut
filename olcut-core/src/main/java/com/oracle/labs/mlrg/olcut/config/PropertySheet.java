@@ -45,6 +45,8 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
 
     public enum PropertyType { CONFIG, COMPNAME, CONMAN; }
 
+    public enum StoredFieldType { LIST, MAP, STRING, NONE }
+
     private Map<String, Config> registeredProperties
             = new HashMap<String, Config>();
 
