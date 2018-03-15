@@ -331,7 +331,9 @@ A description of how to start a class server, run a registry, specify an
 object as remote, provide ConfigurationEntries, deal with RemoteComponentManager
 and RemoteMultiComponentManager, etc should be added here.  *cough*Steve*cough*
 
-
+OLCUT in general works fine with Java 9, but we have experienced some weird class 
+loader issues when using serialization in RMI calls with Jini in another project. 
+It's TBD on what the root cause is or how to fix it.
 
 # Command Interpreter
 
