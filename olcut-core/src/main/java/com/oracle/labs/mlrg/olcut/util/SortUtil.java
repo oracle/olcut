@@ -42,6 +42,11 @@ public abstract class SortUtil {
         return argsort(input,0,input.length,ascending);
     }
 
+    /*
+     * This was found online as an equivalent but much more succinct solution.
+     * 
+     * int[] sortedIndexes = IntStream.range(0, postingIds.length).boxed().sorted((i, j) -> Integer.compare(postingIds[i], postingIds[j])).mapToInt(ele -> ele).toArray();
+     */
     public static int[] argsort(int[] input, int start, int end, boolean ascending) {
         SortIntegerTuple[] array = new SortIntegerTuple[end-start];
         for (int i = start; i < end; i++) {
