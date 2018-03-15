@@ -33,10 +33,7 @@ public class RegistryTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        Logger l = Logger.getLogger("");
-        for(Handler h : l.getHandlers()) {
-            h.setFormatter(new SimpleLabsLogFormatter());
-        }
+        SimpleLabsLogFormatter.setAllLogFormatters();
     }
 
     @AfterClass
