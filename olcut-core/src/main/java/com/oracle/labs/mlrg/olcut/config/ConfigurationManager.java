@@ -1503,7 +1503,9 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
-     * Saves the current configuration to the given file
+     * Saves the current configuration to the given file.
+     *
+     * Only writes out instantiated components.
      *
      * @param file
      *                place to save the configuration
@@ -1515,7 +1517,7 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
-     * Saves the current configuration to the given file
+     * Saves the current configuration to the given file.
      *
      * @param file
      *                place to save the configuration
