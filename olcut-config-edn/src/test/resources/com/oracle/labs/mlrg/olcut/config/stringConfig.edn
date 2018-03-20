@@ -1,31 +1,24 @@
 (config
-
-	(property serFile"/tmp/ac.ser")
-
-	(serialized acs"${serFile}"[mlrg olcut config StringConfigurable])
-
-	(serialized badClass"${serFile}"[a dangerous group of Monkeys])
-
+	(property serFile "/tmp/ac.ser")
+	(serialized acs "${serFile}" [mlrg olcut config StringConfigurable])
+	(serialized badClass "${serFile}" [a dangerous group of Monkeys])
 	(component a [mlrg olcut config StringConfigurable]
-	{:import "false" :export "false"}
-	:one "a"
-	:two "b"
-	:three "c")
-
+		{:import "false" :export "false"}
+		:one "a"
+		:two "b"
+		:three "c")
 	(component bc [mlrg olcut config StringConfigurable]
-	{:import "false" :export "false" :serialized "${serFile}"}
-	:one "d"
-	:two "e"
-	:three "f")
-
+		{:import "false" :export "false" :serialized "${serFile}"}
+		:one "d"
+		:two "e"
+		:three "f")
 	(component ac [mlrg olcut config StringConfigurable]
-	{:import "false" :export "false" :serialized "${serFile}"}
-	:one "a"
-	:two "b"
-	:three "c")
-
+		{:import "false" :export "false" :serialized "${serFile}"}
+		:one "a"
+		:two "b"
+		:three "c")
 	(component b [mlrg olcut config StringConfigurable]
-	{:import "false" :export "false"}
-	:one "d"
-	:two "e"
-	:three "f"))
+		{:import "false" :export "false"}
+		:one "d"
+		:two "e"
+		:three "f"))

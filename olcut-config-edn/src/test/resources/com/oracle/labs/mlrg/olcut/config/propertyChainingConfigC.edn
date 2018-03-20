@@ -1,15 +1,10 @@
 (config
-
-	(property a"angry")
-
-	(property b"bus")
-
-	(property c"closing")
-
-	(property stringC"C3P0")
-
+	(property a "angry")
+	(property b "bus")
+	(property c "closing")
+	(property stringC "C3P0")
 	(component configC [mlrg olcut config StringConfigurable]
-	{:import "false" :export "false"}
-	:one "fileC"
-	:two "${b}"
-	:three "${c}"))
+		{:import "false" :export "false"}
+		:one "fileC"
+		:two "${b}"
+		:three "${c}"))
