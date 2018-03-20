@@ -1,0 +1,7 @@
+(config
+    (component simple [mlrg olcut config SimpleConfigurable]
+        :simpel 10)
+
+    (component simple2 [mlrg olcut config SimpleConfigurable]
+        :simple 10
+        :simpel 5))
