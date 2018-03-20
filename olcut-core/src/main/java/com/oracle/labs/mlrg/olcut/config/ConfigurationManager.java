@@ -1503,7 +1503,9 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
-     * Saves the current configuration to the given file
+     * Saves the current configuration to the given file.
+     *
+     * Only writes out instantiated components.
      *
      * @param file
      *                place to save the configuration
@@ -1515,10 +1517,14 @@ public class ConfigurationManager implements Cloneable {
     }
 
     /**
-     * Saves the current configuration to the given file
+     * Saves the current configuration to the given file.
      *
      * @param file
      *                place to save the configuration
+     * @param writeAll if <code>true</code> all components will be written,
+     * whether they were instantiated or not.  If <code>false</code>
+     * then only those components that were instantiated or added programatically
+     * will be written.
      * @throws IOException
      *                 if an error occurs while writing to the file
      */
@@ -1535,6 +1541,7 @@ public class ConfigurationManager implements Cloneable {
      * Writes the configuration to the given writer.
      * 
      * @param writer the writer to write to
+     * @param extension The extension to write out, which selects the ConfigWriter to use.
      * @param writeAll if <code>true</code> all components will be written, 
      * whether they were instantiated or not.  If <code>false</code>
      * then only those components that were instantiated or added programatically
