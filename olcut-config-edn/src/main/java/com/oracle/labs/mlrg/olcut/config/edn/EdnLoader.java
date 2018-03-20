@@ -300,7 +300,6 @@ public class EdnLoader implements ConfigLoader {
                     logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
                             spd.getName(), name , type, spd.getClassName()));
                 }
-                type = spd.getClassName();
                 rpd = new RawPropertyData(name, type,
                         spd.getProperties());
             } else {
@@ -310,7 +309,7 @@ public class EdnLoader implements ConfigLoader {
                 }
                 rpd = new RawPropertyData(name, type, null);
             }
-            rpd.setExportable(exportable); //todo check this inspection
+            rpd.setExportable(exportable);
             rpd.setExportable(importable);
             rpd.setLeaseTime(leaseTime);
             rpd.setEntriesName(entriesName);
@@ -337,9 +336,9 @@ public class EdnLoader implements ConfigLoader {
                 for(Object itm: (List<?>) valObj) {
                     if(itm instanceof List<?>) {
                         String member = checkClassList(itm);
-                        valueList.add(member);
                         try {
                             Class<?> valCls = Class.forName(member);
+                            valueList.add(valCls);
                         } catch (ClassNotFoundException e) {
                             throw new ConfigLoaderException("Unable to find class "
                                     + member + ", propertylist " + itm);
