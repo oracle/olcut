@@ -181,6 +181,7 @@ public interface Options {
      */
     public static Set<Class<? extends Options>> getAllOptions(Class<? extends Options> options) {
         Set<Class<? extends Options>> ret = new LinkedHashSet<>();
+        Set<Class<? extends Options>> tempSet = new HashSet<>();
         ret.add(options);
         Queue<Class> cq = new ArrayDeque<>();
         cq.add(options);
@@ -188,12 +189,18 @@ public interface Options {
             Class curr = cq.remove();
             for (Field f : curr.getDeclaredFields()) {
                 if (Options.class.isAssignableFrom(f.getType())) {
-                    ret.add((Class<? extends Options>)f.getType());
+                    Class<? extends Options> nextOptions = (Class<? extends Options>)f.getType();
+                    ret.add(nextOptions);
+                    // Add to the processing queue, via a set to make sure we don't double count fields.
+                    tempSet.add(nextOptions);
                 }
             }
             for (Field f : curr.getFields()) {
                 if (Options.class.isAssignableFrom(f.getType())) {
-                    ret.add((Class<? extends Options>)f.getType());
+                    Class<? extends Options> nextOptions = (Class<? extends Options>)f.getType();
+                    ret.add(nextOptions);
+                    // Add to the processing queue, via a set to make sure we don't double count fields.
+                    tempSet.add(nextOptions);
                 }
             }
             Class sc = curr.getSuperclass();
@@ -201,6 +208,9 @@ public interface Options {
                 cq.add(sc);
             }
             cq.addAll(Arrays.asList(curr.getInterfaces()));
+            cq.addAll(tempSet);
+            // Flush the temporary set.
+            tempSet.clear();
         }
         return ret;
     }
