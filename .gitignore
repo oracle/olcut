@@ -21,3 +21,4 @@ manifest.mf
 olcut-core/target
 olcut-config-jini/target
 olcut-config-json/target
+olcut-config-edn/target
