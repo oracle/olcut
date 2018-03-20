@@ -1,0 +1,12 @@
+(config
+    (property second-path "/tmp/second-path.txt")
+    (property third-path "/tmp/third-path.txt")
+    (property first-path "/tmp/first-path.txt")
+    (serialized a-thing "/some/path/to/a/thing" [mlrg olcut SerializedType])
+    (component second-configurable [mlrg olcut config edn StringConfigurable]
+        {:import false :export false}
+        :one "alpha"
+        :two "beta"
+        :three "gamma")
+
+)

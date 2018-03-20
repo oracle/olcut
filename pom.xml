@@ -16,6 +16,7 @@
         <module>olcut-core</module>
         <module>olcut-config-json</module>
         <module>olcut-config-jini</module>
+        <module>olcut-config-edn</module>
     </modules>
 
     <distributionManagement>

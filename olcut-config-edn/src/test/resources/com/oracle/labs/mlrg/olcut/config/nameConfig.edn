@@ -1,0 +1,4 @@
+(config
+
+	(component monkeys [mlrg olcut config NamedConfigurable]
+	{:import "false" :export "false"}))

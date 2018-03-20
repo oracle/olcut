@@ -1,0 +1,5 @@
+(config
+
+	(component pathTest [mlrg olcut config PathConfigurable]
+	{:import "false" :export "false"}
+	:test "/this/is/a/test/path"))

@@ -1,0 +1,31 @@
+(config
+
+	(property a"angry")
+
+	(property b"bus")
+
+	(property c"closing")
+
+	(property stringC"C3P0")
+
+	(property stringA"HK-47")
+
+	(property stringB"BB-8")
+
+	(component configB [mlrg olcut config StringConfigurable]
+	{:import "false" :export "false"}
+	:one "fileB"
+	:two "${b}"
+	:three "${c}")
+
+	(component configC [mlrg olcut config StringConfigurable]
+	{:import "false" :export "false"}
+	:one "fileC"
+	:two "${b}"
+	:three "${c}")
+
+	(component configA [mlrg olcut config StringConfigurable]
+	{:import "false" :export "false"}
+	:one "fileA"
+	:two "${b}"
+	:three "${c}"))
