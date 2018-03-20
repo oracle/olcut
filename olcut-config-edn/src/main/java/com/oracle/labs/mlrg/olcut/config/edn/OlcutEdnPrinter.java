@@ -25,12 +25,11 @@ public class OlcutEdnPrinter implements Printer {
             boolean vec = self instanceof RandomAccess;
             String start = vec ? "[" : "(";
             String end = vec ? "]" : ")";
-            //writer.append(start);
             String mode = !self.isEmpty() && self.get(0) instanceof Symbol ? ((Symbol) self.get(0)).getName().toLowerCase() : "";
             int configHasMap = 0;
             writer.append(start);
             for(int i = 0; i<self.size(); i++) {
-                if(i > 0) { // writing seperators
+                if(i > 0) { // writing separators
                     if(mode.equals("config")) {
                         writer.append("\n\t");
                     } else if(mode.equals("component")) {
@@ -46,7 +45,10 @@ public class OlcutEdnPrinter implements Printer {
                         } else {
                             writer.append(" ");
                         }
+                    } else {
+                        writer.append(' ');
                     }
+
                 }
                 writer.printValue(self.get(i));
             }
