@@ -3,6 +3,7 @@ package com.oracle.labs.mlrg.olcut.config;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -27,6 +28,8 @@ public class OptionsTest {
             System.out.println(s);
         }
 
+        System.out.println(options.toString());
+
         String arg = "-c /path/to/config.xml,/path/to/otherconfig.xml --trainer trainername --@trainername.epochs 5";
     }
 
@@ -38,26 +41,70 @@ class TestOptions implements Options {
 
     @Option(charName='p', longName="pi", usage="Changes the value of pi. Warning, may break mathematics.")
     public double pi = Math.PI;
+
+    @Override
+    public String toString() {
+        return "pi="+pi+",FileOptions("+foo.toString()+"),OtherOptions("+bar.toString()+")";
+    }
 }
 
 class FileOptions extends IOOptions {
     @Option(charName='i', longName="input-file", usage="Path to input file")
-    public File inputFile;
+    public File inputFile = new File(".");
 
     @Option(charName='o', longName="output-file", usage="Path to output file")
-    public Path outputFile;
+    public Path outputFile = new File(".").toPath();
+
+    @Override
+    public String toString() {
+        return "inputFile="+inputFile+",outputFile="+outputFile+",IOOptions("+super.toString()+")";
+    }
 }
 
 class IOOptions implements Options {
     @Option(charName='f', longName="baz", usage="quux")
-    public List<String> baz;
+    public List<String> baz = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        return "baz="+baz.toString();
+    }
 }
 
 class OtherOptions implements Options {
+    public DeepOptions deepOptions;
+
     @Option(charName='r', longName="seed", usage="Random seed")
-    public Random rng;
+    public Random rng = new Random(1);
 
     @Option(charName='a', longName="output-string", usage="String to output")
-    public String outputString;
+    public String outputString = "";
+
+    @Override
+    public String toString() {
+        return "rngDraw="+rng.nextInt()+",outputString="+outputString+",deepOptions("+deepOptions.toString()+")";
+    }
+}
+
+class DeepOptions implements Options {
+    public DeeperOptions deeperOptions;
+
+    @Option(charName = 'b', longName = "deep-string", usage = "Deep string.")
+    public String deepString;
+
+    @Override
+    public String toString() {
+        return "deepString="+deepString+",deeperOptions("+deeperOptions.toString()+")";
+    }
+}
+
+class DeeperOptions implements Options {
+    @Option(charName='d', longName="deeper-string", usage="Deeper string.")
+    public String deeperString;
+
+    @Override
+    public String toString() {
+        return "deeperString="+deeperString;
+    }
 }
 
