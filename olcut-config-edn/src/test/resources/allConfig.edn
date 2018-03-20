@@ -9,4 +9,8 @@
         :two "beta"
         :three "gamma")
 
+    (components [mlrg olcut config StringConfigurable]
+        [first :one 1 :two 2 :three 3]
+        [second :one 5 :two 6 :three 7])
+
 )

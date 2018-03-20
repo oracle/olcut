@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class EdnLoader implements ConfigLoader {
 
@@ -150,6 +152,9 @@ public class EdnLoader implements ConfigLoader {
                             case PROPERTY:
                                 parseGlobalProperty(rest(configListItem));
                                 break;
+                            case COMPONENTS:
+                                parseComponents(rest(configListItem));
+                                break;
                             case COMPONENT:
                                 parseComponent(rest(configListItem));
                                 break;
@@ -174,7 +179,7 @@ public class EdnLoader implements ConfigLoader {
         if(propertiesListItem.size() % 2 != 0) {
             throw new ConfigLoaderException("Properties element must have an even number of arguments, found " + propertiesListItem.toString());
         }
-        for(int i=0; i<propertiesListItem.size(); i++) {
+        for(int i=0; i<propertiesListItem.size(); i=i+2) {
             String name = checkSymbol(propertiesListItem.get(i));
             String value = checkSymbol(propertiesListItem.get(i+1));
             globalProperties.setValue(name, value);
@@ -207,6 +212,39 @@ public class EdnLoader implements ConfigLoader {
         }
     }
 
+    private void parseComponents(List<?> componentsListItem) {
+        int i = 1;
+        boolean hasMap = false;
+        if(componentsListItem.get(1) instanceof Map<?, ?>) {
+            i = 2;
+            hasMap = true;
+        }
+        for(; i<componentsListItem.size(); i++) {
+            Object o = componentsListItem.get(i);
+            if(o instanceof List<?>) {
+                List<?> l = (List<?>) o;
+                int lStart = 1;
+                List<Object> formed = new ArrayList<>();
+                formed.add(l.get(0)); // name element
+                formed.add(componentsListItem.get(0)); // type element
+                Map<Object, Object> m = new HashMap<>();
+                if(hasMap) {
+                    m.putAll((Map) componentsListItem.get(1));
+                }
+                if(l.get(1) instanceof Map<?, ?>) {
+                    m.putAll((Map) l.get(1));
+                    lStart++;
+                }
+                formed.add(m);
+                formed.addAll(l.subList(lStart, l.size()));
+                parseComponent(formed);
+            } else {
+                throw new ConfigLoaderException("Expected a list in components, found: " + componentsListItem.get(i));
+            }
+
+        }
+    }
+
     private void parseComponent(List<?> componentListItem) {
         if(componentListItem.size() < 2) {
             throw new ConfigLoaderException("Component element must have name and type, found " + componentListItem.toString());
@@ -224,7 +262,8 @@ public class EdnLoader implements ConfigLoader {
             String entriesName = null;
             String serializedForm = null;
 
-            Map<?, ?> modMap = (Map<?, ?>) componentListItem.get(2);
+            Map<?, ?> modMap = ((Stream<Map.Entry<Keyword, Object>>) ((Map) componentListItem.get(2)).entrySet().stream())
+                    .collect(Collectors.toMap(e -> checkKeyword(e.getKey()), Map.Entry::getValue));
             if(modMap.containsKey(ConfigLoader.INHERIT)) {
                 override = checkString(modMap.get(ConfigLoader.INHERIT));
             }
