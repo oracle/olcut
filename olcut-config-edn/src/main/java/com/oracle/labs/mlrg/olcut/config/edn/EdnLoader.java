@@ -215,7 +215,7 @@ public class EdnLoader implements ConfigLoader {
     private void parseComponents(List<?> componentsListItem) {
         int i = 1;
         boolean hasMap = false;
-        if(componentsListItem.get(1) instanceof Map<?, ?>) {
+        if(componentsListItem.get(0) instanceof Map<?, ?>) {
             i = 2;
             hasMap = true;
         }
@@ -226,10 +226,10 @@ public class EdnLoader implements ConfigLoader {
                 int lStart = 1;
                 List<Object> formed = new ArrayList<>();
                 formed.add(l.get(0)); // name element
-                formed.add(componentsListItem.get(0)); // type element
+                formed.add(componentsListItem.get(hasMap ? 1 : 0)); // type element
                 Map<Object, Object> m = new HashMap<>();
                 if(hasMap) {
-                    m.putAll((Map) componentsListItem.get(1));
+                    m.putAll((Map) componentsListItem.get(0));
                 }
                 if(l.get(1) instanceof Map<?, ?>) {
                     m.putAll((Map) l.get(1));
