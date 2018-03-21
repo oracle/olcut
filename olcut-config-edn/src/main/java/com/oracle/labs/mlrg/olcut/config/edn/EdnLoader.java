@@ -13,7 +13,6 @@ import us.bpsm.edn.parser.Parseable;
 import us.bpsm.edn.parser.Parser;
 import us.bpsm.edn.parser.Parsers;
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +21,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -58,18 +56,6 @@ public class EdnLoader implements ConfigLoader {
     private String checkClassList(Object os) throws ConfigLoaderException {
         if(os instanceof List<?>) {
             return cnMapper.read((List<Symbol>) os);
-            /*
-            StringBuilder sb = new StringBuilder();
-            Iterator<?> iter = ((List<?>) os).iterator();
-            String sym = checkSymbol(iter.next());
-            sb.append(expandPrefix.getOrDefault(sym, sym));
-            while (iter.hasNext()) {
-                sb.append(".");
-                sb.append(checkSymbol(iter.next()));
-
-            }
-            return sb.toString();
-            */
         } else {
             throw new ConfigLoaderException("Expected class but found " + os.getClass() + " with value " + os.toString());
         }
