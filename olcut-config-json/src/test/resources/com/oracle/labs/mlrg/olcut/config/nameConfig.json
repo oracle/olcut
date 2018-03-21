@@ -1,0 +1,11 @@
+{
+  "config" : {
+    "global-properties" : { },
+    "components" : [ {
+      "name" : "monkeys",
+      "type" : "com.oracle.labs.mlrg.olcut.config.NamedConfigurable",
+      "export" : "false",
+      "import" : "false"
+    } ]
+  }
+}

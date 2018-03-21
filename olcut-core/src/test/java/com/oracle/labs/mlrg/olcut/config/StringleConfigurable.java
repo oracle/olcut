@@ -6,10 +6,10 @@ package com.oracle.labs.mlrg.olcut.config;
 public class StringleConfigurable extends StringConfigurable {
 
     @Config
-    String four = "";
+    public String four = "";
 
     @Config
-    String five = "";
+    public String five = "";
 
     public StringleConfigurable() {}
 

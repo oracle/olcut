@@ -12,13 +12,13 @@ public class StringConfigurable implements Configurable, Serializable {
     protected Logger logger;
 
     @Config
-    String one = "";
+    public String one = "";
 
     @Config
-    String two = "";
+    public String two = "";
 
     @Config
-    String three = "";
+    public String three = "";
 
     public StringConfigurable() {}
 

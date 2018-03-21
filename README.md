@@ -331,7 +331,26 @@ A description of how to start a class server, run a registry, specify an
 object as remote, provide ConfigurationEntries, deal with RemoteComponentManager
 and RemoteMultiComponentManager, etc should be added here.  *cough*Steve*cough*
 
+OLCUT in general works fine with Java 9, but we have experienced some weird class 
+loader issues when using serialization in RMI calls with Jini in another project. 
+It's TBD on what the root cause is or how to fix it.
 
+## Other config formats
+
+OLCUT 4.1 supports json and edn (a Clojure based format) configuration files
+in addition to the standard xml format. To use one of these formats you must
+register it with the ConfigurationManager before instantiation. For example:
+
+    ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
+
+or 
+
+    ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
+
+For the exact file format, we recommend looking at allConfig.edn or allConfig.json
+in the appropriate src/test/resources directory. OLCUT supports chain loading
+between all the known types of files, provided they have been registered with the
+ConfigurationManager before instantiation.
 
 # Command Interpreter
 

@@ -33,8 +33,6 @@ import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import com.oracle.labs.mlrg.olcut.util.IOUtil;
 
@@ -46,6 +44,8 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     private static final Logger logger = Logger.getLogger(PropertySheet.class.getName());
 
     public enum PropertyType { CONFIG, COMPNAME, CONMAN; }
+
+    public enum StoredFieldType { LIST, MAP, STRING, NONE }
 
     private Map<String, Config> registeredProperties
             = new HashMap<String, Config>();
@@ -92,6 +92,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         exportable = rpd.isExportable();
         importable = rpd.isImportable();
         serializedForm = rpd.getSerializedForm();
+        this.rpd = rpd;
 
         processAnnotations(this, confClass);
 
@@ -945,84 +946,33 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         }
     }
 
-    protected void save(XMLStreamWriter xmlWriter) throws XMLStreamException {
+    public void save(ConfigWriter configWriter) throws ConfigWriterException {
         Collection<String> registeredProperties = getRegisteredProperties();
-        if (registeredProperties.size() > 0) {
-            xmlWriter.writeStartElement("component");
-            xmlWriter.writeAttribute("name", instanceName);
-            xmlWriter.writeAttribute("type", getConfigurableClass().getName());
-            xmlWriter.writeAttribute("export", "" + isExportable());
-            xmlWriter.writeAttribute("import", "" + isImportable());
-            xmlWriter.writeCharacters(System.lineSeparator());
+        Map<String,String> attributes = new HashMap<>();
+        Map<String,Object> properties = new HashMap<>();
 
-            for (String propName : registeredProperties) {
-                if (getRaw(propName) == null) {
-                    continue;
-                }  // if the property was not defined within the xml file
-                Object val = getRaw(propName);
-                if ((val instanceof List)) {
-                    //
-                    // Must be a string or component list
-                    xmlWriter.writeCharacters("\t");
-                    xmlWriter.writeStartElement("propertylist");
-                    xmlWriter.writeAttribute("name",propName);
-                    xmlWriter.writeCharacters(System.lineSeparator());
-                    for (Object o : (List) val) {
-                        if (o instanceof Class) {
-                            xmlWriter.writeCharacters("\t\t");
-                            xmlWriter.writeStartElement("type");
-                            xmlWriter.writeCharacters(((Class) o).getName());
-                            xmlWriter.writeEndElement();
-                            xmlWriter.writeCharacters(System.lineSeparator());
-                        } else {
-                            xmlWriter.writeCharacters("\t\t");
-                            xmlWriter.writeStartElement("item");
-                            xmlWriter.writeCharacters(o.toString());
-                            xmlWriter.writeEndElement();
-                            xmlWriter.writeCharacters(System.lineSeparator());
-                        }
-                    }
-                    xmlWriter.writeCharacters("\t");
-                    xmlWriter.writeEndElement();
-                    xmlWriter.writeCharacters(System.lineSeparator());
-                } else if (val instanceof Map) {
-                    //
-                    // Must be a string,string map
-                    xmlWriter.writeCharacters("\t");
-                    xmlWriter.writeStartElement("propertymap");
-                    xmlWriter.writeAttribute("name",propName);
-                    xmlWriter.writeCharacters(System.lineSeparator());
-                    for (Map.Entry<String, String> e : ((Map<String, String>) val).entrySet()) {
-                        xmlWriter.writeCharacters("\t\t");
-                        xmlWriter.writeEmptyElement("entry");
-                        xmlWriter.writeAttribute("key",e.getKey());
-                        xmlWriter.writeAttribute("value",e.getValue());
-                        xmlWriter.writeCharacters(System.lineSeparator());
-                    }
-                    xmlWriter.writeCharacters("\t");
-                    xmlWriter.writeEndElement();
-                    xmlWriter.writeCharacters(System.lineSeparator());
-                } else {
-                    //
-                    // Standard property
-                    xmlWriter.writeCharacters("\t");
-                    xmlWriter.writeEmptyElement("property");
-                    xmlWriter.writeAttribute("name",propName);
-                    xmlWriter.writeAttribute("value",getRaw(propName).toString());
-                    xmlWriter.writeCharacters(System.lineSeparator());
-                }
-            }
-
-            xmlWriter.writeEndElement();
-            xmlWriter.writeCharacters(System.lineSeparator());
-        } else {
-            xmlWriter.writeEmptyElement("component");
-            xmlWriter.writeAttribute("name", instanceName);
-            xmlWriter.writeAttribute("type", getConfigurableClass().getName());
-            xmlWriter.writeAttribute("export", "" + isExportable());
-            xmlWriter.writeAttribute("import", "" + isImportable());
-            xmlWriter.writeCharacters(System.lineSeparator());
+        attributes.put(ConfigLoader.NAME,instanceName);
+        attributes.put(ConfigLoader.TYPE,getConfigurableClass().getName());
+        attributes.put(ConfigLoader.IMPORT,""+isImportable());
+        attributes.put(ConfigLoader.EXPORT,""+isExportable());
+        if (rpd.getLeaseTime() > 0) {
+            attributes.put(ConfigLoader.LEASETIME, "" + rpd.getLeaseTime());
         }
+        if (serializedForm != null) {
+            attributes.put(ConfigLoader.SERIALIZED,serializedForm);
+        }
+        if (rpd.getEntriesName() != null) {
+            attributes.put(ConfigLoader.ENTRIES,rpd.getEntriesName());
+        }
+
+        for (String propName : registeredProperties) {
+            Object propVal = getRaw(propName);
+            if (propVal != null) {
+                properties.put(propName,propVal);
+            }
+        }
+
+        configWriter.writeComponent(attributes,properties);
     }
 
 }
