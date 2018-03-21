@@ -104,45 +104,16 @@ public class ConfigurationManagerUtils {
     }
 
     /**
-     * Applies the system properties to the raw property map. System properties should be of the form
-     * compName[paramName]=paramValue
-     * <p/>
-     * List types cannot currently be set from system properties.
+     * Imports the system properties into GlobalProperties.
      *
-     * @param rawMap the map of raw property values
      * @param global global properties
-     * @throws PropertyException if an attempt is made to set a parameter for an unknown component.
      */
-    static void applySystemProperties(Map<String, RawPropertyData> rawMap,
-            GlobalProperties global)
-            throws PropertyException {
+    static void importSystemProperties(GlobalProperties global) {
         Properties props = System.getProperties();
         for (Map.Entry<Object,Object> e : props.entrySet()) {
             String param = (String) e.getKey();
             String value = (String) e.getValue();
-
-            // search for params of the form component[param]=value
-            // these go in the property sheet for the component
-            int lb = param.indexOf('[');
-            int rb = param.indexOf(']');
-
-            if(lb > 0 && rb > lb) {
-                String compName = param.substring(0, lb);
-                String paramName = param.substring(lb + 1, rb);
-                RawPropertyData rpd = rawMap.get(compName);
-                if(rpd != null) {
-                    rpd.add(paramName, value);
-                } else {
-                    throw new InternalConfigurationException(compName, param,
-                            "System property attempting to set parameter " +
-                            " for unknown component " + compName + " (" + param +
-                            ")");
-                }
-            } else {
-                //
-                // We'll keep all the system properties as our properties.
-                global.setValue(param, value);
-            }
+            global.setValue(param, value);
         }
     }
 
@@ -286,9 +257,5 @@ public class ConfigurationManagerUtils {
             }
         }
         return url;
-    }
-
-    public static String getUserName() {
-        return System.getProperty("user.name");
     }
 }

@@ -61,7 +61,7 @@
 
     (component distinguished [mlrg olcut config StringConfigurable]
         :one "${gp.hostName}"
-        :two "two"
+        :two "${user.name}"
         :three "three")
 
     (component listTest [mlrg olcut config StringListConfigurable]
