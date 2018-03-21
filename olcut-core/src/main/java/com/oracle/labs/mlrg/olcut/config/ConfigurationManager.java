@@ -93,7 +93,7 @@ public class ConfigurationManager implements Cloneable {
      * Used to support new config file formats at runtime.
      * Initialised with xml.
      */
-    private static Map<String,FileFormatFactory> formatFactoryMap = new HashMap<>();
+    private static Map<String,FileFormatFactory> formatFactoryMap = Collections.synchronizedMap(new HashMap<>());
 
     static {
         formatFactoryMap.put("xml",new XMLConfigFactory());
