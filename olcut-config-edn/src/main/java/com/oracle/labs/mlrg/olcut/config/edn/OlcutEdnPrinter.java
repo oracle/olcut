@@ -1,6 +1,5 @@
 package com.oracle.labs.mlrg.olcut.config.edn;
 
-
 import us.bpsm.edn.Symbol;
 import us.bpsm.edn.printer.Printer;
 import us.bpsm.edn.printer.Printers;

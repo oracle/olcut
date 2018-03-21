@@ -7,7 +7,6 @@ import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import us.bpsm.edn.Keyword;
 import us.bpsm.edn.Symbol;
 import us.bpsm.edn.printer.Printer;
-import us.bpsm.edn.printer.Printers;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -28,7 +27,7 @@ public class EdnConfigWriter implements ConfigWriter {
     private static final Set<String> COMPONENT_MODIFIERS = new HashSet<>(Arrays.asList(ConfigLoader.IMPORT, ConfigLoader.EXPORT, ConfigLoader.ENTRIES, ConfigLoader.LEASETIME, ConfigLoader.SERIALIZED));
 
     public EdnConfigWriter(OutputStream os) {
-        this.printer = new OlcutEdnPrinter(new PrintStream(os)); //Printers.newPrinter(Printers.prettyPrinterProtocol(), new PrintStream(os));
+        this.printer = new OlcutEdnPrinter(new PrintStream(os));
         this.struct = new LinkedList<>();
         cnMapper = new ClassnameMapper();
     }
