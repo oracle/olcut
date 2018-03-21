@@ -1,0 +1,12 @@
+(config
+	(component fooMap [mlrg olcut config FooMapConfigurable]
+		{:import "false" :export "false"}
+		:map {:second "foo2" :first "foo1"})
+	(component foo1 [mlrg olcut config FooConfigurable]
+		{:import "false" :export "false"}
+		:name "foo1"
+		:value "1")
+	(component foo2 [mlrg olcut config FooConfigurable]
+		{:import "false" :export "false"}
+		:name "foo2"
+		:value "2"))

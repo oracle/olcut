@@ -84,7 +84,7 @@ public class RawPropertyData {
      * @param propName  the name of the property
      * @param propValue the value of the property
      */
-    void add(String propName, List propValue) {
+    public void add(String propName, List propValue) {
         properties.put(propName, propValue);
     }
 
@@ -94,7 +94,7 @@ public class RawPropertyData {
      * @param propName  the name of the property
      * @param propValue the value of the property
      */
-    void add(String propName, Map propValue) {
+    public void add(String propName, Map propValue) {
         properties.put(propName, propValue);
     }
 
@@ -104,7 +104,7 @@ public class RawPropertyData {
     }
 
     /** @return Returns the name. */
-    String getName() {
+    public String getName() {
         return name;
     }
 
@@ -159,7 +159,7 @@ public class RawPropertyData {
      * @param propName the property of interest
      * @return true if the map already contains this property
      */
-    boolean contains(String propName) {
+    public boolean contains(String propName) {
         return properties.get(propName) != null;
     }
 

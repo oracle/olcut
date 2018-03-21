@@ -1,0 +1,8 @@
+(config
+	(component foo1 [mlrg olcut config FooConfigurable]
+		{:import "false" :export "false"}
+		:name "foo1"
+		:value "1")
+	(component user [mlrg olcut config FooUserConfigurable]
+		{:import "false" :export "false"}
+		:foo "foo1"))

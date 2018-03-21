@@ -1,0 +1,15 @@
+{
+  "config" : {
+    "global-properties" : { },
+    "components" : [ {
+      "name" : "startme",
+      "type" : "com.oracle.labs.mlrg.olcut.config.StartableConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "add" : "foo",
+        "numReps" : "5"
+      }
+    } ]
+  }
+}

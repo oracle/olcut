@@ -28,6 +28,38 @@ public class MutableLong extends Number {
         value++;
     }
 
+    public void decrement(long other) {
+        value -= other;
+    }
+
+    public void decrement(MutableLong other) {
+        value -= other.value;
+    }
+
+    public void decrement() {
+        value--;
+    }
+
+    public void set(long other) {
+        value = other;
+    }
+
+    public void multiply(long other) {
+        value *= other;
+    }
+
+    public void multiply(MutableLong other) {
+        value *= other.value;
+    }
+
+    public void divide(long other) {
+        value /= other;
+    }
+
+    public void divide(MutableLong other) {
+        value /= other.value;
+    }
+
     @Override
     public int intValue() {
         return (int) value;

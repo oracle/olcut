@@ -1,0 +1,28 @@
+(config
+	(property globA "A")
+	(component default [mlrg olcut config EnumConfigurable]
+		{:import "false" :export "false"}
+		:enum1 "A")
+	(component set1 [mlrg olcut config EnumConfigurable]
+		{:import "false" :export "false"}
+		:enum2 "B"
+		:enumSet1 ["A" "B"]
+		:enum1 "A")
+	(component global [mlrg olcut config EnumConfigurable]
+		{:import "false" :export "false"}
+		:enum1 "${globA}")
+	(component norequired [mlrg olcut config EnumConfigurable]
+		{:import "false" :export "false"}
+		:enum2 "B")
+	(component badset [mlrg olcut config EnumConfigurable]
+		{:import "false" :export "false"}
+		:enum2 "B"
+		:enumSet1 ["A" "R"]
+		:enum1 "A")
+	(component badvalue [mlrg olcut config EnumConfigurable]
+		{:import "false" :export "false"}
+		:enum1 "Gargle")
+	(component both [mlrg olcut config EnumConfigurable]
+		{:import "false" :export "false"}
+		:enum2 "B"
+		:enum1 "A"))

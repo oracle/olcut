@@ -11,9 +11,9 @@ public class L2Configurable implements Configurable {
     private static final Logger logger = Logger.getLogger(L2Configurable.class.getName());
 
     @Config
-    String s = "l2";
+    public String s = "l2";
 
     @Config
-    L3Configurable c;
+    public L3Configurable c;
 
 }

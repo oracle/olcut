@@ -88,7 +88,7 @@
     
     <component name="distinguished" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
         <property name="one" value="${gp.hostName}"/>
-        <property name="two" value="two"/>
+        <property name="two" value="${user.name}"/>
         <property name="three" value="three"/>
     </component>
     

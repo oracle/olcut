@@ -4,7 +4,7 @@
 
     <groupId>com.oracle.labs.mlrg.olcut</groupId>
     <artifactId>olcut</artifactId>
-    <version>4.0.2</version>
+    <version>4.1.0</version>
     <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -14,7 +14,9 @@
     </properties>
     <modules>
         <module>olcut-core</module>
-        <module>olcut-jini</module>
+        <module>olcut-config-json</module>
+        <module>olcut-config-edn</module>
+        <module>olcut-config-jini</module>
     </modules>
 
     <distributionManagement>
@@ -123,6 +125,16 @@
             <version>${jsk.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -136,34 +148,33 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0-M1</version>
+				<version>3.0.0</version>
 				<configuration>
 					<show>public</show>
 					<failOnError>false</failOnError>
-					<aggregate>true</aggregate>
 					<linksource>true</linksource>
 					<nohelp>true</nohelp>
 				</configuration>
 			</plugin>
-            <plugin>
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jdeps-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>jdkinternals</goal> <!-- verify main classes -->
-                            <goal>test-jdkinternals</goal> <!-- verify test classes -->
+                            <goal>jdkinternals</goal>  verify main classes
+                            <goal>test-jdkinternals</goal>  verify test classes
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
                 </configuration>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.2</version>
+                <version>3.7.0</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>

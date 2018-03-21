@@ -1,0 +1,4 @@
+(config
+	(component listTest [mlrg olcut config StringListConfigurable]
+		{:import "false" :export "false"}
+		:strings ["a" "b" "c"]))
