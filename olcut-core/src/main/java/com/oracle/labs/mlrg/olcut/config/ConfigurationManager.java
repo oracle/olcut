@@ -224,6 +224,11 @@ public class ConfigurationManager implements Cloneable {
         // Writes into the rpd for each component.
         parseConfigurableArguments(argumentsList);
 
+        //
+        // Load system properties into global properties
+        ConfigurationManagerUtils.importSystemProperties(globalProperties);
+
+        //
         // we can't config the configuration manager with itself so we
         // do some of these config items manually.
         GlobalProperty sC = globalProperties.get("showCreations");
@@ -763,7 +768,6 @@ public class ConfigurationManager implements Cloneable {
             RawPropertyData opd = rawPropertyMap.put(e.getKey(), e.getValue());
         }
         
-        ConfigurationManagerUtils.applySystemProperties(trpm, tgp);
     }
 
     /**

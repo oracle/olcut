@@ -106,7 +106,7 @@
         "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
         "properties": {
           "one": "${gp.hostName}",
-          "two": "two",
+          "two": "${user.name}",
           "three": "three"
         }
       },

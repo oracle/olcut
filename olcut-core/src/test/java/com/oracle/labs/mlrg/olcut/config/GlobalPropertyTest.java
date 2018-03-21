@@ -112,7 +112,7 @@ public class GlobalPropertyTest {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("distinguished");
         assertEquals(ConfigurationManagerUtils.getHostName(), sc.one);
-        assertEquals(ConfigurationManagerUtils.getUserName(), sc.two);
+        assertEquals(System.getProperty("user.name"), sc.two);
     }
     
     @Test
