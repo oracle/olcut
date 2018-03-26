@@ -17,7 +17,7 @@
             <item>olcut-test</item>
         </propertylist>
         <property name="lookupWait" value="200"/>
-        <property name="csDirs" value="olcut-jini/target/classes:olcut-jini/target/test-classes"/>
+        <property name="csDirs" value="target/classes:target/test-classes"/>
         <property name="securityPolicy" value="src/test/resources/jsk-all.policy"/>
         <!--<property name="codebase" value="http://${gp.hostName}:1104/"/>-->
         <property name="registryPort" value="4011"/>
