@@ -202,8 +202,20 @@ public class EdnLoader implements ConfigLoader {
         int i = 1;
         boolean hasMap = false;
         if(componentsListItem.get(0) instanceof Map<?, ?>) {
-            i = 2;
+            i++;
             hasMap = true;
+        }
+        boolean hasProps = false;
+        List<Object> props = new ArrayList<>();
+        if(componentsListItem.get(i) instanceof Keyword) {
+            hasProps = true;
+            Object curItem = componentsListItem.get(i);
+            while(curItem instanceof Keyword) {
+                props.add(curItem);
+                props.add(componentsListItem.get(i + 1));
+                i += 2;
+                curItem = componentsListItem.get(i);
+            }
         }
         for(; i<componentsListItem.size(); i++) {
             Object o = componentsListItem.get(i);
@@ -217,11 +229,12 @@ public class EdnLoader implements ConfigLoader {
                 if(hasMap) {
                     m.putAll((Map) componentsListItem.get(0));
                 }
-                if(l.get(1) instanceof Map<?, ?>) {
+                if(l.size() > 1 && l.get(1) instanceof Map<?, ?>) {
                     m.putAll((Map) l.get(1));
                     lStart++;
                 }
                 formed.add(m);
+                formed.addAll(props);
                 formed.addAll(l.subList(lStart, l.size()));
                 parseComponent(formed);
             } else {
