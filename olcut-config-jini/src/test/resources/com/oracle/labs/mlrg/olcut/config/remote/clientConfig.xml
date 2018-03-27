@@ -19,7 +19,7 @@
         <property name="securityPolicy" value="src/test/resources/jsk-all.policy"/>
         <property name="lookupTries" value="5"/>
         <property name="lookupWait" value="50"/>
-        <property name="registryPort" value="4012"/>
+        <!--<property name="registryPort" value="4012"/>-->
     </component>
     
     <component name="failtest" type="com.oracle.labs.mlrg.olcut.config.remote.ClientConfigurable">
