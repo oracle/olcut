@@ -17,12 +17,22 @@
             <item>olcut-test</item>
         </propertylist>
         <property name="lookupWait" value="200"/>
-        <property name="csDirs" value="olcut-jini/target/classes:olcut-jini/target/test-classes"/>
         <property name="securityPolicy" value="src/test/resources/jsk-all.policy"/>
-        <!--<property name="codebase" value="http://${gp.hostName}:1104/"/>-->
-        <property name="registryPort" value="4011"/>
+        <!--<property name="codebase" value="http://${gp.hostName}:1104/"/>
+        <property name="csDirs" value="target/classes:target/test-classes"/>
+        <property name="registryPort" value="4011"/>-->
     </component>
-    
+
+    <component name="otherEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">
+        <propertylist name="entries">
+            <item>firstOtherEntry</item>
+        </propertylist>
+    </component>
+
+    <component name="firstOtherEntry" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntry">
+        <property name="data" value="data3"/>
+    </component>
+
     <component name="serverEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">
         <propertylist name="entries">
             <item>firstEntry</item>
@@ -43,11 +53,32 @@
         <property name="prefix" value="Received: "/>
         <property name="incr" value="10"/>
     </component>
-    
+
+    <!-- A component to register with user defined entries -->
+    <component name="servercompWithOtherEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurableImpl" entries="otherEntries" export="true" leasetime="20000">
+        <property name="prefix" value="Received: "/>
+        <property name="incr" value="10"/>
+    </component>
+
     <!-- A component to register with user defined entries -->
     <component name="servercompWithEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurableImpl" entries="serverEntries" export="true" leasetime="20000">
         <property name="prefix" value="Received: "/>
         <property name="incr" value="10"/>
     </component>
-    
+
+    <component name="servercompWithEntriesA" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurableImpl" entries="serverEntries" export="true" leasetime="20000">
+        <property name="prefix" value="Received A: "/>
+        <property name="incr" value="11"/>
+    </component>
+
+    <component name="servercompWithEntriesB" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurableImpl" entries="serverEntries" export="true" leasetime="20000">
+        <property name="prefix" value="Received B: "/>
+        <property name="incr" value="12"/>
+    </component>
+
+    <component name="servercompWithEntriesC" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurableImpl" entries="serverEntries" export="true" leasetime="20000">
+        <property name="prefix" value="Received C: "/>
+        <property name="incr" value="13"/>
+    </component>
+
 </config>

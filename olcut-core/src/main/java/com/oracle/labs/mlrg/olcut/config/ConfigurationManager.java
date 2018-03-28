@@ -53,6 +53,14 @@ public class ConfigurationManager implements Cloneable {
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
+    public static final Option fileFormatOption = new Option() {
+        public String longName() { return "config-file-formats"; }
+        public char charName() { return '\0'; }
+        public boolean mandatory() { return false; }
+        public String usage() { return "A comma separated list of olcut FileFormatFactory implementations (assumed to be on the classpath)."; }
+        public Class<? extends Option> annotationType() { return Option.class; }
+    };
+
     public static final Option usageOption = new Option() {
         public String longName() { return "usage"; }
         public char charName() { return '\0'; }
@@ -93,7 +101,7 @@ public class ConfigurationManager implements Cloneable {
      * Used to support new config file formats at runtime.
      * Initialised with xml.
      */
-    private static Map<String,FileFormatFactory> formatFactoryMap = new HashMap<>();
+    private static Map<String,FileFormatFactory> formatFactoryMap = Collections.synchronizedMap(new HashMap<>());
 
     static {
         formatFactoryMap.put("xml",new XMLConfigFactory());
@@ -278,6 +286,7 @@ public class ConfigurationManager implements Cloneable {
         usageList.add(new ArrayList<>(Arrays.asList("Built-in Options")));
         usageList.add(Options.header);
         usageList.add(Options.getOptionUsage(configFileOption,"java.lang.String"));
+        usageList.add(Options.getOptionUsage(fileFormatOption, "java.lang.String"));
         usageList.add(Options.getOptionUsage(usageOption,""));
 
         for (Class<? extends Options> o : allOptions) {
@@ -293,6 +302,7 @@ public class ConfigurationManager implements Cloneable {
         HashMap<String,Option> longNameMap = new HashMap<>();
         charNameMap.put(configFileOption.charName(),configFileOption);
         longNameMap.put(configFileOption.longName(),configFileOption);
+        longNameMap.put(fileFormatOption.longName(),fileFormatOption);
         longNameMap.put(usageOption.longName(),usageOption);
         longNameMap.put(helpOption.longName(),helpOption);
 
@@ -563,6 +573,7 @@ public class ConfigurationManager implements Cloneable {
 
         String confStr = "-" + configFileOption.charName();
         String longStr = "--" + configFileOption.longName();
+        String fileFormatStr = "--" + fileFormatOption.longName();
         Iterator<String> argsItr = arguments.iterator();
         while (argsItr.hasNext()) {
             String curArg = argsItr.next();
@@ -581,13 +592,13 @@ public class ConfigurationManager implements Cloneable {
                                     try {
                                         url = file.toURI().toURL();
                                     } catch (MalformedURLException e) {
-                                        throw new ArgumentException(e, curArg,"Can't load config file: " + s);
+                                        throw new ArgumentException(e, curArg, "Can't load config file: " + s);
                                     }
                                 } else {
                                     try {
                                         url = (new URI(s)).toURL();
                                     } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
-                                        throw new ArgumentException(curArg,"Can't find config file: " + s);
+                                        throw new ArgumentException(curArg, "Can't find config file: " + s);
                                     }
                                 }
                             }
@@ -595,7 +606,35 @@ public class ConfigurationManager implements Cloneable {
                         }
                         argsItr.remove();
                     } else {
-                        throw new ArgumentException(curArg,"No parameter supplied for argument");
+                        throw new ArgumentException(curArg, "No parameter supplied for argument");
+                    }
+                } else {
+                    throw new ArgumentException(curArg,"No parameter supplied for argument");
+                }
+            } else if (fileFormatStr.equals(curArg)) {
+                argsItr.remove();
+                if (argsItr.hasNext()) {
+                    String curParam = argsItr.next();
+                    if (!curParam.startsWith("-")) {
+                        List<String> fileFormatFactoryList = parseStringList(curParam);
+                        for (String className : fileFormatFactoryList) {
+                            try {
+                                Class<?> clazz = Class.forName(className);
+                                if (FileFormatFactory.class.isAssignableFrom(clazz)) {
+                                    FileFormatFactory fff = (FileFormatFactory) clazz.newInstance();
+                                    ConfigurationManager.addFileFormatFactory(fff);
+                                } else {
+                                    throw new ArgumentException(curArg, className + " does not implement FileFormatFactory");
+                                }
+                            } catch (ClassNotFoundException e) {
+                                throw new ArgumentException(e, curArg, "Class not found");
+                            } catch (InstantiationException | IllegalAccessException e) {
+                                throw new ArgumentException(e, curArg, "Could not instantiate class");
+                            }
+                        }
+                        argsItr.remove();
+                    } else {
+                        throw new ArgumentException(curArg, "No parameter supplied for argument");
                     }
                 } else {
                     throw new ArgumentException(curArg,"No parameter supplied for argument");
@@ -767,7 +806,7 @@ public class ConfigurationManager implements Cloneable {
         for(Map.Entry<String, RawPropertyData> e : trpm.entrySet()) {
             RawPropertyData opd = rawPropertyMap.put(e.getKey(), e.getValue());
         }
-        
+
     }
 
     /**
@@ -916,7 +955,7 @@ public class ConfigurationManager implements Cloneable {
                         symbolTable.put(instanceName, propertySheet);
                     } else {
                         throw new PropertyException(instanceName, "Unable to cast " + className +
-                                                " to com.oracle.labs.mlrg.olcut.config.Configurable");
+                                " to com.oracle.labs.mlrg.olcut.config.Configurable");
                     }
                 } catch(ClassNotFoundException e) {
                     throw new PropertyException(e);
@@ -988,7 +1027,7 @@ public class ConfigurationManager implements Cloneable {
             throws InternalConfigurationException {
         return lookup(instanceName, null, true);
     }
-    
+
     /**
      * Looks up a configurable component by its name, instantiating it if
      * necessary.
@@ -1003,7 +1042,7 @@ public class ConfigurationManager implements Cloneable {
             throws InternalConfigurationException {
         return lookup(instanceName, null, reuseComponent);
     }
-    
+
     /**
      * Looks up a configurable component by name. If a component registry exists in the 
      * current configuration manager, it will be checked for the given component name.
@@ -1021,12 +1060,12 @@ public class ConfigurationManager implements Cloneable {
             throws InternalConfigurationException {
         return lookup(instanceName, null, true);
     }
-        
+
     /**
      * Looks up a configurable component by name. If a component registry exists
      * in the current configuration manager, it will be checked for the given
      * component name. 
-     * 
+     *
      * @param instanceName the name of the component
      * @param cl a listener for this component that is notified when components
      * are added or removed
@@ -1087,7 +1126,7 @@ public class ConfigurationManager implements Cloneable {
      * @return the number of instantiated components in this configuration manager.
      */
     public int getNumConfigured() {
-       return configuredComponents.size();
+        return configuredComponents.size();
     }
 
     /**
@@ -1149,11 +1188,11 @@ public class ConfigurationManager implements Cloneable {
 
         return ret;
     }
-    
+
     /**
      * Gets a list of all of the component names of the components that have 
      * a given type.  This will not instantiate the components.
-     * 
+     *
      * @param c the class of the components that we want to look up.
      */
     public <T extends Configurable> List<String> listAll(Class<T> c) {
@@ -1167,7 +1206,7 @@ public class ConfigurationManager implements Cloneable {
                 }
             } catch(ClassNotFoundException ex) {
                 logger.warning(String.format("Non class %s found in config",
-                                             rpd.getClassName()));
+                        rpd.getClassName()));
             }
         }
 
@@ -1201,7 +1240,7 @@ public class ConfigurationManager implements Cloneable {
      *                                  this configuration manager instance.
      */
     public void addConfigurable(Class<? extends Configurable> confClass,
-                                 String name, Map<String, Object> props) {
+                                String name, Map<String, Object> props) {
         if(name == null) {
             name = confClass.getName();
         }
@@ -1229,7 +1268,7 @@ public class ConfigurationManager implements Cloneable {
      *                                  registered to this configuration manager instance.
      */
     public void addConfigurable(Class<? extends Configurable> confClass,
-                                 String instanceName) {
+                                String instanceName) {
         addConfigurable(confClass, instanceName, new HashMap<>());
     }
 
@@ -1242,13 +1281,13 @@ public class ConfigurationManager implements Cloneable {
      * <code>oldName</code> in this configuration manager.
      */
     public void renameConfigurable(String oldName, String newName)
-    throws InternalConfigurationException {
+            throws InternalConfigurationException {
         PropertySheet<? extends Configurable> ps = getPropertySheet(oldName);
 
         if(ps == null) {
             throw new InternalConfigurationException(oldName, null,
                     String.format("No configurable named %s to rename to %s",
-                    oldName, newName));
+                            oldName, newName));
         }
 
         ConfigurationManagerUtils.renameComponent(this, oldName, newName);
@@ -1258,8 +1297,8 @@ public class ConfigurationManager implements Cloneable {
 
         RawPropertyData rpd = rawPropertyMap.remove(oldName);
         rawPropertyMap.put(newName, new RawPropertyData(newName,
-                                                        rpd.getClassName(),
-                                                        rpd.getProperties()));
+                rpd.getClassName(),
+                rpd.getProperties()));
 
         fireRenamedConfigurable(oldName, newName);
     }
@@ -1279,8 +1318,8 @@ public class ConfigurationManager implements Cloneable {
 
         symbolTable.remove(name);
         rawPropertyMap.remove(name);
-        addedComponents.remove(name); 
-    
+        addedComponents.remove(name);
+
         //
         // If this one's been configured, remove it from there too!
         if(ps.isInstantiated()) {
@@ -1406,7 +1445,7 @@ public class ConfigurationManager implements Cloneable {
 
         for(ConfigurationChangeListener changeListener : changeListeners) {
             changeListener.configurationChanged(configurableName, propertyName,
-                                                this);
+                    this);
         }
     }
 
@@ -1419,7 +1458,7 @@ public class ConfigurationManager implements Cloneable {
 
         for(ConfigurationChangeListener changeListener : changeListeners) {
             changeListener.componentRenamed(this, getPropertySheet(newName),
-                                            oldName);
+                    oldName);
         }
     }
 
@@ -1476,7 +1515,7 @@ public class ConfigurationManager implements Cloneable {
      * contained in the given <code>props</code>-map
      */
     public Configurable getInstance(Class<? extends Configurable> targetClass,
-                                          Map<String, Object> props) throws PropertyException {
+                                    Map<String, Object> props) throws PropertyException {
 
         PropertySheet ps = getPropSheetInstanceFromClass(targetClass, props, null);
 
@@ -1488,10 +1527,10 @@ public class ConfigurationManager implements Cloneable {
      * given by the <code>defaultProps</code>.
      */
     protected PropertySheet<? extends Configurable> getPropSheetInstanceFromClass(Class<? extends Configurable> targetClass,
-                                                                 Map<String, Object> defaultProps,
-                                                                 String componentName) {
+                                                                                  Map<String, Object> defaultProps,
+                                                                                  String componentName) {
         RawPropertyData rpd = new RawPropertyData(componentName,
-                                                  targetClass.getName());
+                targetClass.getName());
 
         for(String confName : defaultProps.keySet()) {
             Object property = defaultProps.get(confName);
@@ -1543,14 +1582,14 @@ public class ConfigurationManager implements Cloneable {
 
     /**
      * Writes the configuration to the given writer.
-     * 
+     *
      * @param writer the writer to write to
      * @param extension The extension to write out, which selects the ConfigWriter to use.
      * @param writeAll if <code>true</code> all components will be written, 
      * whether they were instantiated or not.  If <code>false</code>
      * then only those components that were instantiated or added programatically
      * will be written.
-     * @throws IOException 
+     * @throws IOException
      */
     public void save(OutputStream writer, String extension, boolean writeAll) throws IOException {
         FileFormatFactory factory = formatFactoryMap.get(extension);
@@ -1689,7 +1728,7 @@ public class ConfigurationManager implements Cloneable {
      * used to prefix any embedded components.
      */
     public String importConfigurable(Configurable configurable,
-                                   String name) throws PropertyException {
+                                     String name) throws PropertyException {
         Map<String, Object> m = new LinkedHashMap<>();
 
         ConfigWrapper wrapper = new ConfigWrapper(configurable);

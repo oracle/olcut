@@ -592,7 +592,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         }
         s.add(cl);
     }
-    
+
     /**
      * Gets a number of components of the given type from the registrar.
      * @param c the class of the component to lookup
@@ -603,6 +603,23 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * @return an array containing the matching components
      */
     public Configurable[] lookup(Class c, int maxMatches, ComponentListener cl) {
+        return lookup(c,maxMatches,cl,null);
+    }
+
+    /**
+     * Gets a number of components of the given type from the registrar.
+     *
+     * Uses the supplied entries to filter the components. If entries is null, looks up
+     * all instances of the class.
+     * @param c the class of the component to lookup
+     * @param maxMatches the maximum number of matching components to
+     * return
+     * @param cl a listener for the component that is looked up, so that the caller
+     * can be notified of service changes.
+     * @param entries The ConfigurationEntries to filter on.
+     * @return an array containing the matching components
+     */
+    public Configurable[] lookup(Class c, int maxMatches, ComponentListener cl, ConfigurationEntry[] entries) {
         if(sdm == null) {
             return new Configurable[0];
         }
@@ -620,7 +637,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
                 // match using whatever entries we were given.  Note that we're 
                 // explicitly not matching against the instance name.
                 template = new ServiceTemplate(null,
-                        new Class[]{c}, null);
+                        new Class[]{c}, entries);
                 cache = sdm.createLookupCache(template, null, this);
                 caches.put(c, cache);
             } catch(RemoteException ex) {

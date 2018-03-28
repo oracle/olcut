@@ -5,8 +5,9 @@
         [bsub {:inherit "b"} :three "e"])
 
     (components {:inherit   "a"} [mlrg olcut config StringleConfigurable]
-        [c1 :four "e"]
-        [c2 :three "d" :four "e"])
+        :four "e"
+        [c1]
+        [c2 :three "d"])
 
     (component d [mlrg olcut config ListConfigurable]
         {:inherit "a"}
