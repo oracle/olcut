@@ -142,7 +142,46 @@ public class RegistryTest {
         // LookupAll in another.
         cm2 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/clientConfig.xml");
         ConfigurationEntries ce = (ConfigurationEntries) cm2.lookup("serverEntries");
-        List<RegistryConfigurable> rrc2 = (List<RegistryConfigurable>) cm2.lookupAll(RegistryConfigurable.class,null,ce.getEntries());
+        List<RegistryConfigurable> rrc2 = cm2.lookupAll(RegistryConfigurable.class,null,ce.getEntries());
+
+        //
+        // Check we found all the elements
+        assertEquals(4,rrc2.size());
+
+        for (RegistryConfigurable r : rrc2) {
+            r.stringOp("test");
+        }
+
+        //
+        // Make sure that the methods ran in the server's objects
+        assertEquals(1, ((RegistryConfigurableImpl) rc1).recs.size());
+        assertEquals(((RegistryConfigurableImpl) rc1).recs.get(0), "test");
+        assertEquals(1, ((RegistryConfigurableImpl) rc2).recs.size());
+        assertEquals(((RegistryConfigurableImpl) rc2).recs.get(0), "test");
+        assertEquals(1, ((RegistryConfigurableImpl) rc3).recs.size());
+        assertEquals(((RegistryConfigurableImpl) rc3).recs.get(0), "test");
+        assertEquals(1, ((RegistryConfigurableImpl) rc4).recs.size());
+        assertEquals(((RegistryConfigurableImpl) rc4).recs.get(0), "test");
+    }
+    @Test
+    public void testRegisterAndLookupAllWithStringEntries() throws IOException {
+
+        //
+        // Register in one manager.
+        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
+        RegistryConfigurable rc1 = (RegistryConfigurable) cm1.lookup("servercompWithEntries");
+        RegistryConfigurable rc2 = (RegistryConfigurable) cm1.lookup("servercompWithEntriesA");
+        RegistryConfigurable rc3 = (RegistryConfigurable) cm1.lookup("servercompWithEntriesB");
+        RegistryConfigurable rc4 = (RegistryConfigurable) cm1.lookup("servercompWithEntriesC");
+        assertNotNull(rc1);
+        assertNotNull(rc2);
+        assertNotNull(rc3);
+        assertNotNull(rc4);
+
+        //
+        // LookupAll in another.
+        cm2 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/clientConfig.xml");
+        List<RegistryConfigurable> rrc2 = cm2.lookupAll(RegistryConfigurable.class,null,new String[]{"data1","data2"});
 
         //
         // Check we found all the elements

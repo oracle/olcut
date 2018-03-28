@@ -22,7 +22,17 @@
         <property name="csDirs" value="target/classes:target/test-classes"/>
         <property name="registryPort" value="4011"/>-->
     </component>
-    
+
+    <component name="otherEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">
+        <propertylist name="entries">
+            <item>firstOtherEntry</item>
+        </propertylist>
+    </component>
+
+    <component name="firstOtherEntry" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntry">
+        <property name="data" value="data3"/>
+    </component>
+
     <component name="serverEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">
         <propertylist name="entries">
             <item>firstEntry</item>
@@ -43,7 +53,13 @@
         <property name="prefix" value="Received: "/>
         <property name="incr" value="10"/>
     </component>
-    
+
+    <!-- A component to register with user defined entries -->
+    <component name="servercompWithOtherEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurableImpl" entries="otherEntries" export="true" leasetime="20000">
+        <property name="prefix" value="Received: "/>
+        <property name="incr" value="10"/>
+    </component>
+
     <!-- A component to register with user defined entries -->
     <component name="servercompWithEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurableImpl" entries="serverEntries" export="true" leasetime="20000">
         <property name="prefix" value="Received: "/>
