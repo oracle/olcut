@@ -323,7 +323,51 @@ public class JiniConfigurationManager extends ConfigurationManager {
 
         return ret;
     }
-    
+
+    /**
+     * Looks up all components that have a given class name as their type.
+     * @param c the class that we want to lookup
+     * @param cl a listener that will report when components of the given type
+     * are added or removed
+     * @param entries Used to filter the looked up components.
+     * @return a list of all the components with the given class name as their type.
+     */
+    public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl, ConfigurationEntry[] entries) {
+
+        List<T> ret = super.lookupAll(c,cl);
+        if ((ret.size() == 0) && (registry != null)) {
+            //
+            // If we have a registry, then do a lookup for all things of the
+            // given type.
+            Configurable[] reg = registry.lookup(c, Integer.MAX_VALUE, cl, entries);
+            ret.addAll((List<T>)Arrays.asList(reg));
+        }
+
+        return ret;
+    }
+
+    /**
+     * Looks up all components that have a given class name as their type.
+     * @param c the class that we want to lookup
+     * @param cl a listener that will report when components of the given type
+     * are added or removed
+     * @param entries Used to filter the looked up components.
+     * @return a list of all the components with the given class name as their type.
+     */
+    public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl, String[] entries) {
+
+        // Convert the entries from Strings into ConfigurationEntries
+        ConfigurationEntry[] configEntries = null;
+        if (entries != null) {
+            configEntries = new ConfigurationEntry[entries.length];
+            for (int i = 0; i < entries.length; i++) {
+                configEntries[i] = new ConfigurationEntry(entries[i]);
+            }
+        }
+
+        return lookupAll(c,cl,configEntries);
+    }
+
     /**
      * Gets the component registry that is being used to register and lookup
      * components in a service registrar
