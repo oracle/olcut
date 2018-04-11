@@ -48,7 +48,6 @@ public class ConfigurationManager implements Cloneable {
     public static final Option configFileOption = new Option() {
         public String longName() { return "config-file"; }
         public char charName() { return 'c'; }
-        public boolean mandatory() { return false; }
         public String usage() { return "A comma separated list of olcut config files."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
@@ -56,7 +55,6 @@ public class ConfigurationManager implements Cloneable {
     public static final Option fileFormatOption = new Option() {
         public String longName() { return "config-file-formats"; }
         public char charName() { return '\0'; }
-        public boolean mandatory() { return false; }
         public String usage() { return "A comma separated list of olcut FileFormatFactory implementations (assumed to be on the classpath)."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
@@ -64,7 +62,6 @@ public class ConfigurationManager implements Cloneable {
     public static final Option usageOption = new Option() {
         public String longName() { return "usage"; }
         public char charName() { return '\0'; }
-        public boolean mandatory() { return false; }
         public String usage() { return "Write out this usage/help statement."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
@@ -72,7 +69,6 @@ public class ConfigurationManager implements Cloneable {
     public static final Option helpOption = new Option() {
         public String longName() { return "help"; }
         public char charName() { return '\0'; }
-        public boolean mandatory() { return false; }
         public String usage() { return "Write out this usage/help statement."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
