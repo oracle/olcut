@@ -247,7 +247,7 @@ to a supplied struct.
 To get started instantiate a ConfigurationManager with a reference to an options struct
 and the String array of arguments.
 
-    class CLOptions extends Options {
+    class CLOptions implements Options {
         @Option(charName='i',longName="input",usage="Input file")
         public File inputFile;
         @Option(charName='t',longName="trainer",usage="Trainer object")
@@ -272,6 +272,7 @@ The ConfigurationManager by default provides three arguments:
 
 * "-c" or "--config-file", which accepts a comma separated list of configuration files.
 * "--usage" or "--help", which generates an exception that contains the usage message.
+* "--config-file-formats", which accepts a comma separated list of FileFormatFactory implemenations to be loaded before parsing the config files.
      
 The usage statement is generated from the supplied Options object.
 If the user supplies "--usage" or "--help" the ConfigurationManager throws UsageException
@@ -351,6 +352,15 @@ For the exact file format, we recommend looking at allConfig.edn or allConfig.js
 in the appropriate src/test/resources directory. OLCUT supports chain loading
 between all the known types of files, provided they have been registered with the
 ConfigurationManager before instantiation.
+
+It's possible to dynamically register a format factory at runtime by supplying 
+the command line argument "--config-file-fomats" which accepts a comma separated 
+list of fully qualified class names which implement `FileFormatFactory`. For example:
+
+    java -cp classpath com.oracle.test.Test --config-file config.json --config-file-formats com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory
+
+will insert the JsonConfigFactory into the configuration manager before the
+configuration is loaded.
 
 # Command Interpreter
 
