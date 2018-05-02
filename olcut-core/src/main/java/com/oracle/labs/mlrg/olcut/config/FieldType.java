@@ -72,6 +72,8 @@ public enum FieldType {
 
     public final static EnumSet<FieldType> mapTypes = EnumSet.of(MAP);
 
+    // Used by the options processing system.
+    public final static EnumSet<FieldType> configurableTypes = EnumSet.of(CONFIGURABLE,CONFIGURABLE_ARRAY);
 
     private FieldType(Class<?>... types) {
         this.types = types;
