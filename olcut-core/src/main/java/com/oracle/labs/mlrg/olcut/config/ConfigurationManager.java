@@ -48,7 +48,6 @@ public class ConfigurationManager implements Cloneable {
     public static final Option configFileOption = new Option() {
         public String longName() { return "config-file"; }
         public char charName() { return 'c'; }
-        public boolean mandatory() { return false; }
         public String usage() { return "A comma separated list of olcut config files."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
@@ -56,7 +55,6 @@ public class ConfigurationManager implements Cloneable {
     public static final Option fileFormatOption = new Option() {
         public String longName() { return "config-file-formats"; }
         public char charName() { return '\0'; }
-        public boolean mandatory() { return false; }
         public String usage() { return "A comma separated list of olcut FileFormatFactory implementations (assumed to be on the classpath)."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
@@ -64,7 +62,6 @@ public class ConfigurationManager implements Cloneable {
     public static final Option usageOption = new Option() {
         public String longName() { return "usage"; }
         public char charName() { return '\0'; }
-        public boolean mandatory() { return false; }
         public String usage() { return "Write out this usage/help statement."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
@@ -72,7 +69,6 @@ public class ConfigurationManager implements Cloneable {
     public static final Option helpOption = new Option() {
         public String longName() { return "help"; }
         public char charName() { return '\0'; }
-        public boolean mandatory() { return false; }
         public String usage() { return "Write out this usage/help statement."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
@@ -197,8 +193,29 @@ public class ConfigurationManager implements Cloneable {
      * @throws ConfigLoaderException Thrown when the configuration file cannot be read.
      */
     public ConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
+        this(arguments,options,true);
+    }
+
+    /**
+     * Creates a new configuration manager.
+     *
+     * This constructor performs a sequence of operations:
+     * - It validates the supplied options struct to make sure it does not have duplicate option names.
+     * - Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.
+     * - Parses any configuration overrides and applies them to the configuration manager.
+     * - Parses out options for the supplied struct and writes them into the struct.
+     * @param arguments An array of command line arguments.
+     * @param options An object to write the parsed argument values into.
+     * @param useConfigFiles If true, add the config file option. If false ignore the config file option,
+     *                       and invalidate any Options that subclass {@link Configurable}.
+     * @throws UsageException Thrown when the user requested the usage string.
+     * @throws ArgumentException Thrown when an argument fails to parse.
+     * @throws PropertyException Thrown when an invalid property is loaded.
+     * @throws ConfigLoaderException Thrown when the configuration file cannot be read.
+     */
+    public ConfigurationManager(String[] arguments, Options options, boolean useConfigFiles)  throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
         // Validate the supplied Options struct is coherent and generate a usage statement.
-        usage = validateOptions(options);
+        usage = validateOptions(options,useConfigFiles);
 
         // Check if the user requested the usage statement.
         if ((arguments.length == 1) && (arguments[0].equals("--"+usageOption.longName()) || arguments[0].equals("--"+helpOption.longName()))) {
@@ -210,7 +227,13 @@ public class ConfigurationManager implements Cloneable {
 
         //
         // Parses out configuration files
-        List<URL> urls = parseConfigFiles(argumentsList);
+        List<URL> urls;
+        if (useConfigFiles) {
+            urls = parseConfigFiles(argumentsList);
+        } else {
+            // If we don't have config files then supply an empty list
+            urls = new ArrayList<>();
+        }
 
         //
         // Load the configuration files. loadConfiguration can be overridden
@@ -276,7 +299,7 @@ public class ConfigurationManager implements Cloneable {
         formatFactoryMap.put(f.getExtension(),f);
     }
 
-    public static String validateOptions(Options options) throws ArgumentException {
+    public static String validateOptions(Options options, boolean useConfigFiles) throws ArgumentException {
         Set<Field> optionFields = new HashSet<>();
         Set<Class<? extends Options>> allOptions = Options.getAllOptions(options.getClass());
         StringBuilder builder = new StringBuilder();
@@ -285,8 +308,10 @@ public class ConfigurationManager implements Cloneable {
         ArrayList<ArrayList<String>> usageList = new ArrayList<>();
         usageList.add(new ArrayList<>(Arrays.asList("Built-in Options")));
         usageList.add(Options.header);
-        usageList.add(Options.getOptionUsage(configFileOption,"java.lang.String"));
-        usageList.add(Options.getOptionUsage(fileFormatOption, "java.lang.String"));
+        if (useConfigFiles) {
+            usageList.add(Options.getOptionUsage(configFileOption, "java.lang.String"));
+            usageList.add(Options.getOptionUsage(fileFormatOption, "java.lang.String"));
+        }
         usageList.add(Options.getOptionUsage(usageOption,""));
 
         for (Class<? extends Options> o : allOptions) {
@@ -300,17 +325,37 @@ public class ConfigurationManager implements Cloneable {
         // Initialise the option checking with the config file option.
         HashMap<Character,Option> charNameMap = new HashMap<>();
         HashMap<String,Option> longNameMap = new HashMap<>();
-        charNameMap.put(configFileOption.charName(),configFileOption);
-        longNameMap.put(configFileOption.longName(),configFileOption);
-        longNameMap.put(fileFormatOption.longName(),fileFormatOption);
+        if (useConfigFiles) {
+            charNameMap.put(configFileOption.charName(), configFileOption);
+            longNameMap.put(configFileOption.longName(), configFileOption);
+            longNameMap.put(fileFormatOption.longName(), fileFormatOption);
+        }
         longNameMap.put(usageOption.longName(),usageOption);
         longNameMap.put(helpOption.longName(),helpOption);
 
         for (Field f : optionFields) {
             Option annotation = f.getAnnotation(Option.class);
-            if (FieldType.getFieldType(f) == null) {
+            FieldType ft = FieldType.getFieldType(f);
+            if (ft == null) {
                 throw new ArgumentException(annotation.longName(),
                         "Argument has an unsupported type " + f.getType().getName());
+            }
+            if (!useConfigFiles) {
+                if (FieldType.configurableTypes.contains(ft)) {
+                    throw new ArgumentException(annotation.longName(),"Argument has a Configurable type, which requires using a config file.");
+                } else if (FieldType.listTypes.contains(ft)) {
+                    // Now check the generic type of the list.
+                    List<Class<?>> list = PropertySheet.getGenericClass(f);
+                    if (list.size() == 1) {
+                        Class<?> genericClazz = list.get(0);
+                        FieldType genericFieldType = FieldType.getFieldType(genericClazz);
+                        if (FieldType.configurableTypes.contains(genericFieldType)) {
+                            throw new ArgumentException(annotation.longName(),"Argument has a Configurable type, which requires using a config file.");
+                        }
+                    } else {
+                        throw new ArgumentException(annotation.longName(),"Failed to parse the type parameters of the argument.");
+                    }
+                }
             }
             if (annotation.charName() == '-' || annotation.charName() == Option.SPACE_CHAR) {
                 throw new ArgumentException(annotation.longName(),"'-' and ' ' are reserved characters.");
@@ -320,7 +365,7 @@ public class ConfigurationManager implements Cloneable {
                         "Arguments starting '--@' are reserved for the configuration system.");
             }
             if ((annotation.charName() != Option.EMPTY_CHAR) && charNameMap.containsKey(annotation.charName())) {
-                if (annotation.charName() == configFileOption.charName()) {
+                if ((annotation.charName() == configFileOption.charName()) && useConfigFiles) {
                     throw new ArgumentException("config-file",annotation.longName(),
                             "The -"+configFileOption.charName()+" argument is reserved for the configuration system");
                 } else {
@@ -337,9 +382,6 @@ public class ConfigurationManager implements Cloneable {
         }
 
         return builder.toString();
-    }
-
-    protected void loadConfiguration() throws IOException {
     }
 
     /**

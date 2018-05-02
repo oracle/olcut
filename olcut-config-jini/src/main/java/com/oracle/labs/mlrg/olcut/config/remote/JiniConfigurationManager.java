@@ -85,11 +85,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @throws IOException Thrown when the configuration file cannot be read.
      */
     public JiniConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException, IOException {
-        super(arguments,EMPTY_OPTIONS);
-
-        //
-        // Look up our distinguished registry name.
-        setUpRegistry();
+        this(arguments,EMPTY_OPTIONS);
     }
 
     /**
