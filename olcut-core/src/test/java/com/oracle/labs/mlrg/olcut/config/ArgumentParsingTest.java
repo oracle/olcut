@@ -142,6 +142,37 @@ public class ArgumentParsingTest {
         Assert.assertEquals("Generated and parsed options not the same", factory, o);
     }
 
+    @Test
+    public void testNoConfigFileOptions() throws IOException {
+        String[] args = new String[]{"-c","totally-not-a-config-file"};
+        NoConfigOptions o = new NoConfigOptions();
+        ConfigurationManager cm;
+        cm = new ConfigurationManager(args, o, false);
+        Assert.assertNotNull(cm);
+        Assert.assertEquals("Failed to parse out option",args[1],o.notAConfigFile);
+
+        try {
+            o = new NoConfigOptions();
+            cm = new ConfigurationManager(args,o,true);
+            Assert.fail("Accepted an config file option when it shouldn't have");
+        } catch (ArgumentException e) { }
+    }
+
+    @Test
+    public void testInvalidNoConfigFileOptions() throws IOException {
+        String[] args = new String[]{"-c","stringListConfig.xml","-s","listTest"};
+        InvalidNoConfigOptions o = new InvalidNoConfigOptions();
+        ConfigurationManager cm;
+        cm = new ConfigurationManager(args, o, true);
+        Assert.assertNotNull(cm);
+
+        try {
+            o = new InvalidNoConfigOptions();
+            cm = new ConfigurationManager(args,o,false);
+            Assert.fail("Accepted a generic configurable argument when it shouldn't have");
+        } catch (ArgumentException e) { }
+    }
+
     public static void main(String[] args) throws IOException {
         Options o = new AllOfTheOptions();
         ConfigurationManager cm;
@@ -191,6 +222,18 @@ class ParsingOptions implements Options {
 
     @Option(longName="other-arguments", usage="test hard with a vengeance")
     public String otherArguments;
+}
+
+class NoConfigOptions implements Options {
+    @Option(charName='c', longName="not-a-config-file-honest", usage="test hard")
+    public String notAConfigFile;
+}
+
+class InvalidNoConfigOptions implements Options {
+    @Option(charName = 's', longName="string-list-configurable", usage="test hard 2: test harder")
+    public StringListConfigurable slc;
+    @Option(charName = 'l', longName="list-string-list-configurable", usage="test hard with a vengeance")
+    public List<StringListConfigurable> lslc;
 }
 
 class AllOfTheOptions implements Options {
