@@ -29,7 +29,7 @@ public class GlobalProperty {
 
     protected String value = null;
 
-    protected GlobalProperty() {}
+    protected GlobalProperty() { }
 
     public GlobalProperty(GlobalProperty other) {
         this.value = other.value;
@@ -41,10 +41,6 @@ public class GlobalProperty {
 
     public String getValue() {
         return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 
     @Override

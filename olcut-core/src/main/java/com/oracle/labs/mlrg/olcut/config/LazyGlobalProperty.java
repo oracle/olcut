@@ -19,11 +19,6 @@ public class LazyGlobalProperty extends GlobalProperty {
     }
 
     @Override
-    public synchronized void setValue(String value) {
-        this.value = value;
-    }
-
-    @Override
     public String toString() {
         return getValue();
     }

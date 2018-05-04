@@ -52,7 +52,7 @@ public class SerializedObject<T> {
      */
     public T getObject() throws PropertyException {
         if (object == null) {
-            String actualLocation = configurationManager.getGlobalProperties().replaceGlobalProperties(name, null, location);
+            String actualLocation = configurationManager.getImmutableGlobalProperties().replaceGlobalProperties(name, null, location);
             InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
             try {
                 Class<T> objectClass = (Class<T>) Class.forName(className);
