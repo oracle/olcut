@@ -10,7 +10,7 @@ public class GlobalProperty {
 
     // this pattern matches strings of the form '${word}'
     protected static Pattern globalSymbolPattern =
-            Pattern.compile("\\$\\{([\\w\\.]+)\\}");
+            Pattern.compile("\\$\\{([\\w\\.-]+)\\}");
 
     /**
      * Strips the ${ and } off of a global symbol of the form ${symbol}.
@@ -29,7 +29,7 @@ public class GlobalProperty {
 
     protected String value = null;
 
-    protected GlobalProperty() {}
+    protected GlobalProperty() { }
 
     public GlobalProperty(GlobalProperty other) {
         this.value = other.value;
@@ -41,10 +41,6 @@ public class GlobalProperty {
 
     public String getValue() {
         return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 
     @Override

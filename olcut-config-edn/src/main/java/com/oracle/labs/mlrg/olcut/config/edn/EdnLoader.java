@@ -4,6 +4,7 @@ import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
@@ -178,7 +179,11 @@ public class EdnLoader implements ConfigLoader {
         }
         String name = checkSymbol(propertyListItem.get(0));
         String value = checkString(propertyListItem.get(1));
-        globalProperties.setValue(name, value);
+        try {
+            globalProperties.setValue(name, value);
+        } catch (PropertyException e) {
+            throw new ConfigLoaderException("Invalid global property name: " + name);
+        }
     }
 
     private void parseFile(List<?> fileListItem) {

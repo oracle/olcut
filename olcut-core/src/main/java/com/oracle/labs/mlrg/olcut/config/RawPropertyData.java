@@ -173,7 +173,7 @@ public class RawPropertyData {
             String propName = e.getKey();
             Object propVal = e.getValue();
             if(propVal instanceof String) {
-                propVal = cm.getGlobalProperties().
+                propVal = cm.getImmutableGlobalProperties().
                         replaceGlobalProperties(getName(), propName, (String) propVal);
             }
 

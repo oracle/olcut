@@ -157,7 +157,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         }
 
         String ret = value.toString();
-        return cm.getGlobalProperties().replaceGlobalProperties(getInstanceName(),
+        return cm.getImmutableGlobalProperties().replaceGlobalProperties(getInstanceName(),
                 name, ret);
     }
 
@@ -215,7 +215,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                 //
                 // Should we load a serialized form?
                 if (serializedForm != null) {
-                    String actualLocation = cm.getGlobalProperties().replaceGlobalProperties(instanceName, null, serializedForm);
+                    String actualLocation = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, null, serializedForm);
                     InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
                     if (serStream != null) {
                         try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
@@ -389,7 +389,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         FieldType genericft = FieldType.getFieldType(genericType);
         Map map = new HashMap<>();
         for (Map.Entry<String, String> e : input.entrySet()) {
-            String newVal = cm.getGlobalProperties().replaceGlobalProperties(instanceName, fieldName, e.getValue());
+            String newVal = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, e.getValue());
             map.put(e.getKey(), parseSimpleField(cm, instanceName, fieldName, genericType, genericft, newVal));
         }
         return map;
@@ -406,7 +406,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         List<Class<?>> removeList = new ArrayList<>();
         for (Object val : input) {
             if (val instanceof String) {
-                replaced.add(cm.getGlobalProperties().replaceGlobalProperties(instanceName, fieldName, (String) val));
+                replaced.add(cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, (String) val));
             } else if (val instanceof Class) {
                 classVals.add((Class<?>) val);
             } else {
@@ -535,7 +535,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         List<Class<?>> removeList = new ArrayList<>();
         for (Object val : input) {
             if (val instanceof String) {
-                replaced.add(cm.getGlobalProperties().replaceGlobalProperties(instanceName, fieldName, (String) val));
+                replaced.add(cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, (String) val));
             } else if (val instanceof Class) {
                 classVals.add((Class<?>) val);
             } else {

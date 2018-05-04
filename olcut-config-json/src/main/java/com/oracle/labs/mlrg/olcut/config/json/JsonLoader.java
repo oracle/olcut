@@ -11,6 +11,7 @@ import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
@@ -103,7 +104,11 @@ public class JsonLoader implements ConfigLoader {
                     Iterator<Entry<String,JsonNode>> itr = globalPropertiesNode.fields();
                     while (itr.hasNext()) {
                         Entry<String,JsonNode> e = itr.next();
-                        globalProperties.setValue(e.getKey(),e.getValue().textValue());
+                        try {
+                            globalProperties.setValue(e.getKey(), e.getValue().textValue());
+                        } catch (PropertyException ex) {
+                            throw new ConfigLoaderException("Invalid global property name: " + e.getKey());
+                        }
                     }
                 }
                 if (filesNode != null) {
