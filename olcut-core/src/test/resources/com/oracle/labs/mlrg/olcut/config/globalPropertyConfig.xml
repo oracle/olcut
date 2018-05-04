@@ -16,16 +16,16 @@
     
     <property name="c" value="charlie"/>
     
-    <property name="aprime" value="${a}"/>
+    <property name="a-prime" value="${a}"/>
     
-    <property name="adprime" value="${aprime}"/>
+    <property name="adprime" value="${a-prime}"/>
     
     <property name="foo" value="${a}/bar"/>
     
     <property name="home" value="${user.home}/Projects/LabsUtil"/>
     
     <property name="apath" value="/tmp/${a}"/>
-    
+
     <component name="unknown" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
         <property name="one" value="${d}"/>
         <property name="two" value="${e}"/>
@@ -58,7 +58,7 @@
     
     <component name="recurse" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
         <property name="one" value="${a}"/>
-        <property name="two" value="${aprime}"/>
+        <property name="two" value="${a-prime}"/>
         <property name="three" value="${adprime}"/>
     </component>
         
@@ -75,8 +75,8 @@
     </component>
         
     <component name="compoundrecurse" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
-        <property name="one" value="one ${b}/${aprime}"/>
-        <property name="two" value="two ${c}/${aprime}/${b}/${adprime}"/>
+        <property name="one" value="one ${b}/${a-prime}"/>
+        <property name="two" value="two ${c}/${a-prime}/${b}/${adprime}"/>
         <property name="three" value="three ${adprime}/${b}/${c}"/>
     </component>
     

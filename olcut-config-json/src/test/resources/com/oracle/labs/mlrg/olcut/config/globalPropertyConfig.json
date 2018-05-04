@@ -4,8 +4,8 @@
       "a": "alpha",
       "b": "beta",
       "c": "charlie",
-      "aprime" : "${a}",
-      "adprime" : "${aprime}",
+      "a-prime" : "${a}",
+      "adprime" : "${a-prime}",
       "foo" : "${a}/bar",
       "home" : "${user.home}/Projects/LabsUtil",
       "apath" : "/tmp/${a}"
@@ -61,7 +61,7 @@
         "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
         "properties": {
           "one": "${a}",
-          "two": "${aprime}",
+          "two": "${a-prime}",
           "three": "${adprime}"
         }
       },
@@ -87,8 +87,8 @@
         "name": "compoundrecurse",
         "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
         "properties": {
-          "one": "one ${b}/${aprime}",
-          "two": "two ${c}/${aprime}/${b}/${adprime}",
+          "one": "one ${b}/${a-prime}",
+          "two": "two ${c}/${a-prime}/${b}/${adprime}",
           "three": "three ${adprime}/${b}/${c}"
         }
       },

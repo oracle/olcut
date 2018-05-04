@@ -31,6 +31,7 @@ import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
@@ -251,8 +252,11 @@ public class SAXLoader implements ConfigLoader {
                         // we are not in a component so add this to the global
                         // set of symbols
                         //String symbolName = "${" + name + "}"; // why should we warp the global props here
-                        String symbolName = name;
-                        globalProperties.setValue(symbolName, value);
+                        try {
+                            globalProperties.setValue(name, value);
+                        } catch (PropertyException e) {
+                            throw new SAXParseException("Invalid global property name: " + name, locator);
+                        }
                     } else if (rpd.contains(name) && !overriding) {
                         throw new SAXParseException("Duplicate property: " + name,
                                 locator);

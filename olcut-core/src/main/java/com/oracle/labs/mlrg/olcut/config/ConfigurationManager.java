@@ -236,8 +236,7 @@ public class ConfigurationManager implements Cloneable {
         }
 
         //
-        // Load the configuration files. loadConfiguration can be overridden
-        // to allow non-xml config files.
+        // Load the configuration files.
         configURLs.addAll(urls);
         URLLoader loader = new URLLoader(configURLs,formatFactoryMap);
         loader.load();
