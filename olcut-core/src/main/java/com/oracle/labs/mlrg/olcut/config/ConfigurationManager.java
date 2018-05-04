@@ -840,9 +840,9 @@ public class ConfigurationManager implements Cloneable {
         // Now, add the new global properties to the set for this configuration
         // manager, overriding as necessary.  Then do the same thing for the raw
         // property data.
-        for(Map.Entry<String, GlobalProperty> e : tgp.entrySet()) {
-            GlobalProperty op = globalProperties.put(e.getKey(), e.getValue());
-            origGlobal.put(e.getKey(), e.getValue());
+        for(Map.Entry<String, GlobalProperty> e : tgp) {
+            globalProperties.setValue(e.getKey(), e.getValue());
+            origGlobal.setValue(e.getKey(), e.getValue());
         }
         for(Map.Entry<String, RawPropertyData> e : trpm.entrySet()) {
             RawPropertyData opd = rawPropertyMap.put(e.getKey(), e.getValue());
@@ -1404,9 +1404,20 @@ public class ConfigurationManager implements Cloneable {
         rawPropertyMap.putAll(subCM.rawPropertyMap);
     }
 
-    /** Returns a copy of the map of global properties set for this configuration manager. */
+    /**
+     * Returns a copy of the map of global properties set for this configuration manager.
+     * @return a copy of the global properties.
+     */
     public GlobalProperties getGlobalProperties() {
         return new GlobalProperties(globalProperties);
+    }
+
+    /**
+     * Returns an immutable view of the global properties. Used for efficiency reasons.
+     * @return An immutable view on the global properties.
+     */
+    public ImmutableGlobalProperties getImmutableGlobalProperties() {
+        return globalProperties.getImmutableProperties();
     }
 
     /**
@@ -1531,7 +1542,7 @@ public class ConfigurationManager implements Cloneable {
         }
 
         // make sure that both configuration managers have the same set of global properties
-        return cm.getGlobalProperties().equals(getGlobalProperties());
+        return cm.getImmutableGlobalProperties().equals(getImmutableGlobalProperties());
     }
 
     /** Creates a deep copy of the given CM instance. */

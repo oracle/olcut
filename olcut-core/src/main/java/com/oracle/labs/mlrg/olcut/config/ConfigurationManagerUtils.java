@@ -171,7 +171,7 @@ public class ConfigurationManagerUtils {
         ps.setInstanceName(newName);
 
         // it might be possible that the component is the value of a global property
-        GlobalProperties globalProps = cm.getGlobalProperties();
+        ImmutableGlobalProperties globalProps = cm.getImmutableGlobalProperties();
         for(String propName : globalProps.keySet()) {
             String propVal = globalProps.get(propName).toString();
 

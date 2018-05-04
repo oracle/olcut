@@ -402,7 +402,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
         }
 
         // make sure that both configuration managers have the same set of global properties
-        return cm.getGlobalProperties().equals(getGlobalProperties());
+        return cm.getImmutableGlobalProperties().equals(getImmutableGlobalProperties());
     }
 
     /** Creates a deep copy of the given CM instance. */
