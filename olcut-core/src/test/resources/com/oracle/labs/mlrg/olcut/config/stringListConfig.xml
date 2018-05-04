@@ -9,12 +9,22 @@
 -->
 
 <config>
+
+    <property name="global-b" value="monkeys"/>
     
     <component name="listTest" type="com.oracle.labs.mlrg.olcut.config.StringListConfigurable">
         <propertylist name="strings">
             <item>a</item>
             <item>b</item>
             <item>c</item>
+        </propertylist>
+    </component>
+
+    <component name="overridingTest" type="com.oracle.labs.mlrg.olcut.config.StringListConfigurable">
+        <propertylist name="strings">
+            <item>primates</item>
+            <item>${global-b}</item>
+            <item>lemurs</item>
         </propertylist>
     </component>
 
