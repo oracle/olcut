@@ -5,6 +5,7 @@
 
 package com.oracle.labs.mlrg.olcut.config.json;
 
+import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManagerUtils;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
@@ -48,6 +49,10 @@ public class GlobalPropertyTest {
         StringConfigurable sc = (StringConfigurable) cm.lookup("badlyformed");
     }
 
+    @Test(expected=ConfigLoaderException.class)
+    public void invalidGlobalProperty() {
+        ConfigurationManager cm = new ConfigurationManager("invalidGlobalPropertyConfig.json");
+    }
 
     @Test
     public void simpleReplacement() throws IOException {
