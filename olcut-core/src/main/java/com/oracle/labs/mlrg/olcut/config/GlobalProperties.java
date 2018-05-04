@@ -28,8 +28,20 @@ public class GlobalProperties extends HashMap<String, GlobalProperty> {
         }
     }
 
-    public void setValue(String propertyName, String value) {
-        if(keySet().contains(propertyName)) {
+    /**
+     * Adds a value to this GlobalProperties. Throws PropertyException if the
+     * name does not conform to the {@link GlobalProperty#globalSymbolPattern}.
+     * @param propertyName
+     * @param value
+     * @throws PropertyException
+     */
+    public void setValue(String propertyName, String value) throws PropertyException {
+        String testValue = "${" + propertyName + "}";
+        Matcher m = GlobalProperty.globalSymbolPattern.matcher(testValue);
+        if (!m.matches()) {
+            throw new PropertyException("GlobalProperties",propertyName,"Does not conform to the GlobalProperty regex");
+        }
+        if (keySet().contains(propertyName)) {
             get(propertyName).setValue(value);
         } else {
             put(propertyName, new GlobalProperty(value));

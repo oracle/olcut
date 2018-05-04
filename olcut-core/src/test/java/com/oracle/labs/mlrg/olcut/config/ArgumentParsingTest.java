@@ -66,6 +66,17 @@ public class ArgumentParsingTest {
     }
 
     @Test
+    public void testConfigurableGlobalPropertyOverride() throws IOException {
+        OverridingOptions o = new OverridingOptions();
+        String[] args = new String[]{"-c","stringListConfig.xml","-s","overridingTest"};
+        ConfigurationManager cm = new ConfigurationManager(args, o);
+
+        assertEquals("Configurable overriding failed.", "primates", o.slc.strings.get(0));
+        assertEquals("Configurable overriding failed.", "monkeys", o.slc.strings.get(1));
+        assertEquals("Configurable overriding failed.", "lemurs", o.slc.strings.get(2));
+    }
+
+    @Test
     public void testConfigurableOverrideAndLoad() throws IOException {
         OverridingOptions o = new OverridingOptions();
         String[] args = new String[]{"-c","stringListConfig.xml","--string-list-configurable","listTest","--@listTest.strings","alpha,beta,gamma"};
