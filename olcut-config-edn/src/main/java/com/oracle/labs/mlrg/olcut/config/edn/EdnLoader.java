@@ -8,6 +8,7 @@ import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
+import us.bpsm.edn.EdnException;
 import us.bpsm.edn.Keyword;
 import us.bpsm.edn.Symbol;
 import us.bpsm.edn.parser.Parseable;
@@ -113,8 +114,10 @@ public class EdnLoader implements ConfigLoader {
 
     @Override
     public void load(URL url) throws ConfigLoaderException, IOException {
-        try(Parseable pbr = Parsers.newParseable(new BufferedReader(new InputStreamReader(url.openStream())))) {
+        try (Parseable pbr = Parsers.newParseable(new BufferedReader(new InputStreamReader(url.openStream())))) {
             parseEdn(pbr);
+        } catch (EdnException e) {
+            throw new ConfigLoaderException(e, "Edn failed to parse url: " + url.toString());
         }
     }
 
