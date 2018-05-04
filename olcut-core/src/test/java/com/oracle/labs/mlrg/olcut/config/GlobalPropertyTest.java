@@ -42,6 +42,10 @@ public class GlobalPropertyTest {
         StringConfigurable sc = (StringConfigurable) cm.lookup("badlyformed");
     }
 
+    @Test(expected=ConfigLoaderException.class)
+    public void invalidGlobalProperty() {
+        ConfigurationManager cm = new ConfigurationManager("invalidGlobalPropertyConfig.xml");
+    }
 
     @Test
     public void simpleReplacement() throws IOException {

@@ -1,0 +1,6 @@
+(config
+
+    (property a "alpha")
+    (property a5?! "beta")
+
+)
