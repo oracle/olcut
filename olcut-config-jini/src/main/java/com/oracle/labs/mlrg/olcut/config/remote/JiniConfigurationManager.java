@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  * @see Configurable
  * @see PropertySheet
  */
-public class JiniConfigurationManager extends ConfigurationManager implements Closeable {
+public class JiniConfigurationManager extends ConfigurationManager {
     private static final Logger logger = Logger.getLogger(JiniConfigurationManager.class.getName());
 
     private ComponentRegistry registry;
@@ -423,8 +423,4 @@ public class JiniConfigurationManager extends ConfigurationManager implements Cl
         return new ServablePropertySheet<>(conf,name,(JiniConfigurationManager)cm,rpd);
     }
 
-    @Override
-    public void close() {
-        shutdown();
-    }
 }
