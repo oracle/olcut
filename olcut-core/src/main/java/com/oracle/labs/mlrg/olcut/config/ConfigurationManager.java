@@ -4,6 +4,7 @@ import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
 import javax.management.MBeanServer;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,7 +43,7 @@ import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
  * @see Configurable
  * @see PropertySheet
  */
-public class ConfigurationManager implements Cloneable {
+public class ConfigurationManager implements Cloneable, Closeable {
     private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
 
     public static final Option configFileOption = new Option() {
@@ -952,6 +953,11 @@ public class ConfigurationManager implements Cloneable {
      * Shuts down the configuration manager, which is a no-op on the standard version.
      */
     public synchronized void shutdown() { }
+
+    @Override
+    public void close() {
+        shutdown();
+    }
 
     /**
      * Get any unnamed arguments that weren't parsed into an {@link Options}
@@ -1932,4 +1938,5 @@ public class ConfigurationManager implements Cloneable {
         }
         return stringList;
     }
+
 }
