@@ -11,6 +11,7 @@ import com.oracle.labs.mlrg.olcut.config.InternalConfigurationException;
 import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.UsageException;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
 import java.rmi.Remote;
@@ -30,7 +31,7 @@ import java.util.logging.Logger;
  * @see Configurable
  * @see PropertySheet
  */
-public class JiniConfigurationManager extends ConfigurationManager {
+public class JiniConfigurationManager extends ConfigurationManager implements Closeable {
     private static final Logger logger = Logger.getLogger(JiniConfigurationManager.class.getName());
 
     private ComponentRegistry registry;
@@ -196,6 +197,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
     @Override
     public synchronized void shutdown() {
         if(registry != null) {
+            logger.info("Shutting down registry");
             registry.shutdown();
             registry = null;
         }
@@ -419,5 +421,10 @@ public class JiniConfigurationManager extends ConfigurationManager {
     @Override
     protected <T extends Configurable> ServablePropertySheet<T> getNewPropertySheet(Class<T> conf, String name, ConfigurationManager cm, RawPropertyData rpd) {
         return new ServablePropertySheet<>(conf,name,(JiniConfigurationManager)cm,rpd);
+    }
+
+    @Override
+    public void close() {
+        shutdown();
     }
 }
