@@ -822,7 +822,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * Adds a set of properties at the given URL to the current configuration
      * manager.
      */
-    public void addProperties(URL url) throws IOException, ConfigLoaderException {
+    public void addProperties(URL url) throws ConfigLoaderException {
         configURLs.add(url);
 
         //
@@ -976,6 +976,15 @@ public class ConfigurationManager implements Cloneable, Closeable {
      */
     public RawPropertyData getRawProperties(String instanceName) {
         return rawPropertyMap.get(instanceName);
+    }
+
+    /**
+     * Does this ConfigurationManager know about an instance called instanceName.
+     * @param instanceName The name to check.
+     * @return True if it contains a {@link Configurable} called instanceName.
+     */
+    public boolean containsConfigurable(String instanceName) {
+        return rawPropertyMap.containsKey(instanceName);
     }
 
     /**
