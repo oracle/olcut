@@ -40,7 +40,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * Creates a new empty jini configuration manager. This constructor is only of use in cases when a system configuration
      * is created during runtime.
      */
-    public JiniConfigurationManager() throws IOException {
+    public JiniConfigurationManager() {
         super();
     }
 
@@ -51,8 +51,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @param location place to load initial properties from
      * @throws IOException if an error occurs while loading properties from the URL
      */
-    public JiniConfigurationManager(String location) throws IOException,
-            PropertyException {
+    public JiniConfigurationManager(String location) throws PropertyException {
         super(location);
 
         //
@@ -67,8 +66,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @param url place to load initial properties from
      * @throws IOException if an error occurs while loading properties from the URL
      */
-    public JiniConfigurationManager(URL url) throws IOException,
-            PropertyException {
+    public JiniConfigurationManager(URL url) throws PropertyException {
         super(url);
 
         //
@@ -85,7 +83,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @throws PropertyException Thrown when an invalid property is loaded.
      * @throws IOException Thrown when the configuration file cannot be read.
      */
-    public JiniConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException, IOException {
+    public JiniConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException {
         this(arguments,EMPTY_OPTIONS);
     }
 
@@ -105,7 +103,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @throws PropertyException Thrown when an invalid property is loaded.
      * @throws IOException Thrown when the configuration file cannot be read.
      */
-    public JiniConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException, IOException {
+    public JiniConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException {
         super(arguments,options);
 
         //
@@ -118,7 +116,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * manager.
      */
     @Override
-    public void addProperties(URL url) throws IOException, PropertyException {
+    public void addProperties(URL url) throws PropertyException {
         super.addProperties(url);
 
         if(registry == null) {
