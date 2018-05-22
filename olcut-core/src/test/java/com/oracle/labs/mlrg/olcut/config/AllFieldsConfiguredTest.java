@@ -104,7 +104,7 @@ public class AllFieldsConfiguredTest {
         assertEquals(new Double(2.0),ac.mapDoubleField.get("two"));
     }
 
-    public AllFieldsConfigurable generateConfigurable() {
+    public static AllFieldsConfigurable generateConfigurable() {
         AllFieldsConfigurable ac = new AllFieldsConfigurable();
 
         ac.name = "all-config";
@@ -115,6 +115,9 @@ public class AllFieldsConfiguredTest {
 
         ac.byteField = 123;
         ac.ByteField = 123;
+
+        ac.charField = 'a';
+        ac.characterField = 'a';
 
         ac.shortField = 1234;
         ac.ShortField = 1234;
@@ -135,6 +138,7 @@ public class AllFieldsConfiguredTest {
 
         //Primitive array types
         ac.byteArrayField = new byte[]{123, 23 ,3};
+        ac.charArrayField = new char[]{'1', '2', '3'};
         ac.shortArrayField = new short[]{12345,2345,345};
         ac.intArrayField = new int[]{123456,23456,3456};
         ac.longArrayField = new long[]{9223372036854775807L,9223372036854775806L,5L};

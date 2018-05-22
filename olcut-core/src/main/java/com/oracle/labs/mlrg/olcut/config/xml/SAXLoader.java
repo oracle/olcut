@@ -372,13 +372,8 @@ public class SAXLoader implements ConfigLoader {
                     // nothing to do
                     break;
                 case PROPERTYLIST:
-                    if (rpd.contains(itemListName)) {
-                        throw new SAXParseException("Duplicate property: "
-                                + itemListName, locator);
-                    } else {
-                        rpd.add(itemListName, itemList);
-                        itemList = null;
-                    }
+                    rpd.add(itemListName, itemList);
+                    itemList = null;
                     break;
                 case ITEM:
                     itemList.add(curItem.toString().trim());

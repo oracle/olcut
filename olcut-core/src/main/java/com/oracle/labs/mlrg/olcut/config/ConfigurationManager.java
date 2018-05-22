@@ -1854,6 +1854,10 @@ public class ConfigurationManager implements Cloneable, Closeable {
                                 for (byte b : (byte[]) field.get(configurable)) {
                                     stringList.add("" + b);
                                 }
+                            } else if (char.class.isAssignableFrom(arrayComponentType)) {
+                                for (char c : (char[]) field.get(configurable)) {
+                                    stringList.add("" + c);
+                                }
                             } else if (short.class.isAssignableFrom(arrayComponentType)) {
                                 for (short s : (short[]) field.get(configurable)) {
                                     stringList.add("" + s);

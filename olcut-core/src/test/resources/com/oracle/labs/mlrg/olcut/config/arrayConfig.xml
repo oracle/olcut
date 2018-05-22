@@ -8,6 +8,16 @@
 <config>
 
     <component name="a" type="com.oracle.labs.mlrg.olcut.config.ArrayConfigurable">
+        <propertylist name="byteArray">
+            <item>1</item>
+            <item>2</item>
+            <item>3</item>
+        </propertylist>
+        <propertylist name="shortArray">
+            <item>1</item>
+            <item>2</item>
+            <item>3</item>
+        </propertylist>
         <propertylist name="intArray">
             <item>1</item>
             <item>2</item>
@@ -27,6 +37,19 @@
             <item>1e-16</item>
             <item>2e-16</item>
             <item>3.16</item>
+        </propertylist>
+        <propertylist name="charArray">
+            <item>a</item>
+            <item>b</item>
+            <item>c</item>
+        </propertylist>
+    </component>
+
+    <component name="invalid-char" type="com.oracle.labs.mlrg.olcut.config.ArrayConfigurable" inherit="a">
+        <propertylist name="charArray">
+            <item>a</item>
+            <item>b</item>
+            <item>C-3PO</item>
         </propertylist>
     </component>
 

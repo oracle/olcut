@@ -13,6 +13,8 @@
         <property name="BoolField" value="true"/>
         <property name="byteField" value="123"/>
         <property name="ByteField" value="123"/>
+        <property name="charField" value="a"/>
+        <property name="characterField" value="a"/>
         <property name="shortField" value="1234"/>
         <property name="ShortField" value="1234"/>
         <property name="intField" value="12345"/>
@@ -27,6 +29,11 @@
         <propertylist name="byteArrayField">
             <item>123</item>
             <item>23</item>
+            <item>3</item>
+        </propertylist>
+        <propertylist name="charArrayField">
+            <item>1</item>
+            <item>2</item>
             <item>3</item>
         </propertylist>
         <propertylist name="shortArrayField">

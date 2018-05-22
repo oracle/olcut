@@ -180,6 +180,15 @@
         }, {
           "item" : "3"
         } ],
+        "charField" : "a",
+        "characterField" : "a",
+        "charArrayField" : [ {
+          "item" : "1"
+        }, {
+          "item" : "2"
+        }, {
+          "item" : "3"
+        } ],
         "enumField" : "F"
       }
     }, {
