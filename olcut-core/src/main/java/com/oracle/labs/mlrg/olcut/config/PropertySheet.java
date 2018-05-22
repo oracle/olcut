@@ -457,6 +457,17 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a byte", replaced.toString()));
                 }
                 break;
+            case CHAR_ARRAY:
+                char[] newCharArray = new char[replaced.size()];
+                int index = 0;
+                for (String v : replaced) {
+                    if (v.length() != 1) {
+                        throw new PropertyException(instanceName, fieldName, String.format("%s is not a single character", v));
+                    }
+                    newCharArray[index++] = v.charAt(0);
+                }
+                output = newCharArray;
+                break;
             case SHORT_ARRAY:
                 try {
                     short[] ia = new short[replaced.size()];
@@ -614,6 +625,11 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                 } catch (NumberFormatException ex) {
                     throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a byte", val));
                 }
+            case CHAR:
+                if (val.length() != 1) {
+                    throw new PropertyException(instanceName, fieldName, String.format("%s is not a single character",val));
+                }
+                return val.charAt(0);
             case SHORT:
                 try {
                     return Short.parseShort(val);

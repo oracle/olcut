@@ -36,6 +36,11 @@ public class AllFieldsConfigurable implements Configurable {
     public Byte ByteField;
 
     @Config
+    public char charField;
+    @Config
+    public Character characterField;
+
+    @Config
     public short shortField;
     @Config
     public Short ShortField;
@@ -66,6 +71,9 @@ public class AllFieldsConfigurable implements Configurable {
     //Primitive array types
     @Config
     public byte[] byteArrayField;
+
+    @Config
+    public char[] charArrayField;
 
     @Config
     public short[] shortArrayField;
@@ -155,6 +163,7 @@ public class AllFieldsConfigurable implements Configurable {
 
         if (boolField != that.boolField) {logger.log(Level.INFO,"boolField differs, this = " + boolField + ", other = " + that.boolField); return false;}
         if (byteField != that.byteField) {logger.log(Level.INFO,"byteField differs, this = " + byteField + ", other = " + that.byteField); return false;}
+        if (charField != that.charField) {logger.log(Level.INFO,"charField differs, this = " + charField + ", other = " + that.charField); return false;}
         if (shortField != that.shortField) {logger.log(Level.INFO,"shortField differs, this = " + shortField + ", other = " + that.shortField); return false;}
         if (intField != that.intField) {logger.log(Level.INFO,"intField differs, this = " + intField + ", other = " + that.intField); return false;}
         if (longField != that.longField) {logger.log(Level.INFO,"longField differs, this = " + longField + ", other = " + that.longField); return false;}
@@ -163,6 +172,7 @@ public class AllFieldsConfigurable implements Configurable {
         if (name != null ? !name.equals(that.name) : that.name != null) {logger.log(Level.INFO,"name differs, this = " + name + ", other = " + that.name); return false;}
         if (BoolField != null ? !BoolField.equals(that.BoolField) : that.BoolField != null) {logger.log(Level.INFO,"BoolField differs, this = " + BoolField + ", other = " + that.BoolField); return false;}
         if (ByteField != null ? !ByteField.equals(that.ByteField) : that.ByteField != null) {logger.log(Level.INFO,"ByteField differs, this = " + ByteField + ", other = " + that.ByteField); return false;}
+        if (characterField != null ? !characterField.equals(that.characterField) : that.characterField != null) {logger.log(Level.INFO,"characterField differs, this = " + characterField + ", other = " + that.characterField); return false;}
         if (ShortField != null ? !ShortField.equals(that.ShortField) : that.ShortField != null) {logger.log(Level.INFO,"ShortField differs, this = " + ShortField + ", other = " + that.ShortField); return false;}
         if (integerField != null ? !integerField.equals(that.integerField) : that.integerField != null) {logger.log(Level.INFO,"integerField differs, this = " + integerField + ", other = " + that.integerField); return false;}
         if (LongField != null ? !LongField.equals(that.LongField) : that.LongField != null) {logger.log(Level.INFO,"LongField differs, this = " + LongField + ", other = " + that.LongField); return false;}
@@ -170,6 +180,7 @@ public class AllFieldsConfigurable implements Configurable {
         if (DoubleField != null ? !DoubleField.equals(that.DoubleField) : that.DoubleField != null) {logger.log(Level.INFO,"DoubleField differs, this = " + DoubleField + ", other = " + that.DoubleField); return false;}
         if (stringField != null ? !stringField.equals(that.stringField) : that.stringField != null) {logger.log(Level.INFO,"stringField differs, this = " + stringField + ", other = " + that.stringField); return false;}
         if (!Arrays.equals(byteArrayField, that.byteArrayField)) {logger.log(Level.INFO,"byteArrayField differs, this = " + byteArrayField + ", other = " + that.byteArrayField); return false;}
+        if (!Arrays.equals(charArrayField, that.charArrayField)) {logger.log(Level.INFO,"charArrayField differs, this = " + charArrayField + ", other = " + that.charArrayField); return false;}
         if (!Arrays.equals(shortArrayField, that.shortArrayField)) {logger.log(Level.INFO,"shortArrayField differs, this = " + shortArrayField + ", other = " + that.shortArrayField); return false;}
         if (!Arrays.equals(intArrayField, that.intArrayField)) {logger.log(Level.INFO,"intArrayField differs, this = " + intArrayField + ", other = " + that.intArrayField); return false;}
         if (!Arrays.equals(longArrayField, that.longArrayField)) {logger.log(Level.INFO,"longArrayField differs, this = " + longArrayField + ", other = " + that.longArrayField); return false;}
@@ -230,6 +241,8 @@ public class AllFieldsConfigurable implements Configurable {
         result = 31 * result + (BoolField != null ? BoolField.hashCode() : 0);
         result = 31 * result + (int) byteField;
         result = 31 * result + (ByteField != null ? ByteField.hashCode() : 0);
+        result = 31 * result + (int) charField;
+        result = 31 * result + (characterField != null ? characterField.hashCode() : 0);
         result = 31 * result + (int) shortField;
         result = 31 * result + (ShortField != null ? ShortField.hashCode() : 0);
         result = 31 * result + intField;
@@ -243,6 +256,7 @@ public class AllFieldsConfigurable implements Configurable {
         result = 31 * result + (DoubleField != null ? DoubleField.hashCode() : 0);
         result = 31 * result + (stringField != null ? stringField.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(byteArrayField);
+        result = 31 * result + Arrays.hashCode(charArrayField);
         result = 31 * result + Arrays.hashCode(shortArrayField);
         result = 31 * result + Arrays.hashCode(intArrayField);
         result = 31 * result + Arrays.hashCode(longArrayField);

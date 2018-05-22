@@ -20,6 +20,7 @@ public enum FieldType {
     //Primitives
     BOOLEAN(boolean.class, Boolean.class),
     BYTE(byte.class, Byte.class),
+    CHAR(char.class, Character.class),
     SHORT(short.class, Short.class),
     INTEGER(int.class, Integer.class),
     LONG(long.class, Long.class),
@@ -28,6 +29,7 @@ public enum FieldType {
     STRING(String.class),
     //Primitive array types
     BYTE_ARRAY(byte[].class),
+    CHAR_ARRAY(char[].class),
     SHORT_ARRAY(short[].class),
     INTEGER_ARRAY(int[].class),
     LONG_ARRAY(long[].class),
@@ -59,14 +61,14 @@ public enum FieldType {
     
     private final static Map<Class<?>,FieldType> m = new HashMap<>();
     
-    public final static EnumSet<FieldType> arrayTypes = EnumSet.of(BYTE_ARRAY, SHORT_ARRAY,
+    public final static EnumSet<FieldType> arrayTypes = EnumSet.of(BYTE_ARRAY, CHAR_ARRAY, SHORT_ARRAY,
                                                                   INTEGER_ARRAY, LONG_ARRAY,
                                                                   FLOAT_ARRAY, DOUBLE_ARRAY, STRING_ARRAY,
                                                                   CONFIGURABLE_ARRAY);
 
     public final static EnumSet<FieldType> listTypes = EnumSet.of(LIST,SET,ENUM_SET);
 
-    public final static EnumSet<FieldType> simpleTypes = EnumSet.of(BOOLEAN, BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, STRING,
+    public final static EnumSet<FieldType> simpleTypes = EnumSet.of(BOOLEAN, BYTE, CHAR, SHORT, INTEGER, LONG, FLOAT, DOUBLE, STRING,
                                                                     CONFIGURABLE, ATOMIC_INTEGER,
                                                                     ATOMIC_LONG, FILE, PATH, RANDOM, ENUM);
 

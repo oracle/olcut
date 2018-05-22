@@ -1,69 +1,72 @@
 (config
-	(property second-path "/tmp/second-path.txt")
-	(property third-path "/tmp/third-path.txt")
-	(property first-path "/tmp/first-path.txt")
-	(property third-file "/tmp/third-file.txt")
-	(property first-file "/tmp/first-file.txt")
-	(property second-file "/tmp/second-file.txt")
-	(component second-configurable [mlrg olcut config StringConfigurable]
-		{:import "false" :export "false"}
-		:one "alpha"
-		:two "beta"
-		:three "gamma")
-	(component first-configurable [mlrg olcut config StringConfigurable]
-		{:import "false" :export "false"}
-		:one "A"
-		:two "B"
-		:three "C")
-	(component all-config [mlrg olcut config AllFieldsConfigurable]
-		{:import "false" :export "false"}
-		:floatField "3.14159"
-		:mapConfigurableSubclassField {:second "second-configurable" :third "third-configurable" :first "first-configurable"}
-		:doubleField "3.141592653589793"
-		:configurableSubclassField "second-configurable"
-		:setPathField ["first-path" "second-path"]
-		:mapDoubleField {:e "2.71828" :pi "3.14159"}
-		:byteField "123"
-		:listStringField ["e" "pi"]
-		:atomicLongField "123456789"
-		:listRandomField ["1234" "12345"]
-		:pathField "/tmp/a-path.txt"
-		:intField "12345"
-		:FloatField "3.14159"
-		:setDoubleField ["2.71828" "3.14159"]
-		:boolField "true"
-		:LongField "123456789"
-		:listDoubleField ["2.71828" "3.14159"]
-		:setConfigurableSubclassField ["first-configurable" "second-configurable"]
-		:longArrayField ["9223372036854775807" "9223372036854775806" "5"]
-		:listConfigurableSubclassField ["first-configurable" "second-configurable"]
-		:DoubleField "3.141592653589793"
-		:randomField "12345"
-		:BoolField "true"
-		:longField "123456789"
-		:shortArrayField ["12345" "2345" "345"]
-		:atomicIntegerField "1"
-		:doubleArrayField ["1e-16" "2e-16" "3.16"]
-		:stringArrayField ["gibbons" "baboons" "gorillas"]
-		:mapStringField {:second "B" :first "A"}
-		:mapFileField {:second "second-file" :third "third-file" :first "first-file"}
-		:intArrayField ["123456" "23456" "3456"]
-		:shortField "1234"
-		:configurableField "first-configurable"
-		:configurableArrayField ["first-configurable" "second-configurable"]
-		:configurableSubclassArrayField ["first-configurable" "second-configurable"]
-		:integerField "12345"
-		:setStringField ["e" "pi"]
-		:ByteField "123"
-		:floatArrayField ["1.1f" "2.3" "3.5"]
-		:enumSetField ["A" "C" "E"]
-		:fileField "/tmp/a-file.txt"
-		:ShortField "1234"
-		:stringField "monkeys"
-		:byteArrayField ["123" "23" "3"]
-		:enumField "F")
-	(component third-configurable [mlrg olcut config StringConfigurable]
-		{:import "false" :export "false"}
-		:one "uno"
-		:two "dos"
-		:three "tres"))
+  (property second-path "/tmp/second-path.txt")
+  (property third-path "/tmp/third-path.txt")
+  (property first-path "/tmp/first-path.txt")
+  (property third-file "/tmp/third-file.txt")
+  (property first-file "/tmp/first-file.txt")
+  (property second-file "/tmp/second-file.txt")
+  (component second-configurable [mlrg olcut config StringConfigurable]
+    {:import "false" :export "false"}
+    :one "alpha"
+    :two "beta"
+    :three "gamma")
+  (component first-configurable [mlrg olcut config StringConfigurable]
+    {:import "false" :export "false"}
+    :one "A"
+    :two "B"
+    :three "C")
+  (component all-config [mlrg olcut config AllFieldsConfigurable]
+    {:import "false" :export "false"}
+    :floatField "3.14159"
+    :mapConfigurableSubclassField {:second "second-configurable" :third "third-configurable" :first "first-configurable"}
+    :doubleField "3.141592653589793"
+    :configurableSubclassField "second-configurable"
+    :setPathField ["first-path" "second-path"]
+    :mapDoubleField {:e "2.71828" :pi "3.14159"}
+    :byteField "123"
+    :listStringField ["e" "pi"]
+    :atomicLongField "123456789"
+    :listRandomField ["1234" "12345"]
+    :pathField "/tmp/a-path.txt"
+    :intField "12345"
+    :FloatField "3.14159"
+    :setDoubleField ["2.71828" "3.14159"]
+    :boolField "true"
+    :LongField "123456789"
+    :listDoubleField ["2.71828" "3.14159"]
+    :setConfigurableSubclassField ["first-configurable" "second-configurable"]
+    :longArrayField ["9223372036854775807" "9223372036854775806" "5"]
+    :listConfigurableSubclassField ["first-configurable" "second-configurable"]
+    :DoubleField "3.141592653589793"
+    :randomField "12345"
+    :BoolField "true"
+    :longField "123456789"
+    :shortArrayField ["12345" "2345" "345"]
+    :atomicIntegerField "1"
+    :doubleArrayField ["1e-16" "2e-16" "3.16"]
+    :stringArrayField ["gibbons" "baboons" "gorillas"]
+    :mapStringField {:second "B" :first "A"}
+    :mapFileField {:second "second-file" :third "third-file" :first "first-file"}
+    :intArrayField ["123456" "23456" "3456"]
+    :shortField "1234"
+    :configurableField "first-configurable"
+    :configurableArrayField ["first-configurable" "second-configurable"]
+    :configurableSubclassArrayField ["first-configurable" "second-configurable"]
+    :integerField "12345"
+    :setStringField ["e" "pi"]
+    :ByteField "123"
+    :floatArrayField ["1.1f" "2.3" "3.5"]
+    :enumSetField ["A" "C" "E"]
+    :fileField "/tmp/a-file.txt"
+    :ShortField "1234"
+    :stringField "monkeys"
+    :charField "a"
+    :characterField "a"
+    :charArrayField ["1" "2" "3"]
+    :byteArrayField ["123" "23" "3"]
+    :enumField "F")
+  (component third-configurable [mlrg olcut config StringConfigurable]
+    {:import "false" :export "false"}
+    :one "uno"
+    :two "dos"
+    :three "tres"))
