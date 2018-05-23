@@ -44,6 +44,19 @@ public class ConfigurablePropertyMapTest {
     }
 
     @Test
+    public void overriddenPropMap() {
+        ConfigurationManager cm = new ConfigurationManager("configurablePropMap.json");
+
+        FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("overriddenMap");
+
+        assertEquals(fm.map.get("first").name, "foo3");
+        assertEquals(fm.map.get("first").value, 20);
+
+        assertEquals(fm.map.get("second").name, "foo2");
+        assertEquals(fm.map.get("second").value, 2);
+    }
+
+    @Test
     public void saveAllWithInstantiationGeneric() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("configurablePropMap.json");
         FooMapConfigurable s1 = (FooMapConfigurable) cm1.lookup("fooMap");

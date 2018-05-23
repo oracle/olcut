@@ -1,9 +1,10 @@
 package com.oracle.labs.mlrg.olcut.config.json;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -65,6 +66,7 @@ public class JsonLoader implements ConfigLoader {
     @Override
     public void load(URL url) throws ConfigLoaderException, IOException {
         JsonParser parser = factory.createParser(url);
+        parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
         parseJson(parser);
         parser.close();
     }
@@ -136,6 +138,7 @@ public class JsonLoader implements ConfigLoader {
     }
 
     protected void parseComponent(ObjectNode node) {
+        boolean overriding = false;
         JsonNode curComponentNode = node.get(ConfigLoader.NAME);
         JsonNode curTypeNode = node.get(ConfigLoader.TYPE);
         JsonNode overrideNode = node.get(ConfigLoader.INHERIT);
@@ -201,6 +204,7 @@ public class JsonLoader implements ConfigLoader {
             }
             rpd = new RawPropertyData(curComponent, curType,
                     spd.getProperties());
+            overriding = true;
         } else {
             if (rpdMap.get(curComponent) != null) {
                 throw new ConfigLoaderException("duplicate definition for "
