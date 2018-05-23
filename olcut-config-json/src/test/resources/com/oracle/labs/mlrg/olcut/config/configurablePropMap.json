@@ -13,6 +13,17 @@
         }
       }
     }, {
+      "name" : "overriddenMap",
+      "type" : "com.oracle.labs.mlrg.olcut.config.FooMapConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "map" : {
+          "first" : "foo3",
+          "second" : "foo2"
+        }
+      }
+    }, {
       "name" : "foo1",
       "type" : "com.oracle.labs.mlrg.olcut.config.FooConfigurable",
       "export" : "false",
@@ -29,6 +40,15 @@
       "properties" : {
         "name" : "foo2",
         "value" : "2"
+      }
+    }, {
+      "name" : "foo3",
+      "type" : "com.oracle.labs.mlrg.olcut.config.FooConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "name" : "foo3",
+        "value" : "20"
       }
     } ]
   }
