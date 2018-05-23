@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Description:
+        A configuration file for testing duplicate property handling.
+-->
+
+<config>
+    
+    <component name="a" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+        <property name="one" value="a"/>
+        <property name="two" value="b"/>
+        <property name="three" value="c"/>
+        <property name="three" value="c"/>
+    </component>
+
+</config>

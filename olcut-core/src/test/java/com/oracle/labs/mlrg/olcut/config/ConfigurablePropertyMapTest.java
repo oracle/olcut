@@ -23,13 +23,26 @@ public class ConfigurablePropertyMapTest {
     }
 
     @Test
-    public void configurablePropMap() throws IOException {
+    public void configurablePropMap() {
         ConfigurationManager cm = new ConfigurationManager("configurablePropMap.xml");
 
         FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("fooMap");
 
         assertEquals(fm.map.get("first").name, "foo1");
         assertEquals(fm.map.get("first").value, 1);
+
+        assertEquals(fm.map.get("second").name, "foo2");
+        assertEquals(fm.map.get("second").value, 2);
+    }
+
+    @Test
+    public void overriddenPropMap() {
+        ConfigurationManager cm = new ConfigurationManager("configurablePropMap.xml");
+
+        FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("overriddenMap");
+
+        assertEquals(fm.map.get("first").name, "foo3");
+        assertEquals(fm.map.get("first").value, 20);
 
         assertEquals(fm.map.get("second").name, "foo2");
         assertEquals(fm.map.get("second").value, 2);
