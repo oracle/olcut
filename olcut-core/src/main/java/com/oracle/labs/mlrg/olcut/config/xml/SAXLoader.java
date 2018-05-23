@@ -372,8 +372,13 @@ public class SAXLoader implements ConfigLoader {
                     // nothing to do
                     break;
                 case PROPERTYLIST:
-                    rpd.add(itemListName, itemList);
-                    itemList = null;
+                    if (rpd.contains(itemListName) && !overriding) {
+                        throw new SAXParseException("Duplicate property: "
+                                + itemListName, locator);
+                    } else {
+                        rpd.add(itemListName, itemList);
+                        itemList = null;
+                    }
                     break;
                 case ITEM:
                     itemList.add(curItem.toString().trim());
@@ -384,11 +389,12 @@ public class SAXLoader implements ConfigLoader {
                         itemList.add(Class.forName(curItem.toString()));
                     } catch (ClassNotFoundException cnfe) {
                         throw new SAXParseException("Unable to find class "
-                                + curItem.toString() + " in property list " + itemListName, locator);
+                                + curItem.toString() + " in property list "
+                                + itemListName, locator);
                     }
                     break;
                 case PROPERTYMAP:
-                    if (rpd.contains(mapName)) {
+                    if (rpd.contains(mapName) && !overriding) {
                         throw new SAXParseException("Duplicate property: "
                                 + mapName, locator);
                     } else {
