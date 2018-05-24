@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DuplicateCompenentFieldTest {
+public class DuplicateComponentFieldTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
