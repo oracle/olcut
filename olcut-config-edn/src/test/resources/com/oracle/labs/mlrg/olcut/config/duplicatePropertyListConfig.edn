@@ -1,0 +1,8 @@
+(config
+
+  (component a [mlrg olcut config ArrayConfigurable]
+             :floatArray [1.1f 2.3 3.5]
+             :floatArray [1.1f 2.3 3.5]
+             :doubleArray [1e-16 2e-16 3.16]
+             :intArray [1 2 3]
+             :longArray [5 6 7L]))
