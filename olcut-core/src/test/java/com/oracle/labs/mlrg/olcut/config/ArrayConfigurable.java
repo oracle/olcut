@@ -6,20 +6,20 @@ package com.oracle.labs.mlrg.olcut.config;
 public class ArrayConfigurable implements Configurable {
 
     @Config
-    byte[] byteArray;
+    public byte[] byteArray;
     @Config
-    short[] shortArray;
+    public short[] shortArray;
     @Config
-    int[] intArray;
+    public int[] intArray;
     @Config
-    long[] longArray;
+    public long[] longArray;
 
     @Config
-    float[] floatArray;
+    public float[] floatArray;
     @Config
-    double[] doubleArray;
+    public double[] doubleArray;
 
     @Config
-    char[] charArray;
+    public char[] charArray;
 
 }

@@ -28,12 +28,48 @@
         }, {
           "item" : "5"
         } ],
-        "intArray" : [ {
+        "byteArray" : [ {
           "item" : "1"
         }, {
           "item" : "2"
         }, {
           "item" : "3"
+        } ],
+        "shortArray" : [ {
+          "item" : "1"
+        }, {
+          "item" : "2"
+        }, {
+          "item" : "3"
+        } ],
+        "intArray" : [ {
+          "item" : "1"
+        }, {
+          "item" : "2"
+        }, {
+            "item": "3"
+        } ],
+        "charArray" : [ {
+          "item" : "a"
+        }, {
+          "item" : "b"
+        }, {
+          "item" : "c"
+        } ]
+      }
+    }, {
+      "name" : "invalid-char",
+      "type" : "com.oracle.labs.mlrg.olcut.config.ArrayConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "inherit" : "a",
+      "properties" : {
+        "charArray" : [ {
+          "item" : "a"
+        }, {
+          "item" : "b"
+        }, {
+          "item" : "C-3PO"
         } ]
       }
     } ]
