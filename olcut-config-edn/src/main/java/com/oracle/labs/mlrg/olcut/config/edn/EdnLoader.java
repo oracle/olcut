@@ -261,14 +261,14 @@ public class EdnLoader implements ConfigLoader {
         int propsStart = 2;
         RawPropertyData rpd = new RawPropertyData(name, type, null);
 
-        if(componentListItem.get(2) instanceof Map<?, ?>) {
-            boolean importable = false;
-            boolean exportable = false;
-            String override = null;
-            long leaseTime = 0L;
-            String entriesName = null;
-            String serializedForm = null;
+        boolean importable = false;
+        boolean exportable = false;
+        String override = null;
+        long leaseTime = 0L;
+        String entriesName = null;
+        String serializedForm = null;
 
+        if(componentListItem.get(2) instanceof Map<?, ?>) {
             Map<?, ?> modMap = ((Stream<Map.Entry<Keyword, Object>>) ((Map) componentListItem.get(2)).entrySet().stream())
                     .collect(Collectors.toMap(e -> checkKeyword(e.getKey()), Map.Entry::getValue));
             if(modMap.containsKey(ConfigLoader.INHERIT)) {
@@ -328,16 +328,18 @@ public class EdnLoader implements ConfigLoader {
             throw new ConfigLoaderException("Component element should have an even number of property key values pairs, found " + props.toString());
         }
         for(int i = 0; i < props.size(); i=i+2) {
-            int keyIdx = i;
             int valIdx = i+1;
-            String key = checkKeyword(props.get(keyIdx));
+            String key = checkKeyword(props.get(i));
             Object valObj = props.get(valIdx);
+            if(rpd.contains(key) && (override == null || override.isEmpty())) {
+                throw new ConfigLoaderException("duplicate key: " + key + " in component: " + name);
+            }
             if(valObj instanceof Map<?, ?>) {
                 Map<String, String> map = new HashMap<>();
                 for(Map.Entry<?, ?> ent: ((Map<?, ?>) valObj).entrySet()) {
                     map.put(checkKeyword(ent.getKey()), ent.getValue().toString());
                 }
-                rpd.add(key, map);
+                    rpd.add(key, map);
             } else if(valObj instanceof List<?>) {
                 List valueList = new ArrayList();
                 for(Object itm: (List<?>) valObj) {
@@ -356,10 +358,11 @@ public class EdnLoader implements ConfigLoader {
                             || itm instanceof Long
                             || itm instanceof Float
                             || itm instanceof Double
-                            || itm instanceof Boolean) {
+                            || itm instanceof Boolean
+                            || itm instanceof Character) {
                         valueList.add(itm.toString());
                     } else {
-                        throw new ConfigLoaderException("Unexpected type for property value " + valObj.getClass().toString() + " with value " + valObj);
+                        throw new ConfigLoaderException("Unexpected type for property value " + valObj.getClass().toString() + " with value " + valObj );//+ "\n" + String.join(" ", ((List) valObj).getClass().getCanonicalName()));
                     }
                 }
                 rpd.add(key, valueList);
@@ -369,7 +372,8 @@ public class EdnLoader implements ConfigLoader {
                     || valObj instanceof Long
                     || valObj instanceof Float
                     || valObj instanceof Double
-                    || valObj instanceof Boolean) {
+                    || valObj instanceof Boolean
+                    || valObj instanceof Character) {
                 rpd.add(key, valObj.toString());
             } else {
                 throw new ConfigLoaderException("Unexpected type for property value " + valObj.getClass().toString() + " with value " + valObj);
