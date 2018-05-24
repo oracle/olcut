@@ -4,6 +4,9 @@ import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriter;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriterException;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
+import us.bpsm.edn.EdnException;
+import us.bpsm.edn.EdnIOException;
+import us.bpsm.edn.EdnSyntaxException;
 import us.bpsm.edn.Keyword;
 import us.bpsm.edn.Symbol;
 import us.bpsm.edn.printer.Printer;
@@ -39,12 +42,22 @@ public class EdnConfigWriter implements ConfigWriter {
 
     @Override
     public void writeEndDocument() throws ConfigWriterException {
-        printer.printValue(struct);
+        try {
+            printer.printValue(struct);
+        } catch (EdnException  e) {
+            throw new ConfigWriterException(e);
+        }
     }
 
     @Override
     public void writeGlobalProperties(Map<String, String> props) throws ConfigWriterException {
         for(Map.Entry<String, String> e: props.entrySet()) {
+            if(e.getKey()==null) {
+                throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null keys" + props.toString()));
+            }
+            if(e.getValue()==null) {
+                throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null values: " + props.toString()));
+            }
             struct.add(new LinkedList<>(Arrays.asList(
                     Symbol.newSymbol(ConfigLoader.PROPERTY),
                     Symbol.newSymbol(e.getKey()),
@@ -73,6 +86,12 @@ public class EdnConfigWriter implements ConfigWriter {
             // map configurable field
             Map<Keyword, Object> mRes = new HashMap<>();
             for(Map.Entry<?, ?> e: ((Map<?, ?>) p).entrySet()) {
+                if(e.getKey()==null) {
+                    throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null keys" + p.toString()));
+                }
+                if(e.getValue()==null) {
+                    throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null values: " + p.toString()));
+                }
                 mRes.put(Keyword.newKeyword(e.getKey().toString()), e.getValue());
             }
             res = mRes;
@@ -80,6 +99,9 @@ public class EdnConfigWriter implements ConfigWriter {
             // list configurable field
             List<Object> lRes = new ArrayList<>();
             for(Object itm: (List<?>) p) {
+                if(itm==null) {
+                    throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
+                }
                 if(itm instanceof Class) {
                     lRes.add(cnMapper.write(((Class) itm).getCanonicalName()));
                 } else {
@@ -93,7 +115,8 @@ public class EdnConfigWriter implements ConfigWriter {
                 || p instanceof Long
                 || p instanceof Float
                 || p instanceof Double
-                || p instanceof Boolean) {
+                || p instanceof Boolean
+                || p instanceof Character) {
             res = p;
         } else {
             throw new ConfigWriterException(new IllegalArgumentException("Unexpected type for property value " + p.getClass().toString() + " with value " + p));
