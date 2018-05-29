@@ -349,7 +349,11 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     // We'll use flattenProp so that we take care of any variables
                     // in the single value.
                     String val = ps.flattenProp(f.getName());
-                    f.set(o, parseSimpleField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), f.getType(), ft, val));
+                    try {
+                        f.set(o, parseSimpleField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), f.getType(), ft, val));
+                    } catch (IllegalArgumentException e) {
+                        throw new PropertyException(ps.getInstanceName(), f.getName(), "Incompatible type found, looked up " + f.getName() + " but found an incorrect subclass of Configurable.");
+                    }
                 } else if (FieldType.mapTypes.contains(ft)){
                     //
                     // Last option is a map, as it's not a single value or a list.
