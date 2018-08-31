@@ -4,6 +4,7 @@ import us.bpsm.edn.Symbol;
 import us.bpsm.edn.printer.Printer;
 import us.bpsm.edn.printer.Printers;
 
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,7 @@ public class OlcutEdnPrinter implements Printer {
 
     private Printer p;
 
-    public OlcutEdnPrinter(PrintStream ps) {
+    public OlcutEdnPrinter(OutputStreamWriter ps) {
         this.p = Printers.newPrinter(Printers.prettyProtocolBuilder()
                 .put(List.class, prettyWriteListFn())
                 .put(Map.class, prettyWriteMapFn()).build(), ps);

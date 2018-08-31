@@ -1,7 +1,5 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.util.Pair;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -49,8 +47,8 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
 
     // todo implement hashCode
     public boolean equals(Object o) {
-        if(o != null && o instanceof GlobalProperties) {
-            GlobalProperties gp = (GlobalProperties) o;
+        if(o instanceof ImmutableGlobalProperties) {
+            ImmutableGlobalProperties gp = (ImmutableGlobalProperties) o;
             if(!map.keySet().equals(gp.map.keySet())) {
                 return false;
             }
@@ -118,15 +116,4 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
         return map.entrySet().iterator();
     }
 
-    class GlobalPropertyIterator implements Iterator<Pair<String, GlobalProperty>> {
-        @Override
-        public boolean hasNext() {
-            return false;
-        }
-
-        @Override
-        public Pair<String, GlobalProperty> next() {
-            return null;
-        }
-    }
 }

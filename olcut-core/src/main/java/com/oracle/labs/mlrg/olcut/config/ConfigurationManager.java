@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -305,7 +306,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
         StringBuilder builder = new StringBuilder();
 
         builder.append("Usage:\n\n");
-        ArrayList<ArrayList<String>> usageList = new ArrayList<>();
+        ArrayList<List<String>> usageList = new ArrayList<>();
         usageList.add(new ArrayList<>(Arrays.asList("Built-in Options")));
         usageList.add(Options.header);
         if (useConfigFiles) {
@@ -760,7 +761,9 @@ public class ConfigurationManager implements Cloneable, Closeable {
         // which has already checked it's configurable.
         try {
             clazz = (Class<? extends Configurable>) Class.forName(configurableClass);
-        } catch (ClassNotFoundException e) {}
+        } catch (ClassNotFoundException e) {
+            logger.log(Level.SEVERE, "Failed to load " + configurableClass);
+        }
         return checkConfigurableField(clazz,fieldName);
     }
 
@@ -787,7 +790,9 @@ public class ConfigurationManager implements Cloneable, Closeable {
         // which has already checked it's configurable.
         try {
             clazz = (Class<? extends Configurable>) Class.forName(configurableClass);
-        } catch (ClassNotFoundException e) {}
+        } catch (ClassNotFoundException e) {
+            logger.log(Level.SEVERE, "Failed to load " + configurableClass);
+        }
         return getStoredFieldType(clazz,fieldName);
     }
 
@@ -1560,6 +1565,11 @@ public class ConfigurationManager implements Cloneable, Closeable {
         return cm.getImmutableGlobalProperties().equals(getImmutableGlobalProperties());
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(configuredComponents, addedComponents, rawPropertyMap, globalProperties, serializedObjects, origGlobal, showCreations);
+    }
+
     /** Creates a deep copy of the given CM instance. */
     // This is not tested yet !!!
     public Object clone() throws CloneNotSupportedException {
@@ -1567,8 +1577,8 @@ public class ConfigurationManager implements Cloneable, Closeable {
         GlobalProperties newgp = new GlobalProperties(globalProperties);
         List<ConfigurationChangeListener> newcl = new ArrayList<>(changeListeners);
         Map<String, PropertySheet<? extends Configurable>> newSymbolTable = new LinkedHashMap<>();
-        for(String compName : symbolTable.keySet()) {
-            newSymbolTable.put(compName, (PropertySheet<? extends Configurable>) symbolTable.get(compName).clone());
+        for(Map.Entry<String, PropertySheet<? extends Configurable>> symbol : symbolTable.entrySet()) {
+            newSymbolTable.put(symbol.getKey(), symbol.getValue().clone());
         }
         Map<String,SerializedObject> newSerializedObjects = new HashMap<>();
         GlobalProperties newOrigGlobal = new GlobalProperties(origGlobal);
@@ -1599,14 +1609,13 @@ public class ConfigurationManager implements Cloneable, Closeable {
         RawPropertyData rpd = new RawPropertyData(componentName,
                 targetClass.getName());
 
-        for(String confName : defaultProps.keySet()) {
-            Object property = defaultProps.get(confName);
-
-            if(property instanceof Class) {
+        for(Map.Entry<String,Object> conf : defaultProps.entrySet()) {
+            Object property = conf.getValue();
+            if(conf.getValue() instanceof Class) {
                 property = ((Class) property).getName();
             }
 
-            rpd.getProperties().put(confName, property);
+            rpd.getProperties().put(conf.getKey(), property);
         }
 
         return getNewPropertySheet(targetClass, componentName, this, rpd);
@@ -1642,9 +1651,9 @@ public class ConfigurationManager implements Cloneable, Closeable {
         String filename = file.getName();
         int i = filename.lastIndexOf('.');
         String extension = i > 0 ? filename.substring(i+1).toLowerCase() : "";
-        FileOutputStream fos = new FileOutputStream(file);
-        save(fos, extension, writeAll);
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            save(fos, extension, writeAll);
+        }
     }
 
     /**
@@ -1888,8 +1897,10 @@ public class ConfigurationManager implements Cloneable, Closeable {
                     } else if (FieldType.mapTypes.contains(ft)) {
                         Map fieldMap = (Map) field.get(configurable);
                         HashMap<String, String> newMap = new HashMap<>();
-                        for (Object k : fieldMap.keySet()) {
-                            newMap.put((String) k, importSimpleField(genericType,name+"-"+field.getName(),(String) k,fieldMap.get(k)));
+                        for (Object e : fieldMap.entrySet()) {
+                            String key = (String) ((Map.Entry) e).getKey();
+                            Object value = ((Map.Entry) e).getValue();
+                            newMap.put(key, importSimpleField(genericType,name+"-"+field.getName(),key,value));
                         }
                         m.put(propertyName, newMap);
                     } else {
@@ -1902,14 +1913,14 @@ public class ConfigurationManager implements Cloneable, Closeable {
             }
             RawPropertyData rpd = new RawPropertyData(name, confClass.getName());
 
-            for(String confName : m.keySet()) {
-                Object property = m.get(confName);
+            for(Map.Entry<String,Object> e : m.entrySet()) {
+                Object property = e.getValue();
 
                 if(property instanceof Class) {
                     property = ((Class) property).getName();
                 }
 
-                rpd.getProperties().put(confName, property);
+                rpd.getProperties().put(e.getKey(), property);
             }
 
             PropertySheet<? extends Configurable> ps = getNewPropertySheet(configurable, name, this, rpd);

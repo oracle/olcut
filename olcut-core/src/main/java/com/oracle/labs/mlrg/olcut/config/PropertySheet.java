@@ -172,7 +172,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     /**
      * Returns true if the owner of this property sheet is already instantiated.
      */
-    public boolean isInstantiated() {
+    public synchronized boolean isInstantiated() {
         return owner != null;
     }
 
@@ -780,7 +780,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         return list;
     }
 
-    public void clearOwner() {
+    public synchronized void clearOwner() {
         owner = null;
     }
 
@@ -881,7 +881,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         return true;
     }
 
-    protected Object clone() throws CloneNotSupportedException {
+    protected PropertySheet<T> clone() throws CloneNotSupportedException {
         PropertySheet<T> ps = (PropertySheet<T>) super.clone();
 
         ps.registeredProperties = new HashMap<>(this.registeredProperties);

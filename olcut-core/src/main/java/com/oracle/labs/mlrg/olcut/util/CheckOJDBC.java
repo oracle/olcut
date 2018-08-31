@@ -19,17 +19,18 @@ public class CheckOJDBC {
 
         String url = args[0];
 
-        Connection conn = DriverManager.getConnection(url, args[1], args[2]);
+        try (Connection conn = DriverManager.getConnection(url, args[1], args[2])) {
 
-        conn.setAutoCommit(false);
-        Statement stmt = conn.createStatement();
-        ResultSet rset = stmt.executeQuery("select BANNER from SYS.V_$VERSION");
-        while(rset.next()) {
-            System.out.println(rset.getString(1));
+            conn.setAutoCommit(false);
+            Statement stmt = conn.createStatement();
+            ResultSet rset = stmt.executeQuery("select BANNER from SYS.V_$VERSION");
+            while (rset.next()) {
+                System.out.println(rset.getString(1));
+            }
+            stmt.close();
+
+            System.out.println("Success!");
         }
-        stmt.close();
-
-        System.out.println("Success!");
     }
 
 }

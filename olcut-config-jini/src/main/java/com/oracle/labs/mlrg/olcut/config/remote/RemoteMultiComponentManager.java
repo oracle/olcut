@@ -58,17 +58,15 @@ public class RemoteMultiComponentManager<T extends Configurable> extends RemoteC
      * Gets the component with the given name
      * @return the component
      */
-    public T getComponent() {
+    public synchronized T getComponent() {
         if(components == null) {
             getComponents();
         }
-        synchronized(this) {
-            if (components.length == 0) {
-                throw new PropertyException(new ClassNotFoundException("Error finding class " + clazz.getName()));
-            }
-            p %= components.length;
-            return components[p++];
+        if (components.length == 0) {
+            throw new PropertyException(new ClassNotFoundException("Error finding class " + clazz.getName()));
         }
+        p %= components.length;
+        return components[p++];
     }
 
     @Override

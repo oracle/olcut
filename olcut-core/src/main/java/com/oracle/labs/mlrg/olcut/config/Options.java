@@ -4,8 +4,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
@@ -16,12 +18,12 @@ import java.util.Set;
  */
 public interface Options {
 
-    public static final ArrayList<String> header = new ArrayList<>(Arrays.asList("Char","Long Name","Type","Usage"));
+    public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Char","Long Name","Type","Usage"));
 
-    public static String formatUsage(ArrayList<ArrayList<String>> usageList) {
+    public static String formatUsage(List<List<String>> usageList) {
         int[] maxWidth = new int[4];
 
-        for (ArrayList<String> a : usageList) {
+        for (List<String> a : usageList) {
             if (a.size() == 4) {
                 if (maxWidth[0] < a.get(0).length()) {
                     maxWidth[0] = a.get(0).length();
@@ -41,7 +43,7 @@ public interface Options {
         String formatString = "%"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %-"+maxWidth[3]+"s\n";
         StringBuilder builder = new StringBuilder();
 
-        for (ArrayList<String> a : usageList) {
+        for (List<String> a : usageList) {
             if (a.size() == 4) {
                 builder.append(String.format(formatString,a.get(0),a.get(1),a.get(2),a.get(3)));
             } else {
@@ -55,9 +57,9 @@ public interface Options {
         return builder.toString();
     }
 
-    public static ArrayList<ArrayList<String>> getUsage(Class<? extends Options> options) {
-        ArrayList<ArrayList<String>> list = new ArrayList<>();
-        ArrayList<ArrayList<String>> optionsList = new ArrayList<>();
+    public static List<List<String>> getUsage(Class<? extends Options> options) {
+        ArrayList<List<String>> list = new ArrayList<>();
+        ArrayList<List<String>> optionsList = new ArrayList<>();
         Set<Field> fields = getOptionFields(options);
         if (fields.size() == 0) {
             return list;
@@ -70,7 +72,7 @@ public interface Options {
                 optionsList.add(Options.getOptionUsage(option,f));
             }
 
-            optionsList.sort((ArrayList<String> a, ArrayList<String> b) -> {
+            optionsList.sort((List<String> a, List<String> b) -> {
                 if (a.get(0).charAt(0) == b.get(0).charAt(0)) {
                     return a.get(1).compareTo(b.get(1));
                 } else {

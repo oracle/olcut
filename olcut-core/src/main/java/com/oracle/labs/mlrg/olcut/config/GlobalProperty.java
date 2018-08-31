@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class GlobalProperty {
 
     // this pattern matches strings of the form '${word}'
-    protected static Pattern globalSymbolPattern =
+    protected final static Pattern globalSymbolPattern =
             Pattern.compile("\\$\\{([\\w\\.-]+)\\}");
 
     /**
