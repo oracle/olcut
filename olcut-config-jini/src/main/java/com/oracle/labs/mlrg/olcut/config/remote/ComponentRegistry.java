@@ -915,13 +915,14 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         ComponentRegistry cr = cm.getComponentRegistry();
         if(cr == null) {
             System.err.println(String.format("No component registry defined in %s", configString));
-        }
-        Thread.sleep(3000);
-        Map<String,List<String>> m = cr.dumpJiniServices();
-        for(Map.Entry<String, List<String>> e : m.entrySet()) {
-            System.out.println(String.format("Registrar: %s has %d services", e.getKey(), e.getValue().size()));
-            for(String s : e.getValue()) {
-                System.out.println(String.format(" Service: %s", s));
+        } else {
+            Thread.sleep(3000);
+            Map<String, List<String>> m = cr.dumpJiniServices();
+            for (Map.Entry<String, List<String>> e : m.entrySet()) {
+                System.out.println(String.format("Registrar: %s has %d services", e.getKey(), e.getValue().size()));
+                for (String s : e.getValue()) {
+                    System.out.println(String.format(" Service: %s", s));
+                }
             }
         }
     }

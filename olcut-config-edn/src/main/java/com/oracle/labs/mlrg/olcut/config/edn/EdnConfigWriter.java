@@ -12,7 +12,9 @@ import us.bpsm.edn.Symbol;
 import us.bpsm.edn.printer.Printer;
 
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,7 +32,7 @@ public class EdnConfigWriter implements ConfigWriter {
     private static final Set<String> COMPONENT_MODIFIERS = new HashSet<>(Arrays.asList(ConfigLoader.IMPORT, ConfigLoader.EXPORT, ConfigLoader.ENTRIES, ConfigLoader.LEASETIME, ConfigLoader.SERIALIZED));
 
     public EdnConfigWriter(OutputStream os) {
-        this.printer = new OlcutEdnPrinter(new PrintStream(os));
+        this.printer = new OlcutEdnPrinter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
         this.struct = new LinkedList<>();
         cnMapper = new ClassnameMapper();
     }

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,7 +87,7 @@ public class EdnLoader implements ConfigLoader {
             return (long) o;
         } else if(o instanceof String) {
             try {
-                return Long.valueOf((String) o);
+                return Long.parseLong((String) o);
             } catch (NumberFormatException e) {
                 throw new ConfigLoaderException("Expected long or long string but found " + o.getClass() + " with value " + o.toString());
             }
@@ -114,7 +115,7 @@ public class EdnLoader implements ConfigLoader {
 
     @Override
     public void load(URL url) throws ConfigLoaderException, IOException {
-        try (Parseable pbr = Parsers.newParseable(new BufferedReader(new InputStreamReader(url.openStream())))) {
+        try (Parseable pbr = Parsers.newParseable(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)))) {
             parseEdn(pbr);
         } catch (EdnException e) {
             throw new ConfigLoaderException(e, "Edn failed to parse url: " + url.toString());

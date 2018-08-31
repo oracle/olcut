@@ -154,9 +154,9 @@ public class ConfigurationManagerUtils {
                     }
                 } else if (o instanceof Map) {
                     Map<String,String> compMap = (Map<String,String>) o;
-                    for (String e : compMap.keySet()) {
-                        if (compMap.get(e).equals(oldName)) {
-                            compMap.put(e,newName);
+                    for (Map.Entry<String,String> e : compMap.entrySet()) {
+                        if (e.getValue().equals(oldName)) {
+                            compMap.replace(e.getValue(),newName);
                         }
                     }
                 } else {
@@ -191,11 +191,12 @@ public class ConfigurationManagerUtils {
      */
     public static URL getResource(String name, PropertySheet ps) throws PropertyException {
         URL url;
-        String location = ps.getRaw(name).toString();
-        if(location == null) {
+        Object locationObj = ps.getRaw(name);
+        if(locationObj == null) {
             throw new InternalConfigurationException(name, name, "Required resource property '" +
                     name + "' not set");
         }
+        String location = locationObj.toString();
 
         Matcher jarMatcher =
                 Pattern.compile("resource:/([.\\w]+?)!(.*)",

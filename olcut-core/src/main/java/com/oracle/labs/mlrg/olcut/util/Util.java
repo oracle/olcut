@@ -75,11 +75,14 @@ public class Util {
                                                   int fractionDigits) {
         DecimalFormat format = new DecimalFormat();
 
-        String formatter = "0.";
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("0.");
         for (int i = 0; i < fractionDigits; i++) {
-            formatter += "0";
+            buffer.append("0");
         }
-        formatter += "E00";
+        buffer.append("E00");
+
+        String formatter = buffer.toString();
 
         format.applyPattern(formatter);
         String formatted = format.format(number);

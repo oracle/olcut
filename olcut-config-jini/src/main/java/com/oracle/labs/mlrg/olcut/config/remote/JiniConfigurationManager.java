@@ -380,7 +380,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      */
     public boolean equals(Object obj) {
         if(!(obj instanceof JiniConfigurationManager)) {
-            return false;
+            return super.equals(obj);
         }
 
         JiniConfigurationManager cm = (JiniConfigurationManager) obj;

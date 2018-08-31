@@ -1038,7 +1038,7 @@ public class CommandInterpreter extends Thread {
                         paramStr = paramStr.substring(paramStr.indexOf(',') + 1);
                     }
                     return String.format(
-                            "Incorrect number of arguments.  Found %d, expected %d: %s\nUsage: %s",
+                            "Incorrect number of arguments.  Found %d, expected %d: %s%nUsage: %s",
                         args.length - 1,
                         minParams,
                         paramStr,
@@ -1097,8 +1097,8 @@ public class CommandInterpreter extends Thread {
                     }
                 } catch (NumberFormatException e) {
                     return String.format(
-                            "Invalid value (%s) for parameter of type %s\nUsage: %s",
-                            args,
+                            "Invalid value (%s) for parameter of type %s%nUsage: %s",
+                            Arrays.toString(args),
                             currParam.getName(),
                             usage);
                     
@@ -1492,9 +1492,7 @@ public class CommandInterpreter extends Thread {
     }
 
     public boolean load(String filename) {
-        try {
-            FileReader fr = new FileReader(filename);
-            BufferedReader br = new BufferedReader(fr);
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))){
             String inputLine;
 
             while((inputLine = br.readLine()) != null) {
@@ -1507,7 +1505,6 @@ public class CommandInterpreter extends Thread {
                     break;
                 }
             }
-            fr.close();
             return true;
         } catch(IOException ioe) {
             return false;
@@ -1516,11 +1513,7 @@ public class CommandInterpreter extends Thread {
 
     public boolean pload(String filename, int numThreads) {
         ExecutorService exec = Executors.newFixedThreadPool(numThreads);
-        FileReader fr = null;
-        BufferedReader br = null;
-        try {
-            fr = new FileReader(filename);
-            br = new BufferedReader(fr);
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))){
             String inputLine;
 
             while((inputLine = br.readLine()) != null) {
@@ -1543,12 +1536,6 @@ public class CommandInterpreter extends Thread {
         } catch(InterruptedException ex) {
             logger.info("Parallel Load did not shut down properly");
             return false;
-        } finally {
-            try {
-                br.close();
-                fr.close();
-            } catch(IOException ex) {
-            }
         }
     }
 
@@ -1666,7 +1653,7 @@ public class CommandInterpreter extends Thread {
         }
     }
 
-    protected class CommandGroupInternal implements Iterable<String> {
+    protected static class CommandGroupInternal implements Iterable<String> {
 
         private String groupName;
 

@@ -76,7 +76,7 @@ public abstract class SortUtil {
             if (ascending) {
                 return Integer.compare(value, o.value);
             } else {
-                return - Integer.compare(value, o.value);
+                return Integer.compare(o.value, value);
             }
         }
     }
@@ -114,7 +114,7 @@ public abstract class SortUtil {
             if (ascending) {
                 return Double.compare(value, o.value);
             } else {
-                return -Double.compare(value, o.value);
+                return Double.compare(o.value, value);
             }
         }
     }
@@ -173,7 +173,7 @@ public abstract class SortUtil {
             if (ascending) {
                 return value.compareTo(o.value);
             } else {
-                return -value.compareTo(o.value);
+                return o.value.compareTo(value);
             }
         }
     }

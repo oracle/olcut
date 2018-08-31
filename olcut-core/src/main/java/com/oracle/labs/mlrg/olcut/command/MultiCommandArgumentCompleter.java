@@ -68,13 +68,13 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
     }
     
     protected void updateCompletors(String layerTag, Map<String, CommandInterface> commands) {
-        for (String command : commands.keySet()) {
-            String lCommand = command;
+        for (Map.Entry<String,CommandInterface> command : commands.entrySet()) {
+            String lCommand = command.getKey();
             if(layerTag != null) {
                 lCommand = command + "." + layerTag;
             }
             if (!compMap.containsKey(lCommand)) {
-                CommandInterface ci = commands.get(command);
+                CommandInterface ci = command.getValue();
                 if (ci instanceof CompleterCommandInterface) {
                     CompleterCommandInterface cci
                             = (CompleterCommandInterface) ci;

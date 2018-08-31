@@ -26,6 +26,7 @@ package com.oracle.labs.mlrg.olcut.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -206,16 +207,16 @@ public class CDateParser {
     }
 
     public static void main(String[] args) throws IOException {
-        BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader r = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         String d = null;
         CDateParser dp = new CDateParser();
         while((d = r.readLine()) != null) {
 
             try {
                 Date date = dp.parse(d);
-                System.out.format("Parsed: %s\n", date);
+                System.out.format("Parsed: %s%n", date);
             } catch(ParseException ex) {
-                System.out.format("%s failed to parse\n", d);
+                System.out.format("%s failed to parse%n", d);
             }
         }
     }
