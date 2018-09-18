@@ -1,6 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,8 +92,26 @@ public interface Options {
         }
     }
 
+    public static String generateTypeDescription(Field f) {
+        Class<?> clazz = f.getType();
+        if (clazz.isEnum()) {
+            Object[] constants = clazz.getEnumConstants();
+            StringBuffer sb = new StringBuffer();
+            sb.append("enum - {");
+            for (Object o : constants) {
+                sb.append(((Enum)o).name());
+                sb.append(", ");
+            }
+            sb.replace(sb.length()-2,sb.length(),"}");
+            return sb.toString();
+        } else {
+            return f.getGenericType().getTypeName();
+        }
+    }
+
     public static ArrayList<String> getOptionUsage(Option option, Field f) {
-        return getOptionUsage(option,f.getGenericType().getTypeName());
+        String typeString = generateTypeDescription(f);
+        return getOptionUsage(option,typeString);
     }
 
     public static ArrayList<String> getOptionUsage(Option option, String type) {
