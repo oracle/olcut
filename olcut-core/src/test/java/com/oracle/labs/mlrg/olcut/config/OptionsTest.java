@@ -80,6 +80,9 @@ class OtherOptions implements Options {
     @Option(charName='a', longName="output-string", usage="String to output")
     public String outputString = "";
 
+    @Option(charName='e', longName="enum", usage="Enum input")
+    public OptionsEnum optEnum;
+
     @Override
     public String toString() {
         return "rngDraw="+rng.nextInt()+",outputString="+outputString+",deepOptions("+deepOptions.toString()+")";
@@ -106,5 +109,9 @@ class DeeperOptions implements Options {
     public String toString() {
         return "deeperString="+deeperString;
     }
+}
+
+enum OptionsEnum {
+    THINGS, STUFF, OTHER_THINGS;
 }
 
