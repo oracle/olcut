@@ -1,7 +1,6 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,7 +95,7 @@ public interface Options {
         Class<?> clazz = f.getType();
         if (clazz.isEnum()) {
             Object[] constants = clazz.getEnumConstants();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("enum - {");
             for (Object o : constants) {
                 sb.append(((Enum)o).name());
