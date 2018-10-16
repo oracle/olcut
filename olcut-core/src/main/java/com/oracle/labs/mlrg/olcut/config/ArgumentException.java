@@ -71,6 +71,11 @@ public class ArgumentException extends RuntimeException {
         return msg;
     }
 
+    @Override
+    public String getMessage() {
+        return msg;
+    }
+
     /**
      * Retrieves the name of the offending argument
      *
