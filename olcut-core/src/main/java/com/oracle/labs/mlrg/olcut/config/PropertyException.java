@@ -86,12 +86,15 @@ public class PropertyException extends RuntimeException {
         super(e);
     }
 
-
     /** @return Returns the msg. */
     public String getMsg() {
         return msg;
     }
 
+    @Override
+    public String getMessage() {
+        return msg;
+    }
 
     /**
      * Retrieves the name of the offending property
@@ -101,7 +104,6 @@ public class PropertyException extends RuntimeException {
     public String getProperty() {
         return propertyName;
     }
-
 
     /**
      * Returns a string representation of this object
