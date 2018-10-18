@@ -24,19 +24,13 @@ import java.io.IOException;
  * annotate a {@link String} field with {@link ConfigurableName} which will have the name from the xml file written
  * into it. If required the {@link ConfigurationManager} can be stored by annotating an appropriate field with
  * {@link ConfigManager}.</li>
- * </p>
- * <p>
  * <li> <b>Construction</b> - The (empty, optionally private) constructor is called in order to instantiate the component.
  * Typically the constructor does little, if any work, since the component has not been configured yet. </li>
- * </p>
- * <p>
  * <li> <b>Configuration</b> - Shortly after instantiation, the component's fields are written by inserting parsed
  * values from a {@link PropertySheet}. The PropertySheet is usually derived from an external configuration file, but
  * can be constructed programmatically as a {@link java.util.Map} from String to Object. If some properties
  * defined for a component does not fulfill the property definition given by the annotation (type, range, etc.) a
  * <code>PropertyException</code> is thrown. </li>
- * </p>
- * <p>
  * <li> <b>Post Config</b> - After the fields have been initialised, the system calls the {@link Configurable#postConfig()}
  * method. There other setup can be performed, such as deserialising types which are not configurable. </li>
  * </ul>

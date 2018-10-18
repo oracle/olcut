@@ -176,7 +176,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         return owner != null;
     }
 
-    public Class getOwnerClass() {
+    public Class<T> getOwnerClass() {
         return ownerClass;
     }
 

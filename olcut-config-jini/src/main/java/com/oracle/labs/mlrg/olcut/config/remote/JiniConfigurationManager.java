@@ -49,7 +49,6 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * of 'context' around anymore we will just pass around this property manager.
      *
      * @param location place to load initial properties from
-     * @throws IOException if an error occurs while loading properties from the URL
      */
     public JiniConfigurationManager(String location) throws PropertyException {
         super(location);
@@ -64,7 +63,6 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * of 'context' around anymore we will just pass around this property manager.
      *
      * @param url place to load initial properties from
-     * @throws IOException if an error occurs while loading properties from the URL
      */
     public JiniConfigurationManager(URL url) throws PropertyException {
         super(url);
@@ -81,7 +79,6 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @throws UsageException Thrown when the user requested the usage string.
      * @throws ArgumentException Thrown when an argument fails to parse.
      * @throws PropertyException Thrown when an invalid property is loaded.
-     * @throws IOException Thrown when the configuration file cannot be read.
      */
     public JiniConfigurationManager(String[] arguments) throws UsageException, ArgumentException, PropertyException {
         this(arguments,EMPTY_OPTIONS);
@@ -101,7 +98,6 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @throws UsageException Thrown when the user requested the usage string.
      * @throws ArgumentException Thrown when an argument fails to parse.
      * @throws PropertyException Thrown when an invalid property is loaded.
-     * @throws IOException Thrown when the configuration file cannot be read.
      */
     public JiniConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException {
         super(arguments,options);
