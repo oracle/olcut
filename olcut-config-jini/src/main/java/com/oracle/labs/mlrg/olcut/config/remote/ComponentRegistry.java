@@ -585,11 +585,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         if(cl == null) {
             return;
         }
-        Set<ComponentListener> s = classListeners.get(c);
-        if(s == null) {
-            s = new HashSet<ComponentListener>();
-            classListeners.put(c, s);
-        }
+        Set<ComponentListener> s = classListeners.computeIfAbsent(c, k -> new HashSet<>());
         s.add(cl);
     }
 
@@ -602,7 +598,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * can be notified of service changes.
      * @return an array containing the matching components
      */
-    public Configurable[] lookup(Class c, int maxMatches, ComponentListener cl) {
+    public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener cl) {
         return lookup(c,maxMatches,cl,null);
     }
 
@@ -619,9 +615,9 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * @param entries The ConfigurationEntries to filter on.
      * @return an array containing the matching components
      */
-    public Configurable[] lookup(Class c, int maxMatches, ComponentListener cl, ConfigurationEntry[] entries) {
+    public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener cl, ConfigurationEntry[] entries) {
         if(sdm == null) {
-            return new Configurable[0];
+            return (T[]) new Configurable[0];
         }
 
         //
@@ -671,13 +667,13 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         }
 
         if(sis == null || sis.length == 0) {
-            return new Configurable[0];
+            return (T[]) new Configurable[0];
         }
      
         addListener(c, cl);
-        Configurable[] ret = new Configurable[sis.length];
+        T[] ret = (T[]) new Configurable[sis.length];
         for(int i = 0; i < sis.length; i++) {
-            ret[i] = (Configurable) sis[i].service;
+            ret[i] = (T) sis[i].service;
             lookedUp.add(ret[i]);
         }
         return ret;
@@ -691,7 +687,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * @return the named component, or <code>null</code> if no such component
      * can be found.
      */
-    public Configurable lookup(ServablePropertySheet cps, ComponentListener cl) {
+    public <T extends Configurable> T lookup(ServablePropertySheet<T> cps, ComponentListener cl) {
 
         if(sdm == null) {
             return null;
@@ -700,7 +696,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         //
         // See if we have a lookup cache for this type.  If not, make one and 
         // add it to the map.
-        Class c = cps.getOwnerClass();
+        Class<T> c = cps.getOwnerClass();
         LookupCache cache = caches.get(c);
         ServiceTemplate template = null;
         if(cache == null) {
@@ -755,7 +751,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
 
         //
         // Remember that we looked up the component and add any listener.
-        Configurable component = (Configurable) si.service;
+        T component = (T) si.service;
         lookedUp.add(component);
         addListener(c, cl);
         return component;
