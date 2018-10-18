@@ -309,8 +309,8 @@ public class JiniConfigurationManager extends ConfigurationManager {
             //
             // If we have a registry, then do a lookup for all things of the
             // given type.
-            Configurable[] reg = registry.lookup(c, Integer.MAX_VALUE, cl);
-            ret.addAll((List<T>)Arrays.asList(reg));
+            T[] reg = registry.lookup(c, Integer.MAX_VALUE, cl);
+            ret.addAll(Arrays.asList(reg));
         }
 
         return ret;
@@ -331,8 +331,8 @@ public class JiniConfigurationManager extends ConfigurationManager {
             //
             // If we have a registry, then do a lookup for all things of the
             // given type.
-            Configurable[] reg = registry.lookup(c, Integer.MAX_VALUE, cl, entries);
-            ret.addAll((List<T>)Arrays.asList(reg));
+            T[] reg = registry.lookup(c, Integer.MAX_VALUE, cl, entries);
+            ret.addAll(Arrays.asList(reg));
         }
 
         return ret;
@@ -381,8 +381,8 @@ public class JiniConfigurationManager extends ConfigurationManager {
 
         JiniConfigurationManager cm = (JiniConfigurationManager) obj;
 
-        Collection<String> setA = new HashSet<String>(getComponentNames());
-        Collection<String> setB = new HashSet<String>(cm.getComponentNames());
+        Collection<String> setA = new HashSet<>(getComponentNames());
+        Collection<String> setB = new HashSet<>(cm.getComponentNames());
         if(!setA.equals(setB)) {
             return false;
         }
