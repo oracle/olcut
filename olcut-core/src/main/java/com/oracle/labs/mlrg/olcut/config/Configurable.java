@@ -17,7 +17,6 @@ import java.io.IOException;
 /**
  * Defines the interface that must be implemented by any configurable component.  The life cycle of a
  * {@link Configurable} is as follows:
- * <p>
  * <ul><li> <b>Class Parsing</b> The class file is parsed in order to determine all its configurable properties.  These
  * are defined using {@link Config} annotations on fields. Only types defined in {@link FieldType} are recognised. Only
  * names of annotated properties will be allowed by the configuration system later on. Optionally the user can
@@ -34,7 +33,6 @@ import java.io.IOException;
  * <li> <b>Post Config</b> - After the fields have been initialised, the system calls the {@link Configurable#postConfig()}
  * method. There other setup can be performed, such as deserialising types which are not configurable. </li>
  * </ul>
- * </p>
  */
 public interface Configurable {
 
