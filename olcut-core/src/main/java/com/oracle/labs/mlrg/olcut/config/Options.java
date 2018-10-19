@@ -34,13 +34,10 @@ public interface Options {
                 if (maxWidth[2] < a.get(2).length()) {
                     maxWidth[2] = a.get(2).length();
                 }
-                if (maxWidth[3] < a.get(3).length()) {
-                    maxWidth[3] = a.get(3).length();
-                }
             }
         }
 
-        String formatString = "%"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %-"+maxWidth[3]+"s\n";
+        String formatString = "%"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %s\n";
         StringBuilder builder = new StringBuilder();
 
         for (List<String> a : usageList) {
