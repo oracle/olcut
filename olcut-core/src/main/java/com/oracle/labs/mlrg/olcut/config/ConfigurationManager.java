@@ -1141,6 +1141,11 @@ public class ConfigurationManager implements Cloneable, Closeable {
      */
     public Configurable lookup(String instanceName, ComponentListener cl, boolean reuseComponent)
             throws InternalConfigurationException {
+        return innerLookup(instanceName,cl,reuseComponent);
+    }
+
+    private Configurable innerLookup(String instanceName, ComponentListener cl, boolean reuseComponent)
+            throws InternalConfigurationException {
         // apply all new properties to the model
         instanceName = getStrippedComponentName(instanceName);
 
@@ -1231,8 +1236,8 @@ public class ConfigurationManager implements Cloneable, Closeable {
             for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
                 try {
                     Class clazz = Class.forName(e.getValue().getClassName());
-                    if (c.isAssignableFrom(clazz)) {
-                        ret.add((T)lookup(e.getKey()));
+                    if (!e.getValue().isImportable() && c.isAssignableFrom(clazz)) {
+                        ret.add((T)innerLookup(e.getKey(),null,false));
                     }
                 } catch (ClassNotFoundException ex) {
                     throw new PropertyException(ex,e.getKey(),"Class not found for component " + e.getKey());

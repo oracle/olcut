@@ -97,7 +97,7 @@ public class RegistryTest {
 
         //
         // Make sure that the method ran in the first object!
-        assertTrue(((RegistryConfigurableImpl) rc1).recs.size() == 1);
+        assertEquals(1, ((RegistryConfigurableImpl) rc1).recs.size());
         assertEquals(((RegistryConfigurableImpl) rc1).recs.get(0), "test");
     }
 
