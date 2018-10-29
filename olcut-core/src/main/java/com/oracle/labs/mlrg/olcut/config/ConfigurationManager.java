@@ -1209,15 +1209,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
         return comps.get(0);
     }
 
-    /**
-     * Looks up all components that have a given class name as their type.
-     * @param c the class that we want to lookup
-     * @param cl a listener that will report when components of the given type
-     * are added or removed
-     * @return a list of all the components with the given class name as their type.
-     */
-    public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl) {
-
+    public <T extends Configurable> List<T> lookupAll(Class<T> c) {
         List<T> ret = new ArrayList<>();
 
         //
@@ -1236,18 +1228,30 @@ public class ConfigurationManager implements Cloneable, Closeable {
             //
             // If we have an interface and no registry, lookup all the
             // implementing classes and return them.
-            Class[] interfaces = c.getInterfaces();
             for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
-                for (Class interfaceClass : interfaces) {
-                    if (e.getValue().getClassName().equals(interfaceClass.getName()) &&
-                            !e.getValue().isImportable()) {
+                try {
+                    Class clazz = Class.forName(e.getValue().getClassName());
+                    if (c.isAssignableFrom(clazz)) {
                         ret.add((T)lookup(e.getKey()));
                     }
+                } catch (ClassNotFoundException ex) {
+                    throw new PropertyException(ex,e.getKey(),"Class not found for component " + e.getKey());
                 }
             }
         }
 
         return ret;
+    }
+
+    /**
+     * Looks up all components that have a given class name as their type.
+     * @param c the class that we want to lookup
+     * @param cl a listener that will report when components of the given type
+     * are added or removed
+     * @return a list of all the components with the given class name as their type.
+     */
+    public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl) {
+        return lookupAll(c);
     }
 
     /**
