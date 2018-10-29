@@ -298,10 +298,31 @@ public class JiniConfigurationManager extends ConfigurationManager {
     /**
      * Looks up all components that have a given class name as their type.
      * @param c the class that we want to lookup
+     * @return a list of all the components with the given class name as their type.
+     */
+    @Override
+    public <T extends Configurable> List<T> lookupAll(Class<T> c) {
+
+        List<T> ret = super.lookupAll(c);
+        if ((ret.size() == 0) && (registry != null)) {
+            //
+            // If we have a registry, then do a lookup for all things of the
+            // given type.
+            T[] reg = registry.lookup(c, Integer.MAX_VALUE, null);
+            ret.addAll(Arrays.asList(reg));
+        }
+
+        return ret;
+    }
+
+    /**
+     * Looks up all components that have a given class name as their type.
+     * @param c the class that we want to lookup
      * @param cl a listener that will report when components of the given type
      * are added or removed
      * @return a list of all the components with the given class name as their type.
      */
+    @Override
     public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl) {
 
         List<T> ret = super.lookupAll(c,cl);

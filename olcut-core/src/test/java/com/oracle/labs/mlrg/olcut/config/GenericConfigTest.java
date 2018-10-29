@@ -1,7 +1,10 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import java.io.IOException;
+import java.util.List;
 
+import com.oracle.labs.mlrg.olcut.config.test.Ape;
+import com.oracle.labs.mlrg.olcut.config.test.Monkey;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -9,6 +12,21 @@ import org.junit.Test;
  *
  */
 public class GenericConfigTest {
+
+    @Test
+    public void lookupAllTest() throws ClassNotFoundException {
+        ConfigurationManager cm = new ConfigurationManager("genericConfig.xml");
+
+        Class<Monkey> clazz = (Class<Monkey>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.Monkey");
+        List<Monkey> monkeys = cm.lookupAll(clazz);
+
+        Assert.assertEquals("Didn't find all the MonkeyConfigurable classes", 5, monkeys.size());
+
+        Class<Ape> apeClazz = (Class<Ape>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.Ape");
+        List<Ape> apes = cm.lookupAll(apeClazz);
+
+        Assert.assertEquals("Didn't find all the Ape classes", 3, apes.size());
+    }
 
     @Test
     public void correctListConfig() throws IOException {

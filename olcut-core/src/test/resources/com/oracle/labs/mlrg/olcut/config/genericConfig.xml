@@ -100,4 +100,18 @@
         <property name="three" value="scoundrels"/>
     </component>
 
+    <component name="startrek" type="com.oracle.labs.mlrg.olcut.config.StringleConfigurable">
+        <property name="one" value="federation"/>
+        <property name="two" value="federation"/>
+        <property name="three" value="federation"/>
+        <property name="four" value="federation"/>
+        <property name="five" value="federation"/>
+    </component>
+
+    <component name="monkey-one" type="com.oracle.labs.mlrg.olcut.config.test.Gorilla"/>
+    <component name="monkey-two" type="com.oracle.labs.mlrg.olcut.config.test.Chimp"/>
+    <component name="monkey-three" type="com.oracle.labs.mlrg.olcut.config.test.Orangutan"/>
+    <component name="monkey-four" type="com.oracle.labs.mlrg.olcut.config.test.Rhesus"/>
+    <component name="monkey-five" type="com.oracle.labs.mlrg.olcut.config.test.Barbary"/>
+
 </config>
