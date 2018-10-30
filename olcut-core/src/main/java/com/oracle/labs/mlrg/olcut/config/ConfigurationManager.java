@@ -1236,7 +1236,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
             for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
                 try {
                     Class clazz = Class.forName(e.getValue().getClassName());
-                    if (!e.getValue().isImportable() && c.isAssignableFrom(clazz)) {
+                    if (!e.getValue().isImportable() && c.isAssignableFrom(clazz) && !clazz.isInterface()) {
                         ret.add((T)innerLookup(e.getKey(),null,false));
                     }
                 } catch (ClassNotFoundException ex) {

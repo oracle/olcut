@@ -15,12 +15,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
 import java.rmi.Remote;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -316,21 +314,9 @@ public class JiniConfigurationManager extends ConfigurationManager {
      */
     @Override
     public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl) {
-        List<T> ret = new ArrayList<>();
 
-        //
-        // If the class isn't an interface, then lookup each of the names
-        // in the raw property data with the given class
-        // name, ignoring those things marked as importable.
-        if(!c.isInterface()) {
-            String className = c.getName();
-            for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
-                if (e.getValue().getClassName().equals(className) &&
-                        !e.getValue().isImportable()) {
-                    ret.add((T)lookup(e.getKey()));
-                }
-            }
-        } else if (registry != null) {
+        List<T> ret = super.lookupAll(c);
+        if ((ret.size() == 0) && (registry != null)) {
             //
             // If we have a registry, then do a lookup for all things of the
             // given type.
@@ -350,21 +336,9 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @return a list of all the components with the given class name as their type.
      */
     public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl, ConfigurationEntry[] entries) {
-        List<T> ret = new ArrayList<>();
 
-        //
-        // If the class isn't an interface, then lookup each of the names
-        // in the raw property data with the given class
-        // name, ignoring those things marked as importable.
-        if(!c.isInterface()) {
-            String className = c.getName();
-            for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
-                if (e.getValue().getClassName().equals(className) &&
-                        !e.getValue().isImportable()) {
-                    ret.add((T)lookup(e.getKey()));
-                }
-            }
-        } else if (registry != null) {
+        List<T> ret = super.lookupAll(c);
+        if ((ret.size() == 0) && (registry != null)) {
             //
             // If we have a registry, then do a lookup for all things of the
             // given type.
