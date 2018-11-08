@@ -263,6 +263,10 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     owner.postConfig();
                 } catch (IOException e) {
                     throw new PropertyException(e, instanceName, null, "IOException thrown by postConfig");
+                } catch (PropertyException e) {
+                    throw e;
+                } catch (RuntimeException e) {
+                    throw new PropertyException(e, instanceName, null, "RuntimeException thrown by postConfig");
                 }
                 if (owner instanceof ConfigurableMXBean) {
                     MBeanServer mbs = cm.getMBeanServer();
