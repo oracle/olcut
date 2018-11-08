@@ -78,7 +78,11 @@ public class PropertyException extends RuntimeException {
 
         this.instanceName = instanceName;
         this.propertyName = propertyName;
-        this.msg = msg + " (caused by " + cause.getMessage() + ")";
+        if (cause != null) {
+            this.msg = msg + " (caused by " + cause.getMessage() + ")";
+        } else {
+            this.msg = msg;
+        }
     }
 
 
