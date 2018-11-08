@@ -4,7 +4,7 @@
 
     <groupId>com.oracle.labs.mlrg.olcut</groupId>
     <artifactId>olcut</artifactId>
-    <version>4.1.6-SNAPSHOT</version>
+    <version>4.1.6</version>
     <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
