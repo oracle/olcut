@@ -190,7 +190,7 @@ public class ArgumentParsingTest {
         try {
             cm = new ConfigurationManager(args,o);
         } catch (UsageException e) {
-            System.out.println(e.getMsg());
+            System.out.println(e.getUsage());
             return;
         }
 

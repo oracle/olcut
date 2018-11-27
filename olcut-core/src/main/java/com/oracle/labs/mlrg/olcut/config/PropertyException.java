@@ -97,7 +97,19 @@ public class PropertyException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return msg;
+        StringBuilder sb = new StringBuilder();
+        if ((instanceName != null) && !instanceName.isEmpty()) {
+            sb.append("Component: ");
+            sb.append(instanceName);
+            sb.append(", ");
+        }
+        if ((propertyName != null) && !propertyName.isEmpty()) {
+            sb.append("Property: ");
+            sb.append(propertyName);
+            sb.append(", ");
+        }
+        sb.append(msg);
+        return sb.toString();
     }
 
     /**
