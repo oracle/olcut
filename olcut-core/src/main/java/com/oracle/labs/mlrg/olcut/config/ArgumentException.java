@@ -5,7 +5,7 @@ public class ArgumentException extends RuntimeException {
 
     private final String argumentName;
     private final String otherArgumentName;
-    private final String msg;
+    protected final String msg;
 
     /**
      * Creates a new argument exception.
@@ -67,13 +67,26 @@ public class ArgumentException extends RuntimeException {
     }
 
     /** @return Returns the msg. */
+    @Deprecated
     public String getMsg() {
         return msg;
     }
 
     @Override
     public String getMessage() {
-        return msg;
+        StringBuilder sb = new StringBuilder();
+        if ((argumentName != null) && !argumentName.isEmpty()) {
+            sb.append("Argument: ");
+            sb.append(argumentName);
+            sb.append(", ");
+        }
+        if ((otherArgumentName != null) && !otherArgumentName.isEmpty()) {
+            sb.append("Other argument: ");
+            sb.append(otherArgumentName);
+            sb.append(", ");
+        }
+        sb.append(msg);
+        return sb.toString();
     }
 
     /**

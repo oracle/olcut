@@ -17,7 +17,7 @@ public class OptionsTest {
         try {
             cm = new ConfigurationManager(args,options);
         } catch (UsageException e) {
-            System.out.println(e.getMsg());
+            System.out.println(e.getUsage());
             return;
         }
 
