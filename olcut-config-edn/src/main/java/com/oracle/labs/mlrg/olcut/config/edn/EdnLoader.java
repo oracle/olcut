@@ -102,6 +102,7 @@ public class EdnLoader implements ConfigLoader {
     private final Map<String, RawPropertyData> existingRPD;
     private final Map<String, SerializedObject> serializedObjects;
     private final GlobalProperties globalProperties;
+    private String workingDir;
 
     public EdnLoader(URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD,
                      Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) {
@@ -116,6 +117,11 @@ public class EdnLoader implements ConfigLoader {
     @Override
     public void load(URL url) throws ConfigLoaderException, IOException {
         try (Parseable pbr = Parsers.newParseable(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)))) {
+            if (url.getProtocol().equals("file")) {
+                workingDir = new File(url.getFile()).getParent();
+            } else {
+                workingDir = "";
+            }
             parseEdn(pbr);
         } catch (EdnException e) {
             throw new ConfigLoaderException(e, "Edn failed to parse url: " + url.toString());
@@ -198,8 +204,12 @@ public class EdnLoader implements ConfigLoader {
         String path = checkString(fileListItem.get(1));
         try {
             URL newURL = ConfigurationManager.class.getResource(path);
-            if(newURL == null) {
-                newURL = (new File(path)).toURI().toURL();
+            if (newURL == null) {
+                File newFile = new File(path);
+                if (!newFile.isAbsolute()) {
+                    newFile = new File(workingDir,path);
+                }
+                newURL = newFile.toURI().toURL();
             }
             parent.addURL(newURL);
         } catch (MalformedURLException ex) {

@@ -62,11 +62,14 @@ public class SAXLoader implements ConfigLoader {
 
     private final XMLReader xr;
 
+    private final ConfigSAXHandler handler;
+
     public SAXLoader(URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD,
                      Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) throws ParserConfigurationException, SAXException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         xr = factory.newSAXParser().getXMLReader();
         ConfigSAXHandler handler = new ConfigSAXHandler();
+        this.handler = handler;
         xr.setContentHandler(handler);
         xr.setErrorHandler(handler);
 
@@ -86,6 +89,12 @@ public class SAXLoader implements ConfigLoader {
     public void load(URL url) throws ConfigLoaderException, IOException {
         InputStream is = null;
         try {
+            if (url.getProtocol().equals("file")) {
+                String workingDir = new File(url.getFile()).getParent();
+                handler.setCurWorkingDir(workingDir);
+            } else {
+                handler.setCurWorkingDir("");
+            }
             is = url.openStream();
             xr.parse(new InputSource(is));
             is.close();
@@ -143,6 +152,11 @@ public class SAXLoader implements ConfigLoader {
 
         boolean overriding;
 
+        String curWorkingDir;
+
+        public void setCurWorkingDir(String curWorkingDir) {
+            this.curWorkingDir = curWorkingDir;
+        }
 
         /* (non-Javadoc)
          * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
@@ -317,7 +331,11 @@ public class SAXLoader implements ConfigLoader {
                         try {
                             URL newURL = ConfigurationManager.class.getResource(value);
                             if (newURL == null) {
-                                newURL = (new File(value)).toURI().toURL();
+                                File newFile = new File(value);
+                                if (!newFile.isAbsolute()) {
+                                    newFile = new File(curWorkingDir,value);
+                                }
+                                newURL = newFile.toURI().toURL();
                             }
                             parent.addURL(newURL);
                         } catch (MalformedURLException ex) {
@@ -345,17 +363,15 @@ public class SAXLoader implements ConfigLoader {
             }
         }
 
-
         /* (non-Javadoc)
          * @see org.xml.sax.ContentHandler#characters(char[], int, int)
          */
-        public void characters(char ch[], int start, int length)
+        public void characters(char[] ch, int start, int length)
                 throws SAXParseException {
             if (curItem != null) {
                 curItem.append(ch, start, length);
             }
         }
-
 
         /* (non-Javadoc)
          * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
@@ -404,7 +420,6 @@ public class SAXLoader implements ConfigLoader {
                     break;
             }
         }
-
 
         /* (non-Javadoc)
          * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
