@@ -85,6 +85,19 @@ public class JiniConfigurationManager extends ConfigurationManager {
     }
 
     /**
+     * Creates a new Jini configuration manager. Used when all the command line arguments are either: requests for the usage
+     * statement, configuration file options, or unnamed.
+     * @param arguments An array of command line arguments.
+     * @param defaultConfigFile Loads the config from the specified path if no config is supplied.
+     * @throws UsageException Thrown when the user requested the usage string.
+     * @throws ArgumentException Thrown when an argument fails to parse.
+     * @throws PropertyException Thrown when an invalid property is loaded.
+     */
+    public JiniConfigurationManager(String[] arguments, String defaultConfigFile) throws UsageException, ArgumentException, PropertyException {
+        this(arguments,EMPTY_OPTIONS,defaultConfigFile);
+    }
+
+    /**
      * Creates a new jini configuration manager.
      *
      * This constructor performs a sequence of operations:
@@ -100,7 +113,27 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @throws PropertyException Thrown when an invalid property is loaded.
      */
     public JiniConfigurationManager(String[] arguments, Options options) throws UsageException, ArgumentException, PropertyException {
-        super(arguments,options);
+        this(arguments,options,"");
+    }
+
+    /**
+     * Creates a new jini configuration manager.
+     *
+     * This constructor performs a sequence of operations:
+     * - It validates the supplied options struct to make sure it does not have duplicate option names.
+     * - Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.
+     * - Parses any configuration overrides and applies them to the configuration manager.
+     * - Parses out options for the supplied struct and writes them into the struct.
+     * - Instantiates a jini component registry.
+     * @param arguments An array of command line arguments.
+     * @param options An object to write the parsed argument values into.
+     * @param defaultConfigFile Loads the config from the specified path if no config is supplied.
+     * @throws UsageException Thrown when the user requested the usage string.
+     * @throws ArgumentException Thrown when an argument fails to parse.
+     * @throws PropertyException Thrown when an invalid property is loaded.
+     */
+    public JiniConfigurationManager(String[] arguments, Options options, String defaultConfigFile) throws UsageException, ArgumentException, PropertyException {
+        super(arguments,options,defaultConfigFile,true);
 
         //
         // Look up our distinguished registry name.
