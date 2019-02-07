@@ -48,6 +48,8 @@ public class JsonLoader implements ConfigLoader {
 
     private final GlobalProperties globalProperties;
 
+    private String workingDir;
+
     public JsonLoader(JsonFactory factory, URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD,
                      Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) {
         this.factory = factory;
@@ -67,6 +69,11 @@ public class JsonLoader implements ConfigLoader {
     public void load(URL url) throws ConfigLoaderException, IOException {
         JsonParser parser = factory.createParser(url);
         parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
+        if (url.getProtocol().equals("file")) {
+            workingDir = new File(url.getFile()).getParent();
+        } else {
+            workingDir = "";
+        }
         parseJson(parser);
         parser.close();
     }
@@ -290,9 +297,14 @@ public class JsonLoader implements ConfigLoader {
                     + "'name' and 'value' attributes, found " + node.toString());
         }
         try {
-            URL newURL = ConfigurationManager.class.getResource(value.textValue());
+            String path = value.textValue();
+            URL newURL = ConfigurationManager.class.getResource(path);
             if (newURL == null) {
-                newURL = (new File(value.textValue())).toURI().toURL();
+                File newFile = new File(path);
+                if (!newFile.isAbsolute()) {
+                    newFile = new File(workingDir,path);
+                }
+                newURL = newFile.toURI().toURL();
             }
             parent.addURL(newURL);
         } catch (MalformedURLException ex) {
