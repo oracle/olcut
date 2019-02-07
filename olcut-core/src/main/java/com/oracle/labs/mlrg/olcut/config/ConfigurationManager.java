@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -51,6 +52,13 @@ public class ConfigurationManager implements Cloneable, Closeable {
         public String longName() { return "config-file"; }
         public char charName() { return 'c'; }
         public String usage() { return "A comma separated list of olcut config files."; }
+        public Class<? extends Option> annotationType() { return Option.class; }
+    };
+
+    public static final Function<String,Option> defaultConfigOptionFunction = (String path) -> new Option() {
+        public char charName() { return '\0'; }
+        public String longName() { return ""; }
+        public String usage() { return "Default configuration is loaded from '" + path + "'."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
@@ -180,6 +188,20 @@ public class ConfigurationManager implements Cloneable, Closeable {
     }
 
     /**
+     * Creates a new configuration manager. Used when all the command line arguments are either: requests for the usage
+     * statement, configuration file options, or unnamed.
+     * @param arguments An array of command line arguments.
+     * @param defaultConfigPath The default configuration to load.
+     * @throws UsageException Thrown when the user requested the usage string.
+     * @throws ArgumentException Thrown when an argument fails to parse.
+     * @throws PropertyException Thrown when an invalid property is loaded.
+     * @throws ConfigLoaderException Thrown when the configuration file cannot be read.
+     */
+    public ConfigurationManager(String[] arguments, String defaultConfigPath) throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
+        this(arguments,EMPTY_OPTIONS,defaultConfigPath,true);
+    }
+
+    /**
      * Creates a new configuration manager.
      *
      * This constructor performs a sequence of operations:
@@ -216,8 +238,30 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * @throws ConfigLoaderException Thrown when the configuration file cannot be read.
      */
     public ConfigurationManager(String[] arguments, Options options, boolean useConfigFiles)  throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
+        this(arguments,options,"",useConfigFiles);
+    }
+
+    /**
+     * Creates a new configuration manager.
+     *
+     * This constructor performs a sequence of operations:
+     * - It validates the supplied options struct to make sure it does not have duplicate option names.
+     * - Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.
+     * - Parses any configuration overrides and applies them to the configuration manager.
+     * - Parses out options for the supplied struct and writes them into the struct.
+     * @param arguments An array of command line arguments.
+     * @param options An object to write the parsed argument values into.
+     * @param defaultConfigPath The default config path. Set to empty or null to disable.
+     * @param useConfigFiles If true, add the config file option. If false ignore the config file option,
+     *                       and invalidate any Options that subclass {@link Configurable}.
+     * @throws UsageException Thrown when the user requested the usage string.
+     * @throws ArgumentException Thrown when an argument fails to parse.
+     * @throws PropertyException Thrown when an invalid property is loaded.
+     * @throws ConfigLoaderException Thrown when the configuration file cannot be read.
+     */
+    public ConfigurationManager(String[] arguments, Options options, String defaultConfigPath, boolean useConfigFiles)  throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
         // Validate the supplied Options struct is coherent and generate a usage statement.
-        usage = validateOptions(options,useConfigFiles);
+        usage = validateOptions(options,defaultConfigPath,useConfigFiles);
 
         // Check if the user requested the usage statement.
         if ((arguments.length == 1) && (arguments[0].equals("--"+usageOption.longName()) || arguments[0].equals("--"+helpOption.longName()))) {
@@ -232,6 +276,9 @@ public class ConfigurationManager implements Cloneable, Closeable {
         List<URL> urls;
         if (useConfigFiles) {
             urls = parseConfigFiles(argumentsList);
+            if (urls.isEmpty() && (defaultConfigPath != null) && !defaultConfigPath.isEmpty()) {
+                urls.add(findURL(defaultConfigPath,"default-config-file"));
+            }
         } else {
             // If we don't have config files then supply an empty list
             urls = new ArrayList<>();
@@ -273,17 +320,13 @@ public class ConfigurationManager implements Cloneable, Closeable {
         // *Must* be last as it can cause Configurable instantiation.
         // Throws an exception if there are unknown named arguments at this stage.
         try {
-            parseOptionArguments(argumentsList, options);
+            unnamedArguments = parseOptionArguments(argumentsList, options);
         } catch (PropertyException e) {
             throw new ArgumentException(e, e.getMsg() + "\n\n" + usage);
         } catch (IllegalAccessException e) {
             throw new ArgumentException(e, "Failed to write argument into Options");
         } catch (InstantiationException e) {
             throw new ArgumentException(e, "Failed to instantiate a field of Options.");
-        }
-
-        if (argumentsList.size() != 0) {
-            unnamedArguments = argumentsList.toArray(unnamedArguments);
         }
     }
 
@@ -301,6 +344,10 @@ public class ConfigurationManager implements Cloneable, Closeable {
     }
 
     public static String validateOptions(Options options, boolean useConfigFiles) throws ArgumentException {
+        return validateOptions(options, "", useConfigFiles);
+    }
+
+    public static String validateOptions(Options options, String defaultConfigPath, boolean useConfigFiles) throws ArgumentException {
         Set<Field> optionFields = new HashSet<>();
         Set<Class<? extends Options>> allOptions = Options.getAllOptions(options.getClass());
         StringBuilder builder = new StringBuilder();
@@ -311,6 +358,9 @@ public class ConfigurationManager implements Cloneable, Closeable {
         usageList.add(Options.header);
         if (useConfigFiles) {
             usageList.add(Options.getOptionUsage(configFileOption, "java.lang.String"));
+            if (defaultConfigPath != null && !defaultConfigPath.isEmpty()) {
+                usageList.add(Options.getOptionUsage(defaultConfigOptionFunction.apply(defaultConfigPath), "java.lang.String"));
+            }
             usageList.add(Options.getOptionUsage(fileFormatOption, "java.lang.String"));
         }
         usageList.add(Options.getOptionUsage(usageOption,""));
@@ -383,6 +433,39 @@ public class ConfigurationManager implements Cloneable, Closeable {
         }
 
         return builder.toString();
+    }
+
+    /**
+     * Checks to see if the input after lowercasing is equal to "false" or "true".
+     *
+     * It's stricter than Boolean.parseBoolean.
+     * @param input The input to test
+     * @return True if it's a boolean value, false otherwise.
+     */
+    private static boolean parseableAsBoolean(String input) {
+        String lowercase = input.toLowerCase();
+        return lowercase.equals("false") || lowercase.equals("true");
+    }
+
+    private static URL findURL(String input, String argumentName) {
+        URL url = ConfigurationManager.class.getResource(input);
+        if (url == null) {
+            File file = new File(input);
+            if (file.exists()) {
+                try {
+                    url = file.toURI().toURL();
+                } catch (MalformedURLException e) {
+                    throw new ArgumentException(e, argumentName, "Can't load config file: " + input);
+                }
+            } else {
+                try {
+                    url = (new URI(input)).toURL();
+                } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
+                    throw new ArgumentException(argumentName, "Can't find config file: " + input);
+                }
+            }
+        }
+        return url;
     }
 
     /**
@@ -459,9 +542,11 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * @throws ArgumentException If an argument is poorly formatted, missing a mandatory parameter, or not
      *              present in the supplied Options.
      */
-    private void parseOptionArguments(List<String> arguments, Options options) throws ArgumentException, IllegalAccessException, InstantiationException {
+    private String[] parseOptionArguments(List<String> arguments, Options options) throws ArgumentException, IllegalAccessException, InstantiationException {
         Map<String,Pair<Field,Object>> longNameMap = new HashMap<>();
         Map<Character,Pair<Field,Object>> charNameMap = new HashMap<>();
+
+        arguments = new ArrayList<>(arguments);
 
         Queue<Options> objectQueue = new LinkedList<>();
         objectQueue.add(options);
@@ -491,9 +576,10 @@ public class ConfigurationManager implements Cloneable, Closeable {
             }
         }
 
-        Iterator<String> argsItr = arguments.iterator();
-        while (argsItr.hasNext()) {
-            String curArg = argsItr.next();
+        boolean consumed = false;
+        for (int i = 0; i < arguments.size(); i++) {
+            consumed = false;
+            String curArg = arguments.get(i);
 
             if (curArg.startsWith(LONG_ARG)) {
                 String argName = curArg.substring(2);
@@ -502,11 +588,12 @@ public class ConfigurationManager implements Cloneable, Closeable {
                     Field f = arg.getA();
                     FieldType ft = FieldType.getFieldType(f);
                     // Consume argument.
-                    argsItr.remove();
-                    if (argsItr.hasNext()) {
+                    arguments.remove(i);
+                    consumed = true;
+                    if (i < arguments.size()) {
                         boolean accessible = f.isAccessible();
                         f.setAccessible(true);
-                        String param = argsItr.next();
+                        String param = arguments.get(i);
                         List<String> list = parseStringList(param);
                         if (FieldType.arrayTypes.contains(ft)) {
                             f.set(arg.getB(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, list));
@@ -525,7 +612,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
                             throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
                         }
                         // Consume parameter.
-                        argsItr.remove();
+                        arguments.remove(i);
                         f.setAccessible(accessible);
                     } else {
                         throw new ArgumentException(curArg,"No parameter for argument");
@@ -536,11 +623,12 @@ public class ConfigurationManager implements Cloneable, Closeable {
             } else if (curArg.startsWith(SHORT_ARG)) {
                 char[] args = curArg.substring(1).toCharArray();
                 if (args.length > 0) {
-                    argsItr.remove();
+                    arguments.remove(i);
+                    consumed = true;
                     //
                     // We'll treat the last argument separately as it might have a parameter
-                    for (int i = 0; i < args.length - 1; i++) {
-                        Pair<Field,Object> arg = charNameMap.get(args[i]);
+                    for (int j = 0; j < args.length - 1; j++) {
+                        Pair<Field,Object> arg = charNameMap.get(args[j]);
                         if (arg != null) {
                             Field f = arg.getA();
                             boolean accessible = f.isAccessible();
@@ -550,11 +638,11 @@ public class ConfigurationManager implements Cloneable, Closeable {
                                 f.set(arg.getB(),true);
                             } else {
                                 f.setAccessible(accessible);
-                                throw new ArgumentException(curArg + " on element " + args[i], "Non boolean argument found where boolean expected");
+                                throw new ArgumentException(curArg + " on element " + args[j], "Non boolean argument found where boolean expected");
                             }
                             f.setAccessible(accessible);
                         } else {
-                            throw new ArgumentException(curArg + " on element " + args[i], "Unknown argument");
+                            throw new ArgumentException(curArg + " on element " + args[j], "Unknown argument");
                         }
                     }
 
@@ -565,12 +653,26 @@ public class ConfigurationManager implements Cloneable, Closeable {
                         f.setAccessible(true);
                         FieldType ft = FieldType.getFieldType(f);
                         if (FieldType.isBoolean(ft)) {
-                            f.set(arg.getB(),true);
+                            if (i < arguments.size()) {
+                                // Check if the next argument is a value coercible to a boolean.
+                                // This check is more restrictive than Boolean.parseBoolean which accepts anything as a false value.
+                                // It only accepts things which lower case to "false" and "true".
+                                String nextArg = arguments.get(i);
+                                if (parseableAsBoolean(nextArg)) {
+                                    f.set(arg.getB(), Boolean.parseBoolean(nextArg));
+                                    arguments.remove(i);
+                                } else {
+                                    // Next arg is an option or something else, leave unparsed.
+                                    f.set(arg.getB(), true);
+                                }
+                            } else {
+                                f.set(arg.getB(), true);
+                            }
                         } else {
                             // Now we need to accept the next parameter.
                             curArg = args[args.length-1]+"";
-                            if (argsItr.hasNext()) {
-                                String param = argsItr.next();
+                            if (i < arguments.size()) {
+                                String param = arguments.get(i);
                                 List<String> list = parseStringList(param);
                                 if (FieldType.arrayTypes.contains(ft)) {
                                     f.set(arg.getB(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, list));
@@ -579,6 +681,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
                                     if (genericList.size() == 1) {
                                         f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, list));
                                     } else {
+                                        f.setAccessible(accessible);
                                         throw new ArgumentException(curArg,"Unknown generic type in argument");
                                     }
                                 } else if (list.size() == 1) {
@@ -588,7 +691,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
                                     throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
                                 }
                                 // Consume parameter.
-                                argsItr.remove();
+                                arguments.remove(i);
                             } else {
                                 f.setAccessible(accessible);
                                 throw new ArgumentException(curArg,"No parameter for argument");
@@ -600,7 +703,12 @@ public class ConfigurationManager implements Cloneable, Closeable {
                     throw new ArgumentException(curArg, "Empty argument found.");
                 }
             }
+            if (consumed) {
+                i--;
+            }
         }
+
+        return arguments.toArray(unnamedArguments);
     }
 
     /**
@@ -628,23 +736,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
                         List<String> urlList = parseStringList(curParam);
                         urls.clear();
                         for (String s : urlList) {
-                            URL url = ConfigurationManager.class.getResource(s);
-                            if (url == null) {
-                                File file = new File(s);
-                                if (file.exists()) {
-                                    try {
-                                        url = file.toURI().toURL();
-                                    } catch (MalformedURLException e) {
-                                        throw new ArgumentException(e, curArg, "Can't load config file: " + s);
-                                    }
-                                } else {
-                                    try {
-                                        url = (new URI(s)).toURL();
-                                    } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
-                                        throw new ArgumentException(curArg, "Can't find config file: " + s);
-                                    }
-                                }
-                            }
+                            URL url = findURL(s, curArg);
                             urls.add(url);
                         }
                         argsItr.remove();
