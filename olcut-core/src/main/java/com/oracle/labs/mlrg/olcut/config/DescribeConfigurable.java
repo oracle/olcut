@@ -199,8 +199,8 @@ public class DescribeConfigurable {
         return output;
     }
 
-    public static void writeExampleConfig(OutputStream stream, Class<? extends Configurable> configurableClass, Map<String,FieldInfo> map) {
-        XMLConfigFactory factory = new XMLConfigFactory();
+    public static void writeExampleConfig(OutputStream stream, String fileFormat, Class<? extends Configurable> configurableClass, Map<String,FieldInfo> map) {
+        FileFormatFactory factory = ConfigurationManager.getFileFormatFactory(fileFormat);
         ConfigWriter configWriter = factory.getWriter(stream);
 
         // Generate attributes
@@ -228,7 +228,13 @@ public class DescribeConfigurable {
                     break;
             }
         }
+
+        configWriter.writeStartDocument();
+        configWriter.writeStartComponents();
         configWriter.writeComponent(attributes, properties);
+        configWriter.writeEndComponents();
+        configWriter.writeEndDocument();
+        configWriter.close();
     }
 
     public static String formatDescription(List<List<String>> descriptions) {
@@ -260,6 +266,8 @@ public class DescribeConfigurable {
     }
 
     public static class DescribeOptions implements Options {
+        @Option(charName='e',longName="file-format",usage="File format to write out, must have an instance of FileFormatFactory on the classpath and added in through the options.")
+        public String extension = "xml";
         @Option(charName='n',longName="class-name",usage="Name of the Configurable class to describe.")
         public String className;
         @Option(charName='o',longName="output-example-configuration",usage="Emit an example configuration in XML.")
@@ -271,7 +279,7 @@ public class DescribeConfigurable {
 
         ConfigurationManager cm;
         try {
-            cm = new ConfigurationManager(args,o,false);
+            cm = new ConfigurationManager(args,o);
         } catch (UsageException e) {
             logger.info(e.getMessage());
             return;
@@ -297,7 +305,7 @@ public class DescribeConfigurable {
                 if (o.output) {
                     ByteArrayOutputStream writer = new ByteArrayOutputStream();
 
-                    writeExampleConfig(writer,configurableClass,map);
+                    writeExampleConfig(writer,o.extension,configurableClass,map);
 
                     System.out.println("Example :\n" + writer.toString("UTF-8"));
                 }

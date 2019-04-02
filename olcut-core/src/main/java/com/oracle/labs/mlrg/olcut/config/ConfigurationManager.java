@@ -343,6 +343,10 @@ public class ConfigurationManager implements Cloneable, Closeable {
         formatFactoryMap.put(f.getExtension(),f);
     }
 
+    public static FileFormatFactory getFileFormatFactory(String extension) {
+        return formatFactoryMap.get(extension);
+    }
+
     public static String validateOptions(Options options, boolean useConfigFiles) throws ArgumentException {
         return validateOptions(options, "", useConfigFiles);
     }
