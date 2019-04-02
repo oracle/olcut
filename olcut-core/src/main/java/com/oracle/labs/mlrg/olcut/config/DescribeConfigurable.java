@@ -1,9 +1,14 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +28,7 @@ public class DescribeConfigurable {
         public enum FieldInfoType {NORMAL, LIST, MAP}
         public final String name;
         public final String className;
+        public final Field field;
         public final boolean mandatory;
         public final String description;
         public final FieldInfoType type;
@@ -30,37 +36,85 @@ public class DescribeConfigurable {
         public final String genericMapKeyClass;
         public final String genericMapValueClass;
 
-        public FieldInfo(String name, String className, boolean mandatory, String description) {
+        public final String classShortName;
+
+        public FieldInfo(String name, String className, Field field, boolean mandatory, String description) {
             this.name = name;
             this.className = className;
+            this.field = field;
             this.mandatory = mandatory;
             this.description = description;
             this.type = FieldInfoType.NORMAL;
             this.genericListClass = "";
             this.genericMapKeyClass = "";
             this.genericMapValueClass = "";
+            int index = className.lastIndexOf(".");
+            this.classShortName = index > -1 ? className.substring(index+1) : className;
         }
 
-        public FieldInfo(String name, String className, boolean mandatory, String description, String genericListClass) {
+        public FieldInfo(String name, String className, Field field, boolean mandatory, String description, String genericListClass) {
             this.name = name;
             this.className = className;
+            this.field = field;
             this.mandatory = mandatory;
             this.description = description;
             this.type = FieldInfoType.LIST;
             this.genericListClass = genericListClass;
             this.genericMapKeyClass = "";
             this.genericMapValueClass = "";
+            int index = className.lastIndexOf(".");
+            this.classShortName = index > -1 ? className.substring(index+1) : className;
         }
 
-        public FieldInfo(String name, String className, boolean mandatory, String description, String genericKeyClass, String genericValueClass) {
+        public FieldInfo(String name, String className, Field field, boolean mandatory, String description, String genericKeyClass, String genericValueClass) {
             this.name = name;
             this.className = className;
+            this.field = field;
             this.mandatory = mandatory;
             this.description = description;
             this.type = FieldInfoType.MAP;
             this.genericListClass = "";
             this.genericMapKeyClass = genericKeyClass;
             this.genericMapValueClass = genericValueClass;
+            int index = className.lastIndexOf(".");
+            this.classShortName = index > -1 ? className.substring(index+1) : className;
+        }
+    }
+
+    private static String generateDefaultValue(FieldInfo fi) {
+        FieldType ft = FieldType.getFieldType(fi.field);
+        switch (ft) {
+            case STRING:
+                return "empty-string";
+            case BOOLEAN:
+                return "false";
+            case BYTE:
+            case SHORT:
+            case INTEGER:
+            case LONG:
+            case ATOMIC_INTEGER:
+            case ATOMIC_LONG:
+                return "0";
+            case CHAR:
+                return "c";
+            case FLOAT:
+            case DOUBLE:
+                return "0.0";
+            case FILE:
+            case PATH:
+                return "/path/to/a/file";
+            case RANDOM:
+                return "42";
+            case ENUM:
+                try {
+                    return Class.forName(fi.className).getEnumConstants()[0].toString();
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalArgumentException("Class not found when generating default value", e);
+                }
+            case CONFIGURABLE:
+                return fi.classShortName + "-instance";
+            default:
+                return "invalid-field-type";
         }
     }
 
@@ -99,7 +153,7 @@ public class DescribeConfigurable {
         public boolean output;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedEncodingException {
         DescribeOptions o = new DescribeOptions();
 
         ConfigurationManager cm;
@@ -124,13 +178,8 @@ public class DescribeConfigurable {
                 TreeMap<String, FieldInfo> map = new TreeMap<>();
                 for (Field f : fieldSet) {
                     //boolean accessible = f.isAccessible();
-                    //f.setAccessible(true);
                     Config configAnnotation = f.getAnnotation(Config.class);
                     if (configAnnotation != null) {
-                        //
-                        // We have a variable annotated with the Config annotation,
-                        // let's get a value out of the property sheet and figure
-                        // out how to turn it into the right type.
                         FieldType ft = FieldType.getFieldType(f);
                         if (ft == null) {
                             logger.warning("This class has an invalid configurable field type for field " + f.getName());
@@ -142,7 +191,7 @@ public class DescribeConfigurable {
                             if (FieldType.listTypes.contains(ft)) {
                                 List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                                 if (genericList.size() == 1) {
-                                    FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),configAnnotation.mandatory(),configAnnotation.description(),genericList.get(0).getCanonicalName());
+                                    FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),configAnnotation.description(),genericList.get(0).getCanonicalName());
                                     map.put(f.getName(),fi);
                                 } else {
                                     logger.warning("This class has an invalid configurable field called " + f.getName() + ", failed to extract the generic type arguments for a list or set, found: " + genericList.toString());
@@ -152,19 +201,18 @@ public class DescribeConfigurable {
                                 // Pull out the generic types from the map.
                                 List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                                 if (genericList.size() == 2) {
-                                    FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),configAnnotation.mandatory(),configAnnotation.description(),genericList.get(0).getCanonicalName(),genericList.get(1).getCanonicalName());
+                                    FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),configAnnotation.description(),genericList.get(0).getCanonicalName(),genericList.get(1).getCanonicalName());
                                     map.put(f.getName(),fi);
                                 } else {
                                     logger.warning("This class has an invalid configurable field called " + f.getName() + ", failed to extract the generic type arguments for a map, found: " + genericList.toString());
                                 }
                             } else {
                                 // Else write a standard FieldInfo record.
-                                FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),configAnnotation.mandatory(),configAnnotation.description());
+                                FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),configAnnotation.description());
                                 map.put(f.getName(),fi);
                             }
                         }
                     }
-                    //f.setAccessible(accessible);
                 }
 
                 List<List<String>> output = new ArrayList<>();
@@ -199,6 +247,42 @@ public class DescribeConfigurable {
 
                 System.out.println("Class: " + configurableClass.getCanonicalName() + "\n");
                 System.out.println(formatDescription(output));
+
+                if (o.output) {
+                    ByteArrayOutputStream writer = new ByteArrayOutputStream();
+
+                    XMLConfigFactory factory = new XMLConfigFactory();
+                    ConfigWriter configWriter = factory.getWriter(writer);
+
+                    // Generate attributes
+                    Map<String,String> attributes = new HashMap<>();
+                    attributes.put(ConfigLoader.NAME,"example");
+                    attributes.put(ConfigLoader.EXPORT,"false");
+                    attributes.put(ConfigLoader.IMPORT,"false");
+                    attributes.put(ConfigLoader.TYPE,configurableClass.getCanonicalName());
+
+                    // Generate default properties
+                    Map<String,Object> properties = new HashMap<>();
+                    for (Map.Entry<String,FieldInfo> e : map.entrySet()) {
+                        FieldInfo fi = e.getValue();
+                        switch (fi.type) {
+                            case NORMAL:
+                                properties.put(e.getKey(),generateDefaultValue(fi));
+                                break;
+                            case LIST:
+                                properties.put(e.getKey(),Arrays.asList(fi.className + "-instance"));
+                                break;
+                            case MAP:
+                                Map<String,String> newMap = new HashMap<>();
+                                newMap.put("mapKey",fi.genericMapValueClass+"-instance");
+                                properties.put(e.getKey(),newMap);
+                                break;
+                        }
+                    }
+                    configWriter.writeComponent(attributes, properties);
+
+                    System.out.println("Example :\n" + writer.toString("UTF-8"));
+                }
             } else {
                 logger.warning("The supplied class did not implement Configurable, class = " + clazz.getCanonicalName());
             }
