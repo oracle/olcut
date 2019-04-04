@@ -5,7 +5,9 @@ import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +25,7 @@ import java.util.logging.Logger;
 public class DescribeConfigurable {
     private static final Logger logger = Logger.getLogger(DescribeConfigurable.class.getName());
 
-    public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Field Name","Type","Mandatory","Description"));
+    public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Field Name","Type","Mandatory","Default","Description"));
 
     private static class FieldInfo {
         public enum FieldInfoType {NORMAL, LIST, MAP}
@@ -31,6 +33,7 @@ public class DescribeConfigurable {
         public final String className;
         public final Field field;
         public final boolean mandatory;
+        public final String defaultVal;
         public final String description;
         public final FieldInfoType type;
         public final String genericListClass;
@@ -39,11 +42,12 @@ public class DescribeConfigurable {
 
         public final String classShortName;
 
-        public FieldInfo(String name, String className, Field field, boolean mandatory, String description) {
+        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description) {
             this.name = name;
             this.className = className;
             this.field = field;
             this.mandatory = mandatory;
+            this.defaultVal = defaultVal;
             this.description = description;
             this.type = FieldInfoType.NORMAL;
             this.genericListClass = "";
@@ -53,11 +57,12 @@ public class DescribeConfigurable {
             this.classShortName = index > -1 ? className.substring(index+1) : className;
         }
 
-        public FieldInfo(String name, String className, Field field, boolean mandatory, String description, String genericListClass) {
+        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, String genericListClass) {
             this.name = name;
             this.className = className;
             this.field = field;
             this.mandatory = mandatory;
+            this.defaultVal = defaultVal;
             this.description = description;
             this.type = FieldInfoType.LIST;
             this.genericListClass = genericListClass;
@@ -67,11 +72,12 @@ public class DescribeConfigurable {
             this.classShortName = index > -1 ? className.substring(index+1) : className;
         }
 
-        public FieldInfo(String name, String className, Field field, boolean mandatory, String description, String genericKeyClass, String genericValueClass) {
+        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, String genericKeyClass, String genericValueClass) {
             this.name = name;
             this.className = className;
             this.field = field;
             this.mandatory = mandatory;
+            this.defaultVal = defaultVal;
             this.description = description;
             this.type = FieldInfoType.MAP;
             this.genericListClass = "";
@@ -122,11 +128,32 @@ public class DescribeConfigurable {
     public static TreeMap<String,FieldInfo> generateFieldInfo(Class<? extends Configurable> configurableClass) {
         Set<Field> fieldSet = PropertySheet.getAllFields(configurableClass);
 
+        Object instance;
+        try {
+            Constructor<? extends Configurable> constructor = configurableClass.getDeclaredConstructor();
+            boolean isAccessible = constructor.isAccessible();
+            constructor.setAccessible(true);
+            instance = constructor.newInstance();
+            constructor.setAccessible(isAccessible);
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException("No-args constructor not found for class " + configurableClass, ex);
+        } catch (InvocationTargetException | IllegalAccessException | InstantiationException ex) {
+            throw new IllegalStateException("Can't instantiate class " + configurableClass, ex);
+        }
+
         TreeMap<String, FieldInfo> map = new TreeMap<>();
         for (Field f : fieldSet) {
-            //boolean accessible = f.isAccessible();
             Config configAnnotation = f.getAnnotation(Config.class);
             if (configAnnotation != null) {
+                boolean accessible = f.isAccessible();
+                f.setAccessible(true);
+                Object extractedField = null;
+                try {
+                    extractedField = f.get(instance);
+                } catch (IllegalAccessException e) {
+                    logger.warning("Failed to read default value from field " + f.getName() + " of class " + configurableClass.getName());
+                }
+                String defaultVal = extractedField == null ? "" : extractedField.toString();
                 FieldType ft = FieldType.getFieldType(f);
                 if (ft == null) {
                     logger.warning("This class has an invalid configurable field type for field " + f.getName());
@@ -138,7 +165,7 @@ public class DescribeConfigurable {
                     if (FieldType.listTypes.contains(ft)) {
                         List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                         if (genericList.size() == 1) {
-                            FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),configAnnotation.description(),genericList.get(0).getCanonicalName());
+                            FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),defaultVal,configAnnotation.description(),genericList.get(0).getCanonicalName());
                             map.put(f.getName(),fi);
                         } else {
                             logger.warning("This class has an invalid configurable field called " + f.getName() + ", failed to extract the generic type arguments for a list or set, found: " + genericList.toString());
@@ -148,17 +175,18 @@ public class DescribeConfigurable {
                         // Pull out the generic types from the map.
                         List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                         if (genericList.size() == 2) {
-                            FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),configAnnotation.description(),genericList.get(0).getCanonicalName(),genericList.get(1).getCanonicalName());
+                            FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),defaultVal,configAnnotation.description(),genericList.get(0).getCanonicalName(),genericList.get(1).getCanonicalName());
                             map.put(f.getName(),fi);
                         } else {
                             logger.warning("This class has an invalid configurable field called " + f.getName() + ", failed to extract the generic type arguments for a map, found: " + genericList.toString());
                         }
                     } else {
                         // Else write a standard FieldInfo record.
-                        FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),configAnnotation.description());
+                        FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),defaultVal,configAnnotation.description());
                         map.put(f.getName(),fi);
                     }
                 }
+                f.setAccessible(accessible);
             }
         }
 
@@ -191,6 +219,11 @@ public class DescribeConfigurable {
             fieldString.add(fi.name);
             fieldString.add(type);
             fieldString.add(""+fi.mandatory);
+            if (fi.mandatory) {
+                fieldString.add("");
+            } else {
+                fieldString.add(fi.defaultVal);
+            }
             fieldString.add(fi.description);
 
             output.add(fieldString);
@@ -238,10 +271,10 @@ public class DescribeConfigurable {
     }
 
     public static String formatDescription(List<List<String>> descriptions) {
-        int[] maxWidth = new int[4];
+        int[] maxWidth = new int[5];
 
         for (List<String> a : descriptions) {
-            if (a.size() == 4) {
+            if (a.size() == 5) {
                 if (maxWidth[0] < a.get(0).length()) {
                     maxWidth[0] = a.get(0).length();
                 }
@@ -251,15 +284,18 @@ public class DescribeConfigurable {
                 if (maxWidth[2] < a.get(2).length()) {
                     maxWidth[2] = a.get(2).length();
                 }
+                if (maxWidth[3] < a.get(3).length()) {
+                    maxWidth[3] = a.get(3).length();
+                }
             }
         }
 
-        String formatString = "%-"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %s\n";
+        String formatString = "%-"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %-"+maxWidth[3]+"s %s\n";
         StringBuilder builder = new StringBuilder();
 
         for (List<String> a : descriptions) {
-            if (a.size() == 4) {
-                builder.append(String.format(formatString,a.get(0),a.get(1),a.get(2),a.get(3)));
+            if (a.size() == 5) {
+                builder.append(String.format(formatString,a.get(0),a.get(1),a.get(2),a.get(3),a.get(4)));
             }
         }
         return builder.toString();
