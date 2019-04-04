@@ -1867,9 +1867,6 @@ public class ConfigurationManager implements Cloneable, Closeable {
         String configName = "";
 
         try {
-            //
-            // This test is on Object.class.getName as class.getSuperclass() returns
-            // Object rather than the interfaces it implements.
             Set<Field> fields = PropertySheet.getAllFields(configurable.getClass());
             for (Field field : fields) {
                 boolean accessible = field.isAccessible();
