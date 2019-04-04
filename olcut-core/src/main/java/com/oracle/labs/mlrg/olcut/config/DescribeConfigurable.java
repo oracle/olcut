@@ -1,7 +1,5 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -28,7 +26,7 @@ public class DescribeConfigurable {
     public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Field Name","Type","Mandatory","Default","Description"));
 
     private static class FieldInfo {
-        public enum FieldInfoType {NORMAL, LIST, MAP}
+        public enum FieldInfoType {NORMAL, ENUM, LIST, ENUM_LIST, MAP}
         public final String name;
         public final String className;
         public final Field field;
@@ -42,49 +40,43 @@ public class DescribeConfigurable {
 
         public final String classShortName;
 
-        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description) {
+        public final ArrayList<String> enumConstants = new ArrayList<>();
+
+        private FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, FieldInfoType type, String genericListClass, String genericMapKeyClass, String genericMapValueClass) {
             this.name = name;
             this.className = className;
             this.field = field;
             this.mandatory = mandatory;
             this.defaultVal = defaultVal;
             this.description = description;
-            this.type = FieldInfoType.NORMAL;
-            this.genericListClass = "";
-            this.genericMapKeyClass = "";
-            this.genericMapValueClass = "";
+            this.genericListClass = genericListClass;
+            this.genericMapKeyClass = genericMapKeyClass;
+            this.genericMapValueClass = genericMapValueClass;
+            this.type = type;
             int index = className.lastIndexOf(".");
             this.classShortName = index > -1 ? className.substring(index+1) : className;
+        }
+
+        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description) {
+            this(name,className,field,mandatory,defaultVal,description,FieldInfoType.NORMAL,"","","");
+        }
+
+        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, List<String> enumConstants) {
+            this(name,className,field,mandatory,defaultVal,description,FieldInfoType.ENUM,"","","");
+            this.enumConstants.addAll(enumConstants);
         }
 
         public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, String genericListClass) {
-            this.name = name;
-            this.className = className;
-            this.field = field;
-            this.mandatory = mandatory;
-            this.defaultVal = defaultVal;
-            this.description = description;
-            this.type = FieldInfoType.LIST;
-            this.genericListClass = genericListClass;
-            this.genericMapKeyClass = "";
-            this.genericMapValueClass = "";
-            int index = className.lastIndexOf(".");
-            this.classShortName = index > -1 ? className.substring(index+1) : className;
+            this(name,className,field,mandatory,defaultVal,description,FieldInfoType.LIST,genericListClass,"","");
+        }
+
+        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, String genericListClass, List<String> enumConstants) {
+            this(name,className,field,mandatory,defaultVal,description,FieldInfoType.ENUM_LIST,genericListClass,"","");
+            this.enumConstants.addAll(enumConstants);
         }
 
         public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, String genericKeyClass, String genericValueClass) {
-            this.name = name;
-            this.className = className;
-            this.field = field;
-            this.mandatory = mandatory;
-            this.defaultVal = defaultVal;
-            this.description = description;
-            this.type = FieldInfoType.MAP;
-            this.genericListClass = "";
-            this.genericMapKeyClass = genericKeyClass;
-            this.genericMapValueClass = genericValueClass;
-            int index = className.lastIndexOf(".");
-            this.classShortName = index > -1 ? className.substring(index+1) : className;
+            this(name,className,field,mandatory,defaultVal,description,FieldInfoType.MAP,"",genericKeyClass,genericValueClass);
         }
     }
 
@@ -165,7 +157,18 @@ public class DescribeConfigurable {
                     if (FieldType.listTypes.contains(ft)) {
                         List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                         if (genericList.size() == 1) {
-                            FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),defaultVal,configAnnotation.description(),genericList.get(0).getCanonicalName());
+                            Class<?> listType = genericList.get(0);
+                            FieldInfo fi;
+                            if (listType.isEnum()) {
+                                Object[] constants = listType.getEnumConstants();
+                                List<String> enumConstants = new ArrayList<>();
+                                for (Object o : constants) {
+                                    enumConstants.add(((Enum)o).name());
+                                }
+                                fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),defaultVal,configAnnotation.description(),listType.getCanonicalName(),enumConstants);
+                            } else {
+                                fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),defaultVal,configAnnotation.description(),listType.getCanonicalName());
+                            }
                             map.put(f.getName(),fi);
                         } else {
                             logger.warning("This class has an invalid configurable field called " + f.getName() + ", failed to extract the generic type arguments for a list or set, found: " + genericList.toString());
@@ -182,7 +185,17 @@ public class DescribeConfigurable {
                         }
                     } else {
                         // Else write a standard FieldInfo record.
-                        FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),defaultVal,configAnnotation.description());
+                        FieldInfo fi;
+                        if (f.getType().isEnum()) {
+                            Object[] constants = f.getType().getEnumConstants();
+                            List<String> enumConstants = new ArrayList<>();
+                            for (Object o : constants) {
+                                enumConstants.add(((Enum) o).name());
+                            }
+                            fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation.mandatory(), defaultVal, configAnnotation.description(), enumConstants);
+                        } else {
+                            fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation.mandatory(), defaultVal, configAnnotation.description());
+                        }
                         map.put(f.getName(),fi);
                     }
                 }
@@ -208,8 +221,14 @@ public class DescribeConfigurable {
             switch (fi.type) {
                 case NORMAL:
                     break;
+                case ENUM:
+                    type = type + " - " + fi.enumConstants.toString();
+                    break;
                 case LIST:
                     type = type + "<" + fi.genericListClass + ">";
+                    break;
+                case ENUM_LIST:
+                    type = type + "<" + fi.genericListClass + "> - " + fi.enumConstants.toString();
                     break;
                 case MAP:
                     type = type + "<" + fi.genericMapKeyClass + "," + fi.genericMapValueClass + ">";
