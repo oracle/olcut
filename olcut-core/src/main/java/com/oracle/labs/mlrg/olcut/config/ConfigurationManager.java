@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -325,7 +326,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
             throw new ArgumentException(e, e.getMsg() + "\n\n" + usage);
         } catch (IllegalAccessException e) {
             throw new ArgumentException(e, "Failed to write argument into Options");
-        } catch (InstantiationException e) {
+        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
             throw new ArgumentException(e, "Failed to instantiate a field of Options.");
         }
     }
@@ -546,7 +547,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * @throws ArgumentException If an argument is poorly formatted, missing a mandatory parameter, or not
      *              present in the supplied Options.
      */
-    private String[] parseOptionArguments(List<String> arguments, Options options) throws ArgumentException, IllegalAccessException, InstantiationException {
+    private String[] parseOptionArguments(List<String> arguments, Options options) throws ArgumentException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         Map<String,Pair<Field,Object>> longNameMap = new HashMap<>();
         Map<Character,Pair<Field,Object>> charNameMap = new HashMap<>();
 
@@ -574,7 +575,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
                 if (f.get(o) != null) {
                     logger.fine("Warning: overwriting Options field.");
                 }
-                f.set(o,f.getType().newInstance());
+                f.set(o,f.getType().getDeclaredConstructor().newInstance());
                 objectQueue.add((Options)f.get(o));
                 f.setAccessible(accessible);
             }
@@ -760,14 +761,14 @@ public class ConfigurationManager implements Cloneable, Closeable {
                             try {
                                 Class<?> clazz = Class.forName(className);
                                 if (FileFormatFactory.class.isAssignableFrom(clazz)) {
-                                    FileFormatFactory fff = (FileFormatFactory) clazz.newInstance();
+                                    FileFormatFactory fff = (FileFormatFactory) clazz.getDeclaredConstructor().newInstance();
                                     ConfigurationManager.addFileFormatFactory(fff);
                                 } else {
                                     throw new ArgumentException(curArg, className + " does not implement FileFormatFactory");
                                 }
                             } catch (ClassNotFoundException e) {
                                 throw new ArgumentException(e, curArg, "Class not found");
-                            } catch (InstantiationException | IllegalAccessException e) {
+                            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                                 throw new ArgumentException(e, curArg, "Could not instantiate class");
                             }
                         }
