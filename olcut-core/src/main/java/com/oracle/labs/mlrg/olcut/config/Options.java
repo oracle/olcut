@@ -1,6 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,21 +11,36 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * A tag interface which contains fields annotated with {@link Option}, and other
- * fields which subclass {@link Options}. Any other fields or methods are ignored by the
+ * fields which subclass {@link Options}.
+ *
+ * Implement the {@link Options#getOptionsDescription} method to insert a description string
+ * into the generated Options usage string.
+ *
+ * Any other fields or methods are ignored by the
  * command line arguments processing system.
  */
 public interface Options {
+    public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Char","Long Name","Type","Default","Usage"));
 
-    public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Char","Long Name","Type","Usage"));
+    /**
+     * Gets a possibly multi line description of this Options subclass.
+     *
+     * Default implementation returns the empty string.
+     * @return A description string.
+     */
+    default public String getOptionsDescription() {
+        return "";
+    }
 
     public static String formatUsage(List<List<String>> usageList) {
-        int[] maxWidth = new int[4];
+        int[] maxWidth = new int[5];
 
         for (List<String> a : usageList) {
-            if (a.size() == 4) {
+            if (a.size() == 5) {
                 if (maxWidth[0] < a.get(0).length()) {
                     maxWidth[0] = a.get(0).length();
                 }
@@ -34,15 +50,22 @@ public interface Options {
                 if (maxWidth[2] < a.get(2).length()) {
                     maxWidth[2] = a.get(2).length();
                 }
+                if (maxWidth[3] < a.get(3).length()) {
+                    maxWidth[3] = a.get(3).length();
+                }
             }
         }
 
-        String formatString = "%"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %s\n";
+        String formatString = "%"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %-"+maxWidth[3]+"s %s\n";
         StringBuilder builder = new StringBuilder();
 
         for (List<String> a : usageList) {
-            if (a.size() == 4) {
-                builder.append(String.format(formatString,a.get(0),a.get(1),a.get(2),a.get(3)));
+            if (a.size() == 5) {
+                builder.append(String.format(formatString, a.get(0), a.get(1), a.get(2), a.get(3), a.get(4)));
+            } else if (a.size() == 2) {
+                builder.append(a.get(0));
+                builder.append(a.get(1));
+                builder.append("\n");
             } else {
                 // Must be Option class name
                 builder.append("\n");
@@ -63,28 +86,38 @@ public interface Options {
         } else {
             list.add(new ArrayList<>(Arrays.asList(options.getSimpleName())));
 
-            list.add(header);
-            for (Field f : fields) {
-                Option option = f.getAnnotation(Option.class);
-                optionsList.add(Options.getOptionUsage(option,f));
+            try {
+                Options opt = options.getDeclaredConstructor().newInstance();
+                String optUsage = opt.getOptionsDescription();
+                if (!optUsage.isEmpty()) {
+                    list.add(Arrays.asList("Description: ", optUsage));
+                }
+                list.add(header);
+                for (Field f : fields) {
+                    Option option = f.getAnnotation(Option.class);
+                    optionsList.add(Options.getOptionUsage(option,f,opt));
+                }
+
+                optionsList.sort((List<String> a, List<String> b) -> {
+                    if (a.get(0).charAt(0) == b.get(0).charAt(0)) {
+                        return a.get(1).compareTo(b.get(1));
+                    } else {
+                        if (a.get(0).charAt(0) == Option.SPACE_CHAR) {
+                            return +1;
+                        } else if (b.get(0).charAt(0) == Option.SPACE_CHAR) {
+                            return -1;
+                        } else {
+                            return a.get(0).compareTo(b.get(0));
+                        }
+                    }
+                });
+                list.addAll(optionsList);
+
+                return list;
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+                throw new ArgumentException(e,"Could not instantiate Options class " + options.getName() +", it has no default constructor.");
             }
 
-            optionsList.sort((List<String> a, List<String> b) -> {
-                if (a.get(0).charAt(0) == b.get(0).charAt(0)) {
-                    return a.get(1).compareTo(b.get(1));
-                } else {
-                    if (a.get(0).charAt(0) == Option.SPACE_CHAR) {
-                        return +1;
-                    } else if (b.get(0).charAt(0) == Option.SPACE_CHAR) {
-                        return -1;
-                    } else {
-                        return a.get(0).compareTo(b.get(0));
-                    }
-                }
-            });
-            list.addAll(optionsList);
-
-            return list;
         }
     }
 
@@ -105,9 +138,9 @@ public interface Options {
         }
     }
 
-    public static ArrayList<String> getOptionUsage(Option option, Field f) {
+    public static ArrayList<String> getOptionUsage(Option option, Field f, Options obj) {
         String typeString = generateTypeDescription(f);
-        return getOptionUsage(option,typeString);
+        return getOptionUsage(option,f,obj,typeString);
     }
 
     public static ArrayList<String> getOptionUsage(Option option, String type) {
@@ -119,6 +152,31 @@ public interface Options {
         }
         output.add(option.longName());
         output.add(type);
+        output.add("");
+        output.add(option.usage());
+        return output;
+    }
+
+    public static ArrayList<String> getOptionUsage(Option option, Field f, Options obj, String type) {
+        ArrayList<String> output = new ArrayList<>();
+        if (option.charName() != Option.EMPTY_CHAR) {
+            output.add(""+option.charName());
+        } else {
+            output.add(""+Option.SPACE_CHAR);
+        }
+        output.add(option.longName());
+        output.add(type);
+        Object extractedField = null;
+        try {
+            boolean accessible = f.isAccessible();
+            f.setAccessible(true);
+            extractedField = f.get(obj);
+            f.setAccessible(accessible);
+        } catch (IllegalAccessException e) {
+            Logger.getLogger(Options.class.getName()).fine("Failed to read default value from field " + option.longName());
+        }
+        String defaultVal = extractedField == null ? "" : extractedField.toString();
+        output.add(defaultVal);
         output.add(option.usage());
         return output;
     }

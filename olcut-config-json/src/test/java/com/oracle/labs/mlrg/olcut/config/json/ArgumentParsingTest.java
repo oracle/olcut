@@ -32,15 +32,16 @@ public class ArgumentParsingTest {
         assertEquals("Loading from " + name + " failed.", "b", slc.strings.get(1));
         assertEquals("Loading from " + name + " failed.", "c", slc.strings.get(2));
     }
+
+    public static class ParsingOptions implements Options {
+        @Option(charName = 'o', longName="other", usage="test hard")
+        public boolean other;
+
+        @Option(charName = 's', longName="surrounding", usage="test hard 2: test harder")
+        public boolean surrounding;
+
+        @Option(longName="other-arguments", usage="test hard with a vengeance")
+        public String otherArguments;
+    }
 }
 
-class ParsingOptions implements Options {
-    @Option(charName = 'o', longName="other", usage="test hard")
-    public boolean other;
-
-    @Option(charName = 's', longName="surrounding", usage="test hard 2: test harder")
-    public boolean surrounding;
-
-    @Option(longName="other-arguments", usage="test hard with a vengeance")
-    public String otherArguments;
-}
