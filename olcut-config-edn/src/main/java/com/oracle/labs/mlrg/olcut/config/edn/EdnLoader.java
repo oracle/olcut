@@ -56,6 +56,16 @@ public class EdnLoader implements ConfigLoader {
         }
     }
 
+    private static String checkKeywordOrString(Object o) throws ConfigLoaderException {
+        if(o instanceof Keyword) {
+            return ((Keyword) o).getName();
+        } else if(o instanceof String) {
+            return (String) o;
+        } else {
+            throw new ConfigLoaderException("Expected Keyword or String but found " + o.getClass() + " with value " + o.toString());
+        }
+    }
+
     private String checkClassList(Object os) throws ConfigLoaderException {
         if(os instanceof List<?>) {
             return cnMapper.read((List<Symbol>) os);
@@ -68,7 +78,7 @@ public class EdnLoader implements ConfigLoader {
         if(o instanceof String) {
             return (String) o;
         } else {
-            throw new ConfigLoaderException("Expected Symbol but found " + o.getClass() + " with value " + o.toString());
+            throw new ConfigLoaderException("Expected String but found " + o.getClass() + " with value " + o.toString());
         }
     }
 
@@ -348,7 +358,7 @@ public class EdnLoader implements ConfigLoader {
             if(valObj instanceof Map<?, ?>) {
                 Map<String, String> map = new HashMap<>();
                 for(Map.Entry<?, ?> ent: ((Map<?, ?>) valObj).entrySet()) {
-                    map.put(checkKeyword(ent.getKey()), ent.getValue().toString());
+                    map.put(checkKeywordOrString(ent.getKey()), ent.getValue().toString());
                 }
                     rpd.add(key, map);
             } else if(valObj instanceof List<?>) {
