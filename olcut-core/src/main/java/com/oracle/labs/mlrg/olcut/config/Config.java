@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * An annotation that can be added directly to variables that should be
  * configurable. We don't require a default value, as we can assign that
- * default during construction by declaring the annotated value with a value.
+ * default during construction by declaring the annotated field with a value.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -19,7 +19,14 @@ public @interface Config {
 
     /**
      * By default, configuration variables aren't mandatory.
+     * @return if the field must appear in all configurations of this object.
      */
     boolean mandatory() default false;
+
+    /**
+     * A plain text description of the field, used to describe the configurable parts of an object.
+     * @return A description of this field.
+     */
+    String description() default "";
 
 }

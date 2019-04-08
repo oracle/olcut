@@ -238,6 +238,18 @@ that configuration in the source tree for your project and package it in the
 jar or war file. You can then use getClass().getResource(...) to retrieve
 the standard configuration file from within the jar file.
 
+## Inspecting a Configurable class
+
+OLCUT 4.1.8 added a DescribeConfigurable main class which can describe a Configurable
+class showing each configurable field along with it's type, default value, if it's
+mandatory and a description of the field. It also can produce an example config
+file using any loaded ConfigWriter. This is useful if you need to configure a class
+but don't have access to it's source code.
+
+    java -cp classpath com.oracle.labs.mlrg.olcut.config.DescribeConfigurable -n fully.qualified.class.name -o -e xml
+
+Produces a description of `fully.qualified.class.name`.
+
 ## Command line arguments
 
 The configuration system has a parser for command line arguments. These come in
@@ -247,7 +259,12 @@ to a supplied struct.
 To get started instantiate a ConfigurationManager with a reference to an options struct
 and the String array of arguments.
 
-    class CLOptions implements Options {
+    public static class CLOptions implements Options {
+        @Override
+        public String getOptionsDescription() {
+            return "Command line options for loading and saving data."
+        }
+
         @Option(charName='i',longName="input",usage="Input file")
         public File inputFile;
         @Option(charName='t',longName="trainer",usage="Trainer object")
@@ -299,7 +316,9 @@ by the config system, except for Map. Map isn't supported because seriously who 
 that out of a String. List, Set and the array types are supported as comma separated lists.
 The comma can be escaped by quoting or by a backslash if it's required for a String.
 Configurable objects are looked up by the supplied name, a PropertyException is thrown
-if the object cannot be found.
+if the object cannot be found. It has an optional method `String getOptionsDescription()`
+which can be used to insert a description of the options contained in the class for use in
+the usage statement.
 
 ### Overriding configurable fields
 
