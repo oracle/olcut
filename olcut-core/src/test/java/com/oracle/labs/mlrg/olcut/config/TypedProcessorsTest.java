@@ -1,8 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.util.List;
 
 import org.junit.Test;
@@ -11,8 +10,7 @@ public class TypedProcessorsTest {
 
 	@Test
 	public void testStringType() throws Exception {
-		File configFile = new File("src/test/resources/com/oracle/labs/mlrg/olcut/config/typedProcessorsConfig.xml");
-		ConfigurationManager cm = new ConfigurationManager(configFile.toURI().toURL());
+		ConfigurationManager cm = new ConfigurationManager("/com/oracle/labs/mlrg/olcut/config/typedProcessorsConfig.xml");
 		cm.close();
 		@SuppressWarnings("unchecked")
 		TypedProcessorList<String, String> tpl = (TypedProcessorList<String, String>) cm.lookup("typedProcessors");
