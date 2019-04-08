@@ -775,9 +775,15 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         if (genericType instanceof ParameterizedType) {
             ParameterizedType pt = (ParameterizedType) genericType;
             for (Type t : pt.getActualTypeArguments()) {
-                if (t instanceof Class) {
+            	//update the type to the raw type if appropriate
+            	if(t instanceof ParameterizedType) {
+                	t = ((ParameterizedType) t).getRawType();
+                } 
+            	//not an else here.  t has been updated if the previous
+            	//condition holds.  
+            	if (t instanceof Class) {
                     list.add((Class<?>)t);
-                }
+                } 
             }
         }
 
