@@ -39,6 +39,11 @@ class TestOptions implements Options {
     FileOptions foo;
     OtherOptions bar;
 
+    @Override
+    public String getOptionsDescription() {
+        return "Options for testing things.";
+    }
+
     @Option(charName='p', longName="pi", usage="Changes the value of pi. Warning, may break mathematics.")
     public double pi = Math.PI;
 
@@ -49,6 +54,10 @@ class TestOptions implements Options {
 }
 
 class FileOptions extends IOOptions {
+    @Override
+    public String getOptionsDescription() {
+        return "Options for working with files.";
+    }
     @Option(charName='i', longName="input-file", usage="Path to input file")
     public File inputFile = new File(".");
 
@@ -72,6 +81,10 @@ class IOOptions implements Options {
 }
 
 class OtherOptions implements Options {
+    @Override
+    public String getOptionsDescription() {
+        return "Other options.";
+    }
     public DeepOptions deepOptions;
 
     @Option(charName='r', longName="seed", usage="Random seed")
@@ -90,6 +103,10 @@ class OtherOptions implements Options {
 }
 
 class DeepOptions implements Options {
+    @Override
+    public String getOptionsDescription() {
+        return "Like options, but deep.";
+    }
     public DeeperOptions deeperOptions;
 
     @Option(charName = 'b', longName = "deep-string", usage = "Deep string.")
@@ -102,6 +119,10 @@ class DeepOptions implements Options {
 }
 
 class DeeperOptions implements Options {
+    @Override
+    public String getOptionsDescription() {
+        return "Like deep options, but deeper.";
+    }
     @Option(charName='d', longName="deeper-string", usage="Deeper string.")
     public String deeperString;
 
