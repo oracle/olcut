@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.oracle.labs.mlrg.olcut</groupId>
         <artifactId>olcut</artifactId>
-        <version>4.1.9-SNAPSHOT</version>
+        <version>4.1.9</version>
 		<relativePath>..</relativePath>
     </parent>
     <name>olcut-config-jini</name>
