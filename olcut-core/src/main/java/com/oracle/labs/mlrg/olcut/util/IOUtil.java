@@ -44,17 +44,16 @@ public abstract class IOUtil {
     public static final int BUFFER_SIZE = 1000000;
 
     public static List<String> getLinesFromString(String text) {
-        BufferedReader reader = new BufferedReader(new StringReader(text));
-        List<String> lines = new ArrayList<>();
-        String line;
-        try {
+        try (BufferedReader reader = new BufferedReader(new StringReader(text))) {
+            List<String> lines = new ArrayList<>();
+            String line;
             while ((line = reader.readLine()) != null) {
                 lines.add(line);
             }
+            return lines;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return lines;
     }
 
     
@@ -71,11 +70,8 @@ public abstract class IOUtil {
     }
 
     public static List<String> getLines(String path, int count, String encoding) {
-        try {
-            BufferedReader reader = getReader(path, encoding);
-            List<String> list = getLines(reader, count);
-            reader.close();
-            return list;
+        try (BufferedReader reader = getReader(path, encoding)) {
+            return getLines(reader,count);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -168,7 +164,7 @@ public abstract class IOUtil {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static PrintWriter getWriter(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+    public static PrintWriter getPrintWriter(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
         PrintWriter fileWriter;
         if (zipped) {
             fileWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(filename)), "UTF-8"),BUFFER_SIZE));
@@ -187,7 +183,7 @@ public abstract class IOUtil {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static ObjectOutputStream getOutputStream(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+    public static ObjectOutputStream getObjectOutputStream(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
         ObjectOutputStream objectWriter;
         if (zipped) {
             objectWriter = new ObjectOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(filename),BUFFER_SIZE)));
@@ -206,14 +202,8 @@ public abstract class IOUtil {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static ObjectInputStream getInputStream(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        ObjectInputStream objectReader;
-        if (zipped) {
-            objectReader = new ObjectInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(filename),BUFFER_SIZE)));
-        } else {
-            objectReader = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename),BUFFER_SIZE));
-        }
-        return objectReader;
+    public static ObjectInputStream getObjectInputStream(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+        return getObjectInputStream(new File(filename),zipped);
     }
 
     /**
@@ -225,7 +215,7 @@ public abstract class IOUtil {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static ObjectInputStream getInputStream(File file, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+    public static ObjectInputStream getObjectInputStream(File file, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
         ObjectInputStream objectReader;
         if (zipped) {
             objectReader = new ObjectInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file),BUFFER_SIZE)));
@@ -556,11 +546,6 @@ public abstract class IOUtil {
                     logger.warning("Cannot open location " + location);
                     return null;
                 }
-            } catch (IOException ex) {
-                //
-                // No joy.
-                logger.warning("Cannot open location " + location);
-                return null;
             }
         }
         return ret;
