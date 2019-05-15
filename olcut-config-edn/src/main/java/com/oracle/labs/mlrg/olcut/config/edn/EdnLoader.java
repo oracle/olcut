@@ -48,6 +48,16 @@ public class EdnLoader implements ConfigLoader {
         }
     }
 
+    private static String checkSymbolOrString(Object o) throws ConfigLoaderException {
+        if(o instanceof Symbol) {
+            return ((Symbol) o).getName();
+        } else if(o instanceof String) {
+            return (String) o;
+        } else {
+            throw new ConfigLoaderException("Expected Symbol or String but found " + o.getClass() + " with value " + o.toString());
+        }
+    }
+
     private static String checkKeyword(Object o) throws ConfigLoaderException {
         if(o instanceof Keyword) {
             return ((Keyword) o).getName();
@@ -153,6 +163,12 @@ public class EdnLoader implements ConfigLoader {
                     if(configObj instanceof List<?>) {
                         List<?> configListItem = (List<?>) configObj;
                         switch (checkSymbol(configListItem.get(0))) {
+                            case FILE:
+                                parseFile(rest(configListItem));
+                                break;
+                            case SERIALIZED:
+                                parseSerializedObject(rest(configListItem));
+                                break;
                             case PROPERTIES:
                                 parseGlobalProperties(rest(configListItem));
                                 break;
@@ -164,12 +180,6 @@ public class EdnLoader implements ConfigLoader {
                                 break;
                             case COMPONENT:
                                 parseComponent(rest(configListItem));
-                                break;
-                            case FILE:
-                                parseFile(rest(configListItem));
-                                break;
-                            case SERIALIZED:
-                                parseSerializedObject(rest(configListItem));
                                 break;
                         }
                     }
@@ -293,7 +303,7 @@ public class EdnLoader implements ConfigLoader {
             Map<?, ?> modMap = ((Stream<Map.Entry<Keyword, Object>>) ((Map) componentListItem.get(2)).entrySet().stream())
                     .collect(Collectors.toMap(e -> checkKeyword(e.getKey()), Map.Entry::getValue));
             if(modMap.containsKey(ConfigLoader.INHERIT)) {
-                override = checkString(modMap.get(ConfigLoader.INHERIT));
+                override = checkSymbolOrString(modMap.get(ConfigLoader.INHERIT));
             }
             if(modMap.containsKey(ConfigLoader.IMPORT)) {
                 importable = checkBoolean(modMap.get(ConfigLoader.IMPORT));
@@ -317,12 +327,15 @@ public class EdnLoader implements ConfigLoader {
 
             if(override != null) {
                 RawPropertyData spd = rpdMap.get(override);
-                if (spd == null) {
+                if(existingRPD != null) {
+                    logger.info(existingRPD.toString());
+                }
+                if (spd == null && existingRPD != null) {
                     spd = existingRPD.get(override);
-                    if (spd == null) {
-                        throw new ConfigLoaderException("Override for undefined component: "
-                                + override + ", with name " + name);
-                    }
+                }
+                if (spd == null) {
+                    throw new ConfigLoaderException("Override for undefined component: "
+                            + override + ", with name " + name);
                 }
                 if (!type.equals(spd.getClassName())) {
                     logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
