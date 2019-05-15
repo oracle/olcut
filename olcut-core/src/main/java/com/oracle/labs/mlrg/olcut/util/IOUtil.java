@@ -242,7 +242,7 @@ public abstract class IOUtil {
                 File file = new File(path);
                 in = new FileInputStream(file);
             }
-            return new BufferedInputStream(in, 100000);
+            return new BufferedInputStream(in, BUFFER_SIZE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -251,7 +251,7 @@ public abstract class IOUtil {
     public static InputStream getInputStream(File file) {
         try {
             InputStream in = new FileInputStream(file);
-            return new BufferedInputStream(in, 100000);
+            return new BufferedInputStream(in, BUFFER_SIZE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -318,7 +318,7 @@ public abstract class IOUtil {
         Scanner scanner = null;
         BufferedInputStream bis = null;
         try {
-            bis = new BufferedInputStream(in, 100000);
+            bis = new BufferedInputStream(in, BUFFER_SIZE);
             scanner = new Scanner(bis, charSet);
             String content = scanner.useDelimiter("\\Z").next();
             return content;
@@ -332,7 +332,7 @@ public abstract class IOUtil {
     }
 
     public static <T extends Serializable> void serialize(T object, String path) {
-        serialize(object, path, 1024 * 64);
+        serialize(object, path, BUFFER_SIZE);
     }
 
     public static <T extends Serializable> void serialize(T object, String path, int bufferSize) {
@@ -370,7 +370,7 @@ public abstract class IOUtil {
     }
 
     public static PrintStream getPrintStream(String path) {
-        return getPrintStream(path, 1000000);
+        return getPrintStream(path, BUFFER_SIZE);
     }
 
     public static PrintStream getPrintStream(String path, int bufferSize) {
@@ -393,7 +393,7 @@ public abstract class IOUtil {
     }
 
     public static OutputStream getOutputStream(String path) {
-        return getOutputStream(path, 100000);
+        return getOutputStream(path, BUFFER_SIZE);
     }
 
     public static OutputStream getOutputStream(String path, int bufferSize) {
