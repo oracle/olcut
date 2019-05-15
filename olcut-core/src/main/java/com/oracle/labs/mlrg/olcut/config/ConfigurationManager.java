@@ -1116,7 +1116,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
                                 " to com.oracle.labs.mlrg.olcut.config.Configurable");
                     }
                 } catch(ClassNotFoundException e) {
-                    throw new PropertyException(e);
+                    throw new PropertyException(e, "Class " + className + " not found");
                 }
             }
         }
