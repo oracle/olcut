@@ -66,6 +66,8 @@ public class SerializedObject<T> {
                     } catch (IOException ex) {
                         throw new PropertyException(ex, name, "Error reading serialized form from " + actualLocation);
                     }
+                } else {
+                    throw new PropertyException(name, "Failed to open stream from location " + actualLocation);
                 }
             } catch (ClassNotFoundException ex) {
                 throw new PropertyException(ex, name, "Serialized class " + className + " not found for " + actualLocation);
