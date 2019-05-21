@@ -263,20 +263,20 @@ public class DescribeConfigurable {
         attributes.put(ConfigLoader.TYPE,configurableClass.getCanonicalName());
 
         // Generate default properties
-        Map<String,Object> properties = new HashMap<>();
+        Map<String,Property> properties = new HashMap<>();
         for (Map.Entry<String,FieldInfo> e : map.entrySet()) {
             FieldInfo fi = e.getValue();
             switch (fi.type) {
                 case NORMAL:
-                    properties.put(e.getKey(),generateDefaultValue(fi));
+                    properties.put(e.getKey(),new SimpleProperty(generateDefaultValue(fi)));
                     break;
                 case LIST:
-                    properties.put(e.getKey(),Arrays.asList(fi.className + "-instance"));
+                    properties.put(e.getKey(),new ListProperty(Arrays.asList(new SimpleProperty(fi.className + "-instance"))));
                     break;
                 case MAP:
-                    Map<String,String> newMap = new HashMap<>();
-                    newMap.put("mapKey",fi.genericMapValueClass+"-instance");
-                    properties.put(e.getKey(),newMap);
+                    Map<String,Property> newMap = new HashMap<>();
+                    newMap.put("mapKey",new SimpleProperty(fi.genericMapValueClass+"-instance"));
+                    properties.put(e.getKey(),new MapProperty(newMap));
                     break;
             }
         }

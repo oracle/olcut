@@ -4,7 +4,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriter;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriterException;
+import com.oracle.labs.mlrg.olcut.config.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.Property;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
+import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 
 import java.io.IOException;
 import java.util.List;
@@ -86,7 +90,7 @@ public class JsonConfigWriter implements ConfigWriter {
     }
 
     @Override
-    public void writeComponent(Map<String, String> attributes, Map<String, Object> properties) {
+    public void writeComponent(Map<String, String> attributes, Map<String, Property> properties) {
         try {
             writer.writeStartObject();
             writer.writeStringField(ConfigLoader.NAME, attributes.get(ConfigLoader.NAME));
@@ -105,29 +109,30 @@ public class JsonConfigWriter implements ConfigWriter {
 
             if (!properties.isEmpty()) {
                 writer.writeObjectFieldStart(ConfigLoader.PROPERTIES);
-                for (Entry<String, Object> property : properties.entrySet()) {
+                for (Entry<String, Property> property : properties.entrySet()) {
                     String key = property.getKey();
-                    Object value = property.getValue();
-                    if (value instanceof List) {
+                    Property value = property.getValue();
+                    if (value instanceof ListProperty) {
                         //
                         // Must be a string or component list
                         writer.writeArrayFieldStart(key);
-                        for (Object o : (List) value) {
+                        for (SimpleProperty s : ((ListProperty) value).getSimpleList()) {
                             writer.writeStartObject();
-                            if (o instanceof Class) {
-                                writer.writeStringField(ConfigLoader.TYPE,((Class)o).getName());
-                            } else {
-                                writer.writeStringField(ConfigLoader.ITEM,o.toString());
-                            }
+                            writer.writeStringField(ConfigLoader.ITEM,s.getValue());
+                            writer.writeEndObject();
+                        }
+                        for (Class<?> c : ((ListProperty) value).getClassList()) {
+                            writer.writeStartObject();
+                            writer.writeStringField(ConfigLoader.TYPE,c.getName());
                             writer.writeEndObject();
                         }
                         writer.writeEndArray();
-                    } else if (value instanceof Map) {
+                    } else if (value instanceof MapProperty) {
                         //
                         // Must be a string,string map
                         writer.writeObjectFieldStart(key);
-                        for (Map.Entry<String, String> e : ((Map<String, String>) value).entrySet()) {
-                            writer.writeStringField(e.getKey(),e.getValue());
+                        for (Map.Entry<String, Property> e : ((MapProperty) value).getMap().entrySet()) {
+                            writer.writeStringField(e.getKey(),((SimpleProperty)e.getValue()).getValue());
                         }
                         writer.writeEndObject();
                     } else {

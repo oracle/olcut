@@ -60,7 +60,7 @@ public class StringListTest {
         l.add("d");
         l.add("e");
         l.add("f");
-        ps.setProp("strings", l);
+        ps.setProp("strings", ListProperty.createFromStringList(l));
         StringListConfigurable slc = (StringListConfigurable) cm.lookup(
                 "listTest");
         assertEquals("d", slc.strings.get(0));

@@ -28,38 +28,6 @@ public class ConfigurationManagerUtils {
         }
     }
 
-    /**
-     * This method will automatically rename all components of <code>subCM</code> for which there is component named the
-     * same in the <code>baseCM</code> .
-     *
-     * Note: This is ie. required when merging two system configurations into one.
-     *
-     * @return A map which maps all renamed component names to their new names.
-     */
-    public static Map<String, String> fixDuplicateNames(ConfigurationManager baseCM,
-            ConfigurationManager subCM) {
-        Map<String, String> renames = new HashMap<String, String>();
-
-        for(String compName : subCM.getComponentNames()) {
-            String uniqueName = compName;
-
-            int i = 0;
-
-            while(baseCM.getComponentNames().contains(uniqueName) ||
-                    (subCM.getComponentNames().
-                    contains(uniqueName) && !uniqueName.equals(compName))) {
-
-                i++;
-                uniqueName = compName + i;
-            }
-
-            subCM.renameConfigurable(compName, uniqueName);
-            renames.put(compName, uniqueName);
-        }
-
-        return renames;
-    }
-
     /** Shows the current configuration */
     public static void showConfig(ConfigurationManager cm) {
         System.out.println(" ============ config ============= ");
@@ -114,70 +82,6 @@ public class ConfigurationManagerUtils {
             String param = (String) e.getKey();
             String value = (String) e.getValue();
             global.setValue(param, value);
-        }
-    }
-
-    /**
-     * Renames a given <code>Configurable</code>. The configurable component named <code>oldName</code> is assumed to be
-     * registered to the CM. Renaming does not only affect the configurable itself but possibly global property values
-     * and properties of other components.
-     */
-    static void renameComponent(ConfigurationManager cm, String oldName,
-            String newName) {
-        assert cm != null;
-        assert oldName != null && newName != null;
-        if(cm.getPropertySheet(oldName) == null) {
-            throw new RuntimeException("no configurable (to be renamed) named " +
-                    oldName + " is contained in the CM");
-        }
-
-        // this iteration is a little hacky. It would be much better to maintain the links to a configurable in a special table
-        for(String instanceName : cm.getComponentNames()) {
-            PropertySheet<? extends Configurable> propSheet = cm.getPropertySheet(instanceName);
-
-            for(String propName : propSheet.getRegisteredProperties()) {
-                if(propSheet.getRaw(propName) == null) {
-                    continue;
-                }  // if the property was not defined within the xml-file
-
-                Object o = propSheet.getRaw(propName);
-                if (o instanceof List) {
-                    List compNames = (List) o;
-                    for(int i = 0; i < compNames.size(); i++) {
-                        Object element = compNames.get(i);
-                        if (element instanceof String) {
-                            String compName = (String) element;
-                            if (compName.equals(oldName)) {
-                                compNames.set(i, newName);
-                            }
-                        }
-                    }
-                } else if (o instanceof Map) {
-                    Map<String,String> compMap = (Map<String,String>) o;
-                    for (Map.Entry<String,String> e : compMap.entrySet()) {
-                        if (e.getValue().equals(oldName)) {
-                            compMap.replace(e.getValue(),newName);
-                        }
-                    }
-                } else {
-                    if(propSheet.getRaw(propName).equals(oldName)) {
-                        propSheet.setRaw(propName, newName);
-                    }
-                }
-            }
-        }
-
-        PropertySheet ps = cm.getPropertySheet(oldName);
-        ps.setInstanceName(newName);
-
-        // it might be possible that the component is the value of a global property
-        ImmutableGlobalProperties globalProps = cm.getImmutableGlobalProperties();
-        for(String propName : globalProps.keySet()) {
-            String propVal = globalProps.get(propName).toString();
-
-            if(propVal.equals(oldName)) {
-                cm.setGlobalProperty(propName, newName);
-            }
         }
     }
 

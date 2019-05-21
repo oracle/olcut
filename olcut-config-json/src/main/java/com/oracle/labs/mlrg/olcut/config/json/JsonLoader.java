@@ -12,8 +12,12 @@ import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
+import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 
@@ -239,7 +243,8 @@ public class JsonLoader implements ConfigLoader {
                 String propName = e.getKey();
                 if (e.getValue() instanceof ArrayNode) {
                     // Must be list
-                    ArrayList listOutput = new ArrayList();
+                    ArrayList<SimpleProperty> listOutput = new ArrayList<>();
+                    ArrayList<Class<?>> classListOutput = new ArrayList<>();
                     ArrayNode listNode = (ArrayNode) e.getValue();
                     for (JsonNode element : listNode) {
                         if (element.size() > 1) {
@@ -251,11 +256,11 @@ public class JsonLoader implements ConfigLoader {
                             String elementName = elementEntry.getKey();
                             switch (elementName) {
                                 case ConfigLoader.ITEM:
-                                    listOutput.add(elementEntry.getValue().textValue());
+                                    listOutput.add(new SimpleProperty(elementEntry.getValue().textValue()));
                                     break;
                                 case ConfigLoader.TYPE:
                                     try {
-                                        listOutput.add(Class.forName(elementEntry.getValue().textValue()));
+                                        classListOutput.add(Class.forName(elementEntry.getValue().textValue()));
                                     } catch (ClassNotFoundException cnfe) {
                                         throw new ConfigLoaderException("Unable to find class "
                                                 + elementEntry.getValue().textValue() + " in component " + curComponent + ", propertylist " + propName);
@@ -266,23 +271,29 @@ public class JsonLoader implements ConfigLoader {
                             }
                         }
                     }
-                    rpd.add(propName, listOutput);
+                    ListProperty listProp;
+                    if (classListOutput.isEmpty()) {
+                        listProp = new ListProperty(listOutput);
+                    } else {
+                        listProp = new ListProperty(listOutput,classListOutput);
+                    }
+                    rpd.add(propName, listProp);
                 } else if (e.getValue() instanceof ObjectNode) {
                     // Must be map
-                    Map<String, String> mapOutput = new HashMap<>();
+                    Map<String, Property> mapOutput = new HashMap<>();
                     Iterator<Entry<String, JsonNode>> mapElementItr = e.getValue().fields();
                     while (mapElementItr.hasNext()) {
                         Entry<String, JsonNode> mapEntry = mapElementItr.next();
                         if (mapEntry.getValue().isTextual()) {
-                            mapOutput.put(mapEntry.getKey(), mapEntry.getValue().textValue());
+                            mapOutput.put(mapEntry.getKey(), new SimpleProperty(mapEntry.getValue().textValue()));
                         } else {
                             throw new ConfigLoaderException("Unknown node in component " + curComponent + ", propertymap " + propName + ", node = " + e.getValue().toString());
                         }
                     }
-                    rpd.add(propName, mapOutput);
+                    rpd.add(propName, new MapProperty(mapOutput));
                 } else {
                     // Generic property.
-                    rpd.add(propName, e.getValue().textValue());
+                    rpd.add(propName, new SimpleProperty(e.getValue().textValue()));
                 }
             }
         }

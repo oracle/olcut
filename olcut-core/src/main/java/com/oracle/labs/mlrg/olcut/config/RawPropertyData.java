@@ -13,7 +13,6 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /** Holds the raw property data just as it has come in from the properties file. */
@@ -23,7 +22,7 @@ public class RawPropertyData {
 
     private String className;
 
-    private Map<String, Object> properties;
+    private Map<String, Property> properties;
     
     /**
      * A URL for a resource indicating from where the component can be
@@ -57,14 +56,13 @@ public class RawPropertyData {
         this(name, className, null);
     }
 
-    public RawPropertyData(String name, String className,
-                            Map<String, Object> properties) {
+    public RawPropertyData(String name, String className, Map<String, Property> properties) {
         this.name = name;
         this.className = className;
         if(properties != null) {
-            this.properties = new HashMap<String, Object>(properties);
+            this.properties = new HashMap<>(properties);
         } else {
-            this.properties = new HashMap<String, Object>();
+            this.properties = new HashMap<>();
         }
     }
 
@@ -74,27 +72,7 @@ public class RawPropertyData {
      * @param propName  the name of the property
      * @param propValue the value of the property
      */
-    public void add(String propName, String propValue) {
-        properties.put(propName, propValue);
-    }
-
-    /**
-     * Adds a new property
-     *
-     * @param propName  the name of the property
-     * @param propValue the value of the property
-     */
-    public void add(String propName, List propValue) {
-        properties.put(propName, propValue);
-    }
-
-    /**
-     * Adds a new property
-     *
-     * @param propName  the name of the property
-     * @param propValue the value of the property
-     */
-    public void add(String propName, Map propValue) {
+    public void add(String propName, Property propValue) {
         properties.put(propName, propValue);
     }
 
@@ -149,7 +127,7 @@ public class RawPropertyData {
     }
 
     /** @return Returns the properties. */
-    public Map<String, Object> getProperties() {
+    public Map<String, Property> getProperties() {
         return properties;
     }
 
@@ -169,12 +147,12 @@ public class RawPropertyData {
     public RawPropertyData flatten(ConfigurationManager cm) {
         RawPropertyData copyRPD = new RawPropertyData(name, className);
 
-        for(Map.Entry<String, Object> e : properties.entrySet()) {
+        for(Map.Entry<String, Property> e : properties.entrySet()) {
             String propName = e.getKey();
-            Object propVal = e.getValue();
-            if(propVal instanceof String) {
-                propVal = cm.getImmutableGlobalProperties().
-                        replaceGlobalProperties(getName(), propName, (String) propVal);
+            Property propVal = e.getValue();
+            if(propVal instanceof SimpleProperty) {
+                propVal = new SimpleProperty(cm.getImmutableGlobalProperties().
+                        replaceGlobalProperties(getName(), propName, ((SimpleProperty) propVal).getValue()));
             }
 
             copyRPD.properties.put(propName, propVal);

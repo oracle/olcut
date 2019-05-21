@@ -48,9 +48,9 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     public enum StoredFieldType { LIST, MAP, STRING, NONE }
 
     private Map<String, Config> registeredProperties
-            = new HashMap<String, Config>();
+            = new HashMap<>();
 
-    private Map<String, Object> propValues = new HashMap<String, Object>();
+    private Map<String, Property> propValues = new HashMap<>();
 
     /**
      * Maps the names of the component properties to their (possibly unresolved)
@@ -58,9 +58,9 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      * <p/>
      * Example: <code>frontend</code> to <code>${myFrontEnd}</code>
      */
-    private Map<String, Object> rawProps = new HashMap<String, Object>();
+    private Map<String, Property> rawProps;
 
-    private Map<String, Object> flatProps;
+    private Map<String, Property> flatProps;
 
     protected ConfigurationManager cm;
 
@@ -108,7 +108,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
 
         // now apply all xml properties
         flatProps = rpd.flatten(cm).getProperties();
-        rawProps = new HashMap<String, Object>(rpd.getProperties());
+        rawProps = new HashMap<>(rpd.getProperties());
 
         for (String propName : rawProps.keySet()) {
             propValues.put(propName, flatProps.get(propName));
@@ -136,7 +136,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     }
 
     /**
-     * Registers a new property which type and default value are defined by the
+     * Registers a new property with the type defined by the
      * given olcut property.
      *
      * @param propName The name of the property to be registered.
@@ -147,11 +147,10 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
 
         registeredProperties.put(propName, property);
         propValues.put(propName, null);
-        rawProps.put(propName, null);
     }
 
     private String flattenProp(String name) {
-        Object value = propValues.get(name);
+        Property value = propValues.get(name);
         if (value == null) {
             return null;
         }
@@ -305,7 +304,6 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      */
     @SuppressWarnings("unchecked")
     private static <T extends Configurable> void setConfiguredFields(T o, PropertySheet ps) throws PropertyException, IllegalAccessException {
-
         Class<? extends Configurable> curClass = o.getClass();
         Set<Field> fields = getAllFields(curClass);
         for (Field f : fields) {
@@ -337,12 +335,12 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                 //
                 // We'll handle things that have list or arrays with items separately.
                 if (FieldType.arrayTypes.contains(ft)) {
-                    List vals = (List) ps.propValues.get(f.getName());
+                    ListProperty vals = (ListProperty) ps.propValues.get(f.getName());
                     f.set(o, parseArrayField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), f.getType(), ft, vals));
                 } else if (FieldType.listTypes.contains(ft)) {
                     List<Class<?>> genericList = getGenericClass(f);
                     if (genericList.size() == 1) {
-                        List vals = (List) ps.propValues.get(f.getName());
+                        ListProperty vals = (ListProperty) ps.propValues.get(f.getName());
                         f.set(o, parseListField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), f.getType(), genericList.get(0), ft, vals));
                     } else {
                         f.setAccessible(accessible);
@@ -363,7 +361,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     // Last option is a map, as it's not a single value or a list.
                     List<Class<?>> genericList = getGenericClass(f);
                     if (genericList.size() == 2) {
-                        Map<String, String> mapVals = (Map<String, String>) ps.propValues.get(f.getName());
+                        MapProperty mapVals = (MapProperty) ps.propValues.get(f.getName());
                         f.set(o, parseMapField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), genericList.get(1), mapVals));
                     } else {
                         f.setAccessible(accessible);
@@ -393,33 +391,27 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map parseMapField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> genericType, Map<String,String> input) {
+    public static Map parseMapField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> genericType, MapProperty input) {
         FieldType genericft = FieldType.getFieldType(genericType);
         Map map = new HashMap<>();
-        for (Map.Entry<String, String> e : input.entrySet()) {
-            String newVal = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, e.getValue());
+        for (Map.Entry<String, Property> e : input.getMap().entrySet()) {
+            String newVal = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, ((SimpleProperty)e.getValue()).getValue());
             map.put(e.getKey(), parseSimpleField(cm, instanceName, fieldName, genericType, genericft, newVal));
         }
         return map;
     }
 
     @SuppressWarnings("unchecked")
-    public static Object parseArrayField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, FieldType ft, List input) {
+    public static Object parseArrayField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, FieldType ft, ListProperty input) {
         //
         // This dance happens as some of the list types support class values,
         // and this is the first place where FieldType meets the value loaded
         // from the xml file, so we have to check it.
         List<String> replaced = new ArrayList<>();
-        List<Class<?>> classVals = new ArrayList<>();
         List<Class<?>> removeList = new ArrayList<>();
-        for (Object val : input) {
-            if (val instanceof String) {
-                replaced.add(cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, (String) val));
-            } else if (val instanceof Class) {
-                classVals.add((Class<?>) val);
-            } else {
-                throw new PropertyException(instanceName,fieldName,"Unknown type loaded from property, found " + val.getClass().getName());
-            }
+        List<Class<?>> classVals = new ArrayList<>(input.getClassList());
+        for (SimpleProperty val : input.getSimpleList()) {
+            replaced.add(cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, val.getValue()));
         }
 
         //
@@ -544,22 +536,16 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         return output;
     }
     @SuppressWarnings("unchecked")
-    public static Object parseListField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, Class<?> genericClass, FieldType ft, List input) {
+    public static Object parseListField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, Class<?> genericClass, FieldType ft, ListProperty input) {
         //
         // This dance happens as some of the list types support class values,
         // and this is the first place where FieldType meets the value loaded
         // from the xml file, so we have to check it.
         List<String> replaced = new ArrayList<>();
-        List<Class<?>> classVals = new ArrayList<>();
         List<Class<?>> removeList = new ArrayList<>();
-        for (Object val : input) {
-            if (val instanceof String) {
-                replaced.add(cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, (String) val));
-            } else if (val instanceof Class) {
-                classVals.add((Class<?>) val);
-            } else {
-                throw new PropertyException(instanceName,fieldName,"Unknown type loaded from property, found " + val.getClass().getName());
-            }
+        List<Class<?>> classVals = new ArrayList<>(input.getClassList());
+        for (SimpleProperty val : input.getSimpleList()) {
+            replaced.add(cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, val.getValue()));
         }
 
         //
@@ -736,10 +722,10 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     FieldType ft = FieldType.getFieldType(f);
                     List<Class<?>> genericList = getGenericClass(f);
                     if (FieldType.arrayTypes.contains(ft)) {
-                        return parseArrayField(getConfigurationManager(), instanceName, f.getName(), f.getType(), ft, (List) propValues.get(f.getName()));
+                        return parseArrayField(getConfigurationManager(), instanceName, f.getName(), f.getType(), ft, (ListProperty) propValues.get(f.getName()));
                     } else if (FieldType.listTypes.contains(ft)) {
                         if (genericList.size() == 1) {
-                            return parseListField(getConfigurationManager(), instanceName, f.getName(), f.getType(), genericList.get(0), ft, (List) propValues.get(f.getName()));
+                            return parseListField(getConfigurationManager(), instanceName, f.getName(), f.getType(), genericList.get(0), ft, (ListProperty) propValues.get(f.getName()));
                         } else {
                             throw new PropertyException(getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
                         }
@@ -747,7 +733,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                         return parseSimpleField(getConfigurationManager(), instanceName, f.getName(),f.getType(),ft, flattenProp(f.getName()));
                     } else {
                         if (genericList.size() == 2) {
-                            return parseMapField(getConfigurationManager(), instanceName, f.getName(), genericList.get(1), (Map<String, String>) propValues.get(f.getName()));
+                            return parseMapField(getConfigurationManager(), instanceName, f.getName(), genericList.get(1), (MapProperty) propValues.get(f.getName()));
                         } else {
                             throw new PropertyException(getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
                         }
@@ -809,7 +795,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      * @param key the simple property name
      * @param val the value for the property
      */
-    public void setProp(String key, Object val) {
+    public void setProp(String key, Property val) {
         // ensure that there is such a property
         if (!registeredProperties.keySet().contains(key)) {
             throw new PropertyException(instanceName, "","'" + key + "' is not a registered property");
@@ -829,7 +815,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      * @param key the simple property name
      * @param val the value for the property
      */
-    public void setRaw(String key, Object val) {
+    public void setRaw(String key, Property val) {
         rawProps.put(key, val);
     }
 
@@ -837,10 +823,10 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      * Gets the raw value associated with this name
      *
      * @param name the name
-     * @return the value as an object (it could be a String, a List, or a Map
+     * @return the value as an object (it could be a SimpleProperty, a ListProperty, or a MapProperty
      * depending upon the property type)
      */
-    public Object getRaw(String name) {
+    public Property getRaw(String name) {
         return rawProps.get(name);
     }
 
@@ -901,13 +887,15 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
 
         // make deep copy of raw-lists
         for (String regProp : ps.getRegisteredProperties()) {
-            Object o = rawProps.get(regProp);
-            if (o instanceof List) {
-                ps.rawProps.put(regProp, new ArrayList<Object>((List) o));
-                ps.propValues.put(regProp, null);
+            Property o = rawProps.get(regProp);
+            if (o instanceof ListProperty) {
+                ListProperty copy = ((ListProperty)o).copy();
+                ps.rawProps.put(regProp, copy);
+                ps.propValues.put(regProp, copy);
             } else if (o instanceof Map) {
-                ps.rawProps.put(regProp, new HashMap<>((Map<String,String>) o));
-                ps.propValues.put(regProp, null);
+                MapProperty copy = ((MapProperty)o).copy();
+                ps.rawProps.put(regProp, copy);
+                ps.propValues.put(regProp, copy);
             }
         }
 
@@ -979,7 +967,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     public void save(ConfigWriter configWriter) throws ConfigWriterException {
         Collection<String> registeredProperties = getRegisteredProperties();
         Map<String,String> attributes = new HashMap<>();
-        Map<String,Object> properties = new HashMap<>();
+        Map<String,Property> properties = new HashMap<>();
 
         attributes.put(ConfigLoader.NAME,instanceName);
         attributes.put(ConfigLoader.TYPE,getConfigurableClass().getName());
@@ -996,7 +984,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         }
 
         for (String propName : registeredProperties) {
-            Object propVal = getRaw(propName);
+            Property propVal = getRaw(propName);
             if (propVal != null) {
                 properties.put(propName,propVal);
             }

@@ -3,7 +3,11 @@ package com.oracle.labs.mlrg.olcut.config.xml;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriter;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriterException;
+import com.oracle.labs.mlrg.olcut.config.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.Property;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
+import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -78,7 +82,7 @@ public class XMLConfigWriter implements ConfigWriter {
     public void writeStartComponents() throws ConfigWriterException { }
 
     @Override
-    public void writeComponent(Map<String, String> attributes, Map<String, Object> properties) {
+    public void writeComponent(Map<String, String> attributes, Map<String, Property> properties) {
         try {
             if (!properties.isEmpty()) {
                 writer.writeStartElement(ConfigLoader.COMPONENT);
@@ -97,46 +101,45 @@ public class XMLConfigWriter implements ConfigWriter {
                 }
                 writer.writeCharacters(System.lineSeparator());
 
-                for (Entry<String,Object> property : properties.entrySet()) {
+                for (Entry<String,Property> property : properties.entrySet()) {
                     String key = property.getKey();
-                    Object value = property.getValue();
-                    if (value instanceof List) {
+                    Property value = property.getValue();
+                    if (value instanceof ListProperty) {
                         //
                         // Must be a string or component list
                         writer.writeCharacters("\t");
                         writer.writeStartElement(ConfigLoader.PROPERTYLIST);
                         writer.writeAttribute(ConfigLoader.NAME, key);
                         writer.writeCharacters(System.lineSeparator());
-                        for (Object o : (List) value) {
-                            if (o instanceof Class) {
-                                writer.writeCharacters("\t\t");
-                                writer.writeStartElement(ConfigLoader.TYPE);
-                                writer.writeCharacters(((Class) o).getName());
-                                writer.writeEndElement();
-                                writer.writeCharacters(System.lineSeparator());
-                            } else {
-                                writer.writeCharacters("\t\t");
-                                writer.writeStartElement(ConfigLoader.ITEM);
-                                writer.writeCharacters(o.toString());
-                                writer.writeEndElement();
-                                writer.writeCharacters(System.lineSeparator());
-                            }
+                        for (SimpleProperty s : ((ListProperty) value).getSimpleList()) {
+                            writer.writeCharacters("\t\t");
+                            writer.writeStartElement(ConfigLoader.ITEM);
+                            writer.writeCharacters(s.getValue());
+                            writer.writeEndElement();
+                            writer.writeCharacters(System.lineSeparator());
+                        }
+                        for (Class<?> c : ((ListProperty)value).getClassList()) {
+                            writer.writeCharacters("\t\t");
+                            writer.writeStartElement(ConfigLoader.TYPE);
+                            writer.writeCharacters(c.getName());
+                            writer.writeEndElement();
+                            writer.writeCharacters(System.lineSeparator());
                         }
                         writer.writeCharacters("\t");
                         writer.writeEndElement();
                         writer.writeCharacters(System.lineSeparator());
-                    } else if (value instanceof Map) {
+                    } else if (value instanceof MapProperty) {
                         //
                         // Must be a string,string map
                         writer.writeCharacters("\t");
                         writer.writeStartElement(ConfigLoader.PROPERTYMAP);
                         writer.writeAttribute(ConfigLoader.NAME, key);
                         writer.writeCharacters(System.lineSeparator());
-                        for (Map.Entry<String, String> e : ((Map<String, String>) value).entrySet()) {
+                        for (Map.Entry<String, Property> e : ((MapProperty) value).getMap().entrySet()) {
                             writer.writeCharacters("\t\t");
                             writer.writeEmptyElement(ConfigLoader.ENTRY);
                             writer.writeAttribute(ConfigLoader.KEY, e.getKey());
-                            writer.writeAttribute(ConfigLoader.VALUE, e.getValue());
+                            writer.writeAttribute(ConfigLoader.VALUE, ((SimpleProperty)e.getValue()).getValue());
                             writer.writeCharacters(System.lineSeparator());
                         }
                         writer.writeCharacters("\t");

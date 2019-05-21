@@ -31,9 +31,13 @@ import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
+import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -140,13 +144,15 @@ public class SAXLoader implements ConfigLoader {
 
         Locator locator;
 
-        List<Object> itemList = null;
+        List<SimpleProperty> itemList = null;
+
+        List<Class<?>> classList = null;
 
         String itemListName = null;
 
         String mapName = null;
 
-        Map<String,String> entryMap = null;
+        Map<String, Property> entryMap = null;
 
         StringBuilder curItem;
 
@@ -275,7 +281,7 @@ public class SAXLoader implements ConfigLoader {
                         throw new SAXParseException("Duplicate property: " + name,
                                 locator);
                     } else {
-                        rpd.add(name, value);
+                        rpd.add(name, new SimpleProperty(value));
                     }
                     break;
                 }
@@ -286,6 +292,7 @@ public class SAXLoader implements ConfigLoader {
                                 + "the 'name' attribute", locator);
                     }
                     itemList = new ArrayList<>();
+                    classList = new ArrayList<>();
                     break;
                 case ITEM:
                 case TYPE:
@@ -316,7 +323,7 @@ public class SAXLoader implements ConfigLoader {
                     } else if (entryMap.containsKey(key)) {
                         throw new SAXParseException("Repeated entry in map, key = " + key + " already exists", locator);
                     }
-                    entryMap.put(key.trim(), value.trim());
+                    entryMap.put(key.trim(), new SimpleProperty(value.trim()));
                     break;
                 }
                 case FILE: {
@@ -392,17 +399,18 @@ public class SAXLoader implements ConfigLoader {
                         throw new SAXParseException("Duplicate property: "
                                 + itemListName, locator);
                     } else {
-                        rpd.add(itemListName, itemList);
+                        rpd.add(itemListName, new ListProperty(itemList,classList));
                         itemList = null;
+                        classList = null;
                     }
                     break;
                 case ITEM:
-                    itemList.add(curItem.toString().trim());
+                    itemList.add(new SimpleProperty(curItem.toString().trim()));
                     curItem = null;
                     break;
                 case TYPE:
                     try {
-                        itemList.add(Class.forName(curItem.toString()));
+                        classList.add(Class.forName(curItem.toString()));
                     } catch (ClassNotFoundException cnfe) {
                         throw new SAXParseException("Unable to find class "
                                 + curItem.toString() + " in property list "
@@ -414,7 +422,7 @@ public class SAXLoader implements ConfigLoader {
                         throw new SAXParseException("Duplicate property: "
                                 + mapName, locator);
                     } else {
-                        rpd.add(mapName, entryMap);
+                        rpd.add(mapName, new MapProperty(entryMap));
                         entryMap = null;
                     }
                     break;

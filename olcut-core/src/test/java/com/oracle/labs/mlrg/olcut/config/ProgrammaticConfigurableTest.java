@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.oracle.labs.mlrg.olcut.config;
 
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
@@ -71,9 +67,9 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
-        Map<String,Object> m = new HashMap<String, Object>();
+        Map<String,Property> m = new HashMap<>();
         for(String s : new String[] {"one", "two", "three"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "c", m);
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
@@ -89,9 +85,9 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addPartialStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
-        Map<String,Object> m = new HashMap<String, Object>();
+        Map<String,Property> m = new HashMap<>();
         for(String s : new String[] {"one"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "c", m);
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
@@ -100,7 +96,7 @@ public class ProgrammaticConfigurableTest {
         assertEquals("", sc.three);
         m.clear();
         for(String s : new String[]{"one", "three"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "d", m);
         sc = (StringConfigurable) cm.lookup("d");
@@ -115,9 +111,9 @@ public class ProgrammaticConfigurableTest {
     @Test(expected=PropertyException.class)
     public void addConfigurableWithBadProperty() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("basicConfig.xml");
-        Map<String,Object> m = new HashMap<String, Object>();
-        m.put("s", "one");
-        m.put("i", "two");
+        Map<String,Property> m = new HashMap<>();
+        m.put("s", new SimpleProperty("one"));
+        m.put("i", new SimpleProperty("two"));
         cm.addConfigurable(BasicConfigurable.class, "c", m);
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("c");
         assertEquals("one", bc.s);
@@ -132,9 +128,9 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addAlreadyNamedStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
-        Map<String,Object> m = new HashMap<String, Object>();
+        Map<String,Property> m = new HashMap<>();
         for(String s : new String[] {"one", "two", "three"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "a", m);
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
@@ -151,9 +147,9 @@ public class ProgrammaticConfigurableTest {
     public void addAlreadyNamedAndInstatiatedStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
-        Map<String,Object> m = new HashMap<String, Object>();
+        Map<String,Property> m = new HashMap<>();
         for(String s : new String[] {"one", "two", "three"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "a", m);
         sc = (StringConfigurable) cm.lookup("a");
@@ -165,9 +161,9 @@ public class ProgrammaticConfigurableTest {
         //
         // Add a component.
         ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
-        Map<String, Object> m = new HashMap<String, Object>();
+        Map<String, Property> m = new HashMap<>();
         for(String s : new String[]{"one", "two", "three"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "c", m);
 
