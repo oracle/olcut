@@ -3,9 +3,11 @@ package com.oracle.labs.mlrg.olcut.config.json;
 import com.oracle.labs.mlrg.olcut.config.BasicConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.ListConfig;
+import com.oracle.labs.mlrg.olcut.config.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.SetConfig;
+import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -109,10 +111,10 @@ public class SaveTest {
     public void saveAllWithInstantiationAndAddition() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("basicConfig.json");
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
-        Map<String, Object> m = new HashMap<String, Object>();
-        m.put("s", "foo");
-        m.put("i", 7);
-        m.put("d", 2.71);
+        Map<String, Property> m = new HashMap<>();
+        m.put("s", new SimpleProperty("foo"));
+        m.put("i", new SimpleProperty(""+7));
+        m.put("d", new SimpleProperty(""+2.71));
         cm1.addConfigurable(BasicConfigurable.class, "c", m);
         cm1.save(f, true);
         assertEquals(1, cm1.getNumConfigured());
@@ -132,10 +134,10 @@ public class SaveTest {
     @Test
     public void saveAllWithoutInstantiationAndAddition() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("basicConfig.json");
-        Map<String, Object> m = new HashMap<String, Object>();
-        m.put("s", "foo");
-        m.put("i", 7);
-        m.put("d", 2.71);
+        Map<String, Property> m = new HashMap<>();
+        m.put("s", new SimpleProperty("foo"));
+        m.put("i", new SimpleProperty(""+7));
+        m.put("d", new SimpleProperty(""+2.71));
         cm1.addConfigurable(BasicConfigurable.class, "c", m);
         cm1.save(f, true);
         assertEquals(0, cm1.getNumConfigured());
@@ -196,16 +198,16 @@ public class SaveTest {
     @Test
     public void removeProgramaticallyAddedUninstantiated() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("basicConfig.json");
-        Map<String, Object> m = new HashMap<String, Object>();
-        m.put("s", "foo");
-        m.put("i", 7);
-        m.put("d", 2.71);
+        Map<String, Property> m = new HashMap<>();
+        m.put("s", new SimpleProperty("foo"));
+        m.put("i", new SimpleProperty(""+7));
+        m.put("d", new SimpleProperty(""+2.71));
         cm1.addConfigurable(BasicConfigurable.class, "c", m);
         PropertySheet ps = cm1.removeConfigurable("c");
         assertNotNull(ps);
         assertEquals(m.get("s"), ps.getRaw("s"));
-        assertEquals(((Integer) m.get("i")).intValue(), Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals((Double) m.get("d"), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getRaw("i").toString()));
+        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
         cm1.save(f, false);
         try{
             BasicConfigurable bc = (BasicConfigurable) cm1.lookup("c");

@@ -3,7 +3,11 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriter;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriterException;
+import com.oracle.labs.mlrg.olcut.config.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.Property;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
+import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 import us.bpsm.edn.EdnException;
 import us.bpsm.edn.EdnIOException;
 import us.bpsm.edn.EdnSyntaxException;
@@ -84,31 +88,33 @@ public class EdnConfigWriter implements ConfigWriter {
 
     private Object writeProperty(Object p) throws ConfigWriterException {
         Object res;
-        if(p instanceof Map<?, ?>) {
+        if(p instanceof MapProperty) {
             // map configurable field
-            Map<Keyword, Object> mRes = new HashMap<>();
-            for(Map.Entry<?, ?> e: ((Map<?, ?>) p).entrySet()) {
+            Map<Keyword, String> mRes = new HashMap<>();
+            for(Map.Entry<String, Property> e: ((MapProperty) p).getMap().entrySet()) {
                 if(e.getKey()==null) {
                     throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null keys" + p.toString()));
                 }
                 if(e.getValue()==null) {
                     throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null values: " + p.toString()));
                 }
-                mRes.put(Keyword.newKeyword(e.getKey().toString()), e.getValue());
+                mRes.put(Keyword.newKeyword(e.getKey()), ((SimpleProperty)e.getValue()).getValue());
             }
             res = mRes;
-        } else if(p instanceof List<?>) {
+        } else if(p instanceof ListProperty) {
             // list configurable field
             List<Object> lRes = new ArrayList<>();
-            for(Object itm: (List<?>) p) {
-                if(itm==null) {
+            for (SimpleProperty s : ((ListProperty)p).getSimpleList()) {
+                if(s==null) {
                     throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
                 }
-                if(itm instanceof Class) {
-                    lRes.add(cnMapper.write(((Class) itm).getCanonicalName()));
-                } else {
-                    lRes.add(itm.toString());
+                lRes.add(s.getValue());
+            }
+            for (Class<?> c : ((ListProperty) p).getClassList()) {
+                if(c==null) {
+                    throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
                 }
+                lRes.add(cnMapper.write(c.getCanonicalName()));
             }
             res = lRes;
         } else if(p instanceof Symbol
@@ -127,7 +133,7 @@ public class EdnConfigWriter implements ConfigWriter {
     }
 
     @Override
-    public void writeComponent(Map<String, String> attributes, Map<String, Object> properties) {
+    public void writeComponent(Map<String, String> attributes, Map<String, Property> properties) {
         List<Object> compList = new LinkedList<>();
         compList.addAll(Arrays.asList(
                 Symbol.newSymbol(ConfigLoader.COMPONENT),
@@ -142,7 +148,7 @@ public class EdnConfigWriter implements ConfigWriter {
             }
             compList.add(modMap);
         }
-        for(Map.Entry<String, Object> e: properties.entrySet()) {
+        for(Map.Entry<String, Property> e: properties.entrySet()) {
             compList.add(Keyword.newKeyword(e.getKey()));
             compList.add(writeProperty(e.getValue()));
         }

@@ -1,11 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.oracle.labs.mlrg.olcut.config.json;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.ListProperty;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.StringListConfigurable;
 import org.junit.After;
@@ -64,7 +60,7 @@ public class StringListTest {
         l.add("d");
         l.add("e");
         l.add("f");
-        ps.setProp("strings", l);
+        ps.setProp("strings", ListProperty.createFromStringList(l));
         StringListConfigurable slc = (StringListConfigurable) cm.lookup(
                 "listTest");
         assertEquals("d", slc.strings.get(0));

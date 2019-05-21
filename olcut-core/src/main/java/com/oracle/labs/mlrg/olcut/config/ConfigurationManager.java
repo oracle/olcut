@@ -505,9 +505,9 @@ public class ConfigurationManager implements Cloneable, Closeable {
                                 String param = argsItr.next();
                                 List<String> list = parseStringList(param);
                                 if (list.size() == 1) {
-                                    rpd.add(split[1], list.get(0));
+                                    rpd.add(split[1], new SimpleProperty(list.get(0)));
                                 } else {
-                                    rpd.add(split[1], list);
+                                    rpd.add(split[1], ListProperty.createFromStringList(list));
                                 }
                                 argsItr.remove();
                             } else {
@@ -601,11 +601,11 @@ public class ConfigurationManager implements Cloneable, Closeable {
                         String param = arguments.get(i);
                         List<String> list = parseStringList(param);
                         if (FieldType.arrayTypes.contains(ft)) {
-                            f.set(arg.getB(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, list));
+                            f.set(arg.getB(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, ListProperty.createFromStringList(list)));
                         } else if (FieldType.listTypes.contains(ft)) {
                             List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                             if (genericList.size() == 1) {
-                                f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, list));
+                                f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, ListProperty.createFromStringList(list)));
                             } else {
                                 f.setAccessible(accessible);
                                 throw new ArgumentException(curArg,"Unknown generic type in argument");
@@ -680,11 +680,11 @@ public class ConfigurationManager implements Cloneable, Closeable {
                                 String param = arguments.get(i);
                                 List<String> list = parseStringList(param);
                                 if (FieldType.arrayTypes.contains(ft)) {
-                                    f.set(arg.getB(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, list));
+                                    f.set(arg.getB(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, ListProperty.createFromStringList(list)));
                                 } else if (FieldType.listTypes.contains(ft)) {
                                     List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                                     if (genericList.size() == 1) {
-                                        f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, list));
+                                        f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, ListProperty.createFromStringList(list)));
                                     } else {
                                         f.setAccessible(accessible);
                                         throw new ArgumentException(curArg,"Unknown generic type in argument");
@@ -967,7 +967,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
             if (!symbolTable.containsKey(componentName)) {
                 StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
                 if (type == StoredFieldType.STRING) {
-                    rpd.add(propertyName, value);
+                    rpd.add(propertyName, new SimpleProperty(value));
                 } else if (type == StoredFieldType.NONE) {
                     throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.getClassName());
                 } else {
@@ -996,7 +996,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
             if (!symbolTable.containsKey(componentName)) {
                 StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
                 if (type == StoredFieldType.LIST) {
-                    rpd.add(propertyName, value);
+                    rpd.add(propertyName, ListProperty.createFromStringList(value));
                 } else if (type == StoredFieldType.NONE) {
                     throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.getClassName());
                 } else {
@@ -1025,7 +1025,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
             if (!symbolTable.containsKey(componentName)) {
                 StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
                 if (type == StoredFieldType.MAP) {
-                    rpd.add(propertyName, value);
+                    rpd.add(propertyName, MapProperty.createFromStringMap(value));
                 } else if (type == StoredFieldType.NONE) {
                     throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.getClassName());
                 } else {
@@ -1407,7 +1407,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      *                                  this configuration manager instance.
      */
     public void addConfigurable(Class<? extends Configurable> confClass,
-                                String name, Map<String, Object> props) {
+                                String name, Map<String, Property> props) {
         if(name == null) {
             name = confClass.getName();
         }
@@ -1437,37 +1437,6 @@ public class ConfigurationManager implements Cloneable, Closeable {
     public void addConfigurable(Class<? extends Configurable> confClass,
                                 String instanceName) {
         addConfigurable(confClass, instanceName, new HashMap<>());
-    }
-
-    /**
-     * Renames a configurable component in this configuration manager.
-     *
-     * @param oldName the old name of the component
-     * @param newName the new name of the component
-     * @throws InternalConfigurationException if there is no component named
-     * <code>oldName</code> in this configuration manager.
-     */
-    public void renameConfigurable(String oldName, String newName)
-            throws InternalConfigurationException {
-        PropertySheet<? extends Configurable> ps = getPropertySheet(oldName);
-
-        if(ps == null) {
-            throw new InternalConfigurationException(oldName, null,
-                    String.format("No configurable named %s to rename to %s",
-                            oldName, newName));
-        }
-
-        ConfigurationManagerUtils.renameComponent(this, oldName, newName);
-
-        symbolTable.remove(oldName);
-        symbolTable.put(newName, ps);
-
-        RawPropertyData rpd = rawPropertyMap.remove(oldName);
-        rawPropertyMap.put(newName, new RawPropertyData(newName,
-                rpd.getClassName(),
-                rpd.getProperties()));
-
-        fireRenamedConfigurable(oldName, newName);
     }
 
     /**
@@ -1698,7 +1667,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * contained in the given <code>props</code>-map
      */
     public Configurable getInstance(Class<? extends Configurable> targetClass,
-                                    Map<String, Object> props) throws PropertyException {
+                                    Map<String, Property> props) throws PropertyException {
 
         PropertySheet ps = getPropSheetInstanceFromClass(targetClass, props, null);
 
@@ -1710,18 +1679,13 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * given by the <code>defaultProps</code>.
      */
     protected PropertySheet<? extends Configurable> getPropSheetInstanceFromClass(Class<? extends Configurable> targetClass,
-                                                                                  Map<String, Object> defaultProps,
+                                                                                  Map<String, Property> defaultProps,
                                                                                   String componentName) {
         RawPropertyData rpd = new RawPropertyData(componentName,
                 targetClass.getName());
 
-        for(Map.Entry<String,Object> conf : defaultProps.entrySet()) {
-            Object property = conf.getValue();
-            if(conf.getValue() instanceof Class) {
-                property = ((Class) property).getName();
-            }
-
-            rpd.getProperties().put(conf.getKey(), property);
+        for(Map.Entry<String,Property> conf : defaultProps.entrySet()) {
+            rpd.add(conf.getKey(), conf.getValue());
         }
 
         return getNewPropertySheet(targetClass, componentName, this, rpd);
@@ -1908,7 +1872,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      */
     public String importConfigurable(Configurable configurable,
                                      String name) throws PropertyException {
-        Map<String, Object> m = new LinkedHashMap<>();
+        Map<String, Property> m = new LinkedHashMap<>();
 
         ConfigWrapper wrapper = new ConfigWrapper(configurable);
         if (configuredComponents.containsKey(wrapper)) {
@@ -1995,17 +1959,17 @@ public class ConfigurationManager implements Cloneable, Closeable {
                             } else {
                                 throw new PropertyException(name, "Unsupported array type " + fieldClass.toString());
                             }
-                            m.put(propertyName, stringList);
+                            m.put(propertyName, ListProperty.createFromStringList(stringList));
                         }
                     } else if (FieldType.mapTypes.contains(ft)) {
                         Map fieldMap = (Map) field.get(configurable);
-                        HashMap<String, String> newMap = new HashMap<>();
+                        HashMap<String, Property> newMap = new HashMap<>();
                         for (Object e : fieldMap.entrySet()) {
                             String key = (String) ((Map.Entry) e).getKey();
                             Object value = ((Map.Entry) e).getValue();
                             newMap.put(key, importSimpleField(genericType,name+"-"+field.getName(),key,value));
                         }
-                        m.put(propertyName, newMap);
+                        m.put(propertyName, new MapProperty(newMap));
                     } else {
                         throw new PropertyException(name, "Unknown field type " +
                                 fieldClass.toString() + " found when importing " +
@@ -2014,17 +1978,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
                 }
                 field.setAccessible(accessible);
             }
-            RawPropertyData rpd = new RawPropertyData(name, confClass.getName());
-
-            for(Map.Entry<String,Object> e : m.entrySet()) {
-                Object property = e.getValue();
-
-                if(property instanceof Class) {
-                    property = ((Class) property).getName();
-                }
-
-                rpd.getProperties().put(e.getKey(), property);
-            }
+            RawPropertyData rpd = new RawPropertyData(name, confClass.getName(), m);
 
             PropertySheet<? extends Configurable> ps = getNewPropertySheet(configurable, name, this, rpd);
             symbolTable.put(name, ps);
@@ -2043,27 +1997,27 @@ public class ConfigurationManager implements Cloneable, Closeable {
         }
     }
 
-    private String importSimpleField(Class type, String prefix, String fieldName, Object input) {
+    private SimpleProperty importSimpleField(Class type, String prefix, String fieldName, Object input) {
         if (Configurable.class.isAssignableFrom(type)) {
             String newName = prefix + "-" + fieldName;
-            return importConfigurable((Configurable) input, newName);
+            return new SimpleProperty(importConfigurable((Configurable) input, newName));
         } else if (Random.class.isAssignableFrom(type)) {
-            return "" + ((Random) input).nextInt();
+            return new SimpleProperty("" + ((Random) input).nextInt());
         } else {
-            return input.toString();
+            return new SimpleProperty(input.toString());
         }
     }
 
-    private List<String> importCollection(Class innerType, String prefix, String fieldName, Collection input) {
-        List<String> stringList = new ArrayList<>();
+    private ListProperty importCollection(Class innerType, String prefix, String fieldName, Collection input) {
+        List<SimpleProperty> propList = new ArrayList<>();
         int i = 0;
         for (Object o : input) {
             String newName = prefix + "-" + fieldName;
-            String output = importSimpleField(innerType,newName,""+i,o);
-            stringList.add(output);
+            SimpleProperty output = importSimpleField(innerType,newName,""+i,o);
+            propList.add(output);
             i++;
         }
-        return stringList;
+        return new ListProperty(propList);
     }
 
 }
