@@ -18,11 +18,11 @@ import java.util.Map;
 /** Holds the raw property data just as it has come in from the properties file. */
 public class RawPropertyData {
 
-    private String name;
+    private final String name;
 
-    private String className;
+    private final String className;
 
-    private Map<String, Property> properties;
+    private final Map<String, Property> properties;
     
     /**
      * A URL for a resource indicating from where the component can be
