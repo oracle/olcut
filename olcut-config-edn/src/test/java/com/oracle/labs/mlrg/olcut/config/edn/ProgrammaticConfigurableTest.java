@@ -6,7 +6,9 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.BasicConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
+import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -76,9 +78,9 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.edn");
-        Map<String,Object> m = new HashMap<String, Object>();
+        Map<String, Property> m = new HashMap<>();
         for(String s : new String[] {"one", "two", "three"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "c", m);
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
@@ -94,9 +96,9 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addPartialStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.edn");
-        Map<String,Object> m = new HashMap<String, Object>();
+        Map<String,Property> m = new HashMap<>();
         for(String s : new String[] {"one"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "c", m);
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
@@ -105,7 +107,7 @@ public class ProgrammaticConfigurableTest {
         assertEquals("", sc.three);
         m.clear();
         for(String s : new String[]{"one", "three"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "d", m);
         sc = (StringConfigurable) cm.lookup("d");
@@ -120,9 +122,9 @@ public class ProgrammaticConfigurableTest {
     @Test(expected=PropertyException.class)
     public void addConfigurableWithBadProperty() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("basicConfig.edn");
-        Map<String,Object> m = new HashMap<String, Object>();
-        m.put("s", "one");
-        m.put("i", "two");
+        Map<String,Property> m = new HashMap<>();
+        m.put("s", new SimpleProperty("one"));
+        m.put("i", new SimpleProperty("two"));
         cm.addConfigurable(BasicConfigurable.class, "c", m);
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("c");
         assertEquals("one", bc.s);
@@ -137,9 +139,9 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addAlreadyNamedStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.edn");
-        Map<String,Object> m = new HashMap<String, Object>();
+        Map<String,Property> m = new HashMap<>();
         for(String s : new String[] {"one", "two", "three"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "a", m);
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
@@ -156,9 +158,9 @@ public class ProgrammaticConfigurableTest {
     public void addAlreadyNamedAndInstatiatedStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.edn");
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
-        Map<String,Object> m = new HashMap<String, Object>();
+        Map<String,Property> m = new HashMap<>();
         for(String s : new String[] {"one", "two", "three"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "a", m);
         sc = (StringConfigurable) cm.lookup("a");
@@ -170,9 +172,9 @@ public class ProgrammaticConfigurableTest {
         //
         // Add a component.
         ConfigurationManager cm = new ConfigurationManager("stringConfig.edn");
-        Map<String, Object> m = new HashMap<String, Object>();
+        Map<String, Property> m = new HashMap<>();
         for(String s : new String[]{"one", "two", "three"}) {
-            m.put(s, s);
+            m.put(s, new SimpleProperty(s));
         }
         cm.addConfigurable(StringConfigurable.class, "c", m);
 

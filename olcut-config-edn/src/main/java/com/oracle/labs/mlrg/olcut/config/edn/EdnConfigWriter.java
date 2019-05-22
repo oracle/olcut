@@ -9,15 +9,12 @@ import com.oracle.labs.mlrg.olcut.config.Property;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 import us.bpsm.edn.EdnException;
-import us.bpsm.edn.EdnIOException;
-import us.bpsm.edn.EdnSyntaxException;
 import us.bpsm.edn.Keyword;
 import us.bpsm.edn.Symbol;
 import us.bpsm.edn.printer.Printer;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,7 +83,7 @@ public class EdnConfigWriter implements ConfigWriter {
     public void writeStartComponents() throws ConfigWriterException {
     }
 
-    private Object writeProperty(Object p) throws ConfigWriterException {
+    private Object writeProperty(Property p) throws ConfigWriterException {
         Object res;
         if(p instanceof MapProperty) {
             // map configurable field
@@ -117,15 +114,8 @@ public class EdnConfigWriter implements ConfigWriter {
                 lRes.add(cnMapper.write(c.getCanonicalName()));
             }
             res = lRes;
-        } else if(p instanceof Symbol
-                || p instanceof String
-                || p instanceof Integer
-                || p instanceof Long
-                || p instanceof Float
-                || p instanceof Double
-                || p instanceof Boolean
-                || p instanceof Character) {
-            res = p;
+        } else if(p instanceof SimpleProperty) {
+            res = ((SimpleProperty) p).getValue();
         } else {
             throw new ConfigWriterException(new IllegalArgumentException("Unexpected type for property value " + p.getClass().toString() + " with value " + p));
         }

@@ -2,8 +2,10 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.BasicConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
+import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -46,7 +48,7 @@ public class RemoveTest {
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
-        assertEquals(bc.s, ps.getRaw("s"));
+        assertEquals(bc.s, ((SimpleProperty) ps.getRaw("s")).getValue());
         assertEquals(bc.i, Integer.parseInt(ps.getRaw("i").toString()));
         assertEquals(bc.d, Double.parseDouble(ps.getRaw("d").toString()), 0.001);
         try {
@@ -60,7 +62,7 @@ public class RemoveTest {
         ConfigurationManager cm = new ConfigurationManager("basicConfig.edn");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
-        assertEquals("one", ps.getRaw("s"));
+        assertEquals("one", ((SimpleProperty) ps.getRaw("s")).getValue());
         assertEquals(2, Integer.parseInt(ps.getRaw("i").toString()));
         assertEquals(3.0, Double.parseDouble(ps.getRaw("d").toString()), 0.001);
         try{
@@ -72,16 +74,16 @@ public class RemoveTest {
     @Test
     public void removeProgramaticallyAddedUninstantiated() throws IOException {
         ConfigurationManager cm = new ConfigurationManager();
-        Map<String,Object> m = new HashMap<String,Object>();
-        m.put("s", "foo");
-        m.put("i", 7);
-        m.put("d", 2.71);
+        Map<String, Property> m = new HashMap<>();
+        m.put("s", new SimpleProperty("foo"));
+        m.put("i", new SimpleProperty(Integer.toString(7)));
+        m.put("d", new SimpleProperty(Double.toString(2.71)));
         cm.addConfigurable(BasicConfigurable.class, "a", m);
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
         assertEquals(m.get("s"), ps.getRaw("s"));
-        assertEquals(((Integer) m.get("i")).intValue(), Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals((Double) m.get("d"), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getRaw("i").toString()));
+        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
         try{
             BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
             fail("Found a removed component");
@@ -91,17 +93,17 @@ public class RemoveTest {
     @Test
     public void removeProgramaticallyAddedInstantiated() throws IOException {
         ConfigurationManager cm = new ConfigurationManager();
-        Map<String, Object> m = new HashMap<String, Object>();
-        m.put("s", "foo");
-        m.put("i", 7);
-        m.put("d", 2.71);
+        Map<String, Property> m = new HashMap<>();
+        m.put("s", new SimpleProperty("foo"));
+        m.put("i", new SimpleProperty(Integer.toString(7)));
+        m.put("d", new SimpleProperty(Double.toString(2.71)));
         cm.addConfigurable(BasicConfigurable.class, "a", m);
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
         assertEquals(m.get("s"), ps.getRaw("s"));
-        assertEquals(((Integer) m.get("i")).intValue(), Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals((Double) m.get("d"), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getRaw("i").toString()));
+        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
     }
 
     @Test

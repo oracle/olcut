@@ -4,7 +4,8 @@
 		:list ["non_existent" "strings"])
 	(component dualtyped [mlrg olcut config ListConfigurable]
 		{:import "false" :export "false"}
-		:list [[mlrg olcut config StringConfigurable] [mlrg olcut config SimpleConfigurable]])
+		:list [[mlrg olcut config StringConfigurable]
+					 [mlrg olcut config SimpleConfigurable]])
 	(component combotyped [mlrg olcut config ListConfigurable]
 		{:import "false" :export "false"}
 		:list ["simp" [mlrg olcut config StringConfigurable]])

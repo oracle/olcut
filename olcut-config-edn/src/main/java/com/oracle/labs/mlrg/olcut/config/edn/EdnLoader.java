@@ -4,9 +4,12 @@ import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
+import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
 import us.bpsm.edn.EdnException;
 import us.bpsm.edn.Keyword;
@@ -373,15 +376,16 @@ public class EdnLoader implements ConfigLoader {
                 for(Map.Entry<?, ?> ent: ((Map<?, ?>) valObj).entrySet()) {
                     map.put(checkKeywordOrString(ent.getKey()), ent.getValue().toString());
                 }
-                    rpd.add(key, map);
+                rpd.add(key, MapProperty.createFromStringMap(map));
             } else if(valObj instanceof List<?>) {
-                List valueList = new ArrayList();
+                List<SimpleProperty> stringListItems = new ArrayList<>();
+                List<Class<?>> classListItems = new ArrayList<>();
                 for(Object itm: (List<?>) valObj) {
                     if(itm instanceof List<?>) {
                         String member = checkClassList(itm);
                         try {
                             Class<?> valCls = Class.forName(member);
-                            valueList.add(valCls);
+                            classListItems.add(valCls);
                         } catch (ClassNotFoundException e) {
                             throw new ConfigLoaderException("Unable to find class "
                                     + member + ", propertylist " + itm);
@@ -394,12 +398,12 @@ public class EdnLoader implements ConfigLoader {
                             || itm instanceof Double
                             || itm instanceof Boolean
                             || itm instanceof Character) {
-                        valueList.add(itm.toString());
+                        stringListItems.add(new SimpleProperty(itm.toString()));
                     } else {
                         throw new ConfigLoaderException("Unexpected type for property value " + valObj.getClass().toString() + " with value " + valObj );//+ "\n" + String.join(" ", ((List) valObj).getClass().getCanonicalName()));
                     }
                 }
-                rpd.add(key, valueList);
+                rpd.add(key, classListItems.isEmpty() ? new ListProperty(stringListItems) : new ListProperty(stringListItems, classListItems));
             } else if(valObj instanceof Symbol
                     || valObj instanceof String
                     || valObj instanceof Integer
@@ -408,7 +412,7 @@ public class EdnLoader implements ConfigLoader {
                     || valObj instanceof Double
                     || valObj instanceof Boolean
                     || valObj instanceof Character) {
-                rpd.add(key, valObj.toString());
+                rpd.add(key, new SimpleProperty(valObj.toString()));
             } else {
                 throw new ConfigLoaderException("Unexpected type for property value " + valObj.getClass().toString() + " with value " + valObj);
             }
