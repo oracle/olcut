@@ -280,7 +280,7 @@ public class JsonLoader implements ConfigLoader {
                     rpd.add(propName, listProp);
                 } else if (e.getValue() instanceof ObjectNode) {
                     // Must be map
-                    Map<String, Property> mapOutput = new HashMap<>();
+                    Map<String, SimpleProperty> mapOutput = new HashMap<>();
                     Iterator<Entry<String, JsonNode>> mapElementItr = e.getValue().fields();
                     while (mapElementItr.hasNext()) {
                         Entry<String, JsonNode> mapEntry = mapElementItr.next();

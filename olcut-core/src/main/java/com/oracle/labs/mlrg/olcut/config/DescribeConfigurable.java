@@ -274,7 +274,7 @@ public class DescribeConfigurable {
                     properties.put(e.getKey(),new ListProperty(Arrays.asList(new SimpleProperty(fi.className + "-instance"))));
                     break;
                 case MAP:
-                    Map<String,Property> newMap = new HashMap<>();
+                    Map<String,SimpleProperty> newMap = new HashMap<>();
                     newMap.put("mapKey",new SimpleProperty(fi.genericMapValueClass+"-instance"));
                     properties.put(e.getKey(),new MapProperty(newMap));
                     break;

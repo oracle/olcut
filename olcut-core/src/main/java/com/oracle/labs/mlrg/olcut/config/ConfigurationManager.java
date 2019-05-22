@@ -1963,7 +1963,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
                         }
                     } else if (FieldType.mapTypes.contains(ft)) {
                         Map fieldMap = (Map) field.get(configurable);
-                        HashMap<String, Property> newMap = new HashMap<>();
+                        HashMap<String, SimpleProperty> newMap = new HashMap<>();
                         for (Object e : fieldMap.entrySet()) {
                             String key = (String) ((Map.Entry) e).getKey();
                             Object value = ((Map.Entry) e).getValue();

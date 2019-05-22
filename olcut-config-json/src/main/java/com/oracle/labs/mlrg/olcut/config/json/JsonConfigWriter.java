@@ -131,8 +131,8 @@ public class JsonConfigWriter implements ConfigWriter {
                         //
                         // Must be a string,string map
                         writer.writeObjectFieldStart(key);
-                        for (Map.Entry<String, Property> e : ((MapProperty) value).getMap().entrySet()) {
-                            writer.writeStringField(e.getKey(),((SimpleProperty)e.getValue()).getValue());
+                        for (Map.Entry<String, SimpleProperty> e : ((MapProperty) value).getMap().entrySet()) {
+                            writer.writeStringField(e.getKey(),e.getValue().getValue());
                         }
                         writer.writeEndObject();
                     } else {

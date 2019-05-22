@@ -9,20 +9,20 @@ import java.util.Map;
  */
 public final class MapProperty implements Property {
 
-    private final Map<String,Property> map;
+    private final Map<String,SimpleProperty> map;
 
-    public MapProperty(Map<String,Property> map) {
+    public MapProperty(Map<String,SimpleProperty> map) {
         this.map = Collections.unmodifiableMap(map);
     }
 
-    public Map<String,Property> getMap() {
+    public Map<String,SimpleProperty> getMap() {
         return map;
     }
 
     public MapProperty copy() {
-        Map<String,Property> output = new HashMap<>();
+        Map<String,SimpleProperty> output = new HashMap<>();
 
-        for (Map.Entry<String,Property> e : map.entrySet()) {
+        for (Map.Entry<String,SimpleProperty> e : map.entrySet()) {
             output.put(e.getKey(),e.getValue().copy());
         }
 
@@ -35,7 +35,7 @@ public final class MapProperty implements Property {
     }
 
     public static MapProperty createFromStringMap(Map<String,String> input) {
-        Map<String, Property> output = new HashMap<>();
+        Map<String, SimpleProperty> output = new HashMap<>();
 
         for (Map.Entry<String,String> e : input.entrySet()) {
             output.put(e.getKey(),new SimpleProperty(e.getValue()));

@@ -135,11 +135,11 @@ public class XMLConfigWriter implements ConfigWriter {
                         writer.writeStartElement(ConfigLoader.PROPERTYMAP);
                         writer.writeAttribute(ConfigLoader.NAME, key);
                         writer.writeCharacters(System.lineSeparator());
-                        for (Map.Entry<String, Property> e : ((MapProperty) value).getMap().entrySet()) {
+                        for (Map.Entry<String, SimpleProperty> e : ((MapProperty) value).getMap().entrySet()) {
                             writer.writeCharacters("\t\t");
                             writer.writeEmptyElement(ConfigLoader.ENTRY);
                             writer.writeAttribute(ConfigLoader.KEY, e.getKey());
-                            writer.writeAttribute(ConfigLoader.VALUE, ((SimpleProperty)e.getValue()).getValue());
+                            writer.writeAttribute(ConfigLoader.VALUE, e.getValue().getValue());
                             writer.writeCharacters(System.lineSeparator());
                         }
                         writer.writeCharacters("\t");
