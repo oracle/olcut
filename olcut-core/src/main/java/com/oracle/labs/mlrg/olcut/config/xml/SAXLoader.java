@@ -152,7 +152,7 @@ public class SAXLoader implements ConfigLoader {
 
         String mapName = null;
 
-        Map<String, Property> entryMap = null;
+        Map<String, SimpleProperty> entryMap = null;
 
         StringBuilder curItem;
 

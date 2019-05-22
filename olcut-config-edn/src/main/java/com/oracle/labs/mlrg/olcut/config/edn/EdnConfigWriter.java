@@ -88,14 +88,14 @@ public class EdnConfigWriter implements ConfigWriter {
         if(p instanceof MapProperty) {
             // map configurable field
             Map<Keyword, String> mRes = new HashMap<>();
-            for(Map.Entry<String, Property> e: ((MapProperty) p).getMap().entrySet()) {
+            for(Map.Entry<String, SimpleProperty> e: ((MapProperty) p).getMap().entrySet()) {
                 if(e.getKey()==null) {
                     throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null keys" + p.toString()));
                 }
                 if(e.getValue()==null) {
                     throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null values: " + p.toString()));
                 }
-                mRes.put(Keyword.newKeyword(e.getKey()), ((SimpleProperty)e.getValue()).getValue());
+                mRes.put(Keyword.newKeyword(e.getKey()), e.getValue().getValue());
             }
             res = mRes;
         } else if(p instanceof ListProperty) {

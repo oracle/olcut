@@ -394,8 +394,8 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     public static Map parseMapField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> genericType, MapProperty input) {
         FieldType genericft = FieldType.getFieldType(genericType);
         Map map = new HashMap<>();
-        for (Map.Entry<String, Property> e : input.getMap().entrySet()) {
-            String newVal = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, ((SimpleProperty)e.getValue()).getValue());
+        for (Map.Entry<String, SimpleProperty> e : input.getMap().entrySet()) {
+            String newVal = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, e.getValue().getValue());
             map.put(e.getKey(), parseSimpleField(cm, instanceName, fieldName, genericType, genericft, newVal));
         }
         return map;
