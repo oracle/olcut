@@ -1,5 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import java.util.Objects;
+
 /**
  * A simple property is a single String which can be parsed as a field value (either by conversion or lookup in
  * a {@link ConfigurationManager}).
@@ -18,6 +20,19 @@ public final class SimpleProperty implements Property {
 
     public SimpleProperty copy() {
         return new SimpleProperty(value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SimpleProperty)) return false;
+        SimpleProperty that = (SimpleProperty) o;
+        return getValue().equals(that.getValue());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getValue());
     }
 
     @Override

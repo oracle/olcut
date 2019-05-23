@@ -3,6 +3,7 @@ package com.oracle.labs.mlrg.olcut.config;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,6 +47,20 @@ public final class ListProperty implements Property {
         } else {
             return new ListProperty(newSimpleList, new ArrayList<>(classList));
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ListProperty)) return false;
+        ListProperty that = (ListProperty) o;
+        return getSimpleList().equals(that.getSimpleList()) &&
+                getClassList().equals(that.getClassList());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getSimpleList(), getClassList());
     }
 
     @Override
