@@ -3,6 +3,7 @@ package com.oracle.labs.mlrg.olcut.config;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A MapProperty is a container for a Map from String to Property.
@@ -27,6 +28,19 @@ public final class MapProperty implements Property {
         }
 
         return new MapProperty(output);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MapProperty)) return false;
+        MapProperty that = (MapProperty) o;
+        return getMap().equals(that.getMap());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getMap());
     }
 
     @Override
