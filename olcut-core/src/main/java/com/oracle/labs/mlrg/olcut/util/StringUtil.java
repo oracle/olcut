@@ -33,7 +33,7 @@ public abstract class StringUtil {
      */
     public static String pad(int padding) {
         if (padding > 0) {
-            StringBuffer sb = new StringBuffer(padding);
+            StringBuilder sb = new StringBuilder(padding);
             for (int i = 0; i < padding; i++) {
                 sb.append(' ');
             }

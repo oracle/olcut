@@ -155,14 +155,10 @@ public class ConfigurableServiceStarter implements Configurable {
 
             //
             // Add a shutdown hook to stop the services.
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-
-                @Override
-                public void run() {
-                    starter.stopServices();
-                    cm.shutdown();
-                }
-            });
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                starter.stopServices();
+                cm.shutdown();
+            }));
 
             starter.waitForServices();
         } catch (ConfigLoaderException | PropertyException ex) {

@@ -54,7 +54,7 @@ public class ConfigurationManagerUtils {
             System.out.print("    " + propertyName + " = ");
             Object obj;
             obj = properties.getRaw(propertyName);
-            if(obj instanceof String) {
+            if(obj instanceof SimpleProperty) {
                 System.out.println(obj);
             } else if(obj instanceof List) {
                 List l = (List) obj;

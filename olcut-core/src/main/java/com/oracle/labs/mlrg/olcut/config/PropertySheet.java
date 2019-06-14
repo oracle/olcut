@@ -43,7 +43,7 @@ import com.oracle.labs.mlrg.olcut.util.IOUtil;
 public class PropertySheet<T extends Configurable> implements Cloneable {
     private static final Logger logger = Logger.getLogger(PropertySheet.class.getName());
 
-    public enum PropertyType { CONFIG, COMPNAME, CONMAN; }
+    public enum PropertyType { CONFIG, COMPNAME, CONMAN }
 
     public enum StoredFieldType { LIST, MAP, STRING, NONE }
 
@@ -302,7 +302,6 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      * @param o the object we're setting values for
      * @param ps the property sheet with the values that we want to set.
      */
-    @SuppressWarnings("unchecked")
     private static <T extends Configurable> void setConfiguredFields(T o, PropertySheet ps) throws PropertyException, IllegalAccessException {
         Class<? extends Configurable> curClass = o.getClass();
         Set<Field> fields = getAllFields(curClass);
@@ -869,41 +868,43 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         }
 
         PropertySheet ps = (PropertySheet) obj;
-        if (!rawProps.keySet().equals(ps.rawProps.keySet())) {
-            return false;
-        }
+        return rawProps.keySet().equals(ps.rawProps.keySet());
 
 // maybe we could test a little bit more here. suggestions?
-        return true;
     }
 
-    protected PropertySheet<T> clone() throws CloneNotSupportedException {
-        PropertySheet<T> ps = (PropertySheet<T>) super.clone();
+    public PropertySheet<T> clone() {
+        try {
+            PropertySheet<T> ps = (PropertySheet<T>) super.clone();
 
-        ps.registeredProperties = new HashMap<>(this.registeredProperties);
-        ps.propValues = new HashMap<>(this.propValues);
+            ps.registeredProperties = new HashMap<>(this.registeredProperties);
+            ps.propValues = new HashMap<>(this.propValues);
 
-        ps.rawProps = new HashMap<>(this.rawProps);
+            ps.rawProps = new HashMap<>(this.rawProps);
 
-        // make deep copy of raw-lists
-        for (String regProp : ps.getRegisteredProperties()) {
-            Property o = rawProps.get(regProp);
-            if (o instanceof ListProperty) {
-                ListProperty copy = ((ListProperty)o).copy();
-                ps.rawProps.put(regProp, copy);
-                ps.propValues.put(regProp, copy);
-            } else if (o instanceof Map) {
-                MapProperty copy = ((MapProperty)o).copy();
-                ps.rawProps.put(regProp, copy);
-                ps.propValues.put(regProp, copy);
+            // make deep copy of raw-lists
+            for (String regProp : ps.getRegisteredProperties()) {
+                Property o = rawProps.get(regProp);
+                if (o instanceof ListProperty) {
+                    ListProperty copy = ((ListProperty) o).copy();
+                    ps.rawProps.put(regProp, copy);
+                    ps.propValues.put(regProp, copy);
+                } else if (o instanceof MapProperty) {
+                    MapProperty copy = ((MapProperty) o).copy();
+                    ps.rawProps.put(regProp, copy);
+                    ps.propValues.put(regProp, copy);
+                }
             }
+
+            ps.cm = cm;
+            ps.owner = null;
+            ps.instanceName = this.instanceName;
+
+            return ps;
+        } catch (CloneNotSupportedException e) {
+            logger.log(Level.WARNING,"CloneNotSupportedException thrown, even though it is", e);
+            return null;
         }
-
-        ps.cm = cm;
-        ps.owner = null;
-        ps.instanceName = this.instanceName;
-
-        return ps;
     }
 
     /**
