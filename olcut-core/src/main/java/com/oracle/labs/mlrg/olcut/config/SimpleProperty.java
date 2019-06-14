@@ -1,7 +1,5 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import java.util.Objects;
-
 /**
  * A simple property is a single String which can be parsed as a field value (either by conversion or lookup in
  * a {@link ConfigurationManager}).
@@ -32,7 +30,7 @@ public final class SimpleProperty implements Property {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getValue());
+        return value.hashCode();
     }
 
     @Override

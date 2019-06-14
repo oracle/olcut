@@ -271,7 +271,7 @@ public class DescribeConfigurable {
                     properties.put(e.getKey(),new SimpleProperty(generateDefaultValue(fi)));
                     break;
                 case LIST:
-                    properties.put(e.getKey(),new ListProperty(Arrays.asList(new SimpleProperty(fi.className + "-instance"))));
+                    properties.put(e.getKey(),new ListProperty(Collections.singletonList(new SimpleProperty(fi.className + "-instance"))));
                     break;
                 case MAP:
                     Map<String,SimpleProperty> newMap = new HashMap<>();

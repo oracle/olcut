@@ -101,7 +101,7 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
                     && ((size() == 0 && implementsRemote) || isImportable())) {
                     logger.finer(String.format("Looking up instance %s in registry",
                             getInstanceName()));
-                owner = (T) registry.lookup(this, cl);
+                owner = registry.lookup(this, cl);
                 if (owner != null) {
                     return owner;
                 } else if (size() == 0 && isImportable()) {

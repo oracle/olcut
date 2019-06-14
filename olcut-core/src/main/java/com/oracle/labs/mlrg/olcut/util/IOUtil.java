@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -167,9 +168,9 @@ public abstract class IOUtil {
     public static PrintWriter getPrintWriter(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
         PrintWriter fileWriter;
         if (zipped) {
-            fileWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(filename)), "UTF-8"),BUFFER_SIZE));
+            fileWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(filename)), StandardCharsets.UTF_8),BUFFER_SIZE));
         } else {
-            fileWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), "UTF-8"),BUFFER_SIZE));
+            fileWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8),BUFFER_SIZE));
         }
         return fileWriter;
     }
@@ -305,19 +306,10 @@ public abstract class IOUtil {
     }
 
     private static String fromInputStream(InputStream in, String charSet) {
-        Scanner scanner = null;
-        BufferedInputStream bis = null;
-        try {
-            bis = new BufferedInputStream(in, BUFFER_SIZE);
-            scanner = new Scanner(bis, charSet);
-            String content = scanner.useDelimiter("\\Z").next();
-            return content;
+        try (Scanner scanner = new Scanner(new BufferedInputStream(in,BUFFER_SIZE),charSet)) {
+            return scanner.useDelimiter("\\Z").next();
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            if (scanner != null) {
-                scanner.close();
-            }
         }
     }
 

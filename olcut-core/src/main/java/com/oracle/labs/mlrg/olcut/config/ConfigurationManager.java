@@ -359,7 +359,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
 
         builder.append("Usage:\n\n");
         ArrayList<List<String>> usageList = new ArrayList<>();
-        usageList.add(new ArrayList<>(Arrays.asList("Built-in Options")));
+        usageList.add(new ArrayList<>(Collections.singletonList("Built-in Options")));
         usageList.add(Options.header);
         if (useConfigFiles) {
             usageList.add(Options.getOptionUsage(configFileOption, "java.lang.String"));

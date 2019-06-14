@@ -75,7 +75,7 @@ public class Util {
                                                   int fractionDigits) {
         DecimalFormat format = new DecimalFormat();
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("0.");
         for (int i = 0; i < fractionDigits; i++) {
             buffer.append("0");

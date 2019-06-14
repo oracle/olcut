@@ -77,7 +77,7 @@ public enum FieldType {
     // Used by the options processing system.
     public final static EnumSet<FieldType> configurableTypes = EnumSet.of(CONFIGURABLE,CONFIGURABLE_ARRAY);
 
-    private FieldType(Class<?>... types) {
+    FieldType(Class<?>... types) {
         this.types = types;
     }
 

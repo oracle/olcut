@@ -43,10 +43,10 @@ public class Pair<T1, T2> implements Serializable {
      */
     public static <T1,T2> ArrayList<Pair<T1,T2>> zipArrays(ArrayList<T1> first, ArrayList<T2> second) {
         if (first.size() == second.size()) {
-            ArrayList<Pair<T1,T2>> output = new ArrayList<Pair<T1,T2>>(first.size());
+            ArrayList<Pair<T1,T2>> output = new ArrayList<>(first.size());
 
             for (int i = 0; i < first.size(); i++) {
-                Pair<T1,T2> pair = new Pair<T1,T2>(first.get(i),second.get(i));
+                Pair<T1,T2> pair = new Pair<>(first.get(i),second.get(i));
                 output.add(i, pair);
             }
 

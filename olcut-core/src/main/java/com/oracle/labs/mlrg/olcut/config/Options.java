@@ -84,7 +84,7 @@ public interface Options {
         if (fields.size() == 0) {
             return list;
         } else {
-            list.add(new ArrayList<>(Arrays.asList(options.getSimpleName())));
+            list.add(new ArrayList<>(Collections.singletonList(options.getSimpleName())));
 
             try {
                 Options opt = options.getDeclaredConstructor().newInstance();

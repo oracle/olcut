@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 public class Getopt {
 	private static final Logger logger = Logger.getLogger(Getopt.class.getName());
 
-	private String argList[] = null;        // the argument List to be parsed
+	private String[] argList = null;        // the argument List to be parsed
 	private String optStr = null;        // the string of arguments in the form "ab:" see getopt man
 	public String optArg = null;    // argument of an option
 	public int optInd = 0;        // index of the option

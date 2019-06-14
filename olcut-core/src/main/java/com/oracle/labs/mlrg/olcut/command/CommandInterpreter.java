@@ -727,7 +727,7 @@ public class CommandInterpreter extends Thread {
     protected int dumpGroup(CommandGroupInternal cg, int count) {
         putResponse(String.format("%s group: %s", cg.getGroupName(), cg.getDescription()));
         for(String cmdName : cg) {
-            String help = ((CommandInterface) commands.get(cmdName)).getHelp();
+            String help = commands.get(cmdName).getHelp();
             putResponse(String.format("%3d) %s - %s", count, cmdName, help));
             count++;
         }
@@ -1231,7 +1231,7 @@ public class CommandInterpreter extends Thread {
             String command = args[0];
             CommandGroupInternal cg = commandGroups.get(STANDARD_COMMANDS_GROUP_NAME);
             if(cg.contains(command)) {
-                ci = (CommandInterface) commands.get(args[0]);
+                ci = commands.get(args[0]);
             }
 
             if(ci == null) {
@@ -1270,7 +1270,7 @@ public class CommandInterpreter extends Thread {
             //
             // Now check the commands from this interpreter.
             if(ci == null) {
-                ci = (CommandInterface) commands.get(args[0]);
+                ci = commands.get(args[0]);
             }
             if(ci != null) {
                 try {

@@ -17,6 +17,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.ExportException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -408,16 +409,12 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     public Map<ServiceRegistrar,List<ServiceItem>> getJiniServices() {
         ServiceRegistrar[] registrars =
                 sdm.getDiscoveryManager().getRegistrars();
-        Map<ServiceRegistrar,List<ServiceItem>> ret =
-                new HashMap<ServiceRegistrar, List<ServiceItem>>();
+        Map<ServiceRegistrar,List<ServiceItem>> ret = new HashMap<>();
         for(ServiceRegistrar r : registrars) {
-            List<ServiceItem> svcs = new ArrayList<ServiceItem>();
             try {
                 ServiceMatches sm = r.lookup(new ServiceTemplate(null, null,
                         null), Integer.MAX_VALUE);
-                for(ServiceItem si : sm.items) {
-                    svcs.add(si);
-                }
+                List<ServiceItem> svcs = new ArrayList<>(Arrays.asList(sm.items));
                 ret.put(r, svcs);
             } catch(RemoteException rx) {
                 logger.severe("Error geting services" + rx);
@@ -898,7 +895,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         }
         String group = System.getProperty("group");
         if(group == null) {
-            System.err.println(String.format("System property group must be specified"));
+            System.err.println("System property group must be specified");
             return;
         }
         String configString;

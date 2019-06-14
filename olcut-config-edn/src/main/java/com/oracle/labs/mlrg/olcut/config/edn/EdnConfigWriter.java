@@ -124,8 +124,7 @@ public class EdnConfigWriter implements ConfigWriter {
 
     @Override
     public void writeComponent(Map<String, String> attributes, Map<String, Property> properties) {
-        List<Object> compList = new LinkedList<>();
-        compList.addAll(Arrays.asList(
+        List<Object> compList = new LinkedList<>(Arrays.asList(
                 Symbol.newSymbol(ConfigLoader.COMPONENT),
                 Symbol.newSymbol(attributes.get(ConfigLoader.NAME)),
                 cnMapper.write(attributes.get(ConfigLoader.TYPE))));
