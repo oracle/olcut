@@ -25,7 +25,8 @@ public final class ListProperty implements Property {
     }
 
     public ListProperty(List<SimpleProperty> simpleList) {
-        this(simpleList, Collections.emptyList());
+        this.simpleList = Collections.unmodifiableList(simpleList);
+        this.classList = Collections.emptyList();
     }
 
     public List<SimpleProperty> getSimpleList() {

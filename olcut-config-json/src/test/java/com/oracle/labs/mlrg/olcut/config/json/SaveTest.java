@@ -205,9 +205,9 @@ public class SaveTest {
         cm1.addConfigurable(BasicConfigurable.class, "c", m);
         PropertySheet ps = cm1.removeConfigurable("c");
         assertNotNull(ps);
-        assertEquals(m.get("s"), ps.getRaw("s"));
-        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        assertEquals(m.get("s"), ps.getProperty("s"));
+        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getProperty("i").toString()));
+        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getProperty("d").toString()), 0.001);
         cm1.save(f, false);
         try{
             BasicConfigurable bc = (BasicConfigurable) cm1.lookup("c");

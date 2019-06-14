@@ -298,7 +298,7 @@ public class EdnLoader implements ConfigLoader {
         boolean importable = false;
         boolean exportable = false;
         String override = null;
-        long leaseTime = 0L;
+        long leaseTime = RawPropertyData.DEFAULT_LEASE_TIME;
         String entriesName = null;
         String serializedForm = null;
 
@@ -344,20 +344,14 @@ public class EdnLoader implements ConfigLoader {
                     logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
                             spd.getName(), name , type, spd.getClassName()));
                 }
-                rpd = new RawPropertyData(name, type,
-                        spd.getProperties());
+                rpd = new RawPropertyData(name, type, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
             } else {
                 if (rpdMap.get(name) != null) {
                     throw new ConfigLoaderException("duplicate definition for "
                             + name);
                 }
-                rpd = new RawPropertyData(name, type, null);
+                rpd = new RawPropertyData(name, type, serializedForm, entriesName, exportable, importable, leaseTime);
             }
-            rpd.setExportable(exportable);
-            rpd.setExportable(importable);
-            rpd.setLeaseTime(leaseTime);
-            rpd.setEntriesName(entriesName);
-            rpd.setSerializedForm(serializedForm);
             propsStart = 3;
         }
         List<?> props = componentListItem.subList(propsStart, componentListItem.size());
