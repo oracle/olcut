@@ -172,7 +172,7 @@ public class JsonLoader implements ConfigLoader {
             throw new ConfigLoaderException("lease timeout " + lt +
                     " specified for component that does not have export set, at node " + node.toString());
         }
-        long leaseTime = -1;
+        long leaseTime = RawPropertyData.DEFAULT_LEASE_TIME;
         if (lt != null) {
             try {
                 leaseTime = Long.parseLong(lt.textValue());
@@ -186,7 +186,9 @@ public class JsonLoader implements ConfigLoader {
             }
         }
         JsonNode entriesNameNode = node.get(ConfigLoader.ENTRIES);
+        String entriesName = entriesNameNode != null ? entriesNameNode.textValue() : null;
         JsonNode serializedFormNode = node.get(ConfigLoader.SERIALIZED);
+        String serializedForm = serializedFormNode != null ? serializedFormNode.textValue() : null;
 
         RawPropertyData rpd;
         if (override != null) {
@@ -213,26 +215,15 @@ public class JsonLoader implements ConfigLoader {
             if (curType == null) {
                 curType = spd.getClassName();
             }
-            rpd = new RawPropertyData(curComponent, curType,
-                    spd.getProperties());
+            rpd = new RawPropertyData(curComponent, curType, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
             overriding = true;
         } else {
             if (rpdMap.get(curComponent) != null) {
                 throw new ConfigLoaderException("duplicate definition for "
                         + curComponent);
             }
-            rpd = new RawPropertyData(curComponent, curType, null);
+            rpd = new RawPropertyData(curComponent, curType, serializedForm, entriesName, exportable, importable, leaseTime);
         }
-
-        //
-        // Set the lease time.
-        rpd.setExportable(exportable);
-        rpd.setImportable(importable);
-        rpd.setLeaseTime(leaseTime);
-        String entriesName = entriesNameNode != null ? entriesNameNode.textValue() : null;
-        rpd.setEntriesName(entriesName);
-        String serializedForm = serializedFormNode != null ? serializedFormNode.textValue() : null;
-        rpd.setSerializedForm(serializedForm);
 
         ObjectNode properties = (ObjectNode) node.get(ConfigLoader.PROPERTIES);
         // properties is null if there are no properties specified in the json

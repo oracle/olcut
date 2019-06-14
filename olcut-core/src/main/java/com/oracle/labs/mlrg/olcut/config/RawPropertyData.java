@@ -18,6 +18,8 @@ import java.util.Map;
 /** Holds the raw property data just as it has come in from the properties file. */
 public class RawPropertyData {
 
+    public static final long DEFAULT_LEASE_TIME = -1;
+
     private final String name;
 
     private final String className;
@@ -28,23 +30,23 @@ public class RawPropertyData {
      * A URL for a resource indicating from where the component can be
      * deserialized.
      */
-    private String serializedForm;
+    private final String serializedForm;
 
     /**
      * Whether this component is exportable to a service registrar.
      */
-    private boolean exportable;
+    private final boolean exportable;
     
-    private boolean importable;
+    private final boolean importable;
     
-    private long leaseTime;
+    private final long leaseTime;
     
     /**
      * The (possibly <code>null</code> name of a component that has a list
      * of configuration entries to use when registering this component with
      * a service registrar.
      */
-    private String entriesName;
+    private final String entriesName;
 
     /**
      * Creates a raw property data item
@@ -57,6 +59,14 @@ public class RawPropertyData {
     }
 
     public RawPropertyData(String name, String className, Map<String, Property> properties) {
+        this(name,className,properties,null,null,false,false,DEFAULT_LEASE_TIME);
+    }
+
+    public RawPropertyData(String name, String className, String serializedForm, String entriesName, boolean exportable, boolean importable, long leaseTime) {
+        this(name,className,null,serializedForm,entriesName,exportable,importable,leaseTime);
+    }
+
+    public RawPropertyData(String name, String className, Map<String, Property> properties, String serializedForm, String entriesName, boolean exportable, boolean importable, long leaseTime) {
         this.name = name;
         this.className = className;
         if(properties != null) {
@@ -64,6 +74,11 @@ public class RawPropertyData {
         } else {
             this.properties = new HashMap<>();
         }
+        this.serializedForm = serializedForm;
+        this.entriesName = entriesName;
+        this.exportable = exportable;
+        this.importable = importable;
+        this.leaseTime = leaseTime;
     }
 
     /**
@@ -90,18 +105,6 @@ public class RawPropertyData {
         return serializedForm;
     }
 
-    public void setSerializedForm(String serializedForm) {
-        this.serializedForm = serializedForm;
-    }
-
-    public void setLeaseTime(long leaseTime) {
-        this.leaseTime = leaseTime;
-    }
-    
-    public void setImportable(boolean importable) {
-        this.importable = importable;
-    }
-    
     public boolean isImportable() {
         return importable;
     }
@@ -110,16 +113,8 @@ public class RawPropertyData {
         return leaseTime;
     }
     
-    public void setExportable(boolean exportable) {
-        this.exportable = exportable;
-    }
-    
     public boolean isExportable() {
         return exportable;
-    }
-    
-    public void setEntriesName(String entriesName) {
-        this.entriesName = entriesName;
     }
     
     public String getEntriesName() {
@@ -138,14 +133,14 @@ public class RawPropertyData {
      * @return true if the map already contains this property
      */
     public boolean contains(String propName) {
-        return properties.get(propName) != null;
+        return properties.containsKey(propName);
     }
 
     /** 
      * Returns a copy of this property data instance with all ${}-fields resolved.
      */
     public RawPropertyData flatten(ConfigurationManager cm) {
-        RawPropertyData copyRPD = new RawPropertyData(name, className);
+        Map<String,Property> newMap = new HashMap<>();
 
         for(Map.Entry<String, Property> e : properties.entrySet()) {
             String propName = e.getKey();
@@ -155,9 +150,9 @@ public class RawPropertyData {
                         replaceGlobalProperties(getName(), propName, ((SimpleProperty) propVal).getValue()));
             }
 
-            copyRPD.properties.put(propName, propVal);
+            newMap.put(propName, propVal);
         }
 
-        return copyRPD;
+        return new RawPropertyData(name,className,newMap,serializedForm,entriesName,exportable,importable,leaseTime);
     }
 }

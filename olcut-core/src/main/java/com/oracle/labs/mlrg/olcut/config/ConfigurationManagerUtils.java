@@ -3,7 +3,6 @@ package com.oracle.labs.mlrg.olcut.config;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class ConfigurationManagerUtils {
         for(String propertyName : properties.getRegisteredProperties()) {
             System.out.print("    " + propertyName + " = ");
             Object obj;
-            obj = properties.getRaw(propertyName);
+            obj = properties.getProperty(propertyName);
             if(obj instanceof SimpleProperty) {
                 System.out.println(obj);
             } else if(obj instanceof List) {
@@ -95,7 +94,7 @@ public class ConfigurationManagerUtils {
      */
     public static URL getResource(String name, PropertySheet ps) throws PropertyException {
         URL url;
-        Object locationObj = ps.getRaw(name);
+        Object locationObj = ps.getProperty(name);
         if(locationObj == null) {
             throw new InternalConfigurationException(name, name, "Required resource property '" +
                     name + "' not set");

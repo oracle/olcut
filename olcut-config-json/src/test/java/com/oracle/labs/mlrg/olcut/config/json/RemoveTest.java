@@ -48,9 +48,9 @@ public class RemoveTest {
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
-        assertEquals(bc.s, ps.getRaw("s").toString());
-        assertEquals(bc.i, Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals(bc.d, Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        assertEquals(bc.s, ps.getProperty("s").toString());
+        assertEquals(bc.i, Integer.parseInt(ps.getProperty("i").toString()));
+        assertEquals(bc.d, Double.parseDouble(ps.getProperty("d").toString()), 0.001);
         try {
             BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
             fail("Found a removed component");
@@ -62,9 +62,9 @@ public class RemoveTest {
         ConfigurationManager cm = new ConfigurationManager("basicConfig.json");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
-        assertEquals("one", ps.getRaw("s").toString());
-        assertEquals(2, Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals(3.0, Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        assertEquals("one", ps.getProperty("s").toString());
+        assertEquals(2, Integer.parseInt(ps.getProperty("i").toString()));
+        assertEquals(3.0, Double.parseDouble(ps.getProperty("d").toString()), 0.001);
         try{
             BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
             fail("Found a removed component");
@@ -81,9 +81,9 @@ public class RemoveTest {
         cm.addConfigurable(BasicConfigurable.class, "a", m);
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
-        assertEquals(m.get("s"), ps.getRaw("s"));
-        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        assertEquals(m.get("s"), ps.getProperty("s"));
+        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getProperty("i").toString()));
+        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getProperty("d").toString()), 0.001);
         try{
             BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
             fail("Found a removed component");
@@ -101,9 +101,9 @@ public class RemoveTest {
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         PropertySheet ps = cm.removeConfigurable("a");
         assertNotNull(ps);
-        assertEquals(m.get("s"), ps.getRaw("s"));
-        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        assertEquals(m.get("s"), ps.getProperty("s"));
+        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getProperty("i").toString()));
+        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getProperty("d").toString()), 0.001);
     }
 
     @Test

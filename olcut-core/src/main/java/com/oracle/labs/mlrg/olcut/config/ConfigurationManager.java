@@ -1645,22 +1645,6 @@ public class ConfigurationManager implements Cloneable, Closeable {
         return Objects.hash(configuredComponents, addedComponents, rawPropertyMap, globalProperties, serializedObjects, origGlobal, showCreations);
     }
 
-    /** Creates a deep copy of the given CM instance. */
-    // This is not tested yet !!!
-    public Object clone() throws CloneNotSupportedException {
-        Map<String,RawPropertyData> newrpm = new HashMap<>(rawPropertyMap);
-        GlobalProperties newgp = new GlobalProperties(globalProperties);
-        List<ConfigurationChangeListener> newcl = new ArrayList<>(changeListeners);
-        Map<String, PropertySheet<? extends Configurable>> newSymbolTable = new LinkedHashMap<>();
-        for(Map.Entry<String, PropertySheet<? extends Configurable>> symbol : symbolTable.entrySet()) {
-            newSymbolTable.put(symbol.getKey(), symbol.getValue().clone());
-        }
-        Map<String,SerializedObject> newSerializedObjects = new HashMap<>();
-        GlobalProperties newOrigGlobal = new GlobalProperties(origGlobal);
-
-        return new ConfigurationManager(newrpm,newgp,newcl,newSymbolTable,newSerializedObjects,newOrigGlobal);
-    }
-
     /**
      * Creates an instance of the given {@link Configurable} by using the default parameters as defined by the
      * class annotations to parametrize the component. Default parameters will be overridden if their names are
