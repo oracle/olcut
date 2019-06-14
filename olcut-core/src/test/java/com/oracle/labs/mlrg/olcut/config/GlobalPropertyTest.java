@@ -29,6 +29,15 @@ public class GlobalPropertyTest {
     @AfterClass
     public static void tearDownClass() throws Exception {
     }
+
+    @Test
+    public void recursive() {
+        ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("recursive");
+        assertEquals("ab",sc.one);
+        assertEquals("abc",sc.two);
+        assertEquals("gamma",sc.three);
+    }
     
     @Test(expected=PropertyException.class)
     public void noProperty() throws IOException, PropertyException {
