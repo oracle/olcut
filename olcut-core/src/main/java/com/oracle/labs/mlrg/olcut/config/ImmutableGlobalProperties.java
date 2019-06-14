@@ -79,8 +79,10 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
     protected String replaceGlobalProperties(String instanceName,
                                              String propName, String val) {
         Matcher m = GlobalProperty.globalSymbolPattern.matcher(val);
+        boolean matched = false;
         StringBuffer sb = new StringBuffer();
-        while(m.find()) {
+        while (m.find()) {
+            matched = true;
             //
             // Get the recursive replacement for this value.
             GlobalProperty prop = get(m.group(1));
@@ -91,16 +93,14 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
                                 m.group(0));
             }
 
-            //
-            // We may need to recursively replace global properties embedded in
-            // this value.
-            if(GlobalProperty.hasGlobalProperty(replace)) {
-                replace = replaceGlobalProperties(instanceName, propName, replace);
-            }
             m.appendReplacement(sb, Matcher.quoteReplacement(replace));
         }
         m.appendTail(sb);
-        return sb.toString();
+        if (matched) {
+            return replaceGlobalProperties(instanceName,propName,sb.toString());
+        } else {
+            return sb.toString();
+        }
     }
 
     public Set<String> keySet() {

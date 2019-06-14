@@ -26,6 +26,19 @@
     
     <property name="apath" value="/tmp/${a}"/>
 
+    <property name="a-beta" value="ab"/>
+    <property name="a-beta-charlie" value="abc"/>
+    <property name="z" value="a"/>
+    <property name="ta" value="ma"/>
+    <property name="ema" value="amma"/>
+    <property name="bamma" value="gamma"/>
+
+    <component name="recursive" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+        <property name="one" value="${a-${b}}"/>
+        <property name="two" value="${a-${b}-${c}}"/>
+        <property name="three" value="${b${e${t${z}}}}"/>
+    </component>
+
     <component name="unknown" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
         <property name="one" value="${d}"/>
         <property name="two" value="${e}"/>
