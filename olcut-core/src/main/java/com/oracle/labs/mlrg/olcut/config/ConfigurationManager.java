@@ -313,7 +313,7 @@ public class ConfigurationManager implements Closeable {
 
         //
         // Load system properties into global properties
-        ConfigurationManagerUtils.importSystemProperties(globalProperties);
+        globalProperties.importSystemProperties();
 
         //
         // we can't config the configuration manager with itself so we

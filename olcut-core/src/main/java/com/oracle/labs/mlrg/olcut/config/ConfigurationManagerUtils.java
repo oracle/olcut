@@ -1,6 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 
@@ -10,7 +11,6 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,32 +59,33 @@ public class ConfigurationManagerUtils {
             obj = properties.getProperty(propertyName);
             if(obj instanceof SimpleProperty) {
                 System.out.println(obj);
-            } else if(obj instanceof List) {
-                List l = (List) obj;
-                for(Iterator k = l.iterator(); k.hasNext();) {
+            } else if(obj instanceof ListProperty) {
+                List<SimpleProperty> l = ((ListProperty) obj).getSimpleList();
+                for (Iterator<SimpleProperty> k = l.iterator(); k.hasNext(); ) {
                     System.out.print(k.next());
-                    if(k.hasNext()) {
+                    if (k.hasNext()) {
                         System.out.print(", ");
                     }
+                }
+                System.out.println();
+                List<Class<?>> classList = ((ListProperty) obj).getClassList();
+                for (Iterator<Class<?>> k = classList.iterator(); k.hasNext(); ) {
+                    System.out.print(k.next());
+                    if (k.hasNext()) {
+                        System.out.print(", ");
+                    }
+                }
+                System.out.println();
+            } else if (obj instanceof MapProperty) {
+                Map<String,SimpleProperty> m = ((MapProperty) obj).getMap();
+                for (Map.Entry<String,SimpleProperty> e : m.entrySet()) {
+                    System.out.print(e.getKey() + " - " + e.getValue().toString());
+                    System.out.print(", ");
                 }
                 System.out.println();
             } else {
                 System.out.println("[DEFAULT]");
             }
-        }
-    }
-
-    /**
-     * Imports the system properties into GlobalProperties.
-     *
-     * @param global global properties
-     */
-    static void importSystemProperties(GlobalProperties global) {
-        Properties props = System.getProperties();
-        for (Map.Entry<Object,Object> e : props.entrySet()) {
-            String param = (String) e.getKey();
-            String value = (String) e.getValue();
-            global.setValue(param, value);
         }
     }
 
