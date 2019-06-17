@@ -1,5 +1,6 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import org.junit.Assert;
 import org.junit.Test;
 

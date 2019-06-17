@@ -1,6 +1,6 @@
 package com.oracle.labs.mlrg.olcut.config.json;
 
-import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import org.junit.Assert;
 import org.junit.BeforeClass;

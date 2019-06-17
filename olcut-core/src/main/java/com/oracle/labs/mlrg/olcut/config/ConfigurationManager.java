@@ -1,5 +1,10 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriter;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriterException;
+import com.oracle.labs.mlrg.olcut.config.io.FileFormatFactory;
+import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
 import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
 import com.oracle.labs.mlrg.olcut.config.property.GlobalProperty;
 import com.oracle.labs.mlrg.olcut.config.property.ImmutableGlobalProperties;
@@ -112,7 +117,7 @@ public class ConfigurationManager implements Closeable {
      * Used to support new config file formats at runtime.
      * Initialised with xml.
      */
-    private static final Map<String,FileFormatFactory> formatFactoryMap = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<String, FileFormatFactory> formatFactoryMap = Collections.synchronizedMap(new HashMap<>());
 
     static {
         formatFactoryMap.put("xml",new XMLConfigFactory());

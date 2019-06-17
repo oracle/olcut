@@ -1,7 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config.edn;
 
-import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
-import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
@@ -10,7 +10,7 @@ import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
-import com.oracle.labs.mlrg.olcut.config.URLLoader;
+import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
 import us.bpsm.edn.EdnException;
 import us.bpsm.edn.Keyword;
 import us.bpsm.edn.Symbol;

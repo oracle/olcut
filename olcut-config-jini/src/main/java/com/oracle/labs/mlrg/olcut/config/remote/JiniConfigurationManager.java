@@ -220,7 +220,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
     public synchronized void close() {
         if(registry != null) {
             logger.info("Shutting down registry");
-            registry.shutdown();
+            registry.close();
             registry = null;
         }
     }
