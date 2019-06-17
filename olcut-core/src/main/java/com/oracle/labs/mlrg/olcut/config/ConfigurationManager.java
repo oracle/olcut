@@ -3,13 +3,11 @@ package com.oracle.labs.mlrg.olcut.config;
 import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
-import javax.management.MBeanServer;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -35,7 +33,6 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
 
@@ -46,7 +43,7 @@ import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
  * @see Configurable
  * @see PropertySheet
  */
-public class ConfigurationManager implements Cloneable, Closeable {
+public class ConfigurationManager implements Closeable {
     private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
 
     public static final Option configFileOption = new Option() {
@@ -137,8 +134,6 @@ public class ConfigurationManager implements Cloneable, Closeable {
     protected boolean showCreations;
 
     private final LinkedList<URL> configURLs = new LinkedList<>();
-
-    private MBeanServer mbs;
 
     private String[] unnamedArguments = new String[0];
 
@@ -1041,18 +1036,6 @@ public class ConfigurationManager implements Cloneable, Closeable {
         } else {
             throw new PropertyException(componentName, "Failed to find component " + componentName);
         }
-    }
-
-    /**
-     * Gets the current MBean server, creating one if necessary.
-     * @return the current MBean server, or <code>null</code> if there isn't
-     * one available.
-     */
-    protected MBeanServer getMBeanServer() {
-        if(mbs == null) {
-            mbs = ManagementFactory.getPlatformMBeanServer();
-        }
-        return mbs;
     }
 
     /**
