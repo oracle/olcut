@@ -2,15 +2,11 @@ package com.oracle.labs.mlrg.olcut.config.json;
 
 import com.oracle.labs.mlrg.olcut.config.BasicConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.Property;
+import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.PropertySheet;
-import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
-import org.junit.After;
-import org.junit.AfterClass;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;

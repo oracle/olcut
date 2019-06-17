@@ -1,4 +1,4 @@
-package com.oracle.labs.mlrg.olcut.config;
+package com.oracle.labs.mlrg.olcut.config.property;
 
 import java.util.Collections;
 import java.util.HashMap;

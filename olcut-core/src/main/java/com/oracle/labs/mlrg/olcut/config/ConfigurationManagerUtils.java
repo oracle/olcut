@@ -1,5 +1,9 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;

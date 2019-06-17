@@ -11,6 +11,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -67,7 +69,7 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
-        Map<String,Property> m = new HashMap<>();
+        Map<String, Property> m = new HashMap<>();
         for(String s : new String[] {"one", "two", "three"}) {
             m.put(s, new SimpleProperty(s));
         }

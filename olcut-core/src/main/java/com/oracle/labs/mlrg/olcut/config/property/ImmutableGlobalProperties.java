@@ -1,8 +1,12 @@
-package com.oracle.labs.mlrg.olcut.config;
+package com.oracle.labs.mlrg.olcut.config.property;
+
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManagerUtils;
+import com.oracle.labs.mlrg.olcut.config.PropertyException;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -45,25 +49,17 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
         return gp;
     }
 
-    // todo implement hashCode
+    @Override
     public boolean equals(Object o) {
-        if(o instanceof ImmutableGlobalProperties) {
-            ImmutableGlobalProperties gp = (ImmutableGlobalProperties) o;
-            if(!map.keySet().equals(gp.map.keySet())) {
-                return false;
-            }
+        if (this == o) return true;
+        if (!(o instanceof ImmutableGlobalProperties)) return false;
+        ImmutableGlobalProperties entries = (ImmutableGlobalProperties) o;
+        return map.equals(entries.map);
+    }
 
-            //compare all values
-            for (String key : gp.map.keySet()) {
-                if(!get(key).equals(gp.get(key))) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        return false;
+    @Override
+    public int hashCode() {
+        return Objects.hash(map);
     }
 
     /**
@@ -76,7 +72,7 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
      * @return the property value with all global properties replaced with their
      * corresponding values.
      */
-    protected String replaceGlobalProperties(String instanceName,
+    public String replaceGlobalProperties(String instanceName,
                                              String propName, String val) {
         Matcher m = GlobalProperty.globalSymbolPattern.matcher(val);
         boolean matched = false;

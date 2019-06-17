@@ -1,5 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+
 import java.io.OutputStream;
 import java.util.Map;
 

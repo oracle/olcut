@@ -1,23 +1,20 @@
 package com.oracle.labs.mlrg.olcut.config.json;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
-import com.oracle.labs.mlrg.olcut.config.ListProperty;
-import com.oracle.labs.mlrg.olcut.config.MapProperty;
-import com.oracle.labs.mlrg.olcut.config.Property;
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
-import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 

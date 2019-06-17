@@ -1,5 +1,10 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -263,7 +268,7 @@ public class DescribeConfigurable {
         attributes.put(ConfigLoader.TYPE,configurableClass.getCanonicalName());
 
         // Generate default properties
-        Map<String,Property> properties = new HashMap<>();
+        Map<String, Property> properties = new HashMap<>();
         for (Map.Entry<String,FieldInfo> e : map.entrySet()) {
             FieldInfo fi = e.getValue();
             switch (fi.type) {

@@ -4,14 +4,13 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriter;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriterException;
-import com.oracle.labs.mlrg.olcut.config.ListProperty;
-import com.oracle.labs.mlrg.olcut.config.MapProperty;
-import com.oracle.labs.mlrg.olcut.config.Property;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
-import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 

@@ -1,5 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.oracle.labs.mlrg.olcut.config;
+package com.oracle.labs.mlrg.olcut.config.property;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
