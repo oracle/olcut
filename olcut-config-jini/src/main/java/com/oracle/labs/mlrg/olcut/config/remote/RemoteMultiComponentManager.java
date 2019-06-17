@@ -81,7 +81,8 @@ public class RemoteMultiComponentManager<T extends Configurable> extends RemoteC
         getComponents();
     }
 
-    public void shutdown() {
-        cm.shutdown();
+    @Override
+    public void close() {
+        cm.close();
     }
 }

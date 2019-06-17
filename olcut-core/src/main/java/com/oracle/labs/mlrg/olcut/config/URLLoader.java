@@ -19,9 +19,9 @@ public class URLLoader {
 
     private final Map<String, FileFormatFactory> formatFactoryMap;
 
-    private final Map<String, RawPropertyData> rpdMap = new HashMap<>();
+    private final Map<String, ConfigurationData> rpdMap = new HashMap<>();
 
-    private final Map<String, RawPropertyData> existingRPD;
+    private final Map<String, ConfigurationData> existingRPD;
 
     private final Map<String, SerializedObject> serializedObjects = new HashMap<>();
 
@@ -31,7 +31,7 @@ public class URLLoader {
         this(urlQueue, formatFactoryMap, null);
     }
 
-    public URLLoader(Queue<URL> urlQueue, Map<String, FileFormatFactory> formatFactoryMap, Map<String, RawPropertyData> existingRPD) {
+    public URLLoader(Queue<URL> urlQueue, Map<String, FileFormatFactory> formatFactoryMap, Map<String, ConfigurationData> existingRPD) {
         this.urlQueue = urlQueue;
         this.formatFactoryMap = formatFactoryMap;
         this.existingRPD = existingRPD;
@@ -57,7 +57,7 @@ public class URLLoader {
         urlQueue.add(url);
     }
 
-    public Map<String,RawPropertyData> getPropertyMap() {
+    public Map<String, ConfigurationData> getPropertyMap() {
         return rpdMap;
     }
 

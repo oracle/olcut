@@ -53,10 +53,10 @@ public class ComponentFailureTest {
     @After
     public void tearDown() {
         if(cm1 != null) {
-            cm1.shutdown();
+            cm1.close();
         }
         if(cm2 != null) {
-            cm2.shutdown();
+            cm2.close();
         }
     }
 
@@ -84,7 +84,7 @@ public class ComponentFailureTest {
 
         //
         // Kill the server and re-register.
-        cm1.shutdown();
+        cm1.close();
         cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
         server = (RegistryConfigurable) cm1.lookup("servercomp");
         assertNotNull(server);
@@ -128,7 +128,7 @@ public class ComponentFailureTest {
 
         //
         // Kill the server and re-register.
-        cm1.shutdown();
+        cm1.close();
 
         assertTrue(client.getOpCount() == ((RegistryConfigurableImpl) server).getIOPCount());
         sops = ((RegistryConfigurableImpl) server).getIOPCount();

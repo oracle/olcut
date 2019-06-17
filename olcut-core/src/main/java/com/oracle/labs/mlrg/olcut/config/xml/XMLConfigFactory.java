@@ -6,7 +6,7 @@ import com.oracle.labs.mlrg.olcut.config.ConfigWriter;
 import com.oracle.labs.mlrg.olcut.config.ConfigWriterException;
 import com.oracle.labs.mlrg.olcut.config.FileFormatFactory;
 import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
 import org.xml.sax.SAXException;
@@ -36,7 +36,7 @@ public class XMLConfigFactory implements FileFormatFactory {
     }
 
     @Override
-    public ConfigLoader getLoader(URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD, Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) throws ConfigLoaderException {
+    public ConfigLoader getLoader(URLLoader parent, Map<String, ConfigurationData> rpdMap, Map<String, ConfigurationData> existingRPD, Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) throws ConfigLoaderException {
         try {
             return new SAXLoader(parent, rpdMap, existingRPD, serializedObjects, globalProperties);
         } catch (SAXException | ParserConfigurationException e) {

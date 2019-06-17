@@ -5,10 +5,9 @@ import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 
 import java.rmi.Remote;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -26,13 +25,13 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
     private final ConfigurationEntry[] entries;
 
     protected ServablePropertySheet(T configurable, String name,
-                                 JiniConfigurationManager cm, RawPropertyData rpd) {
+                                 JiniConfigurationManager cm, ConfigurationData rpd) {
         this((Class<T>) configurable.getClass(), name, cm, rpd);
         owner = configurable;
     }
 
     protected ServablePropertySheet(Class<T> confClass, String name,
-                                 JiniConfigurationManager cm, RawPropertyData rpd) {
+                                 JiniConfigurationManager cm, ConfigurationData rpd) {
         super(confClass,name,cm,rpd);
 
         //

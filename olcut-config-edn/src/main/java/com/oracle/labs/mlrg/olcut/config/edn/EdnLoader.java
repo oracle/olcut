@@ -2,12 +2,12 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
 import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
 import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
@@ -121,13 +121,13 @@ public class EdnLoader implements ConfigLoader {
 
 
     private final URLLoader parent;
-    private final Map<String, RawPropertyData> rpdMap;
-    private final Map<String, RawPropertyData> existingRPD;
+    private final Map<String, ConfigurationData> rpdMap;
+    private final Map<String, ConfigurationData> existingRPD;
     private final Map<String, SerializedObject> serializedObjects;
     private final GlobalProperties globalProperties;
     private String workingDir;
 
-    public EdnLoader(URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD,
+    public EdnLoader(URLLoader parent, Map<String, ConfigurationData> rpdMap, Map<String, ConfigurationData> existingRPD,
                      Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) {
         this.parent = parent;
         this.rpdMap = rpdMap;
@@ -293,12 +293,12 @@ public class EdnLoader implements ConfigLoader {
         String name = checkSymbol(componentListItem.get(0));
         String type = checkClassList(componentListItem.get(1));
         int propsStart = 2;
-        RawPropertyData rpd = new RawPropertyData(name, type, null);
+        ConfigurationData rpd = new ConfigurationData(name, type);
 
         boolean importable = false;
         boolean exportable = false;
         String override = null;
-        long leaseTime = RawPropertyData.DEFAULT_LEASE_TIME;
+        long leaseTime = ConfigurationData.DEFAULT_LEASE_TIME;
         String entriesName = null;
         String serializedForm = null;
 
@@ -329,7 +329,7 @@ public class EdnLoader implements ConfigLoader {
             }
 
             if(override != null) {
-                RawPropertyData spd = rpdMap.get(override);
+                ConfigurationData spd = rpdMap.get(override);
                 if(existingRPD != null) {
                     logger.info(existingRPD.toString());
                 }
@@ -344,13 +344,13 @@ public class EdnLoader implements ConfigLoader {
                     logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
                             spd.getName(), name , type, spd.getClassName()));
                 }
-                rpd = new RawPropertyData(name, type, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
+                rpd = new ConfigurationData(name, type, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
             } else {
                 if (rpdMap.get(name) != null) {
                     throw new ConfigLoaderException("duplicate definition for "
                             + name);
                 }
-                rpd = new RawPropertyData(name, type, serializedForm, entriesName, exportable, importable, leaseTime);
+                rpd = new ConfigurationData(name, type, serializedForm, entriesName, exportable, importable, leaseTime);
             }
             propsStart = 3;
         }

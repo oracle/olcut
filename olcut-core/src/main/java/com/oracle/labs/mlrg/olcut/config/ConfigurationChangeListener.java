@@ -22,18 +22,18 @@ public interface ConfigurationChangeListener {
      * Called if a new component defined by <code>ps</code> was registered to the ConfigurationManager
      * <code>cm</code>.
      */
-    public void componentAdded(ConfigurationManager cm, PropertySheet ps);
+    public void componentAdded(ConfigurationManager cm, PropertySheet<? extends Configurable> ps);
 
 
     /**
      * Called if a component defined by <code>ps</code> was unregistered (removed) from the ConfigurationManager
      * <code>cm</code>.
      */
-    public void componentRemoved(ConfigurationManager cm, PropertySheet ps);
+    public void componentRemoved(ConfigurationManager cm, PropertySheet<? extends Configurable> ps);
 
 
     /**
      * Called if a component was renamed.
      */
-    public void componentRenamed(ConfigurationManager cm, PropertySheet ps, String oldName);
+    public void componentRenamed(ConfigurationManager cm, PropertySheet<? extends Configurable> ps, String oldName);
 }
