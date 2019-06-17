@@ -7,6 +7,7 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
  * a {@link ConfigurationManager}).
  */
 public final class SimpleProperty implements Property {
+    private static final long serialVersionUID = 1L;
 
     private final String value;
 

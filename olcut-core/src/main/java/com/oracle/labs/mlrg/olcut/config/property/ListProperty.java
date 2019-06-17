@@ -12,6 +12,8 @@ import java.util.logging.Logger;
  * insert them into the field.
  */
 public final class ListProperty implements Property {
+    private static final long serialVersionUID = 1L;
+
     private static final Logger logger = Logger.getLogger(ListProperty.class.getName());
 
     private final List<SimpleProperty> simpleList;
@@ -65,7 +67,6 @@ public final class ListProperty implements Property {
 
     @Override
     public String toString() {
-        //throw new IllegalStateException();
         return "[" + simpleList.toString() + ", " + classList.toString() + "]";
     }
 
