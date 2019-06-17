@@ -380,8 +380,7 @@ public abstract class IOUtil {
 
     public static OutputStream getOutputStream(String path, int bufferSize) {
         try {
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(path), bufferSize);
-            return bos;
+            return new BufferedOutputStream(new FileOutputStream(path), bufferSize);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -545,8 +544,8 @@ public abstract class IOUtil {
 
     public static class NamesPathIterator implements Iterator<Path>{
 
-        private Iterator<String> fileNames;
-        private Path parentPath;
+        private final Iterator<String> fileNames;
+        private final Path parentPath;
         
         public NamesPathIterator(Iterator<String> fileNames, Path parentPath) {
             super();
@@ -574,7 +573,7 @@ public abstract class IOUtil {
     }
 
     public static class StringPathIterator implements Iterator<String> {
-        private Iterator<Path> paths;
+        private final Iterator<Path> paths;
 
         public StringPathIterator(Iterator<Path> paths) {
             super();

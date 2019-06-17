@@ -16,7 +16,6 @@ import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -45,8 +44,7 @@ public class PropertySheet<T extends Configurable> {
 
     public enum StoredFieldType { LIST, MAP, STRING, NONE }
 
-    private final Map<String, Config> registeredProperties
-            = new HashMap<>();
+    private final Map<String, Config> registeredProperties = new HashMap<>();
 
     /**
      * Maps the names of the component properties to their (possibly unresolved)
@@ -80,13 +78,13 @@ public class PropertySheet<T extends Configurable> {
 
     protected final String instanceName;
 
-    public PropertySheet(T configurable, String name,
+    protected PropertySheet(T configurable, String name,
                          ConfigurationManager cm, RawPropertyData rpd) {
         this((Class<T>)configurable.getClass(), name, cm, rpd);
         owner = configurable;
     }
 
-    public PropertySheet(Class<T> confClass, String name,
+    protected PropertySheet(Class<T> confClass, String name,
             ConfigurationManager cm, RawPropertyData rpd) {
         this.ownerClass = confClass;
         this.cm = cm;
@@ -698,58 +696,6 @@ public class PropertySheet<T extends Configurable> {
             default:
                 throw new PropertyException(instanceName, fieldName, fieldName + " was not a simple configurable field");
         }
-    }
-
-    /**
-     * Checks this PropertySheet for the supplied fieldName, and returns
-     * the parsed value. Returns null if the property is not set in the sheet,
-     * and throws PropertyException if it's mandatory.
-     *
-     * Note: does not read default values from class files, it only returns values
-     * from the configuration.
-     * @param fieldName The field name to lookup.
-     * @return The field value parsed out of the configuration.
-     */
-    public Object get(String fieldName) throws PropertyException {
-        Set<Field> fields = getAllFields(ownerClass);
-        for (Field f : fields) {
-            if (f.getName().equals(fieldName) && (f.getAnnotation(Config.class) != null)) {
-                Config fieldAnnotation = f.getAnnotation(Config.class);
-                //
-                // Field exists in object, now check the property sheet.
-                // Handle empty values.
-
-                if (propValues.get(f.getName()) == null) {
-                    if (fieldAnnotation.mandatory()) {
-                        throw new PropertyException(getInstanceName(), f.getName(), f.getName() + " is mandatory in configuration");
-                    } else {
-                        return null;
-                    }
-                } else {
-                    FieldType ft = FieldType.getFieldType(f);
-                    List<Class<?>> genericList = getGenericClass(f);
-                    if (FieldType.arrayTypes.contains(ft)) {
-                        return parseArrayField(getConfigurationManager(), instanceName, f.getName(), f.getType(), ft, (ListProperty) propValues.get(f.getName()));
-                    } else if (FieldType.listTypes.contains(ft)) {
-                        if (genericList.size() == 1) {
-                            return parseListField(getConfigurationManager(), instanceName, f.getName(), f.getType(), genericList.get(0), ft, (ListProperty) propValues.get(f.getName()));
-                        } else {
-                            throw new PropertyException(getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
-                        }
-                    } else if (FieldType.simpleTypes.contains(ft)) {
-                        return parseSimpleField(getConfigurationManager(), instanceName, f.getName(),f.getType(),ft, flattenProp(f.getName()));
-                    } else {
-                        if (genericList.size() == 2) {
-                            return parseMapField(getConfigurationManager(), instanceName, f.getName(), genericList.get(1), (MapProperty) propValues.get(f.getName()));
-                        } else {
-                            throw new PropertyException(getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
-                        }
-                    }
-                }
-            }
-
-        }
-        return null;
     }
 
     /**

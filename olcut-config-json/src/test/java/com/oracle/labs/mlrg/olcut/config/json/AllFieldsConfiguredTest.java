@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -42,7 +43,7 @@ public class AllFieldsConfiguredTest {
     public void loadConfig() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("allConfig.json");
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
-        assertTrue("Failed to load all-config",ac!=null);
+        assertNotNull("Failed to load all-config", ac);
     }
 
     @Test
@@ -64,23 +65,6 @@ public class AllFieldsConfiguredTest {
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
         assertEquals("Imported config not equal to generated object",ac,ac2);
-    }
-
-    @Test
-    public void getTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("allConfig.json");
-        PropertySheet ps = cm.getPropertySheet("all-config");
-
-        boolean boolField = (Boolean) ps.get("boolField");
-        assertTrue("Failed to lookup boolean field", boolField);
-
-        List listStringField = (List) ps.get("listStringField");
-        assertTrue("Failed to parse List<String> field", listStringField.size() == 2);
-
-        StringConfigurable sc = (StringConfigurable) ps.get("configurableField");
-        assertEquals("StringConfigurable not constructed correctly",new StringConfigurable("A","B","C"), sc);
-
-        assertTrue("Returned a value for an invalid field name", ps.get("monkeys") == null);
     }
 
 }

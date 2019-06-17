@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -92,6 +94,8 @@ public class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenanc
                         case PATH:
                         case ENUM:
                         case CONFIGURABLE:
+                        case ATOMIC_INTEGER:
+                        case ATOMIC_LONG:
                             Optional<Provenance> opt = convertPrimitive(ft,f.getType(),f.getName(),f.get(host));
                             if (opt.isPresent()) {
                                 map.put(f.getName(), opt.get());
@@ -131,8 +135,6 @@ public class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenanc
                             break;
                         }
                         case RANDOM:
-                        case ATOMIC_INTEGER:
-                        case ATOMIC_LONG:
                         default:
                             logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + f.getName() + "' not recorded.");
                             break;
@@ -302,7 +304,9 @@ public class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenanc
                     return Optional.of(new ConfiguredObjectProvenanceImpl((Configurable)o, fieldName));
                 }
             case ATOMIC_INTEGER:
+                return Optional.of(new IntProvenance(fieldName, ((AtomicInteger) o).get()));
             case ATOMIC_LONG:
+                return Optional.of(new LongProvenance(fieldName, ((AtomicLong) o).get()));
             case RANDOM:
                 logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + fieldName + "' not recorded.");
                 return Optional.empty();

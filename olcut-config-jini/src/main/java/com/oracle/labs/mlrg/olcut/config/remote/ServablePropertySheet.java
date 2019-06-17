@@ -6,7 +6,6 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
-import net.jini.core.lease.Lease;
 
 import java.rmi.Remote;
 import java.util.logging.Level;
@@ -19,20 +18,20 @@ import java.util.logging.Logger;
 public class ServablePropertySheet<T extends Configurable> extends PropertySheet<T> {
     private static final Logger logger = Logger.getLogger(ServablePropertySheet.class.getName());
 
-    private boolean implementsRemote;
+    private final boolean implementsRemote;
 
     /**
      * The configuration entries to use for service registration or matching.
      */
     private final ConfigurationEntry[] entries;
 
-    public ServablePropertySheet(T configurable, String name,
+    protected ServablePropertySheet(T configurable, String name,
                                  JiniConfigurationManager cm, RawPropertyData rpd) {
         this((Class<T>) configurable.getClass(), name, cm, rpd);
         owner = configurable;
     }
 
-    public ServablePropertySheet(Class<T> confClass, String name,
+    protected ServablePropertySheet(Class<T> confClass, String name,
                                  JiniConfigurationManager cm, RawPropertyData rpd) {
         super(confClass,name,cm,rpd);
 

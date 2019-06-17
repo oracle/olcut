@@ -64,23 +64,6 @@ public class AllFieldsConfiguredTest {
     }
 
     @Test
-    public void getTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
-        PropertySheet ps = cm.getPropertySheet("all-config");
-
-        boolean boolField = (Boolean) ps.get("boolField");
-        assertTrue("Failed to lookup boolean field", boolField);
-
-        List listStringField = (List) ps.get("listStringField");
-        assertTrue("Failed to parse List<String> field", listStringField.size() == 2);
-
-        StringConfigurable sc = (StringConfigurable) ps.get("configurableField");
-        assertEquals("StringConfigurable not constructed correctly",new StringConfigurable("A","B","C"), sc);
-
-        assertTrue("Returned a value for an invalid field name", ps.get("monkeys") == null);
-    }
-
-    @Test
     public void overrideTest() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
 
@@ -100,8 +83,8 @@ public class AllFieldsConfiguredTest {
         assertArrayEquals(new double[]{3.14,2.77,1.0},ac.doubleArrayField,1e-10);
         assertEquals(new StringConfigurable("alpha","beta","gamma"),ac.listConfigurableSubclassField.get(0));
         assertEquals(new StringConfigurable("A","B","C"),ac.listConfigurableSubclassField.get(1));
-        assertEquals(new Double(1.0),ac.mapDoubleField.get("one"));
-        assertEquals(new Double(2.0),ac.mapDoubleField.get("two"));
+        assertEquals(Double.valueOf(1.0),ac.mapDoubleField.get("one"));
+        assertEquals(Double.valueOf(2.0),ac.mapDoubleField.get("two"));
     }
 
     public static AllFieldsConfigurable generateConfigurable() {
