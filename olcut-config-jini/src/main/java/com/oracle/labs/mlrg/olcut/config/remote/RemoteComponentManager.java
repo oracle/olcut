@@ -28,10 +28,12 @@ import com.oracle.labs.mlrg.olcut.config.ComponentListener;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 
+import java.io.Closeable;
+
 /**
  * Manages connecting and reconnecting to a component
  */
-public class RemoteComponentManager<T extends Configurable> implements ComponentListener<T> {
+public class RemoteComponentManager<T extends Configurable> implements Closeable, ComponentListener<T> {
     protected ConfigurationManager cm;
     protected Class<T> clazz;
     private T component = null;
@@ -74,7 +76,8 @@ public class RemoteComponentManager<T extends Configurable> implements Component
         }
     }
 
-    public void shutdown() {
-        cm.shutdown();
+    @Override
+    public void close() {
+        cm.close();
     }
 }

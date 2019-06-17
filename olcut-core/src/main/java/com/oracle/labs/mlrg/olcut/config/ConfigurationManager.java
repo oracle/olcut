@@ -130,7 +130,7 @@ public class ConfigurationManager implements Closeable {
     protected final Map<String,PropertySheet<? extends Configurable>> addedComponents =
             new LinkedHashMap<>();
 
-    protected final Map<String, RawPropertyData> rawPropertyMap;
+    protected final Map<String, ConfigurationData> rawPropertyMap;
 
     protected final GlobalProperties globalProperties;
     
@@ -333,7 +333,7 @@ public class ConfigurationManager implements Closeable {
         }
     }
 
-    private ConfigurationManager(Map<String, RawPropertyData> newrpm, GlobalProperties newgp, List<ConfigurationChangeListener> newcl, Map<String, PropertySheet<? extends Configurable>> newSymbolTable, Map<String, SerializedObject> newSerializedObjects, GlobalProperties newOrigGlobal) {
+    private ConfigurationManager(Map<String, ConfigurationData> newrpm, GlobalProperties newgp, List<ConfigurationChangeListener> newcl, Map<String, PropertySheet<? extends Configurable>> newSymbolTable, Map<String, SerializedObject> newSerializedObjects, GlobalProperties newOrigGlobal) {
         this.rawPropertyMap = newrpm;
         this.globalProperties = newgp;
         this.changeListeners = newcl;
@@ -502,7 +502,7 @@ public class ConfigurationManager implements Closeable {
             if (curArg.startsWith(CONFIGURABLE_OVERRIDE)) {
                 String[] split = curArg.substring(3).split("\\.");
                 if (split.length == 2) {
-                    RawPropertyData rpd = rawPropertyMap.get(split[0]);
+                    ConfigurationData rpd = rawPropertyMap.get(split[0]);
                     if (rpd != null) {
                         if (checkConfigurableField(rpd.getClassName(),split[1])) {
                             // Found a valid configurable field, consume argument.
@@ -860,7 +860,7 @@ public class ConfigurationManager implements Closeable {
 
     private boolean checkConfigurableField(String configurableClass, String fieldName) {
         Class<? extends Configurable> clazz = null;
-        // catch is empty as this is only called with classes from RawPropertyData,
+        // catch is empty as this is only called with classes from ConfigurationData,
         // which has already checked it's configurable.
         try {
             clazz = (Class<? extends Configurable>) Class.forName(configurableClass);
@@ -889,7 +889,7 @@ public class ConfigurationManager implements Closeable {
 
     private StoredFieldType getStoredFieldType(String configurableClass, String fieldName) {
         Class<? extends Configurable> clazz = null;
-        // catch is empty as this is only called with classes from RawPropertyData,
+        // catch is empty as this is only called with classes from ConfigurationData,
         // which has already checked it's configurable.
         try {
             clazz = (Class<? extends Configurable>) Class.forName(configurableClass);
@@ -939,7 +939,7 @@ public class ConfigurationManager implements Closeable {
         URLLoader loader = new URLLoader(configURLs,formatFactoryMap);
         loader.load();
         GlobalProperties tgp = loader.getGlobalProperties();
-        Map<String, RawPropertyData> trpm = loader.getPropertyMap();
+        Map<String, ConfigurationData> trpm = loader.getPropertyMap();
         for(Map.Entry<String,SerializedObject> e : loader.getSerializedObjects().entrySet()) {
             e.getValue().setConfigurationManager(this);
             serializedObjects.put(e.getKey(), e.getValue());
@@ -953,8 +953,8 @@ public class ConfigurationManager implements Closeable {
             globalProperties.setValue(e.getKey(), e.getValue());
             origGlobal.setValue(e.getKey(), e.getValue());
         }
-        for(Map.Entry<String, RawPropertyData> e : trpm.entrySet()) {
-            RawPropertyData opd = rawPropertyMap.put(e.getKey(), e.getValue());
+        for(Map.Entry<String, ConfigurationData> e : trpm.entrySet()) {
+            ConfigurationData opd = rawPropertyMap.put(e.getKey(), e.getValue());
         }
 
     }
@@ -968,7 +968,7 @@ public class ConfigurationManager implements Closeable {
      * @param value The value to set it to.
      */
     public void overrideConfigurableProperty(String componentName, String propertyName, String value) {
-        RawPropertyData rpd = rawPropertyMap.get(componentName);
+        ConfigurationData rpd = rawPropertyMap.get(componentName);
         if (rpd != null) {
             if (!symbolTable.containsKey(componentName)) {
                 StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
@@ -997,7 +997,7 @@ public class ConfigurationManager implements Closeable {
      * @param value         The value to set it to.
      */
     public void overrideConfigurableProperty(String componentName, String propertyName, List<String> value) {
-        RawPropertyData rpd = rawPropertyMap.get(componentName);
+        ConfigurationData rpd = rawPropertyMap.get(componentName);
         if (rpd != null) {
             if (!symbolTable.containsKey(componentName)) {
                 StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
@@ -1026,7 +1026,7 @@ public class ConfigurationManager implements Closeable {
      * @param value         The value to set it to.
      */
     public void overrideConfigurableProperty(String componentName, String propertyName, Map<String, String> value) {
-        RawPropertyData rpd = rawPropertyMap.get(componentName);
+        ConfigurationData rpd = rawPropertyMap.get(componentName);
         if (rpd != null) {
             if (!symbolTable.containsKey(componentName)) {
                 StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
@@ -1048,12 +1048,8 @@ public class ConfigurationManager implements Closeable {
     /**
      * Shuts down the configuration manager, which is a no-op on the standard version.
      */
-    public synchronized void shutdown() { }
-
     @Override
-    public void close() {
-        shutdown();
-    }
+    public synchronized void close() { }
 
     /**
      * Get any unnamed arguments that weren't parsed into an {@link Options}
@@ -1070,7 +1066,7 @@ public class ConfigurationManager implements Closeable {
      * @return the associated raw property data, or null if there is no data
      * associated with the given instance name.
      */
-    public RawPropertyData getRawProperties(String instanceName) {
+    public ConfigurationData getRawProperties(String instanceName) {
         return rawPropertyMap.get(instanceName);
     }
 
@@ -1093,7 +1089,7 @@ public class ConfigurationManager implements Closeable {
         if(!symbolTable.containsKey(instanceName)) {
             // if it is not in the symbol table, so construct
             // it based upon our raw property data
-            RawPropertyData rpd = rawPropertyMap.get(instanceName);
+            ConfigurationData rpd = rawPropertyMap.get(instanceName);
             if(rpd != null) {
                 String className = rpd.getClassName();
                 try {
@@ -1146,8 +1142,8 @@ public class ConfigurationManager implements Closeable {
      *
      * @return all component named registered to this instance of <code>ConfigurationManager</code>
      */
-    public Collection<String> getComponentNames() {
-        return new ArrayList<>(rawPropertyMap.keySet());
+    public Set<String> getComponentNames() {
+        return new HashSet<>(rawPropertyMap.keySet());
     }
 
     /**
@@ -1314,7 +1310,7 @@ public class ConfigurationManager implements Closeable {
         // name, ignoring those things marked as importable.
         if(!c.isInterface()) {
             String className = c.getName();
-            for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
+            for (Map.Entry<String, ConfigurationData> e : rawPropertyMap.entrySet()) {
                 if (e.getValue().getClassName().equals(className) &&
                         !e.getValue().isImportable()) {
                     ret.add((T)lookup(e.getKey()));
@@ -1324,7 +1320,7 @@ public class ConfigurationManager implements Closeable {
             //
             // If we have an interface and no registry, lookup all the
             // implementing classes and return them.
-            for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
+            for (Map.Entry<String, ConfigurationData> e : rawPropertyMap.entrySet()) {
                 try {
                     Class clazz = Class.forName(e.getValue().getClassName());
                     if (!e.getValue().isImportable() && c.isAssignableFrom(clazz) && !clazz.isInterface()) {
@@ -1358,8 +1354,8 @@ public class ConfigurationManager implements Closeable {
      */
     public <T extends Configurable> List<String> listAll(Class<T> c) {
         List<String> ret = new ArrayList<>();
-        for(Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
-            RawPropertyData rpd = e.getValue();
+        for(Map.Entry<String, ConfigurationData> e : rawPropertyMap.entrySet()) {
+            ConfigurationData rpd = e.getValue();
             try {
                 Class pclass = Class.forName(rpd.getClassName());
                 if (c.isAssignableFrom(pclass)) {
@@ -1396,7 +1392,7 @@ public class ConfigurationManager implements Closeable {
 
         PropertySheet<? extends Configurable> ps = getPropSheetInstanceFromClass(confClass, props, name);
         symbolTable.put(name, ps);
-        rawPropertyMap.put(name, new RawPropertyData(name, confClass.getName()));
+        rawPropertyMap.put(name, new ConfigurationData(name, confClass.getName()));
         addedComponents.put(name, ps);
         for(ConfigurationChangeListener changeListener : changeListeners) {
             changeListener.componentAdded(this, ps);
@@ -1621,27 +1617,13 @@ public class ConfigurationManager implements Closeable {
     }
 
     /**
-     * Creates an instance of the given {@link Configurable} by using the default parameters as defined by the
-     * class annotations to parametrize the component. Default parameters will be overridden if their names are
-     * contained in the given <code>props</code>-map
-     */
-    public Configurable getInstance(Class<? extends Configurable> targetClass,
-                                    Map<String, Property> props) throws PropertyException {
-
-        PropertySheet ps = getPropSheetInstanceFromClass(targetClass, props, null);
-
-        return ps.getOwner();
-    }
-
-    /**
      * Instantiates the given <code>targetClass</code> and instruments it using default properties or the properties
      * given by the <code>defaultProps</code>.
      */
     protected PropertySheet<? extends Configurable> getPropSheetInstanceFromClass(Class<? extends Configurable> targetClass,
                                                                                   Map<String, Property> defaultProps,
                                                                                   String componentName) {
-        RawPropertyData rpd = new RawPropertyData(componentName,
-                targetClass.getName());
+        ConfigurationData rpd = new ConfigurationData(componentName, targetClass.getName());
 
         for(Map.Entry<String,Property> conf : defaultProps.entrySet()) {
             rpd.add(conf.getKey(), conf.getValue());
@@ -1766,11 +1748,11 @@ public class ConfigurationManager implements Closeable {
         writer.close();
     }
 
-    protected <T extends Configurable> PropertySheet<T> getNewPropertySheet(T conf, String name, ConfigurationManager cm, RawPropertyData rpd) {
+    protected <T extends Configurable> PropertySheet<T> getNewPropertySheet(T conf, String name, ConfigurationManager cm, ConfigurationData rpd) {
         return new PropertySheet<>(conf,name,cm,rpd);
     }
 
-    protected <T extends Configurable> PropertySheet<T> getNewPropertySheet(Class<T> conf, String name, ConfigurationManager cm, RawPropertyData rpd) {
+    protected <T extends Configurable> PropertySheet<T> getNewPropertySheet(Class<T> conf, String name, ConfigurationManager cm, ConfigurationData rpd) {
         return new PropertySheet<>(conf,name,cm,rpd);
     }
 
@@ -1935,7 +1917,7 @@ public class ConfigurationManager implements Closeable {
                 }
                 field.setAccessible(accessible);
             }
-            RawPropertyData rpd = new RawPropertyData(name, confClass.getName(), m);
+            ConfigurationData rpd = new ConfigurationData(name, confClass.getName(), m);
 
             PropertySheet<? extends Configurable> ps = getNewPropertySheet(configurable, name, this, rpd);
             symbolTable.put(name, ps);

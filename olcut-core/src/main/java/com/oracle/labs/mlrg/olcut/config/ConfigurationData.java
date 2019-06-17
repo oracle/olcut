@@ -13,13 +13,17 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import com.oracle.labs.mlrg.olcut.config.property.Property;
-import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Holds the raw property data just as it has come in from the properties file. */
-public class RawPropertyData {
+/**
+ * Carrier for property data. Principally a {@link Map} from {@link String} to {@link Property}, and
+ * a class name. Also includes configuration for loading an object over RMI via Jini.
+ */
+public class ConfigurationData implements Serializable {
 
     public static final long DEFAULT_LEASE_TIME = -1;
 
@@ -45,7 +49,7 @@ public class RawPropertyData {
     private final long leaseTime;
     
     /**
-     * The (possibly <code>null</code> name of a component that has a list
+     * The (possibly <code>null</code>) name of a component that has a list
      * of configuration entries to use when registering this component with
      * a service registrar.
      */
@@ -57,26 +61,22 @@ public class RawPropertyData {
      * @param name      the name of the item
      * @param className the class name of the item
      */
-    public RawPropertyData(String name, String className) {
-        this(name, className, null);
+    public ConfigurationData(String name, String className) {
+        this(name, className, Collections.emptyMap());
     }
 
-    public RawPropertyData(String name, String className, Map<String, Property> properties) {
+    public ConfigurationData(String name, String className, Map<String, Property> properties) {
         this(name,className,properties,null,null,false,false,DEFAULT_LEASE_TIME);
     }
 
-    public RawPropertyData(String name, String className, String serializedForm, String entriesName, boolean exportable, boolean importable, long leaseTime) {
-        this(name,className,null,serializedForm,entriesName,exportable,importable,leaseTime);
+    public ConfigurationData(String name, String className, String serializedForm, String entriesName, boolean exportable, boolean importable, long leaseTime) {
+        this(name,className, Collections.emptyMap(),serializedForm,entriesName,exportable,importable,leaseTime);
     }
 
-    public RawPropertyData(String name, String className, Map<String, Property> properties, String serializedForm, String entriesName, boolean exportable, boolean importable, long leaseTime) {
+    public ConfigurationData(String name, String className, Map<String, Property> properties, String serializedForm, String entriesName, boolean exportable, boolean importable, long leaseTime) {
         this.name = name;
         this.className = className;
-        if(properties != null) {
-            this.properties = new HashMap<>(properties);
-        } else {
-            this.properties = new HashMap<>();
-        }
+        this.properties = new HashMap<>(properties);
         this.serializedForm = serializedForm;
         this.entriesName = entriesName;
         this.exportable = exportable;
@@ -139,23 +139,4 @@ public class RawPropertyData {
         return properties.containsKey(propName);
     }
 
-    /** 
-     * Returns a copy of this property data instance with all ${}-fields resolved.
-     */
-    public RawPropertyData flatten(ConfigurationManager cm) {
-        Map<String,Property> newMap = new HashMap<>();
-
-        for(Map.Entry<String, Property> e : properties.entrySet()) {
-            String propName = e.getKey();
-            Property propVal = e.getValue();
-            if(propVal instanceof SimpleProperty) {
-                propVal = new SimpleProperty(cm.getImmutableGlobalProperties().
-                        replaceGlobalProperties(getName(), propName, ((SimpleProperty) propVal).getValue()));
-            }
-
-            newMap.put(propName, propVal);
-        }
-
-        return new RawPropertyData(name,className,newMap,serializedForm,entriesName,exportable,importable,leaseTime);
-    }
 }

@@ -13,8 +13,8 @@ public interface FileFormatFactory {
     public String getExtension();
 
     public ConfigLoader getLoader(URLLoader parent,
-                                  Map<String, RawPropertyData> rpdMap,
-                                  Map<String, RawPropertyData> existingRPD,
+                                  Map<String, ConfigurationData> rpdMap,
+                                  Map<String, ConfigurationData> existingRPD,
                                   Map<String, SerializedObject> serializedObjects,
                                   GlobalProperties globalProperties) throws ConfigLoaderException;
 

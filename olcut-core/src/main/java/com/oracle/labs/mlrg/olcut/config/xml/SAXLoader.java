@@ -28,12 +28,12 @@ import javax.xml.parsers.SAXParserFactory;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
 import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
 import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.URLLoader;
@@ -54,9 +54,9 @@ public class SAXLoader implements ConfigLoader {
 
     private final URLLoader parent;
 
-    private final Map<String, RawPropertyData> rpdMap;
+    private final Map<String, ConfigurationData> rpdMap;
 
-    private final Map<String, RawPropertyData> existingRPD;
+    private final Map<String, ConfigurationData> existingRPD;
     
     private final Map<String, SerializedObject> serializedObjects;
     
@@ -66,7 +66,7 @@ public class SAXLoader implements ConfigLoader {
 
     private final ConfigSAXHandler handler;
 
-    public SAXLoader(URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD,
+    public SAXLoader(URLLoader parent, Map<String, ConfigurationData> rpdMap, Map<String, ConfigurationData> existingRPD,
                      Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) throws ParserConfigurationException, SAXException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         xr = factory.newSAXParser().getXMLReader();
@@ -120,7 +120,7 @@ public class SAXLoader implements ConfigLoader {
         return "xml";
     }
 
-    public Map<String, RawPropertyData> getPropertyMap() {
+    public Map<String, ConfigurationData> getPropertyMap() {
         return rpdMap;
     }
 
@@ -138,7 +138,7 @@ public class SAXLoader implements ConfigLoader {
      */
     private class ConfigSAXHandler extends DefaultHandler {
 
-        RawPropertyData rpd = null;
+        ConfigurationData rpd = null;
 
         Locator locator;
 
@@ -189,7 +189,7 @@ public class SAXLoader implements ConfigLoader {
                                 + " does not have export set",
                                 locator);
                     }
-                    long leaseTime = RawPropertyData.DEFAULT_LEASE_TIME;
+                    long leaseTime = ConfigurationData.DEFAULT_LEASE_TIME;
                     if (lt != null) {
                         try {
                             leaseTime = Long.parseLong(lt);
@@ -224,7 +224,7 @@ public class SAXLoader implements ConfigLoader {
                         // properties. If that's the case, then things might get
                         // really weird. We'll log an override with a specified type
                         // just in case.
-                        RawPropertyData spd = rpdMap.get(override);
+                        ConfigurationData spd = rpdMap.get(override);
                         if (spd == null) {
                             spd = existingRPD.get(override);
                             if (spd == null) {
@@ -239,13 +239,13 @@ public class SAXLoader implements ConfigLoader {
                         if (curType == null) {
                             curType = spd.getClassName();
                         }
-                        rpd = new RawPropertyData(curComponent, curType, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
+                        rpd = new ConfigurationData(curComponent, curType, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
                         overriding = true;
                     } else {
                         if (rpdMap.get(curComponent) != null) {
                             throw new SAXParseException("duplicate definition for " + curComponent, locator);
                         }
-                        rpd = new RawPropertyData(curComponent, curType, serializedForm, entriesName, exportable, importable, leaseTime);
+                        rpd = new ConfigurationData(curComponent, curType, serializedForm, entriesName, exportable, importable, leaseTime);
                     }
                     break;
                 case PROPERTY: {

@@ -8,11 +8,9 @@ import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.ArgumentException;
 import com.oracle.labs.mlrg.olcut.config.InternalConfigurationException;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.UsageException;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.net.URL;
 import java.rmi.Remote;
 import java.util.Arrays;
@@ -219,7 +217,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * component registry that we may have is shut down.
      */
     @Override
-    public synchronized void shutdown() {
+    public synchronized void close() {
         if(registry != null) {
             logger.info("Shutting down registry");
             registry.shutdown();
@@ -237,7 +235,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
         if(!symbolTable.containsKey(instanceName)) {
             // if it is not in the symbol table, so construct
             // it based upon our raw property data
-            RawPropertyData rpd = rawPropertyMap.get(instanceName);
+            ConfigurationData rpd = rawPropertyMap.get(instanceName);
             if(rpd != null) {
                 String className = rpd.getClassName();
                 try {
@@ -442,19 +440,13 @@ public class JiniConfigurationManager extends ConfigurationManager {
         return cm.getImmutableGlobalProperties().equals(getImmutableGlobalProperties());
     }
 
-    /** Creates a deep copy of the given CM instance. */
     @Override
-    public Object clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException("JiniConfigurationManager cannot be cloned.");
-    }
-
-    @Override
-    protected <T extends Configurable> ServablePropertySheet<T> getNewPropertySheet(T conf, String name, ConfigurationManager cm, RawPropertyData rpd) {
+    protected <T extends Configurable> ServablePropertySheet<T> getNewPropertySheet(T conf, String name, ConfigurationManager cm, ConfigurationData rpd) {
         return new ServablePropertySheet<>(conf,name,(JiniConfigurationManager)cm,rpd);
     }
 
     @Override
-    protected <T extends Configurable> ServablePropertySheet<T> getNewPropertySheet(Class<T> conf, String name, ConfigurationManager cm, RawPropertyData rpd) {
+    protected <T extends Configurable> ServablePropertySheet<T> getNewPropertySheet(Class<T> conf, String name, ConfigurationManager cm, ConfigurationData rpd) {
         return new ServablePropertySheet<>(conf,name,(JiniConfigurationManager)cm,rpd);
     }
 

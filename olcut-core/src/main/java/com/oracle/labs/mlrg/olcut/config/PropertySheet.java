@@ -80,13 +80,13 @@ public class PropertySheet<T extends Configurable> {
     protected final String instanceName;
 
     protected PropertySheet(T configurable, String name,
-                         ConfigurationManager cm, RawPropertyData rpd) {
+                         ConfigurationManager cm, ConfigurationData rpd) {
         this((Class<T>)configurable.getClass(), name, cm, rpd);
         owner = configurable;
     }
 
     protected PropertySheet(Class<T> confClass, String name,
-            ConfigurationManager cm, RawPropertyData rpd) {
+            ConfigurationManager cm, ConfigurationData rpd) {
         this.ownerClass = confClass;
         this.cm = cm;
         this.instanceName = name;
