@@ -962,8 +962,6 @@ public class CommandInterpreter extends Thread {
         
     }
     
-    
-    
     private HashSet<Class> supportedMethodParameters =
             new HashSet<Class>(Arrays.asList(
                     String.class,

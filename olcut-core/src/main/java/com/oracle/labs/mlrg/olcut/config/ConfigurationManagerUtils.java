@@ -94,7 +94,7 @@ public class ConfigurationManagerUtils {
      */
     public static URL getResource(String name, PropertySheet ps) throws PropertyException {
         URL url;
-        Object locationObj = ps.getProperty(name);
+        Property locationObj = ps.getProperty(name);
         if(locationObj == null) {
             throw new InternalConfigurationException(name, name, "Required resource property '" +
                     name + "' not set");

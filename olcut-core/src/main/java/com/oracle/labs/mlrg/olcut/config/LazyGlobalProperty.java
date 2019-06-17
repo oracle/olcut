@@ -4,7 +4,7 @@ import java.util.function.Supplier;
 
 public class LazyGlobalProperty extends GlobalProperty {
 
-    private Supplier<String> supplier;
+    private final Supplier<String> supplier;
 
     public LazyGlobalProperty(Supplier<String> supplier) {
         this.supplier = supplier;

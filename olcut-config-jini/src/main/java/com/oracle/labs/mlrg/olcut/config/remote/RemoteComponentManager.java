@@ -60,7 +60,6 @@ public class RemoteComponentManager<T extends Configurable> implements Component
         return component;
     }
 
-
     @Override
     public void componentAdded(T c) {
         if(component == null && clazz.isAssignableFrom(c.getClass())) {

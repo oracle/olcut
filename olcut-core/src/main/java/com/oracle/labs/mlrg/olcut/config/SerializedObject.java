@@ -15,11 +15,11 @@ public class SerializedObject<T> {
 
     private ConfigurationManager configurationManager;
 
-    private String name;
+    private final String name;
 
-    private String location;
+    private final String location;
 
-    private String className;
+    private final String className;
 
     private T object;
 

@@ -24,12 +24,11 @@ import java.util.logging.Logger;
 
 /**
  * Manages a set of <code>Configurable</code>s, their parametrization and the relationships between them. Configurations
- * can be specified either by xml or on-the-fly during runtime.
+ * can be specified either by a configuration file or on-the-fly during runtime.
  *
  * This configuration manager has a Jini component registry and can look up or serve classes over the network.
  *
  * @see Configurable
- * @see PropertySheet
  */
 public class JiniConfigurationManager extends ConfigurationManager {
     private static final Logger logger = Logger.getLogger(JiniConfigurationManager.class.getName());
@@ -45,8 +44,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
     }
 
     /**
-     * Creates a jini new configuration manager. Initial properties are loaded from the given location. No need to keep the notion
-     * of 'context' around anymore we will just pass around this property manager.
+     * Creates a jini new configuration manager. Initial properties are loaded from the given location.
      *
      * @param location place to load initial properties from
      */
@@ -59,8 +57,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
     }
 
     /**
-     * Creates a new jini configuration manager. Initial properties are loaded from the given location. No need to keep the notion
-     * of 'context' around anymore we will just pass around this property manager.
+     * Creates a new jini configuration manager. Initial properties are loaded from the given location.
      *
      * @param url place to load initial properties from
      */
@@ -236,7 +233,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @param instanceName the instance name of the object
      * @return the property sheet for the object.
      */
-    public ServablePropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
+    protected ServablePropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
         if(!symbolTable.containsKey(instanceName)) {
             // if it is not in the symbol table, so construct
             // it based upon our raw property data
@@ -257,7 +254,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
                                 " to com.oracle.labs.mlrg.olcut.config.Configurable");
                     }
                 } catch(ClassNotFoundException e) {
-                    throw new PropertyException(e);
+                    throw new PropertyException(e,instanceName,"Unable to load class " + className);
                 }
             }
         }

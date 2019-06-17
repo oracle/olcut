@@ -108,7 +108,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * Used to support new config file formats at runtime.
      * Initialised with xml.
      */
-    private static Map<String,FileFormatFactory> formatFactoryMap = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<String,FileFormatFactory> formatFactoryMap = Collections.synchronizedMap(new HashMap<>());
 
     static {
         formatFactoryMap.put("xml",new XMLConfigFactory());
@@ -120,10 +120,10 @@ public class ConfigurationManager implements Cloneable, Closeable {
     protected Map<String, PropertySheet<? extends Configurable>> symbolTable =
             new LinkedHashMap<>();
 
-    protected Map<ConfigWrapper,PropertySheet<? extends Configurable>> configuredComponents =
+    protected final Map<ConfigWrapper,PropertySheet<? extends Configurable>> configuredComponents =
             new LinkedHashMap<>();
 
-    protected Map<String,PropertySheet<? extends Configurable>> addedComponents =
+    protected final Map<String,PropertySheet<? extends Configurable>> addedComponents =
             new LinkedHashMap<>();
 
     protected final Map<String, RawPropertyData> rawPropertyMap;
@@ -136,7 +136,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
 
     protected boolean showCreations;
 
-    private LinkedList<URL> configURLs = new LinkedList<>();
+    private final LinkedList<URL> configURLs = new LinkedList<>();
 
     private MBeanServer mbs;
 
@@ -340,6 +340,10 @@ public class ConfigurationManager implements Cloneable, Closeable {
         this.origGlobal = newOrigGlobal;
     }
 
+    /**
+     * Adds a file format factory to allow ConfigurationManager to read and write that format.
+     * @param f The file format factory to add.
+     */
     public static void addFileFormatFactory(FileFormatFactory f) {
         formatFactoryMap.put(f.getExtension(),f);
     }
@@ -1095,7 +1099,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * @param instanceName the instance name of the object
      * @return the property sheet for the object.
      */
-    public PropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
+    protected PropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
         if(!symbolTable.containsKey(instanceName)) {
             // if it is not in the symbol table, so construct
             // it based upon our raw property data
@@ -1131,7 +1135,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * @return the set of all instances
      */
     public Collection<String> getInstanceNames(Class<? extends Configurable> type) {
-        Collection<String> instanceNames = new ArrayList<String>();
+        Collection<String> instanceNames = new ArrayList<>();
 
         for(PropertySheet ps : symbolTable.values()) {
             if(!ps.isInstantiated()) {
@@ -1372,28 +1376,12 @@ public class ConfigurationManager implements Cloneable, Closeable {
                     ret.add(e.getKey());
                 }
             } catch(ClassNotFoundException ex) {
-                logger.warning(String.format("Non class %s found in config",
+                logger.warning(String.format("No class %s found in ConfigurationManager",
                         rpd.getClassName()));
             }
         }
 
         return ret;
-    }
-
-    /**
-     * Given a <code>Configurable</code>-class/interface, all property-sheets which are subclassing/implementing this
-     * class/interface are collected and returned.  No <code>Configurable</code> will be instantiated by this method.
-     */
-    public List<PropertySheet> getPropSheets(Class<? extends Configurable> confClass) {
-        List<PropertySheet> psCol = new ArrayList<PropertySheet>();
-
-        for(PropertySheet ps : symbolTable.values()) {
-            if(confClass.isAssignableFrom(ps.getConfigurableClass())) {
-                psCol.add(ps);
-            }
-        }
-
-        return psCol;
     }
 
     /**
@@ -1442,14 +1430,13 @@ public class ConfigurationManager implements Cloneable, Closeable {
     /**
      * Removes a configurable from this configuration manager.
      * @param name the name of the configurable to remove
-     * @return the property sheet associated with the component, or <code>null</code>
-     * if no such component exists.
+     * @return <code>true</code> if a configurable was removed, or <code>false</code> otherwise.
      */
-    public PropertySheet removeConfigurable(String name) {
+    public boolean removeConfigurable(String name) {
 
         PropertySheet ps = getPropertySheet(name);
         if(ps == null) {
-            return null;
+            return false;
         }
 
         symbolTable.remove(name);
@@ -1465,7 +1452,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
         for(ConfigurationChangeListener changeListener : changeListeners) {
             changeListener.componentRemoved(this, ps);
         }
-        return ps;
+        return true;
     }
 
     public void addSubConfiguration(ConfigurationManager subCM) {
@@ -1521,7 +1508,6 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * @param propertyName The name of the global property or <code>null</code> if no such property exists
      */
     public String getGlobalProperty(String propertyName) {
-        //        propertyName = propertyName.startsWith("$") ? propertyName : "${" + propertyName + "}";
         GlobalProperty globProp = globalProperties.get(propertyName);
         if(globProp == null) {
             return null;
@@ -1591,8 +1577,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
         assert getComponentNames().contains(configurableName);
 
         for(ConfigurationChangeListener changeListener : changeListeners) {
-            changeListener.configurationChanged(configurableName, propertyName,
-                    this);
+            changeListener.configurationChanged(configurableName, propertyName, this);
         }
     }
 
@@ -1620,8 +1605,8 @@ public class ConfigurationManager implements Cloneable, Closeable {
 
         ConfigurationManager cm = (ConfigurationManager) obj;
 
-        Collection<String> setA = new HashSet<String>(getComponentNames());
-        Collection<String> setB = new HashSet<String>(cm.getComponentNames());
+        Collection<String> setA = new HashSet<>(getComponentNames());
+        Collection<String> setB = new HashSet<>(cm.getComponentNames());
         if(!setA.equals(setB)) {
             return false;
         }
@@ -1680,10 +1665,8 @@ public class ConfigurationManager implements Cloneable, Closeable {
      *
      * Only writes out instantiated components.
      *
-     * @param file
-     *                place to save the configuration
-     * @throws IOException
-     *                 if an error occurs while writing to the file
+     * @param file Place to save the configuration.
+     * @throws IOException If an error occurs while writing to the file.
      */
     public void save(File file) throws IOException {
         save(file, false);
@@ -1692,14 +1675,12 @@ public class ConfigurationManager implements Cloneable, Closeable {
     /**
      * Saves the current configuration to the given file.
      *
-     * @param file
-     *                place to save the configuration
-     * @param writeAll if <code>true</code> all components will be written,
+     * @param file Place to save the configuration.
+     * @param writeAll If <code>true</code> all components will be written,
      * whether they were instantiated or not.  If <code>false</code>
      * then only those components that were instantiated or added programatically
      * will be written.
-     * @throws IOException
-     *                 if an error occurs while writing to the file
+     * @throws IOException if an error occurs while writing to the file.
      */
     public void save(File file, boolean writeAll) throws IOException {
         String filename = file.getName();
@@ -1713,13 +1694,13 @@ public class ConfigurationManager implements Cloneable, Closeable {
     /**
      * Writes the configuration to the given writer.
      *
-     * @param writer the writer to write to
+     * @param writer The writer to write to.
      * @param extension The extension to write out, which selects the ConfigWriter to use.
-     * @param writeAll if <code>true</code> all components will be written, 
+     * @param writeAll If <code>true</code> all components will be written,
      * whether they were instantiated or not.  If <code>false</code>
      * then only those components that were instantiated or added programatically
      * will be written.
-     * @throws IOException
+     * @throws IOException if an error occurs while writing to the file.
      */
     public void save(OutputStream writer, String extension, boolean writeAll) throws IOException {
         FileFormatFactory factory = formatFactoryMap.get(extension);
@@ -1736,15 +1717,17 @@ public class ConfigurationManager implements Cloneable, Closeable {
 
     /**
      * Writes out the configuration to the supplied writer. Closes the writer.
-     * @param writer
-     * @param writeAll
-     * @throws ConfigWriterException
+     * @param writer The config writer to use.
+     * @param writeAll If <code>true</code> all components will be written,
+     * whether they were instantiated or not.  If <code>false</code>
+     * then only those components that were instantiated or added programatically
+     * will be written.
+     * @throws ConfigWriterException If an error occurs while writing the configuration.
      */
     protected void write(ConfigWriter writer, boolean writeAll) throws ConfigWriterException {
         writer.writeStartDocument();
         //
         // Write out the global properties.
-        Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
 
         Map<String,String> properties = new HashMap<>();
         for (String propName : origGlobal.keySet()) {
@@ -1753,7 +1736,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
             // any values overridden on the command line.
             String propVal = globalProperties.get(propName).toString();
 
-            Matcher matcher = pattern.matcher(propName);
+            Matcher matcher = GlobalProperty.globalSymbolPattern.matcher(propName);
             propName = matcher.matches() ? matcher.group(1) : propName;
 
             properties.put(propName,propVal);

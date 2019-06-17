@@ -65,22 +65,4 @@ public class AllFieldsConfiguredTest {
         AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
         assertEquals("Imported config not equal to generated object",ac,ac2);
     }
-
-    @Test
-    public void getTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("allConfig.edn");
-        PropertySheet ps = cm.getPropertySheet("all-config");
-
-        boolean boolField = (Boolean) ps.get("boolField");
-        assertTrue("Failed to lookup boolean field", boolField);
-
-        List listStringField = (List) ps.get("listStringField");
-        assertTrue("Failed to parse List<String> field", listStringField.size() == 2);
-
-        StringConfigurable sc = (StringConfigurable) ps.get("configurableField");
-        assertEquals("StringConfigurable not constructed correctly",new StringConfigurable("A","B","C"), sc);
-
-        assertTrue("Returned a value for an invalid field name", ps.get("monkeys") == null);
-    }
-
 }

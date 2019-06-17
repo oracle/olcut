@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  */
 public class FileUtil {
 
-    private static Logger logger = Logger.getLogger(FileUtil.class.getName());
+    private static final Logger logger = Logger.getLogger(FileUtil.class.getName());
 
     /**
      * Recursively deletes a directory and everything in it.

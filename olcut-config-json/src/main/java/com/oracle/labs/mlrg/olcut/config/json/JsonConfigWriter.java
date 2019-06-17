@@ -20,7 +20,7 @@ import java.util.Map.Entry;
  */
 public class JsonConfigWriter implements ConfigWriter {
 
-    private JsonGenerator writer;
+    private final JsonGenerator writer;
 
     public JsonConfigWriter(JsonGenerator writer) {
         this.writer = writer;

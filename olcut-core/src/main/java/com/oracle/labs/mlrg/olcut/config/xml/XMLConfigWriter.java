@@ -20,7 +20,7 @@ import java.util.Map.Entry;
  *
  */
 public class XMLConfigWriter implements ConfigWriter {
-    private XMLStreamWriter writer;
+    private final XMLStreamWriter writer;
 
     public XMLConfigWriter(XMLStreamWriter writer) {
         this.writer = writer;

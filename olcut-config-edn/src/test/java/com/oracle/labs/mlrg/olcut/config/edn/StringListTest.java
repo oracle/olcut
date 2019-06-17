@@ -57,20 +57,4 @@ public class StringListTest {
         assertEquals("c", slc.strings.get(2));
     }
     
-    @Test
-    public void setStrings() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("stringListConfig.edn");
-        PropertySheet ps = cm.getPropertySheet("listTest");
-        List<String> l = new ArrayList<>();
-        l.add("d");
-        l.add("e");
-        l.add("f");
-        ps.setProp("strings", ListProperty.createFromStringList(l));
-        StringListConfigurable slc = (StringListConfigurable) cm.lookup(
-                "listTest");
-        assertEquals("d", slc.strings.get(0));
-        assertEquals("e", slc.strings.get(1));
-        assertEquals("f", slc.strings.get(2));
-    }
-
 }

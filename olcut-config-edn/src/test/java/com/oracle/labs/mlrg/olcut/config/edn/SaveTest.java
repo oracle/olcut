@@ -11,6 +11,7 @@ import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,28 +28,13 @@ import static org.junit.Assert.fail;
 
 public class SaveTest {
 
-    public SaveTest() {
-    }
-    File f;
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
+    private File f;
 
     @Before
     public void setUp() throws IOException {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
         f = File.createTempFile("config", ".edn");
-//        f.deleteOnExit();
-    }
-
-    @After
-    public void tearDown() {
-//        f.delete();
+        f.deleteOnExit();
     }
 
     @Test
@@ -203,11 +189,8 @@ public class SaveTest {
         m.put("i", new SimpleProperty(Integer.toString(7)));
         m.put("d", new SimpleProperty(Double.toString(2.71)));
         cm1.addConfigurable(BasicConfigurable.class, "c", m);
-        PropertySheet ps = cm1.removeConfigurable("c");
-        assertNotNull(ps);
-        assertEquals(m.get("s"), ps.getProperty("s"));
-        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getProperty("i").toString()));
-        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getProperty("d").toString()), 0.001);
+        boolean removed = cm1.removeConfigurable("c");
+        Assert.assertTrue(removed);
         cm1.save(f, false);
         try{
             BasicConfigurable bc = (BasicConfigurable) cm1.lookup("c");
