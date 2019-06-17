@@ -18,12 +18,14 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Carrier for property data. Principally a {@link Map} from {@link String} to {@link Property}, and
  * a class name. Also includes configuration for loading an object over RMI via Jini.
  */
 public class ConfigurationData implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     public static final long DEFAULT_LEASE_TIME = -1;
 
@@ -56,8 +58,7 @@ public class ConfigurationData implements Serializable {
     private final String entriesName;
 
     /**
-     * Creates a raw property data item
-     *
+     * Creates an empty ConfigurationData.
      * @param name      the name of the item
      * @param className the class name of the item
      */
@@ -65,14 +66,43 @@ public class ConfigurationData implements Serializable {
         this(name, className, Collections.emptyMap());
     }
 
+    /**
+     * Creates a ConfigurationData with the specified properties. The properties are validated elsewhere as
+     * this does not trigger class loading.
+     * @param name The name of the configured object.
+     * @param className The class name of the configured object.
+     * @param properties The properties to apply to that object.
+     */
     public ConfigurationData(String name, String className, Map<String, Property> properties) {
         this(name,className,properties,null,null,false,false,DEFAULT_LEASE_TIME);
     }
 
+    /**
+     * Creates a ConfigurationData with no properties.
+     * @param name The name of the configured object.
+     * @param className The class name of the configured object.
+     * @param serializedForm A path to load the serialised form of this object (or null).
+     * @param entriesName The entries to restrict Jini loading (or null).
+     * @param exportable Is this object exportable via a Jini registry.
+     * @param importable Should this object be imported via a Jini registry.
+     * @param leaseTime How long before the Jini registrar needs to have the object renewed.
+     */
     public ConfigurationData(String name, String className, String serializedForm, String entriesName, boolean exportable, boolean importable, long leaseTime) {
         this(name,className, Collections.emptyMap(),serializedForm,entriesName,exportable,importable,leaseTime);
     }
 
+    /**
+     * Creates a ConfigurationData with the specified properties. The properties are validated elsewhere as
+     * this does not trigger class loading.
+     * @param name The name of the configured object.
+     * @param className The class name of the configured object.
+     * @param properties The properties to apply to that object.
+     * @param serializedForm A path to load the serialised form of this object (or null).
+     * @param entriesName The entries to restrict Jini loading (or null).
+     * @param exportable Is this object exportable via a Jini registry.
+     * @param importable Should this object be imported via a Jini registry.
+     * @param leaseTime How long before the Jini registrar needs to have the object renewed.
+     */
     public ConfigurationData(String name, String className, Map<String, Property> properties, String serializedForm, String entriesName, boolean exportable, boolean importable, long leaseTime) {
         this.name = name;
         this.className = className;
@@ -104,29 +134,58 @@ public class ConfigurationData implements Serializable {
         return name;
     }
 
+    /**
+     * Returns the path to the serialised form.
+     * @return The path to the serialised form.
+     */
     public String getSerializedForm() {
         return serializedForm;
     }
 
+    /**
+     * Should this configuration import a remote object via Jini.
+     * @return Should the configuration import a remote object.
+     */
     public boolean isImportable() {
         return importable;
     }
-    
+
+    /**
+     * Returns the Jini lease time. Defaults to -1, Leases.ANY.
+     * @return The Jini lease time.
+     */
     public long getLeaseTime() {
         return leaseTime;
     }
-    
+
+    /**
+     * Should this configuration export it's object via Jini.
+     * @return Should the configuration export a remote object.
+     */
     public boolean isExportable() {
         return exportable;
     }
-    
+
+    /**
+     * Returns the entries which control Jini lookup.
+     * @return The Jini control entries.
+     */
     public String getEntriesName() {
         return entriesName;
     }
 
-    /** @return Returns the properties. */
+    /** @return Returns an unmodifiable view on the properties. */
     public Map<String, Property> getProperties() {
-        return properties;
+        return Collections.unmodifiableMap(properties);
+    }
+
+    public Optional<Property> get(String propertyName) {
+        Property value = properties.get(propertyName);
+        if (value == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(value);
+        }
     }
 
     /**

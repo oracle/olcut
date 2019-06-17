@@ -8,6 +8,7 @@ import java.util.Map;
  * A MapProperty is a container for a Map from String to Property.
  */
 public final class MapProperty implements Property {
+    private static final long serialVersionUID = 1L;
 
     private final Map<String,SimpleProperty> map;
 
