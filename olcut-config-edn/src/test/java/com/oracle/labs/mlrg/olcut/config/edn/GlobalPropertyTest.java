@@ -5,7 +5,7 @@
 
 package com.oracle.labs.mlrg.olcut.config.edn;
 
-import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManagerUtils;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;

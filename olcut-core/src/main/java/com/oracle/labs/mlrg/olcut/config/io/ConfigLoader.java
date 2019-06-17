@@ -1,4 +1,4 @@
-package com.oracle.labs.mlrg.olcut.config;
+package com.oracle.labs.mlrg.olcut.config.io;
 
 import java.io.IOException;
 import java.net.URL;

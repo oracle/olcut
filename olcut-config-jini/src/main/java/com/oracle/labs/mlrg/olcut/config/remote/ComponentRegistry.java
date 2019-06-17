@@ -8,6 +8,7 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurableName;
 import com.sun.jini.config.ConfigUtil;
 import com.sun.jini.tool.ClassServer;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -62,7 +63,7 @@ import net.jini.lookup.ServiceDiscoveryManager;
  * A configurable container that can be used to register object proxies with a Jini
  * registry.
  */
-public class ComponentRegistry implements Configurable, DiscoveryListener,
+public class ComponentRegistry implements Closeable, Configurable, DiscoveryListener,
         ServiceDiscoveryListener, LeaseListener {
     private static final Logger logger = Logger.getLogger(ComponentRegistry.class.getName());
 
@@ -595,7 +596,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * can be notified of service changes.
      * @return an array containing the matching components
      */
-    public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener cl) {
+    public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener<T> cl) {
         return lookup(c,maxMatches,cl,null);
     }
 
@@ -612,7 +613,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * @param entries The ConfigurationEntries to filter on.
      * @return an array containing the matching components
      */
-    public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener cl, ConfigurationEntry[] entries) {
+    public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener<T> cl, ConfigurationEntry[] entries) {
         if(sdm == null) {
             return (T[]) new Configurable[0];
         }
@@ -684,7 +685,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * @return the named component, or <code>null</code> if no such component
      * can be found.
      */
-    public <T extends Configurable> T lookup(ServablePropertySheet<T> cps, ComponentListener cl) {
+    public <T extends Configurable> T lookup(ServablePropertySheet<T> cps, ComponentListener<T> cl) {
 
         if(sdm == null) {
             return null;
@@ -761,7 +762,8 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     /**
      * Unregisters the services.
      */
-    public void shutdown() {
+    @Override
+    public void close() {
 
         logger.fine("Shutting down component registry");
         for(ServiceRegistration sr : registrations) {

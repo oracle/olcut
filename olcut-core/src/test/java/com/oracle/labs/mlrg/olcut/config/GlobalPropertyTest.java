@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class GlobalPropertyTest {
         StringConfigurable sc = (StringConfigurable) cm.lookup("badlyformed");
     }
 
-    @Test(expected=ConfigLoaderException.class)
+    @Test(expected= ConfigLoaderException.class)
     public void invalidGlobalProperty() {
         ConfigurationManager cm = new ConfigurationManager("invalidGlobalPropertyConfig.xml");
     }

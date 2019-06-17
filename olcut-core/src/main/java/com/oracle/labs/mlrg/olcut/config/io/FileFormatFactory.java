@@ -1,5 +1,7 @@
-package com.oracle.labs.mlrg.olcut.config;
+package com.oracle.labs.mlrg.olcut.config.io;
 
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
+import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
 
 import java.io.OutputStream;

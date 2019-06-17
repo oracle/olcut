@@ -1,9 +1,9 @@
 package com.oracle.labs.mlrg.olcut.config.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
-import com.oracle.labs.mlrg.olcut.config.ConfigWriter;
-import com.oracle.labs.mlrg.olcut.config.ConfigWriterException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriter;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriterException;
 import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
 import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
