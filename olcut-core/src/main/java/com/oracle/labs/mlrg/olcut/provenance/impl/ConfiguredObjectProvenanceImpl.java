@@ -222,7 +222,7 @@ public class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenanc
                 List<Provenance> lp = new ArrayList<>();
                 for (Object o : array) {
                     if (o == null) {
-                        lp.add(new NullConfiguredProvenance(f.getType().getComponentType().getName()));
+                        lp.add(ConfiguredObjectProvenance.getEmptyProvenance(f.getType().getComponentType().getName()));
                     } else if (o instanceof Provenancable) {
                         Provenancable p = (Provenancable) o;
                         lp.add(p.getProvenance());
@@ -294,7 +294,7 @@ public class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenanc
                 return Optional.of(new EnumProvenance<>(fieldName, (Enum) o));
             case CONFIGURABLE:
                 if (o == null) {
-                    return Optional.of(new NullConfiguredProvenance(fieldClass.getName()));
+                    return Optional.of(ConfiguredObjectProvenance.getEmptyProvenance(fieldClass.getName()));
                 } else if (o instanceof Provenancable) {
                     return Optional.of(((Provenancable) o).getProvenance());
                 } else {

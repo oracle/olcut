@@ -28,12 +28,16 @@ public class NullConfiguredProvenance implements ConfiguredObjectProvenance {
 
     @Override
     public int hashCode() {
-        return 31;
+        return className.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof NullConfiguredProvenance;
+        if (obj instanceof NullConfiguredProvenance) {
+            return className.equals(((NullConfiguredProvenance) obj).className);
+        } else {
+            return false;
+        }
     }
 
     @Override
