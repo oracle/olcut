@@ -1,13 +1,14 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -62,7 +63,7 @@ public class RemoveTest {
     @Test
     public void removeProgramaticallyAddedUninstantiated() throws IOException {
         ConfigurationManager cm = new ConfigurationManager();
-        Map<String,Property> m = new HashMap<>();
+        Map<String, Property> m = new HashMap<>();
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
         m.put("d", new SimpleProperty(""+2.71));

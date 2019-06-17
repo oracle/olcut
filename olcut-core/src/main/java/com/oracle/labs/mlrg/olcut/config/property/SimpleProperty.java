@@ -1,4 +1,6 @@
-package com.oracle.labs.mlrg.olcut.config;
+package com.oracle.labs.mlrg.olcut.config.property;
+
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 
 /**
  * A simple property is a single String which can be parsed as a field value (either by conversion or lookup in

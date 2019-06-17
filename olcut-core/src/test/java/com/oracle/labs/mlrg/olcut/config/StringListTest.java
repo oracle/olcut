@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

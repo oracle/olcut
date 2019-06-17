@@ -1,4 +1,7 @@
-package com.oracle.labs.mlrg.olcut.config;
+package com.oracle.labs.mlrg.olcut.config.property;
+
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.PropertyException;
 
 import java.util.Map;
 import java.util.regex.Matcher;

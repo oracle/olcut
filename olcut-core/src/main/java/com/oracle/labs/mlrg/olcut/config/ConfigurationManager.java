@@ -1,5 +1,12 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperty;
+import com.oracle.labs.mlrg.olcut.config.property.ImmutableGlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
@@ -1970,4 +1977,30 @@ public class ConfigurationManager implements Closeable {
         return new ListProperty(propList);
     }
 
+    /**
+     * A wrapper for a Configurable that tests for equality. Used in the configuredComponents map.
+     */
+    private static class ConfigWrapper {
+
+        public final Configurable config;
+
+        ConfigWrapper(Configurable config) {
+            this.config = config;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof ConfigWrapper) {
+                return config == ((ConfigWrapper)other).config;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return config.hashCode();
+        }
+
+    }
 }
