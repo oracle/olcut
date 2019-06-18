@@ -1438,24 +1438,25 @@ public class ConfigurationManager implements Closeable {
         if(!overwrite) {
             for(String addCompName : subCM.getComponentNames()) {
                 if(compNames.contains(addCompName)) {
-                    throw new RuntimeException(addCompName
+                    throw new PropertyException(addCompName, addCompName
                             + " is already registered to system configuration");
                 }
             }
             for(String globProp : subCM.globalProperties.keySet()) {
                 if(globalProperties.keySet().contains(globProp)) {
-                    throw new IllegalArgumentException(globProp
+                    throw new PropertyException(globProp, globProp
                             + " is already registered as global property");
                 }
             }
         }
 
         globalProperties.putAll(subCM.globalProperties);
-        for(PropertySheet ps : subCM.symbolTable.values()) {
-            ps.setCM(this);
+        for(Map.Entry<String,PropertySheet<? extends Configurable>> e : subCM.symbolTable.entrySet()) {
+            PropertySheet<? extends Configurable> newPS = e.getValue().copy();
+            newPS.setCM(this);
+            symbolTable.put(e.getKey(),newPS);
         }
 
-        symbolTable.putAll(subCM.symbolTable);
         rawPropertyMap.putAll(subCM.rawPropertyMap);
     }
 
