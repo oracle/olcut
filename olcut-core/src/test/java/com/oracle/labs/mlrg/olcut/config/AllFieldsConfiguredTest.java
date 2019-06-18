@@ -32,7 +32,7 @@ public class AllFieldsConfiguredTest {
     @Before
     public void setUp() throws IOException {
         f = File.createTempFile("all-config", ".xml");
-        //f.deleteOnExit();
+        f.deleteOnExit();
     }
 
     @Test
@@ -83,8 +83,8 @@ public class AllFieldsConfiguredTest {
         assertArrayEquals(new double[]{3.14,2.77,1.0},ac.doubleArrayField,1e-10);
         assertEquals(new StringConfigurable("alpha","beta","gamma"),ac.listConfigurableSubclassField.get(0));
         assertEquals(new StringConfigurable("A","B","C"),ac.listConfigurableSubclassField.get(1));
-        assertEquals(Double.valueOf(1.0),ac.mapDoubleField.get("one"));
-        assertEquals(Double.valueOf(2.0),ac.mapDoubleField.get("two"));
+        assertEquals(1.0,ac.mapDoubleField.get("one"),1e-10);
+        assertEquals(2.0,ac.mapDoubleField.get("two"),1e-10);
     }
 
     public static AllFieldsConfigurable generateConfigurable() {
