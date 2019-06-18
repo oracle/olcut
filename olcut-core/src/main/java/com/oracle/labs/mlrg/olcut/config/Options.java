@@ -254,6 +254,7 @@ public interface Options {
      * @param options the class who's fields we wish to walk.
      * @return all of the fields which subclass Options.
      */
+    @SuppressWarnings("unchecked")
     public static Set<Class<? extends Options>> getAllOptions(Class<? extends Options> options) {
         Set<Class<? extends Options>> ret = new LinkedHashSet<>();
         Set<Class<? extends Options>> tempSet = new HashSet<>();

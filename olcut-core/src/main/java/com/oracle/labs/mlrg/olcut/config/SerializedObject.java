@@ -50,6 +50,7 @@ public class SerializedObject<T> {
      * @return the object
      * @throws PropertyException if the object cannot be deserialized.
      */
+    @SuppressWarnings("unchecked")// throws PropertyException if the serialised type doesn't match the class name.
     public T getObject() throws PropertyException {
         if (object == null) {
             String actualLocation = configurationManager.getImmutableGlobalProperties().replaceGlobalProperties(name, null, location);

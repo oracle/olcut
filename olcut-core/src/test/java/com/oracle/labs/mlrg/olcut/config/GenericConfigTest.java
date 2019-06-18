@@ -13,6 +13,7 @@ import org.junit.Test;
  */
 public class GenericConfigTest {
 
+    @SuppressWarnings("unchecked")//Looking up a specific class via it's full name
     @Test
     public void lookupAllTest() throws ClassNotFoundException {
         ConfigurationManager cm = new ConfigurationManager("genericConfig.xml");

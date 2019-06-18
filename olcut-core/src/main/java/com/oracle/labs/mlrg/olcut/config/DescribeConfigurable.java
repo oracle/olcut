@@ -337,6 +337,7 @@ public class DescribeConfigurable {
         public boolean output;
     }
 
+    @SuppressWarnings("unchecked") // Suppressed as the cast is behind an isAssignableFrom check.
     public static void main(String[] args) throws UnsupportedEncodingException {
         DescribeOptions o = new DescribeOptions();
 
