@@ -82,6 +82,7 @@ public class PropertySheet<T extends Configurable> {
 
     protected final String instanceName;
 
+    @SuppressWarnings("unchecked")
     protected PropertySheet(T configurable, String name,
                          ConfigurationManager cm, ConfigurationData rpd) {
         this((Class<T>)configurable.getClass(), name, cm, rpd);
@@ -528,6 +529,7 @@ public class PropertySheet<T extends Configurable> {
         }
         return output;
     }
+
     @SuppressWarnings("unchecked")
     public static Object parseListField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, Class<?> genericClass, FieldType ft, ListProperty input) {
         //
@@ -600,6 +602,7 @@ public class PropertySheet<T extends Configurable> {
         return output;
     }
 
+    @SuppressWarnings("unchecked")
     public static Object parseSimpleField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, FieldType ft, String val) {
         switch (ft) {
             case STRING:

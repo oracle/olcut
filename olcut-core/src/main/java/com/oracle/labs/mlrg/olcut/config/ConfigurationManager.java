@@ -38,6 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -123,11 +124,9 @@ public class ConfigurationManager implements Closeable {
         formatFactoryMap.put("xml",new XMLConfigFactory());
     }
 
-    private List<ConfigurationChangeListener> changeListeners =
-            new ArrayList<>();
+    private final List<ConfigurationChangeListener> changeListeners;
 
-    protected Map<String, PropertySheet<? extends Configurable>> symbolTable =
-            new LinkedHashMap<>();
+    protected final Map<String, PropertySheet<? extends Configurable>> symbolTable;
 
     protected final Map<ConfigWrapper,PropertySheet<? extends Configurable>> configuredComponents =
             new LinkedHashMap<>();
@@ -143,7 +142,7 @@ public class ConfigurationManager implements Closeable {
 
     protected final GlobalProperties origGlobal;
 
-    protected boolean showCreations;
+    protected final boolean showCreations;
 
     private final LinkedList<URL> configURLs = new LinkedList<>();
 
@@ -271,6 +270,9 @@ public class ConfigurationManager implements Closeable {
         // Validate the supplied Options struct is coherent and generate a usage statement.
         usage = validateOptions(options,defaultConfigPath,useConfigFiles);
 
+        changeListeners = new ArrayList<>();
+        symbolTable = new LinkedHashMap<>();
+
         // Check if the user requested the usage statement.
         if ((arguments.length == 1) && (arguments[0].equals("--"+usageOption.longName()) || arguments[0].equals("--"+helpOption.longName()))) {
             throw new UsageException(usage);
@@ -320,7 +322,9 @@ public class ConfigurationManager implements Closeable {
         // do some of these config items manually.
         GlobalProperty sC = globalProperties.get("showCreations");
         if(sC != null) {
-            this.showCreations = "true".equals(sC.getValue());
+            this.showCreations = Boolean.parseBoolean(sC.getValue());
+        } else {
+            this.showCreations = false;
         }
 
         //
@@ -345,6 +349,12 @@ public class ConfigurationManager implements Closeable {
         this.symbolTable = newSymbolTable;
         this.serializedObjects = newSerializedObjects;
         this.origGlobal = newOrigGlobal;
+        GlobalProperty sC = globalProperties.get("showCreations");
+        if(sC != null) {
+            this.showCreations = Boolean.parseBoolean(sC.getValue());
+        } else {
+            this.showCreations = false;
+        }
     }
 
     /**
@@ -545,7 +555,6 @@ public class ConfigurationManager implements Closeable {
                 }
             }
         }
-
     }
 
     /**
@@ -802,61 +811,42 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Parses a string into a list of string, respecting escaping of the delimiter, and also allowing quotes.
-     * @param input
-     * @return
+     * @param input A delimiter separated string.
+     * @return A list of strings.
      */
     public static List<String> parseStringList(String input) {
         List<String> tokensList = new ArrayList<>();
         boolean inQuotes = false;
         boolean escaped = false;
         StringBuilder buffer = new StringBuilder();
-        if (IS_WINDOWS) {
-            for (char c : input.toCharArray()) {
-                switch (c) {
-                    case ARG_DELIMITER:
-                        if (inQuotes || escaped) {
-                            buffer.append(c);
-                        } else {
-                            tokensList.add(buffer.toString());
-                            buffer = new StringBuilder();
-                        }
-                        escaped = false;
-                        break;
-                    case WIN_ESCAPE_CHAR:
-                        escaped = true;
-                        break;
-                    case '\"':
-                        // Note fall through here to gather up the quotes.
-                        inQuotes = !inQuotes;
-                    default:
+        for (char c : input.toCharArray()) {
+            switch (c) {
+                case ARG_DELIMITER:
+                    if (inQuotes || escaped) {
                         buffer.append(c);
-                        escaped = false;
-                        break;
-                }
-            }
-        } else {
-            for (char c : input.toCharArray()) {
-                switch (c) {
-                    case ARG_DELIMITER:
-                        if (inQuotes || escaped) {
-                            buffer.append(c);
-                        } else {
-                            tokensList.add(buffer.toString());
-                            buffer = new StringBuilder();
-                        }
-                        escaped = false;
-                        break;
-                    case ESCAPE_CHAR:
+                    } else {
+                        tokensList.add(buffer.toString());
+                        buffer = new StringBuilder();
+                    }
+                    escaped = false;
+                    break;
+                case WIN_ESCAPE_CHAR:
+                    if (IS_WINDOWS) {
                         escaped = true;
-                        break;
-                    case '\"':
-                        // Note fall through here to gather up the quotes.
-                        inQuotes = !inQuotes;
-                    default:
-                        buffer.append(c);
-                        escaped = false;
-                        break;
-                }
+                    }
+                    break;
+                case ESCAPE_CHAR:
+                    if (!IS_WINDOWS) {
+                        escaped = true;
+                    }
+                    break;
+                case '\"':
+                    // Note fall through here to gather up the quotes.
+                    inQuotes = !inQuotes;
+                default:
+                    buffer.append(c);
+                    escaped = false;
+                    break;
             }
         }
         tokensList.add(buffer.toString());
@@ -864,40 +854,27 @@ public class ConfigurationManager implements Closeable {
     }
 
     private boolean checkConfigurableField(String configurableClass, String fieldName) {
-        Class<? extends Configurable> clazz = null;
-        // catch is empty as this is only called with classes from ConfigurationData,
-        // which has already checked it's configurable.
-        try {
-            clazz = (Class<? extends Configurable>) Class.forName(configurableClass);
-        } catch (ClassNotFoundException e) {
-            logger.log(Level.SEVERE, "Failed to load " + configurableClass);
+        StoredFieldType sft = getStoredFieldType(configurableClass,fieldName);
+        if (sft == StoredFieldType.MAP) {
+            logger.warning("Dude seriously, a Map? On the command line? Maps aren't supported.");
         }
-        return checkConfigurableField(clazz,fieldName);
+        return sft == StoredFieldType.LIST || sft == StoredFieldType.STRING;
     }
 
-    private boolean checkConfigurableField(Class<? extends Configurable> configurableClass, String fieldName) {
-        Set<Field> fields = PropertySheet.getAllFields(configurableClass);
-        boolean found = false;
-        for (Field f : fields) {
-            if (f.getName().equals(fieldName) && (f.getAnnotation(Config.class) != null)) {
-                if (Map.class.isAssignableFrom(f.getType())) {
-                    logger.warning("Dude seriously, a Map? On the command line? Maps aren't supported.");
-                    break;
-                } else {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        return found;
-    }
-
+    // Warnings suppressed as it throws PropertyException if given an invalid class name.
+    // The class name is checked elsewhere in the code so this should never be thrown.
+    @SuppressWarnings("unchecked")
     private StoredFieldType getStoredFieldType(String configurableClass, String fieldName) {
         Class<? extends Configurable> clazz = null;
         // catch is empty as this is only called with classes from ConfigurationData,
         // which has already checked it's configurable.
         try {
-            clazz = (Class<? extends Configurable>) Class.forName(configurableClass);
+            Class<?> tmpClazz = Class.forName(configurableClass);
+            if (Configurable.class.isAssignableFrom(tmpClazz)) {
+                clazz = (Class<? extends Configurable>) tmpClazz;
+            } else {
+                throw new PropertyException("",fieldName,configurableClass + " does not extends Configurable.");
+            }
         } catch (ClassNotFoundException e) {
             logger.log(Level.SEVERE, "Failed to load " + configurableClass);
         }
@@ -1077,6 +1054,8 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Does this ConfigurationManager know about an instance called instanceName.
+     *
+     * Does not trigger class instantiation or configuration.
      * @param instanceName The name to check.
      * @return True if it contains a {@link Configurable} called instanceName.
      */
@@ -1090,6 +1069,7 @@ public class ConfigurationManager implements Closeable {
      * @param instanceName the instance name of the object
      * @return the property sheet for the object.
      */
+    @SuppressWarnings("unchecked") // Warning suppressed as it's behind an isAssignableFrom check.
     protected PropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
         if(!symbolTable.containsKey(instanceName)) {
             // if it is not in the symbol table, so construct
@@ -1098,9 +1078,8 @@ public class ConfigurationManager implements Closeable {
             if(rpd != null) {
                 String className = rpd.getClassName();
                 try {
-                    Class cls = Class.forName(className);
+                    Class<?> cls = Class.forName(className);
                     if (Configurable.class.isAssignableFrom(cls)) {
-
                         // now load the property-sheet by using the class annotation
                         PropertySheet<? extends Configurable> propertySheet =
                                 getNewPropertySheet((Class<? extends Configurable>) cls,instanceName, this, rpd);
@@ -1122,14 +1101,16 @@ public class ConfigurationManager implements Closeable {
     /**
      * Gets all instances that are of the given type.
      *
+     * Only returns the names of the instantiated objects.
+     *
      * @param type the desired type of instance
      * @return the set of all instances
      */
-    public Collection<String> getInstanceNames(Class<? extends Configurable> type) {
-        Collection<String> instanceNames = new ArrayList<>();
+    public Set<String> getInstanceNames(Class<? extends Configurable> type) {
+        Set<String> instanceNames = new HashSet<>();
 
-        for(PropertySheet ps : symbolTable.values()) {
-            if(!ps.isInstantiated()) {
+        for (PropertySheet ps : symbolTable.values()) {
+            if (!ps.isInstantiated()) {
                 continue;
             }
 
@@ -1154,7 +1135,7 @@ public class ConfigurationManager implements Closeable {
     /**
      * Looks up an object that has been specified in the configuration
      * as one that was serialized. Note that such an object does not need
-     * to be a component.
+     * to be configurable.
      * @param objectName the name of the object to lookup.
      * @return the deserialized object, or <code>null</code> if the object 
      * with that name does not occur in the configuration.
@@ -1306,6 +1287,7 @@ public class ConfigurationManager implements Closeable {
         return comps.get(0);
     }
 
+    @SuppressWarnings("unchecked") // Casts to T are implicitly checked as we use Class<T> to find the names.
     public <T extends Configurable> List<T> lookupAll(Class<T> c) {
         List<T> ret = new ArrayList<>();
 
@@ -1329,7 +1311,7 @@ public class ConfigurationManager implements Closeable {
                 try {
                     Class clazz = Class.forName(e.getValue().getClassName());
                     if (!e.getValue().isImportable() && c.isAssignableFrom(clazz) && !clazz.isInterface()) {
-                        ret.add((T)innerLookup(e.getKey(),null,false));
+                        ret.add((T)innerLookup(e.getKey(),null,true));
                     }
                 } catch (ClassNotFoundException ex) {
                     throw new PropertyException(ex,e.getKey(),"Class not found for component " + e.getKey());
@@ -1425,7 +1407,7 @@ public class ConfigurationManager implements Closeable {
      */
     public boolean removeConfigurable(String name) {
 
-        PropertySheet ps = getPropertySheet(name);
+        PropertySheet<? extends Configurable> ps = getPropertySheet(name);
         if(ps == null) {
             return false;
         }
