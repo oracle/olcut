@@ -208,7 +208,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
      * sheets for those looker-uppers.  We'll use this to add new items of this
      * type if they become available.
      */
-    private Map<Class, Set<ComponentListener>> classListeners = new HashMap<>();
+    private Map<Class, Set<ComponentListener<?>>> classListeners = new HashMap<>();
 
     /**
      * Exporters for the services that we've registered and for the things we
@@ -583,7 +583,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
         if(cl == null) {
             return;
         }
-        Set<ComponentListener> s = classListeners.computeIfAbsent(c, k -> new HashSet<>());
+        Set<ComponentListener<?>> s = classListeners.computeIfAbsent(c, k -> new HashSet<>());
         s.add(cl);
     }
 
@@ -815,7 +815,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
         // We'll need to look for listeners on all of the interfaces that this
         // class implements.
         for(Class iface : c.getInterfaces()) {
-            Set<ComponentListener> listeners = classListeners.get(iface);
+            Set<ComponentListener<?>> listeners = classListeners.get(iface);
             if(listeners == null) {
                 continue;
             }
@@ -836,7 +836,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
         lookedUp.remove(component);
         Class c = component.getClass();
         for(Class iface : c.getInterfaces()) {
-            Set<ComponentListener> listeners = classListeners.get(iface);
+            Set<ComponentListener<?>> listeners = classListeners.get(iface);
             if(listeners == null) {
                 continue;
             }
@@ -856,7 +856,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
         lookedUp.remove((Configurable) pre.service);
         lookedUp.add((Configurable) post.service);
         for(Class iface : c.getInterfaces()) {
-            Set<ComponentListener> listeners = classListeners.get(iface);
+            Set<ComponentListener<?>> listeners = classListeners.get(iface);
             if(listeners == null) {
                 continue;
             }
