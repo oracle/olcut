@@ -840,7 +840,7 @@ public class PropertySheet<T extends Configurable> {
      * @param propertySheet of type PropertySheet
      * @param configurable of type <code>Class&lt;? extends Configurable&gt;</code>
      */
-    public static <T extends Configurable> void processAnnotations(PropertySheet<T> propertySheet,
+    private static <T extends Configurable> void processAnnotations(PropertySheet<T> propertySheet,
             Class<T> configurable) throws PropertyException {
         Set<Field> classFields = getAllFields(configurable);
 

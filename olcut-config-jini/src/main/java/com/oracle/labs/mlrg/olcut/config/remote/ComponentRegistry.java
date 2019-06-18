@@ -175,12 +175,6 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
      */
     private ClassServer classServer;
 
-    /* TODO: check if this field is necessary. It must be accessed via reflection if so.
-     * The configuration manager that created us.  We'll need this to get the 
-     * instance names of components that want to register themselves.
-     * private ConfigurationManager cm;
-     */
-
     /**
      * A service registry manager for our components.
      */
@@ -208,7 +202,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
      * sheets for those looker-uppers.  We'll use this to add new items of this
      * type if they become available.
      */
-    private Map<Class, Set<ComponentListener<?>>> classListeners = new HashMap<>();
+    private Map<Class, Set<ComponentListener<? extends Configurable>>> classListeners = new HashMap<>();
 
     /**
      * Exporters for the services that we've registered and for the things we
@@ -390,9 +384,9 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
     public Map<String,List<String>> dumpJiniServices() {
         ServiceRegistrar[] registrars =
                 sdm.getDiscoveryManager().getRegistrars();
-        Map<String,List<String>> ret = new HashMap<String, List<String>>();
+        Map<String,List<String>> ret = new HashMap<>();
         for(ServiceRegistrar r : registrars) {
-            List<String> svcs = new ArrayList<String>();
+            List<String> svcs = new ArrayList<>();
             try {
                 ServiceMatches sm = r.lookup(new ServiceTemplate(null, null,
                         null), Integer.MAX_VALUE);
@@ -432,7 +426,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
      * the {@link java.rmi.Remote} interface or if the component type has more
      * than one property sheet associated with it in the configuration.
      */
-    public void register(Configurable c, ServablePropertySheet ps) throws PropertyException {
+    public void register(Configurable c, ServablePropertySheet<? extends Configurable> ps) throws PropertyException {
 
         if(!(c instanceof Remote)) {
             throw new IllegalArgumentException("Component class " +
@@ -486,11 +480,11 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
 
             //
             // Register the service in all of the registries that we found.
-            for(int i = 0; i < regs.length; i++) {
-                ServiceRegistration sr = regs[i].register(si, leaseTime);
+            for (ServiceRegistrar reg : regs) {
+                ServiceRegistration sr = reg.register(si, leaseTime);
 
-                if(logger.isLoggable(Level.FINER)) {
-                    logger.finer(String.format("Registering %s with %s", si, regs[i]));
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.finer(String.format("Registering %s with %s", si, reg));
                 }
 
                 //
@@ -579,7 +573,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
         }
     }
     
-    private void addListener(Class c, ComponentListener cl) {
+    private <T extends Configurable> void addListener(Class<T> c, ComponentListener<T> cl) {
         if(cl == null) {
             return;
         }
@@ -815,7 +809,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
         // We'll need to look for listeners on all of the interfaces that this
         // class implements.
         for(Class iface : c.getInterfaces()) {
-            Set<ComponentListener<?>> listeners = classListeners.get(iface);
+            Set<ComponentListener<? extends Configurable>> listeners = classListeners.get(iface);
             if(listeners == null) {
                 continue;
             }
