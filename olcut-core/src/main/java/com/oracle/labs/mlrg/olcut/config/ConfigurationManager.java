@@ -992,6 +992,8 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Gets the configuration data associated with a given instance.
+     *
+     * Allows the modification of configuration for future objects.
      * @param instanceName the name of the instance whose properties we want
      * @return the associated configuration data, or {@link Optional#empty} if there is no data
      * associated with the given instance name.
@@ -1001,7 +1003,7 @@ public class ConfigurationManager implements Closeable {
         if (data == null) {
             return Optional.empty();
         } else {
-            return Optional.of(data.copy());
+            return Optional.of(data);
         }
     }
 
@@ -1321,22 +1323,22 @@ public class ConfigurationManager implements Closeable {
      * @return <code>true</code> if a configurable was removed, or <code>false</code> otherwise.
      */
     public boolean removeConfigurable(String name) {
+        if (configurationDataMap.containsKey(name)) {
+            configurationDataMap.remove(name);
 
-        PropertySheet<? extends Configurable> ps = getPropertySheet(name);
-        if(ps == null) {
+            if (symbolTable.containsKey(name)) {
+                PropertySheet<? extends Configurable> ps = symbolTable.remove(name);
+                //
+                // If this one's been instantiated, remove it from there too!
+                if(ps.isInstantiated()) {
+                    configuredComponents.remove(new ConfigWrapper(ps.getOwner()));
+                }
+            }
+
+            return true;
+        } else {
             return false;
         }
-
-        symbolTable.remove(name);
-        configurationDataMap.remove(name);
-
-        //
-        // If this one's been instantiated, remove it from there too!
-        if(ps.isInstantiated()) {
-            configuredComponents.remove(new ConfigWrapper(ps.getOwner()));
-        }
-
-        return true;
     }
 
     public void addSubConfiguration(ConfigurationManager subCM) {
@@ -1470,6 +1472,7 @@ public class ConfigurationManager implements Closeable {
      * Test whether the given configuration manager instance equals this instance in terms of same configuration.
      * This equals implementation does not care about instantiation of components.
      */
+    @Override
     public boolean equals(Object obj) {
         if(!(obj instanceof ConfigurationManager)) {
             return false;
@@ -1485,10 +1488,10 @@ public class ConfigurationManager implements Closeable {
 
         // make sure that all components are the same
         for(String instanceName : getComponentNames()) {
-            PropertySheet myPropSheet = getPropertySheet(instanceName);
-            PropertySheet otherPropSheet = cm.getPropertySheet(instanceName);
+            ConfigurationData myData = configurationDataMap.get(instanceName);
+            ConfigurationData otherData = cm.configurationDataMap.get(instanceName);
 
-            if(!otherPropSheet.equals(myPropSheet)) {
+            if(!myData.equals(otherData)) {
                 return false;
             }
         }

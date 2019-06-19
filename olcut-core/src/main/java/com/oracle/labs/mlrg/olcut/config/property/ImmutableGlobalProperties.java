@@ -1,7 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config.property;
 
-import com.oracle.labs.mlrg.olcut.config.ConfigurationManagerUtils;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
+import com.oracle.labs.mlrg.olcut.util.Util;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,7 +23,7 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
     protected final HashMap<String, GlobalProperty> map;
 
     static {
-        distinguished.put("gp.hostName", new LazyGlobalProperty(ConfigurationManagerUtils::getHostName));
+        distinguished.put("gp.hostName", new LazyGlobalProperty(Util::getHostName));
     }
 
     public ImmutableGlobalProperties() {
