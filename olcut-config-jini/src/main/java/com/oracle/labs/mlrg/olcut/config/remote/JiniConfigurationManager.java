@@ -143,7 +143,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
     public void addProperties(URL url) throws PropertyException {
         super.addProperties(url);
 
-        if(registry == null) {
+        if (registry == null) {
             setUpRegistry();
         }
     }
@@ -153,12 +153,17 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * configured before anything else is looked up.
      */
     private void setUpRegistry() {
-        PropertySheet ps = getPropertySheet("registry");
-        if(ps == null) {
-            return;
-        }
-        if(ComponentRegistry.class.isAssignableFrom(ps.getOwnerClass())) {
-            registry = (ComponentRegistry) lookup("registry");
+        ConfigurationData registryData = configurationDataMap.get("registry");
+        if (registryData != null) {
+            String className = registryData.getClassName();
+            try {
+                Class<?> registryClass = Class.forName(className);
+                if (ComponentRegistry.class.isAssignableFrom(registryClass)) {
+                    registry = (ComponentRegistry) lookup("registry");
+                }
+            } catch (ClassNotFoundException e) {
+                throw new PropertyException(e, "registry", "Class " + className + " not found");
+            }
         }
     }
     
@@ -284,7 +289,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
         // Get the property sheet for this component.
         ServablePropertySheet<? extends Configurable> ps = getPropertySheet(instanceName);
         
-        if(ps == null) {
+        if (ps == null) {
             return null;
         }
         
@@ -298,7 +303,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
         //
         // We'll also try a lookup if one is suggested by the importable attribute
         // for a component.
-        if(registry != null && !ps.isExportable() &&
+        if (registry != null && !ps.isExportable() &&
                 ((ps.size() == 0 && ps.implementsRemote()) || ps.isImportable())) {
             logger.log(Level.FINER, "Attempted to lookup in registry");
             ret = registry.lookup(ps, cl);
@@ -306,7 +311,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
 
         //
         // Need we look farther?
-        if(ret == null) {
+        if (ret == null) {
             ret = super.lookup(instanceName, cl, reuseComponent);
 
             //
@@ -409,6 +414,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * Test whether the given configuration manager instance equals this instance in terms of same configuration.
      * This equals implementation does not care about instantiation of components.
      */
+    @Override
     public boolean equals(Object obj) {
         if(!(obj instanceof JiniConfigurationManager)) {
             return super.equals(obj);
@@ -424,10 +430,10 @@ public class JiniConfigurationManager extends ConfigurationManager {
 
         // make sure that all components are the same
         for(String instanceName : getComponentNames()) {
-            PropertySheet myPropSheet = getPropertySheet(instanceName);
-            PropertySheet otherPropSheet = cm.getPropertySheet(instanceName);
+            ConfigurationData myData = configurationDataMap.get(instanceName);
+            ConfigurationData otherData = cm.configurationDataMap.get(instanceName);
 
-            if(!otherPropSheet.equals(myPropSheet)) {
+            if(!myData.equals(otherData)) {
                 return false;
             }
         }

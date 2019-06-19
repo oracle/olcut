@@ -7,10 +7,10 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.ConfigurationManagerUtils;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.StringListConfigurable;
+import com.oracle.labs.mlrg.olcut.util.Util;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -122,7 +122,7 @@ public class GlobalPropertyTest {
     public void distinguishedProps() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.edn");
         StringConfigurable sc = (StringConfigurable) cm.lookup("distinguished");
-        assertEquals(ConfigurationManagerUtils.getHostName(), sc.one);
+        assertEquals(Util.getHostName(), sc.one);
         assertEquals(System.getProperty("user.name"), sc.two);
     }
     

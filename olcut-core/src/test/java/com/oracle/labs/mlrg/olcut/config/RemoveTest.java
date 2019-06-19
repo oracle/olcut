@@ -89,11 +89,4 @@ public class RemoveTest {
         boolean removed = cm.removeConfigurable("a");
         Assert.assertTrue(removed);
     }
-
-    @Test
-    public void removeUninstantiatedWithEmbeddedComponents() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("importConfig.xml");
-        PropertySheet ps = cm.getPropertySheet("l1");
-        assertEquals(cm.getNumInstantiated(), 0);
-    }
 }

@@ -21,14 +21,14 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Carrier for property data. Principally a {@link Map} from {@link String} to {@link Property}, and
  * a class name. Also includes configuration for loading an object over RMI via Jini.
  */
-public class ConfigurationData implements Serializable {
+public final class ConfigurationData implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static final long DEFAULT_LEASE_TIME = -1;
@@ -212,6 +212,26 @@ public class ConfigurationData implements Serializable {
      */
     public ConfigurationData copy() {
         return new ConfigurationData(name,className,properties,serializedForm,entriesName,exportable,importable,leaseTime);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ConfigurationData)) return false;
+        ConfigurationData that = (ConfigurationData) o;
+        return exportable == that.exportable &&
+                importable == that.importable &&
+                leaseTime == that.leaseTime &&
+                name.equals(that.name) &&
+                className.equals(that.className) &&
+                properties.equals(that.properties) &&
+                Objects.equals(serializedForm, that.serializedForm) &&
+                Objects.equals(entriesName, that.entriesName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, className, properties, serializedForm, exportable, importable, leaseTime, entriesName);
     }
 
     public void save(ConfigWriter configWriter) throws ConfigWriterException {

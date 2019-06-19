@@ -2,6 +2,7 @@ package com.oracle.labs.mlrg.olcut.util;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.Collection;
 
@@ -182,5 +183,17 @@ public class Util {
             mainClassName = "";
         }
         return mainClassName;
+    }
+
+    /**
+     * Return the local hostname.
+     * @return the local hostname or localhost if it's unknown.
+     */
+    public static String getHostName()  {
+        try {
+            return java.net.InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            return "localhost";
+        }
     }
 }
