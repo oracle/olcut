@@ -9,6 +9,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records a date/time value.
  */
 public final class DateTimeProvenance implements PrimitiveProvenance<LocalDateTime> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 

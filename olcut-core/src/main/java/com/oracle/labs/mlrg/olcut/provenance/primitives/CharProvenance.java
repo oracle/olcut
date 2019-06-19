@@ -8,6 +8,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records a Character value.
  */
 public final class CharProvenance implements PrimitiveProvenance<Character> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 

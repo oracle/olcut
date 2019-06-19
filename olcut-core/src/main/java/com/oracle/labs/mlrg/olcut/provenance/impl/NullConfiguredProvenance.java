@@ -10,6 +10,8 @@ import java.util.Map;
  *
  */
 public class NullConfiguredProvenance implements ConfiguredObjectProvenance {
+    private static final long serialVersionUID = 1L;
+
     private final String className;
 
     public NullConfiguredProvenance(String className) {

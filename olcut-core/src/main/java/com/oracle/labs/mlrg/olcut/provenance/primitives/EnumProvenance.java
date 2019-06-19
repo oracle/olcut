@@ -8,6 +8,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records an enum value.
  */
 public final class EnumProvenance<E extends Enum> implements PrimitiveProvenance<E> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 

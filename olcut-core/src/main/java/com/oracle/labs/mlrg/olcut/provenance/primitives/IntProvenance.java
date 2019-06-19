@@ -8,6 +8,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records a Integer value.
  */
 public final class IntProvenance implements PrimitiveProvenance<Integer> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 

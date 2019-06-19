@@ -9,6 +9,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records a resource location.
  */
 public final class URIProvenance implements PrimitiveProvenance<URI> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 

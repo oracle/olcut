@@ -42,6 +42,7 @@ import java.util.logging.Logger;
  *
  */
 public class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenance {
+    private static final long serialVersionUID = 1L;
     private static final Logger logger = Logger.getLogger(ConfiguredObjectProvenanceImpl.class.getName());
 
     protected final String className;

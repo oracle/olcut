@@ -8,6 +8,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records a Float value.
  */
 public final class FloatProvenance implements PrimitiveProvenance<Float> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 

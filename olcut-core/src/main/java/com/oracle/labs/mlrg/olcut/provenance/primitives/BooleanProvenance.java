@@ -8,6 +8,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records a Boolean value.
  */
 public final class BooleanProvenance implements PrimitiveProvenance<Boolean> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 
