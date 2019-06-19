@@ -2,7 +2,7 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.MapConfigurable;
-import com.oracle.labs.mlrg.olcut.config.PropertySheet;
+import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

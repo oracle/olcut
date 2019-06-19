@@ -5,7 +5,7 @@ import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.Options;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.PropertySheet;
+import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.ArgumentException;
 import com.oracle.labs.mlrg.olcut.config.InternalConfigurationException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
@@ -231,28 +231,24 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @param instanceName the instance name of the object
      * @return the property sheet for the object.
      */
+    @Override
     protected ServablePropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
         if(!symbolTable.containsKey(instanceName)) {
             // if it is not in the symbol table, so construct
             // it based upon our raw property data
-            ConfigurationData rpd = rawPropertyMap.get(instanceName);
+            ConfigurationData rpd = configurationDataMap.get(instanceName);
             if(rpd != null) {
                 String className = rpd.getClassName();
                 try {
-                    Class cls = Class.forName(className);
-                    if (Configurable.class.isAssignableFrom(cls)) {
-
-                        // now load the property-sheet by using the class annotation
-                        ServablePropertySheet<? extends Configurable> propertySheet =
-                                getNewPropertySheet((Class<? extends Configurable>) cls,instanceName, this, rpd);
-
+                    Class<?> confClass = Class.forName(className);
+                    if (Configurable.class.isAssignableFrom(confClass)) {
+                        ServablePropertySheet<? extends Configurable> propertySheet = new ServablePropertySheet<>((Class<? extends Configurable>)confClass,this,rpd);
                         symbolTable.put(instanceName, propertySheet);
                     } else {
-                        throw new PropertyException(instanceName, "Unable to cast " + className +
-                                " to com.oracle.labs.mlrg.olcut.config.Configurable");
+                        throw new PropertyException(rpd.getName(), "Class " + className + " does not implement Configurable.");
                     }
-                } catch(ClassNotFoundException e) {
-                    throw new PropertyException(e,instanceName,"Unable to load class " + className);
+                } catch (ClassNotFoundException e) {
+                    throw new PropertyException(e, rpd.getName(), "Class " + className + " not found");
                 }
             }
         }
@@ -441,13 +437,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
     }
 
     @Override
-    protected <T extends Configurable> ServablePropertySheet<T> getNewPropertySheet(T conf, String name, ConfigurationManager cm, ConfigurationData rpd) {
-        return new ServablePropertySheet<>(conf,name,(JiniConfigurationManager)cm,rpd);
+    protected <T extends Configurable> ServablePropertySheet<T> createPropertySheet(T conf, ConfigurationManager cm, ConfigurationData rpd) {
+        return new ServablePropertySheet<>(conf,(JiniConfigurationManager)cm,rpd);
     }
-
-    @Override
-    protected <T extends Configurable> ServablePropertySheet<T> getNewPropertySheet(Class<T> conf, String name, ConfigurationManager cm, ConfigurationData rpd) {
-        return new ServablePropertySheet<>(conf,name,(JiniConfigurationManager)cm,rpd);
-    }
-
 }

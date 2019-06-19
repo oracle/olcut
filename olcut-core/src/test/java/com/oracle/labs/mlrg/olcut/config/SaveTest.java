@@ -31,7 +31,7 @@ public class SaveTest {
         ConfigurationManager cm1 = new ConfigurationManager("genericConfig.xml");
         SetConfig s1 = (SetConfig) cm1.lookup("correctSetConfig");
         cm1.save(f, true);
-        assertEquals(3, cm1.getNumConfigured());
+        assertEquals(3, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         SetConfig s2 = (SetConfig) cm2.lookup("correctSetConfig");
         assertEquals(s1, s2);
@@ -44,7 +44,7 @@ public class SaveTest {
     public void saveAllWithNoInstantiationGeneric() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("genericConfig.xml");
         cm1.save(f, true);
-        assertEquals(0, cm1.getNumConfigured());
+        assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         SetConfig s1 = (SetConfig) cm1.lookup("correctSetConfig");
         SetConfig s2 = (SetConfig) cm2.lookup("correctSetConfig");
@@ -59,7 +59,7 @@ public class SaveTest {
         ConfigurationManager cm1 = new ConfigurationManager("basicConfig.xml");
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         cm1.save(f, true);
-        assertEquals(1, cm1.getNumConfigured());
+        assertEquals(1, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
         assertEquals(bc1, bc2);
@@ -72,7 +72,7 @@ public class SaveTest {
     public void saveAllWithNoInstantiation() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("basicConfig.xml");
         cm1.save(f, true);
-        assertEquals(0, cm1.getNumConfigured());
+        assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
@@ -90,9 +90,9 @@ public class SaveTest {
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
         m.put("d", new SimpleProperty(""+2.71));
-        cm1.addConfigurable(BasicConfigurable.class, "c", m);
+        cm1.addConfiguration(new ConfigurationData("c",BasicConfigurable.class.getName(),m));
         cm1.save(f, true);
-        assertEquals(1, cm1.getNumConfigured());
+        assertEquals(1, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc2 = (BasicConfigurable) cm2.lookup("a");
         assertEquals(bc1, bc2);
@@ -113,9 +113,9 @@ public class SaveTest {
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
         m.put("d", new SimpleProperty(""+2.71));
-        cm1.addConfigurable(BasicConfigurable.class, "c", m);
+        cm1.addConfiguration(new ConfigurationData("c",BasicConfigurable.class.getName(),m));
         cm1.save(f, true);
-        assertEquals(0, cm1.getNumConfigured());
+        assertEquals(0, cm1.getNumInstantiated());
         
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
@@ -138,7 +138,7 @@ public class SaveTest {
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         cm1.removeConfigurable("a");
         cm1.save(f, true);
-        assertEquals(0, cm1.getNumConfigured());
+        assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc2;
         try {
@@ -156,7 +156,7 @@ public class SaveTest {
         ConfigurationManager cm1 = new ConfigurationManager("basicConfig.xml");
         cm1.removeConfigurable("a");
         cm1.save(f, true);
-        assertEquals(0, cm1.getNumConfigured());
+        assertEquals(0, cm1.getNumInstantiated());
 
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         BasicConfigurable bc2;
@@ -177,7 +177,7 @@ public class SaveTest {
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
         m.put("d", new SimpleProperty(""+2.71));
-        cm1.addConfigurable(BasicConfigurable.class, "c", m);
+        cm1.addConfiguration(new ConfigurationData("c",BasicConfigurable.class.getName(),m));
         boolean removed = cm1.removeConfigurable("c");
         Assert.assertTrue(removed);
         cm1.save(f, false);

@@ -3,6 +3,7 @@ package com.oracle.labs.mlrg.olcut.config;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -19,6 +20,9 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,7 +43,7 @@ public class AllFieldsConfiguredTest {
     public void loadConfig() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
-        assertTrue("Failed to load all-config",ac!=null);
+        assertNotNull("Failed to load all-config", ac);
     }
 
     @Test
@@ -68,14 +72,14 @@ public class AllFieldsConfiguredTest {
         ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
 
         // Override various properties.
-        cm.overrideConfigurableProperty("all-config","boolField","false");
-        cm.overrideConfigurableProperty("all-config","doubleArrayField", Arrays.asList("3.14","2.77","1.0"));
+        cm.overrideConfigurableProperty("all-config","boolField",new SimpleProperty("false"));
+        cm.overrideConfigurableProperty("all-config","doubleArrayField", ListProperty.createFromStringList(Arrays.asList("3.14","2.77","1.0")));
         // This rearranges the elements of listConfigurableSubclassField
-        cm.overrideConfigurableProperty("all-config","listConfigurableSubclassField", Arrays.asList("second-configurable","first-configurable"));
+        cm.overrideConfigurableProperty("all-config","listConfigurableSubclassField", ListProperty.createFromStringList(Arrays.asList("second-configurable","first-configurable")));
         Map<String,String> newMap = new HashMap<>();
         newMap.put("one","1.0");
         newMap.put("two","2.0");
-        cm.overrideConfigurableProperty("all-config","mapDoubleField",newMap);
+        cm.overrideConfigurableProperty("all-config","mapDoubleField", MapProperty.createFromStringMap(newMap));
 
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
 

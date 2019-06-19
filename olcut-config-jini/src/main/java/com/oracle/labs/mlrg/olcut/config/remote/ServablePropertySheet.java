@@ -4,7 +4,7 @@ import com.oracle.labs.mlrg.olcut.config.ComponentListener;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.PropertySheet;
+import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 
 import java.rmi.Remote;
@@ -24,15 +24,15 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
      */
     private final ConfigurationEntry[] entries;
 
-    protected ServablePropertySheet(T configurable, String name,
+    protected ServablePropertySheet(T configurable,
                                  JiniConfigurationManager cm, ConfigurationData rpd) {
-        this((Class<T>) configurable.getClass(), name, cm, rpd);
+        this((Class<T>) configurable.getClass(), cm, rpd);
         owner = configurable;
     }
 
-    protected ServablePropertySheet(Class<T> confClass, String name,
+    protected ServablePropertySheet(Class<T> confClass,
                                  JiniConfigurationManager cm, ConfigurationData rpd) {
-        super(confClass,name,cm,rpd);
+        super(confClass,cm,rpd);
 
         //
         // Does this class implement remote?
@@ -40,12 +40,12 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
 
         //
         // If we're supposed to have configuration entries, then get them now.
-        if (entriesName != null) {
+        if (data.getEntriesName() != null) {
             ConfigurationEntries ce
-                    = (ConfigurationEntries) cm.lookup(entriesName);
+                    = (ConfigurationEntries) cm.lookup(data.getEntriesName());
             if (ce == null) {
                 throw new PropertyException(instanceName, "entries",
-                        "Cannot find entries component " + entriesName);
+                        "Cannot find entries component " + data.getEntriesName());
             }
             entries = ce.getEntries();
         } else {
@@ -53,7 +53,7 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
         }
     }
 
-    public ServablePropertySheet(ServablePropertySheet<T> other){
+    protected ServablePropertySheet(ServablePropertySheet<T> other){
         super(other);
 
         //
@@ -62,12 +62,12 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
 
         //
         // If we're supposed to have configuration entries, then get them now.
-        if (entriesName != null) {
+        if (data.getEntriesName() != null) {
             ConfigurationEntries ce
-                    = (ConfigurationEntries) cm.lookup(entriesName);
+                    = (ConfigurationEntries) cm.lookup(data.getEntriesName());
             if (ce == null) {
                 throw new PropertyException(instanceName, "entries",
-                        "Cannot find entries component " + entriesName);
+                        "Cannot find entries component " + data.getEntriesName());
             }
             entries = ce.getEntries();
         } else {
