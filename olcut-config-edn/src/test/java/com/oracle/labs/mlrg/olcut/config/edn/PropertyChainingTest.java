@@ -2,13 +2,13 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.io.IOException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * Tests the chain loading of XML files in a configuration.
@@ -17,14 +17,11 @@ public class PropertyChainingTest {
 
     public PropertyChainingTest() { }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws IOException {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception { }
-    
     @Test
     public void chainLoading() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("propertyChainingConfigA.edn");

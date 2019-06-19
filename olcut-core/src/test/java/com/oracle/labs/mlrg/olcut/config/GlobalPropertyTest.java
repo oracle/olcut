@@ -5,13 +5,14 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -22,33 +23,39 @@ public class GlobalPropertyTest {
     public GlobalPropertyTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Exception {
     }
     
-    @Test(expected=PropertyException.class)
-    public void noProperty() throws IOException, PropertyException {
-        ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
-        StringConfigurable sc = (StringConfigurable) cm.lookup("unknown");
-    }
-
-    @Test(expected=PropertyException.class)
-    public void badlyFormed() throws IOException, PropertyException {
-        ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
-        StringConfigurable sc = (StringConfigurable) cm.lookup("badlyformed");
-    }
-
-    @Test(expected=ConfigLoaderException.class)
-    public void invalidGlobalProperty() {
-        ConfigurationManager cm = new ConfigurationManager("invalidGlobalPropertyConfig.xml");
+    @Test
+    public void noProperty() {
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
+            StringConfigurable sc = (StringConfigurable) cm.lookup("unknown");
+        });
     }
 
     @Test
-    public void simpleReplacement() throws IOException {
+    public void badlyFormed() {
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
+            StringConfigurable sc = (StringConfigurable) cm.lookup("badlyformed");
+        });
+    }
+
+    @Test
+    public void invalidGlobalProperty() {
+        assertThrows(ConfigLoaderException.class, () -> {
+            new ConfigurationManager("invalidGlobalPropertyConfig.xml");
+        });
+    }
+
+    @Test
+    public void simpleReplacement() {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("simple");
         assertEquals(sc.one, "alpha");
@@ -57,7 +64,7 @@ public class GlobalPropertyTest {
     }
 
     @Test
-    public void compoundReplacement() throws IOException {
+    public void compoundReplacement() {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("compound");
         assertEquals(sc.one, "alpha/beta");
@@ -66,7 +73,7 @@ public class GlobalPropertyTest {
     }
     
     @Test
-    public void nonGlobals() throws IOException {
+    public void nonGlobals() {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("nonglobal");
         assertEquals(sc.one, "${a");
@@ -75,7 +82,7 @@ public class GlobalPropertyTest {
     }
 
     @Test
-    public void recurse() throws IOException {
+    public void recurse() {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("recurse");
         assertEquals(sc.one, "alpha");
@@ -84,7 +91,7 @@ public class GlobalPropertyTest {
     }
     
     @Test
-    public void recurse2() throws IOException {
+    public void recurse2() {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("recurse2");
         assertEquals("alpha/bar", sc.one);
@@ -93,7 +100,7 @@ public class GlobalPropertyTest {
     }
     
     @Test
-    public void recurse3() throws IOException {
+    public void recurse3() {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("recurse3");
         assertEquals("/tmp/alpha", sc.one);
@@ -103,7 +110,7 @@ public class GlobalPropertyTest {
     }
     
     @Test
-    public void compoundRecurse() throws IOException {
+    public void compoundRecurse() {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("compoundrecurse");
         assertEquals(sc.one, "one beta/alpha");
@@ -112,7 +119,7 @@ public class GlobalPropertyTest {
     }
     
     @Test
-    public void distinguishedProps() throws IOException {
+    public void distinguishedProps() {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("distinguished");
         assertEquals(ConfigurationManagerUtils.getHostName(), sc.one);
@@ -120,7 +127,7 @@ public class GlobalPropertyTest {
     }
     
     @Test
-    public void stringList() throws IOException {
+    public void stringList() {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringListConfigurable slc = (StringListConfigurable) cm.lookup("listTest");
         assertEquals("alpha", slc.strings.get(0));

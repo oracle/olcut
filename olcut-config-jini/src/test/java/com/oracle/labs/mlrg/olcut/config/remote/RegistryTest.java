@@ -8,20 +8,19 @@ import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.util.SimpleLabsLogFormatter;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
- * @author stgreen
  */
 public class RegistryTest {
 
@@ -32,22 +31,19 @@ public class RegistryTest {
     public RegistryTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         SimpleLabsLogFormatter.setAllLogFormatters();
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         cm1 = null;
         cm2 = null;
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if(cm1 != null) {
             cm1.shutdown();
@@ -266,21 +262,20 @@ public class RegistryTest {
         assertEquals(((RegistryConfigurableImpl) rc1).recs.get(0), "test");
     }
 
-    @Test(expected= PropertyException.class)
+    @Test
     public void testRegisterAndLookupWithNonMatchingEntries() throws IOException {
+        assertThrows(PropertyException.class, () -> {
+            //
+            // Register in one manager.
+            cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
+            RegistryConfigurable rc1 = (RegistryConfigurable) cm1.lookup("servercompWithEntries");
+            assertNotNull(rc1);
 
-        //
-        // Register in one manager.
-        cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/serverConfig.xml");
-        RegistryConfigurable rc1 = (RegistryConfigurable) cm1.lookup("servercompWithEntries");
-        assertNotNull(rc1);
-
-        //
-        // Lookup in another.
-        cm2 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/clientConfig.xml");
-        RegistryConfigurable rc2 = (RegistryConfigurable) cm2.lookup("servercompWithNonMatchingEntries");
-
-        fail("Found a component which shouldn't have matched.");
-   }
+            //
+            // Lookup in another.
+            cm2 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/clientConfig.xml");
+            RegistryConfigurable rc2 = (RegistryConfigurable) cm2.lookup("servercompWithNonMatchingEntries");
+        }, "Found a component which shouldn't have matched.");
+    }
 
 }

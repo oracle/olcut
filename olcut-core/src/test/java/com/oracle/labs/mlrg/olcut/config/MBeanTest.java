@@ -1,9 +1,5 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -18,31 +14,21 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class MBeanTest {
 
     public MBeanTest() {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
+    @AfterEach
     public void tearDown() {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         try {
@@ -71,7 +57,7 @@ public class MBeanTest {
     public void registerMBean() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("registerTest");
-        assertNotNull("Couldn't lookup registerTest", smbc);
+        assertNotNull(smbc, "Couldn't lookup registerTest");
         assertEquals(smbc.getValue("a"), "10");
     }
 
@@ -79,7 +65,7 @@ public class MBeanTest {
     public void retrieveProperty() throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
         ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("registerTest");
-        assertNotNull("Couldn't lookup registerTest", smbc);
+        assertNotNull(smbc, "Couldn't lookup registerTest");
 
         MBeanServer mbs = cm.getMBeanServer();
         ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=registerTest");
@@ -93,7 +79,7 @@ public class MBeanTest {
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
         ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
-        assertNotNull("Couldn't lookup listTest", smbc);
+        assertNotNull(smbc, "Couldn't lookup listTest");
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=listTest");
@@ -108,15 +94,15 @@ public class MBeanTest {
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
         ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
-        assertNotNull("Couldn't lookup listTest", smbc);
+        assertNotNull(smbc, "Couldn't lookup listTest");
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=listTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
-        assertTrue("Unable to set a!", cmxb.setValue("a", "100"));
-        assertTrue("Unable to set b!", cmxb.setValue("b", "bargle"));
+        assertTrue(cmxb.setValue("a", "100"), "Unable to set a!");
+        assertTrue(cmxb.setValue("b", "bargle"), "Unable to set b!");
         assertEquals("100", cmxb.getValue("a"));
         assertEquals("bargle", cmxb.getValue("b"));
     }
@@ -126,7 +112,7 @@ public class MBeanTest {
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
         ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
-        assertNotNull("Couldn't lookup listTest", smbc);
+        assertNotNull(smbc, "Couldn't lookup listTest");
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=listTest");
@@ -134,7 +120,7 @@ public class MBeanTest {
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
         assertArrayEquals(new String[] {"baz", "quux"}, cmxb.getValues("c"));
-        assertTrue("Unable to set c!", cmxb.setValues("c", new String[] {"props", "rule", "stuff"}));
+        assertTrue(cmxb.setValues("c", new String[] {"props", "rule", "stuff"}), "Unable to set c!");
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
         assertArrayEquals(new String[] {"props", "rule", "stuff"}, cmxb.getValues("c"));
@@ -145,7 +131,7 @@ public class MBeanTest {
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
         ConfigurationManager cm = new ConfigurationManager("mbeanConfig.xml");
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
-        assertNotNull("Couldn't lookup listTest", smbc);
+        assertNotNull(smbc, "Couldn't lookup listTest");
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=listTest");
@@ -153,9 +139,9 @@ public class MBeanTest {
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
         assertArrayEquals(new String[] {"baz", "quux"}, cmxb.getValues("c"));
-        assertTrue("Unable to set a!", cmxb.setValue("a", "100"));
-        assertTrue("Unable to set b!", cmxb.setValue("b", "bargle"));
-        assertTrue("Unable to set c!", cmxb.setValues("c", new String[] {"props", "rule", "stuff"}));
+        assertTrue(cmxb.setValue("a", "100"), "Unable to set a!");
+        assertTrue(cmxb.setValue("b", "bargle"), "Unable to set b!");
+        assertTrue(cmxb.setValues("c", new String[] {"props", "rule", "stuff"}), "Unable to set c!");
         assertEquals("100", cmxb.getValue("a"));
         assertEquals("bargle", cmxb.getValue("b"));
         assertArrayEquals(new String[] {"props", "rule", "stuff"}, cmxb.getValues("c"));

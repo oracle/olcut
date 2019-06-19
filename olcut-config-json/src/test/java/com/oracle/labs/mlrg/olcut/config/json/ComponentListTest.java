@@ -7,17 +7,18 @@ import com.oracle.labs.mlrg.olcut.config.ListConfigurable;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.SimpleConfigurable;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 
 /**
  * A set of tests for component lists.
@@ -27,13 +28,9 @@ public class ComponentListTest {
     public ComponentListTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
     }
 
     @Test
@@ -47,13 +44,15 @@ public class ComponentListTest {
         }
     }
 
-    @Test(expected = PropertyException.class)
+    @Test
     public void badComponentListTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
-        ListConfigurable lc = (ListConfigurable) cm.lookup("bad");
-        for (Configurable c : lc.getList()) {
-            assertNotNull(c);
-        }
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
+            ListConfigurable lc = (ListConfigurable) cm.lookup("bad");
+            for (Configurable c : lc.getList()) {
+                assertNotNull(c);
+            }
+        });
     }
 
     @Test
@@ -129,10 +128,11 @@ public class ComponentListTest {
         assertEquals("un",thirdOne);
     }
 
-    @Test(expected=PropertyException.class)
+    @Test
     public void stringConfigurableBrokenArrayTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
-        ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearraybroken");
-        fail("Did not throw PropertyException when asking for unknown element in configurable array.");
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
+            ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearraybroken");
+        }, "Did not throw PropertyException when asking for unknown element in configurable array.");
     }
 }

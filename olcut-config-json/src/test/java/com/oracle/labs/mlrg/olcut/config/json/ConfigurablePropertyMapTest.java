@@ -2,15 +2,15 @@ package com.oracle.labs.mlrg.olcut.config.json;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.FooMapConfigurable;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -19,12 +19,12 @@ public class ConfigurablePropertyMapTest {
 
     public File f;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         f = File.createTempFile("config", ".json");
         f.deleteOnExit();

@@ -3,16 +3,16 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.FooConfigurable;
 import com.oracle.labs.mlrg.olcut.config.FooUserConfigurable;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Test ConfigurationManager behavior for a Configurable with 1+ inner Configurable.
@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
 public class NestedConfigurablesTest {
     private static final Logger log = Logger.getLogger(NestedConfigurablesTest.class.getName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }
