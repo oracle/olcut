@@ -1,6 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import static org.junit.Assert.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +18,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+
 
 public class ArgumentParsingTest {
 
@@ -30,7 +34,7 @@ public class ArgumentParsingTest {
         List<String> expectedOutput = Arrays.asList("nasty", "input", "string,with spaces", "\"quoted,commas\"", "and,other things.");
 
         List<String> output = ConfigurationManager.parseStringList(a);
-        assertEquals("String parsing failed", expectedOutput, output);
+        assertEquals(expectedOutput, output, "String parsing failed");
     }
 
     @Test
@@ -49,9 +53,9 @@ public class ArgumentParsingTest {
         ParsingOptions o = new ParsingOptions();
         ConfigurationManager cm = new ConfigurationManager(args, o);
         StringListConfigurable slc = (StringListConfigurable) cm.lookup("listTest");
-        assertEquals("Loading from " + name + " failed.", "a", slc.strings.get(0));
-        assertEquals("Loading from " + name + " failed.", "b", slc.strings.get(1));
-        assertEquals("Loading from " + name + " failed.", "c", slc.strings.get(2));
+        assertEquals("a", slc.strings.get(0), "Loading from " + name + " failed.");
+        assertEquals("b", slc.strings.get(1), "Loading from " + name + " failed.");
+        assertEquals("c", slc.strings.get(2), "Loading from " + name + " failed.");
     }
 
     @Test
@@ -60,9 +64,9 @@ public class ArgumentParsingTest {
         ConfigurationManager cm = new ConfigurationManager(args);
 
         StringListConfigurable slc = (StringListConfigurable) cm.lookup("listTest");
-        assertEquals("Configurable overriding failed.", "alpha", slc.strings.get(0));
-        assertEquals("Configurable overriding failed.", "beta", slc.strings.get(1));
-        assertEquals("Configurable overriding failed.", "gamma", slc.strings.get(2));
+        assertEquals("alpha", slc.strings.get(0), "Configurable overriding failed.");
+        assertEquals("beta", slc.strings.get(1), "Configurable overriding failed.");
+        assertEquals("gamma", slc.strings.get(2), "Configurable overriding failed.");
     }
 
     @Test
@@ -71,9 +75,9 @@ public class ArgumentParsingTest {
         String[] args = new String[]{"-c", "stringListConfig.xml", "-s", "overridingTest"};
         ConfigurationManager cm = new ConfigurationManager(args, o);
 
-        assertEquals("Configurable overriding failed.", "primates", o.slc.strings.get(0));
-        assertEquals("Configurable overriding failed.", "monkeys", o.slc.strings.get(1));
-        assertEquals("Configurable overriding failed.", "lemurs", o.slc.strings.get(2));
+        assertEquals("primates", o.slc.strings.get(0), "Configurable overriding failed.");
+        assertEquals("monkeys", o.slc.strings.get(1), "Configurable overriding failed.");
+        assertEquals("lemurs", o.slc.strings.get(2), "Configurable overriding failed.");
     }
 
     @Test
@@ -83,9 +87,9 @@ public class ArgumentParsingTest {
         ConfigurationManager cm = new ConfigurationManager(args, o);
 
         StringListConfigurable slc = o.slc;
-        assertEquals("Configurable overriding failed.", "alpha", slc.strings.get(0));
-        assertEquals("Configurable overriding failed.", "beta", slc.strings.get(1));
-        assertEquals("Configurable overriding failed.", "gamma", slc.strings.get(2));
+        assertEquals("alpha", slc.strings.get(0), "Configurable overriding failed.");
+        assertEquals("beta", slc.strings.get(1), "Configurable overriding failed.");
+        assertEquals("gamma", slc.strings.get(2), "Configurable overriding failed.");
     }
 
     @Test
@@ -93,53 +97,59 @@ public class ArgumentParsingTest {
         String[] args = new String[]{"-c", "globalPropertyConfig.xml", "--@a", "apollo", "--@monkeys", "gibbons"};
         ConfigurationManager cm = new ConfigurationManager(args);
 
-        assertEquals("Global property overriding failed.", "apollo", cm.getGlobalProperty("a"));
-        assertEquals("Global property overriding failed.", "gibbons", cm.getGlobalProperty("monkeys"));
-        assertEquals("Global property overriding failed.", "beta", cm.getGlobalProperty("b"));
+        assertEquals("apollo", cm.getGlobalProperty("a"), "Global property overriding failed.");
+        assertEquals("gibbons", cm.getGlobalProperty("monkeys"), "Global property overriding failed.");
+        assertEquals("beta", cm.getGlobalProperty("b"), "Global property overriding failed.");
     }
 
-    @Test(expected = ArgumentException.class)
+    @Test
     public void testConfigurableOverrideFail() throws IOException {
-        String[] args = new String[]{"--@listTest.strings", "alpha,beta,gamma"};
-        ConfigurationManager cm = new ConfigurationManager(args);
-        Assert.fail();
+        assertThrows(ArgumentException.class, () -> {
+            String[] args = new String[]{"--@listTest.strings", "alpha,beta,gamma"};
+            ConfigurationManager cm = new ConfigurationManager(args);
+        });
     }
 
-    @Test(expected = ArgumentException.class)
+    @Test
     public void testNoConfigParam() throws IOException {
-        String[] args = new String[]{"-c"};
-        ConfigurationManager cm = new ConfigurationManager(args);
-        Assert.fail();
+        assertThrows(ArgumentException.class, () -> {
+            String[] args = new String[]{"-c"};
+            ConfigurationManager cm = new ConfigurationManager(args);
+        });
     }
 
-    @Test(expected = ArgumentException.class)
+    @Test
     public void testNoConfigParamStr() throws IOException {
-        String[] args = new String[]{"--config-file"};
-        ConfigurationManager cm = new ConfigurationManager(args);
-        Assert.fail();
+        assertThrows(ArgumentException.class, () -> {
+            String[] args = new String[]{"--config-file"};
+            ConfigurationManager cm = new ConfigurationManager(args);
+        });
     }
 
-    @Test(expected = ArgumentException.class)
+    @Test
     public void testInvalidConfigParam() throws IOException {
-        String[] args = new String[]{"-c", "monkeys"};
-        ConfigurationManager cm = new ConfigurationManager(args);
-        Assert.fail();
+        assertThrows(ArgumentException.class, () -> {
+            String[] args = new String[]{"-c", "monkeys"};
+            ConfigurationManager cm = new ConfigurationManager(args);
+        });
     }
 
-    @Test(expected = ArgumentException.class)
+    @Test
     public void testDuplicateCharArguments() throws IOException {
-        String[] args = new String[]{"-c", "stringListConfig.xml"};
-        Options o = new DuplicateCharOptions();
-        ConfigurationManager cm = new ConfigurationManager(args, o);
-        Assert.fail();
+        assertThrows(ArgumentException.class, () -> {
+            String[] args = new String[]{"-c", "stringListConfig.xml"};
+            Options o = new DuplicateCharOptions();
+            ConfigurationManager cm = new ConfigurationManager(args, o);
+        });
     }
 
-    @Test(expected = ArgumentException.class)
+    @Test
     public void testDuplicateLongArguments() throws IOException {
-        String[] args = new String[]{"-c", "stringListConfig.xml"};
-        Options o = new DuplicateLongOptions();
-        ConfigurationManager cm = new ConfigurationManager(args, o);
-        Assert.fail();
+        assertThrows(ArgumentException.class, () -> {
+            String[] args = new String[]{"-c", "stringListConfig.xml"};
+            Options o = new DuplicateLongOptions();
+            ConfigurationManager cm = new ConfigurationManager(args, o);
+        });
     }
 
     @Test
@@ -150,7 +160,7 @@ public class ArgumentParsingTest {
 
         ConfigurationManager cm = new ConfigurationManager(args, o);
 
-        Assert.assertEquals("Generated and parsed options not the same", factory, o);
+        assertEquals(factory, o, "Generated and parsed options not the same");
     }
 
     @Test
@@ -159,13 +169,13 @@ public class ArgumentParsingTest {
         NoConfigOptions o = new NoConfigOptions();
         ConfigurationManager cm;
         cm = new ConfigurationManager(args, o, false);
-        Assert.assertNotNull(cm);
-        Assert.assertEquals("Failed to parse out option", args[1], o.notAConfigFile);
+        assertNotNull(cm);
+        assertEquals(args[1], o.notAConfigFile, "Failed to parse out option");
 
         try {
             o = new NoConfigOptions();
             cm = new ConfigurationManager(args, o, true);
-            Assert.fail("Accepted an config file option when it shouldn't have");
+            fail("Accepted an config file option when it shouldn't have");
         } catch (ArgumentException e) {
         }
     }
@@ -176,12 +186,12 @@ public class ArgumentParsingTest {
         InvalidNoConfigOptions o = new InvalidNoConfigOptions();
         ConfigurationManager cm;
         cm = new ConfigurationManager(args, o, true);
-        Assert.assertNotNull(cm);
+        assertNotNull(cm);
 
         try {
             o = new InvalidNoConfigOptions();
             cm = new ConfigurationManager(args, o, false);
-            Assert.fail("Accepted a generic configurable argument when it shouldn't have");
+            fail("Accepted a generic configurable argument when it shouldn't have");
         } catch (ArgumentException e) {
         }
     }

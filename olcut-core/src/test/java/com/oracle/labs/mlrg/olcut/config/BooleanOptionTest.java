@@ -1,7 +1,11 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -23,16 +27,16 @@ public class BooleanOptionTest {
 
         TestOptions o = new TestOptions();
 
-        Assert.assertFalse(o.test);
-        Assert.assertTrue(o.defaultTrue);
-        Assert.assertFalse(o.defaultFalse);
+        assertFalse(o.test);
+        assertTrue(o.defaultTrue);
+        assertFalse(o.defaultFalse);
 
         ConfigurationManager cm = new ConfigurationManager(args,o);
 
-        Assert.assertTrue(o.test);
-        Assert.assertFalse(o.defaultTrue);
-        Assert.assertTrue(o.defaultFalse);
-        Assert.assertEquals(0, cm.getUnnamedArguments().length);
+        assertTrue(o.test);
+        assertFalse(o.defaultTrue);
+        assertTrue(o.defaultFalse);
+        assertEquals(0, cm.getUnnamedArguments().length);
     }
 
     @Test
@@ -41,13 +45,13 @@ public class BooleanOptionTest {
 
         TestOptions o = new TestOptions();
 
-        Assert.assertTrue(o.defaultTrue);
-        Assert.assertFalse(o.defaultFalse);
+        assertTrue(o.defaultTrue);
+        assertFalse(o.defaultFalse);
 
         ConfigurationManager cm = new ConfigurationManager(args,o);
 
-        Assert.assertFalse(o.defaultTrue);
-        Assert.assertTrue(o.defaultFalse);
+        assertFalse(o.defaultTrue);
+        assertTrue(o.defaultFalse);
     }
 
     @Test
@@ -58,9 +62,9 @@ public class BooleanOptionTest {
 
         ConfigurationManager cm = new ConfigurationManager(args,o);
 
-        Assert.assertTrue(o.test);
-        Assert.assertFalse(o.defaultTrue);
-        Assert.assertTrue(o.defaultFalse);
+        assertTrue(o.test);
+        assertFalse(o.defaultTrue);
+        assertTrue(o.defaultFalse);
 
         cm.close();
 
@@ -70,9 +74,9 @@ public class BooleanOptionTest {
 
         cm = new ConfigurationManager(args,o);
 
-        Assert.assertTrue(o.test);
-        Assert.assertTrue(o.defaultTrue);
-        Assert.assertTrue(o.defaultFalse);
+        assertTrue(o.test);
+        assertTrue(o.defaultTrue);
+        assertTrue(o.defaultFalse);
     }
 
 }

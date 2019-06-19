@@ -1,11 +1,12 @@
 package com.oracle.labs.mlrg.olcut.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class GetoptTest {
 
@@ -20,26 +21,26 @@ public class GetoptTest {
         while ((c = getopt.getopt()) != -1) {
             switch (c) {
                 case 'a':
-                    assertTrue("Found an argument for option a",getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option a");
                     break;
                 case 'b':
-                    assertTrue("Found an argument for option b", getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option b");
                     break;
                 case 'c':
-                    assertEquals("Found incorrect argument for option c", "carg", getopt.optArg.toLowerCase());
+                    assertEquals("carg", getopt.optArg.toLowerCase(), "Found incorrect argument for option c");
                     break;
                 case 'x':
-                    assertTrue("Found an argument for option x", getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option x");
                     break;
                 case 'y':
-                    assertTrue("Found an argument for option y", getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option y");
                     break;
                 default:
                     fail("Found an unknown argument - " + c);
 
             }
         }
-        assertEquals("Found incorrect number of arguments", 6, getopt.optInd);
+        assertEquals( 6, getopt.optInd, "Found incorrect number of arguments");
     }
 
     @Test
@@ -52,10 +53,10 @@ public class GetoptTest {
         while ((c = getopt.getopt()) != -1) {
             switch (c) {
                 case 'a':
-                    assertTrue("Found an argument for option a",getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option a");
                     break;
                 case 'b':
-                    assertTrue("Found an argument for option b", getopt.optArg == null);
+                    assertTrue( getopt.optArg == null, "Found an argument for option b");
                     break;
                 case 'c':
                     fail("No argument c in input");
@@ -70,7 +71,7 @@ public class GetoptTest {
                     fail("Found an unknown argument - " + c);
             }
         }
-        assertEquals("Found incorrect number of arguments", 1, getopt.optInd);
+        assertEquals(1, getopt.optInd, "Found incorrect number of arguments");
     }
 
     @Test
@@ -83,33 +84,33 @@ public class GetoptTest {
         while ((c = getopt.getopt()) != -1) {
             switch (c) {
                 case 'a':
-                    assertTrue("Found an argument for option a",getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option a");
                     break;
                 case 'b':
-                    assertTrue("Found an argument for option b", getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option b");
                     break;
                 case 'c':
                     fail("No argument c in input");
                     break;
                 case 'd':
-                    assertFalse("Found an argument for option d", getopt.optArg == null);
+                    assertFalse(getopt.optArg == null, "Found an argument for option d");
                     break;
                 case 'x':
-                    assertTrue("Found an argument for option x", getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option x");
                     break;
                 case 'y':
                     fail("No argument y in input");
                     break;
                 default:
                     if (((char) c) == '?') {
-                        assertTrue("Found another missing argument", getopt.optInd == 3);
+                        assertTrue(getopt.optInd == 3, "Found another missing argument");
                     } else {
                         fail("Found an unknown argument - " + c);
                     }
             }
         }
 
-        assertEquals("Found incorrect number of arguments", 3, getopt.optInd);
+        assertEquals(3, getopt.optInd, "Found incorrect number of arguments");
     }
 
     @Test
@@ -122,10 +123,10 @@ public class GetoptTest {
         while ((c = getopt.getopt()) != -1) {
             switch (c) {
                 case 'a':
-                    assertTrue("Found an argument for option a",getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option a");
                     break;
                 case 'b':
-                    assertTrue("Found an argument for option b", getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option b");
                     break;
                 case 'c':
                     fail("No argument c in input");
@@ -134,21 +135,21 @@ public class GetoptTest {
                     fail("No argument d in input");
                     break;
                 case 'x':
-                    assertTrue("Found an argument for option x", getopt.optArg == null);
+                    assertTrue(getopt.optArg == null, "Found an argument for option x");
                     break;
                 case 'y':
                     fail("No argument y in input");
                     break;
                 default:
                     if (((char) c) == '?') {
-                        assertTrue("Found unrecognised argument", getopt.optInd == 2);
+                        assertTrue(getopt.optInd == 2, "Found unrecognised argument");
                     } else {
                         fail("Found an unknown argument - " + c);
                     }
             }
         }
 
-        assertEquals("Found incorrect number of arguments", 3, getopt.optInd);
+        assertEquals(3, getopt.optInd, "Found incorrect number of arguments");
     }
 
 }
