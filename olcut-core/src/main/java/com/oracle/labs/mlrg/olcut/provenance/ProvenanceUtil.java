@@ -1,6 +1,11 @@
 package com.oracle.labs.mlrg.olcut.provenance;
 
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.util.IOUtil;
+import com.oracle.labs.mlrg.olcut.util.Pair;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -10,6 +15,13 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -97,5 +109,89 @@ public final class ProvenanceUtil {
             logger.log(Level.SEVERE,"Failed to load standard hash algorithm " + hashType.name);
             return "invalid-algorithm-specified";
         }
+    }
+
+    /**
+     * Extracts a list of ConfigurationData which can be used to reconstruct the objects
+     * recorded in this provenance.
+     *
+     * The configurations are given machine generated names, and it makes a best effort
+     * attempt to flatten cycles without duplicating objects.
+     * @param provenance The provenance to extract configuration from.
+     * @return A list of configurations.
+     */
+    public static List<ConfigurationData> extractConfiguration(ObjectProvenance provenance) {
+        Map<ConfiguredObjectProvenance,Integer> provenanceTracker = new IdentityHashMap<>(30);
+
+        int counter = 0;
+
+        // Extract all the ObjectProvenance instances from the object graph rooted at provenance
+        Queue<ObjectProvenance> processingQueue = new LinkedList<>();
+        processingQueue.add(provenance);
+        while (!processingQueue.isEmpty()) {
+            ObjectProvenance curProv = processingQueue.poll();
+            if (curProv instanceof ConfiguredObjectProvenance) {
+                provenanceTracker.put((ConfiguredObjectProvenance)curProv,counter);
+                counter++;
+            }
+            for (Pair<String,Provenance> p : curProv) {
+                Provenance prov = p.getB();
+                if (prov instanceof ObjectProvenance) {
+                    processingQueue.add((ObjectProvenance)prov);
+                }
+            }
+        }
+
+        List<ConfigurationData> output = new ArrayList<>();
+
+        for (Map.Entry<ConfiguredObjectProvenance,Integer> e : provenanceTracker.entrySet()) {
+            output.add(extractSingleConfiguration(e.getKey(),computeName(e.getKey(),e.getValue()),provenanceTracker));
+        }
+
+        return output;
+    }
+
+    private static ConfigurationData extractSingleConfiguration(ConfiguredObjectProvenance obj, String objName, Map<ConfiguredObjectProvenance,Integer> map) {
+        ConfigurationData data = new ConfigurationData(objName,obj.getClassName());
+
+        for (Map.Entry<String,Provenance> e : obj.getConfiguredParameters().entrySet()) {
+            Provenance prov = e.getValue();
+            if (prov instanceof ListProvenance) {
+                List<SimpleProperty> list = new ArrayList<>();
+
+                for (Provenance p : (ListProvenance<Provenance>)prov) {
+                   if (p instanceof ConfiguredObjectProvenance) {
+                        list.add(new SimpleProperty(computeName((ConfiguredObjectProvenance)p,map.get(p))));
+                    } else {
+                        list.add(new SimpleProperty(p.toString()));
+                    }
+                }
+
+                data.add(e.getKey(),new ListProperty(list));
+            } else if (prov instanceof MapProvenance) {
+                Map<String,SimpleProperty> propMap = new HashMap<>();
+
+                for (Pair<String,Provenance> pair : (MapProvenance<Provenance>)prov) {
+                    Provenance valueProv = pair.getB();
+                    if (valueProv instanceof ConfiguredObjectProvenance) {
+                        propMap.put(pair.getA(),new SimpleProperty(computeName((ConfiguredObjectProvenance)valueProv,map.get(valueProv))));
+                    } else {
+                        propMap.put(pair.getA(),new SimpleProperty(valueProv.toString()));
+                    }
+                }
+
+                data.add(e.getKey(),new MapProperty(propMap));
+            } else if (prov instanceof ConfiguredObjectProvenance) {
+                data.add(e.getKey(),new SimpleProperty(computeName((ConfiguredObjectProvenance)prov,map.get(prov))));
+            } else {
+                data.add(e.getKey(),new SimpleProperty(prov.toString()));
+            }
+        }
+
+        return data;
+    }
+
+    public static String computeName(ConfiguredObjectProvenance obj, int number) {
+        return obj.getClassName() + "-" + number;
     }
 }
