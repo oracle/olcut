@@ -1,8 +1,6 @@
 package com.oracle.labs.mlrg.olcut.util;
 
 import java.io.BufferedReader;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,11 +11,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -31,7 +30,7 @@ public class GetAtLocationTest {
 
     protected static Path tempFile;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws IOException {
         tempFile = Files.createTempFile("olcut", "test");
     }
@@ -43,7 +42,7 @@ public class GetAtLocationTest {
         
         InputStream textStream = IOUtil.getInputStreamForLocation(TEXT_FILE);
         String text = new BufferedReader(new InputStreamReader(textStream)).readLine();
-        assertTrue("GZipped file and plain file weren't equal", text.equals(unzippedText));
+        assertTrue(text.equals(unzippedText), "GZipped file and plain file weren't equal");
     }
 
     @Test
@@ -82,7 +81,7 @@ public class GetAtLocationTest {
         assertNotNull(is);
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardown() {
         tempFile.toFile().delete();
     }

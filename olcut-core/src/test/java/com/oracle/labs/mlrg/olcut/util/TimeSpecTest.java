@@ -5,16 +5,14 @@
 
 package com.oracle.labs.mlrg.olcut.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * Tests for time specifications.
@@ -22,22 +20,6 @@ import org.junit.Test;
 public class TimeSpecTest {
 
     public TimeSpecTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test
@@ -68,13 +50,17 @@ public class TimeSpecTest {
         assertEquals(TimeUnit.DAYS.toMillis(2) + TimeUnit.HOURS.toMillis(5) + TimeUnit.MINUTES.toMillis(10), x);
     }
 
-    @Test(expected=java.lang.IllegalArgumentException.class)
+    @Test
     public void badOrder() {
-        long x = TimeSpec.parse("2h5d");
+        assertThrows(IllegalArgumentException.class, () -> {
+            long x = TimeSpec.parse("2h5d");
+        });
     }
 
-    @Test(expected=java.lang.IllegalArgumentException.class)
+    @Test
     public void badUnit() {
-        long x = TimeSpec.parse("2h5ns");
+        assertThrows(IllegalArgumentException.class, () -> {
+            long x = TimeSpec.parse("2h5ns");
+        });
     }
 }

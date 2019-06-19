@@ -11,47 +11,54 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManagerUtils;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.StringListConfigurable;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.io.IOException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 /**
  *
- * @author stgreen
  */
 public class GlobalPropertyTest {
 
     public GlobalPropertyTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Exception {
     }
     
-    @Test(expected=PropertyException.class)
+    @Test
     public void noProperty() throws IOException, PropertyException {
-        ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.json");
-        StringConfigurable sc = (StringConfigurable) cm.lookup("unknown");
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.json");
+            StringConfigurable sc = (StringConfigurable) cm.lookup("unknown");
+        });
     }
 
-    @Test(expected=PropertyException.class)
+    @Test
     public void badlyFormed() throws IOException, PropertyException {
-        ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.json");
-        StringConfigurable sc = (StringConfigurable) cm.lookup("badlyformed");
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.json");
+            StringConfigurable sc = (StringConfigurable) cm.lookup("badlyformed");
+        });
     }
 
-    @Test(expected=ConfigLoaderException.class)
+    @Test
     public void invalidGlobalProperty() {
-        ConfigurationManager cm = new ConfigurationManager("invalidGlobalPropertyConfig.json");
+        assertThrows(ConfigLoaderException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("invalidGlobalPropertyConfig.json");
+        });
     }
 
     @Test

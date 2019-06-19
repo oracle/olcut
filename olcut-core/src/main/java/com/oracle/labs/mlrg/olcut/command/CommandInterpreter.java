@@ -45,13 +45,13 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import com.oracle.labs.mlrg.olcut.util.Util;
-
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.completer.FileNameCompleter;
 import jline.console.completer.NullCompleter;
 import jline.console.history.FileHistory;
 import jline.console.history.History;
+
 
 /**
  * This class is a command interpreter. It reads strings from an input stream,

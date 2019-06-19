@@ -1,27 +1,20 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 /**
  *
- * @author stgreen
  */
 public class PropertyExceptionTest {
 
     public PropertyExceptionTest() {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
     /**
      * A test that will throw a property exception due to an unknown property
@@ -29,15 +22,19 @@ public class PropertyExceptionTest {
      * @throws PropertyException
      * @throws java.io.IOException
      */
-    @Test(expected=PropertyException.class)
+    @Test
     public void unknownPropertyException() throws PropertyException, IOException {
-        ConfigurationManager cm = new ConfigurationManager("undefinedPropertyConfig.xml");
-        SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simple");
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("undefinedPropertyConfig.xml");
+            SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simple");
+        });
     }
     
-    @Test(expected=PropertyException.class)
+    @Test
     public void unknownPropertyWithKnownPropertyException() throws PropertyException, IOException {
-        ConfigurationManager cm = new ConfigurationManager("undefinedPropertyConfig.xml");
-        SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simple2");
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("undefinedPropertyConfig.xml");
+            SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simple2");
+        });
     }
 }

@@ -7,15 +7,16 @@ package com.oracle.labs.mlrg.olcut.config.remote;
 import com.oracle.labs.mlrg.olcut.util.SimpleLabsLogFormatter;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import java.io.IOException;
-import java.net.URL;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * Tests the failure of a component by removing it from the registry.  The
@@ -32,7 +33,7 @@ public class ComponentFailureTest {
     public ComponentFailureTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         Logger l = Logger.getLogger("");
         for(Handler h : l.getHandlers()) {
@@ -40,17 +41,13 @@ public class ComponentFailureTest {
         }
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
         cm1 = null;
         cm2 = null;
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         if(cm1 != null) {
             cm1.shutdown();

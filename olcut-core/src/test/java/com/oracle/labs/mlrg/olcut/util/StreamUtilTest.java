@@ -1,7 +1,5 @@
 package com.oracle.labs.mlrg.olcut.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -15,8 +13,11 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 
 public class StreamUtilTest {
     private static final Logger logger = Logger.getLogger(StreamUtilTest.class.getName());
@@ -34,8 +35,8 @@ public class StreamUtilTest {
         List<Integer> otherOutput = fjp.submit(() -> bounded.map(a -> a + 5).collect(Collectors.toList())).get();
 
         logger.finer("Unbounded = " + unboundedCounter.get() + ", bounded = " + boundedCounter.get());
-        assertNotEquals("Parallelism wasn't bounded", boundedCounter.get(), unboundedCounter.get());
-        assertEquals("Parallelism wasn't bounded", 2 << 2, boundedCounter.get());
+        assertNotEquals(boundedCounter.get(), unboundedCounter.get(), "Parallelism wasn't bounded");
+        assertEquals(2 << 2, boundedCounter.get(), "Parallelism wasn't bounded");
     }
 
     public static Stream<Integer> arrayFactory(int size) {

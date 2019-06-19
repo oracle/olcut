@@ -3,12 +3,14 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.MapConfigurable;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Map;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests the extraction of {@link Map} objects from a {@link PropertySheet}.
@@ -16,7 +18,7 @@ import java.util.Map;
 
 public class MapTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }
@@ -28,8 +30,8 @@ public class MapTest {
         ConfigurationManager cm = new ConfigurationManager("mapConfig.edn");
         MapConfigurable m = (MapConfigurable) cm.lookup("mapTest");
         Map<String,String> map = m.map;
-        Assert.assertEquals("stuff",map.get("things"));
-        Assert.assertEquals("quux",map.get("foo"));
-        Assert.assertNull(map.get("bar"));
+        assertEquals("stuff",map.get("things"));
+        assertEquals("quux",map.get("foo"));
+        assertNull(map.get("bar"));
     }
 }
