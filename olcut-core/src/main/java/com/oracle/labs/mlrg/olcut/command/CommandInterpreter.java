@@ -1099,13 +1099,10 @@ public class CommandInterpreter extends Thread {
                             Arrays.toString(args),
                             currParam.getName(),
                             usage);
-                    
                 }
             }
             return (String)m.invoke(group, invokeParams);
         }
-        
-        
     }
     
     /**
