@@ -8,6 +8,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records a Byte value.
  */
 public final class ByteProvenance implements PrimitiveProvenance<Byte> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 

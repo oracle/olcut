@@ -8,6 +8,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records a Short value.
  */
 public final class ShortProvenance implements PrimitiveProvenance<Short> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 

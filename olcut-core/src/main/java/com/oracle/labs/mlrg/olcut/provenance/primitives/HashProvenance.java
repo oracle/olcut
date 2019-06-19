@@ -10,6 +10,7 @@ import java.util.Objects;
  *
  */
 public final class HashProvenance implements PrimitiveProvenance<String> {
+    private static final long serialVersionUID = 1L;
 
     private final HashType type;
 

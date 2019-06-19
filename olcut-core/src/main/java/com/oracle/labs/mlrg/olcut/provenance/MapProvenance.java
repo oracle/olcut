@@ -13,6 +13,7 @@ import java.util.Objects;
  *
  */
 public final class MapProvenance<T extends Provenance> implements Provenance, Iterable<Pair<String,T>> {
+    private static final long serialVersionUID = 1L;
 
     private final Map<String,T> map;
 

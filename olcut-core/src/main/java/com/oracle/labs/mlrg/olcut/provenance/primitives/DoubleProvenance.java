@@ -8,6 +8,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records a Double value.
  */
 public final class DoubleProvenance implements PrimitiveProvenance<Double> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 

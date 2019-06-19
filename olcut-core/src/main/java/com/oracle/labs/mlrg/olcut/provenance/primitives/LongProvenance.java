@@ -8,6 +8,7 @@ import java.util.Objects;
  * A {@link PrimitiveProvenance} which records a Long value.
  */
 public final class LongProvenance implements PrimitiveProvenance<Long> {
+    private static final long serialVersionUID = 1L;
 
     private final String key;
 

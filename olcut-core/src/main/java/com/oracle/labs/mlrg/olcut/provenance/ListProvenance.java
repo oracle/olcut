@@ -11,6 +11,7 @@ import java.util.Objects;
  * Provenance for a list of provenancable types.
  */
 public final class ListProvenance<T extends Provenance> implements Provenance, Iterable<T> {
+    private static final long serialVersionUID = 1L;
 
     private final List<T> list;
 
