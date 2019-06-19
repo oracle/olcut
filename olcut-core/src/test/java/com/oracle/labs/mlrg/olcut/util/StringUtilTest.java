@@ -1,10 +1,11 @@
 package com.oracle.labs.mlrg.olcut.util;
 
-import static org.junit.Assert.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.oracle.labs.mlrg.olcut.util.StringUtil.normalize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class StringUtilTest {
 
 	@Test

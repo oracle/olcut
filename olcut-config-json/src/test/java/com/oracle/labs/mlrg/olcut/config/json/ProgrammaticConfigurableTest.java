@@ -6,11 +6,6 @@ import com.oracle.labs.mlrg.olcut.config.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,13 +14,15 @@ import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
- * @author sg93990
  */
 public class ProgrammaticConfigurableTest {
 
@@ -34,7 +31,7 @@ public class ProgrammaticConfigurableTest {
     public ProgrammaticConfigurableTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
         Logger l = Logger.getLogger("");
@@ -43,17 +40,6 @@ public class ProgrammaticConfigurableTest {
         }
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     /**
      * Tests adding a configurable with the default properties.
@@ -115,16 +101,16 @@ public class ProgrammaticConfigurableTest {
     /**
      * Tests adding a configurable with an incorrect property type.
      */
-    @Test(expected=PropertyException.class)
+    @Test
     public void addConfigurableWithBadProperty() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("basicConfig.json");
-        Map<String,Property> m = new HashMap<>();
-        m.put("s", new SimpleProperty("one"));
-        m.put("i", new SimpleProperty("two"));
-        cm.addConfigurable(BasicConfigurable.class, "c", m);
-        BasicConfigurable bc = (BasicConfigurable) cm.lookup("c");
-        assertEquals("one", bc.s);
-        assertEquals(2, bc.i);
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("basicConfig.json");
+            Map<String, Property> m = new HashMap<>();
+            m.put("s", new SimpleProperty("one"));
+            m.put("i", new SimpleProperty("two"));
+            cm.addConfigurable(BasicConfigurable.class, "c", m);
+            BasicConfigurable bc = (BasicConfigurable) cm.lookup("c");
+        });
     }
 
     /**
@@ -150,16 +136,18 @@ public class ProgrammaticConfigurableTest {
      * Tests adding a configurable with an existing name, which should throw
      * an exception if it the existing configurable hasn't been instantiated.
      */
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void addAlreadyNamedAndInstatiatedStringConfigurable() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("stringConfig.json");
-        StringConfigurable sc = (StringConfigurable) cm.lookup("a");
-        Map<String,Property> m = new HashMap<>();
-        for(String s : new String[] {"one", "two", "three"}) {
-            m.put(s, new SimpleProperty(s));
-        }
-        cm.addConfigurable(StringConfigurable.class, "a", m);
-        sc = (StringConfigurable) cm.lookup("a");
+        assertThrows(IllegalArgumentException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("stringConfig.json");
+            StringConfigurable sc = (StringConfigurable) cm.lookup("a");
+            Map<String, Property> m = new HashMap<>();
+            for (String s : new String[]{"one", "two", "three"}) {
+                m.put(s, new SimpleProperty(s));
+            }
+            cm.addConfigurable(StringConfigurable.class, "a", m);
+            sc = (StringConfigurable) cm.lookup("a");
+        });
     }
 
     @Test

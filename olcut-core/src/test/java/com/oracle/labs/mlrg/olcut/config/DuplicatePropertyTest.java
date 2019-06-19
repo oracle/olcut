@@ -1,25 +1,30 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class DuplicatePropertyTest {
 
-    @Test(expected = ConfigLoaderException.class)
+    @Test
     public void duplicatePropertyMap() {
-        ConfigurationManager cm = new ConfigurationManager("duplicatePropertyMapConfig.xml");
-        Assert.fail("Should have thrown exception on loading");
+        assertThrows(ConfigLoaderException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("duplicatePropertyMapConfig.xml");
+        }, "Should have thrown exception on loading");
     }
 
-    @Test(expected = ConfigLoaderException.class)
+    @Test
     public void duplicatePropertyList() {
-        ConfigurationManager cm = new ConfigurationManager("duplicatePropertyListConfig.xml");
-        Assert.fail("Should have thrown exception on loading");
+        assertThrows(ConfigLoaderException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("duplicatePropertyListConfig.xml");
+        }, "Should have thrown exception on loading");
     }
 
-    @Test(expected = ConfigLoaderException.class)
+    @Test
     public void duplicateProperty() {
-        ConfigurationManager cm = new ConfigurationManager("duplicatePropertyConfig.xml");
-        Assert.fail("Should have thrown exception on loading");
+        assertThrows(ConfigLoaderException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("duplicatePropertyConfig.xml");
+        }, "Should have thrown exception on loading");
     }
 }

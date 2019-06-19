@@ -3,19 +3,20 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.RandomConfigurable;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.io.IOException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * Tests the construction of {@link java.util.Random} objects from a {@link PropertySheet}.
  */
 public class ConfigRandomTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }

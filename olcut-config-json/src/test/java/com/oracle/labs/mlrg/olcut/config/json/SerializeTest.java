@@ -3,26 +3,24 @@ package com.oracle.labs.mlrg.olcut.config.json;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Logger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 /**
  *
- * @author stgreen
  */
 public class SerializeTest {
 
@@ -33,16 +31,13 @@ public class SerializeTest {
     public SerializeTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws IOException {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
 
-    @AfterClass
-    public static void tearDownClass() {
-    }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         serPath = Files.createTempFile("ac", "ser");
         //
@@ -50,7 +45,7 @@ public class SerializeTest {
         Files.delete(serPath);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         try {
         	Files.delete(serPath);
@@ -138,16 +133,17 @@ public class SerializeTest {
         assertEquals(acs.three, "three");
     }
 
-    @Test(expected=PropertyException.class)
+    @Test
     public void checkBadSerialisedClass() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("stringConfig.json");
-        cm.setGlobalProperty("serFile", serPath.toString());
-        StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
-        ac.one = "one";
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serPath.toFile()))) {
-            oos.writeObject(ac);
-        }
-        StringConfigurable acs = (StringConfigurable) cm.lookupSerializedObject("badClass");
-        fail("Should have thrown PropertyException for an unknown class file");
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("stringConfig.json");
+            cm.setGlobalProperty("serFile", serPath.toString());
+            StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
+            ac.one = "one";
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serPath.toFile()))) {
+                oos.writeObject(ac);
+            }
+            StringConfigurable acs = (StringConfigurable) cm.lookupSerializedObject("badClass");
+        }, "Should have thrown PropertyException for an unknown class file");
     }
 }

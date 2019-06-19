@@ -1,20 +1,18 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  *
- * @author sg93990
  */
 public class ImportConfigTest {
 
@@ -23,21 +21,14 @@ public class ImportConfigTest {
 
     File f;
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         f = File.createTempFile("config", ".xml");
         f.deleteOnExit();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         f.delete();
     }

@@ -8,21 +8,19 @@ import com.oracle.labs.mlrg.olcut.config.ListConfigurable;
 import com.oracle.labs.mlrg.olcut.config.SimpleConfigurable;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.StringListConfigurable;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
- * @author sg93990
  */
 public class ImportConfigTest {
 
@@ -31,22 +29,19 @@ public class ImportConfigTest {
 
     File f;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         f = File.createTempFile("config", ".json");
         f.deleteOnExit();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         f.delete();
     }

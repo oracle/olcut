@@ -1,28 +1,19 @@
 package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.AllFieldsConfigurable;
-import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests reading and writing all valid fields from a config file.
@@ -31,7 +22,7 @@ public class AllFieldsConfiguredTest {
 
     File f;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
         f = File.createTempFile("all-config", ".edn");
@@ -42,7 +33,7 @@ public class AllFieldsConfiguredTest {
     public void loadConfig() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("allConfig.edn");
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
-        assertTrue("Failed to load all-config",ac!=null);
+        assertTrue(ac!=null, "Failed to load all-config");
     }
 
     @Test
@@ -52,7 +43,7 @@ public class AllFieldsConfiguredTest {
         cm1.save(f, true);
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
-        assertEquals("Two all configs aren't equal",ac1,ac2);
+        assertEquals(ac1,ac2, "Two all configs aren't equal");
     }
 
     @Test
@@ -63,7 +54,7 @@ public class AllFieldsConfiguredTest {
         cm1.save(f);
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
-        assertEquals("Imported config not equal to generated object",ac,ac2);
+        assertEquals(ac,ac2, "Imported config not equal to generated object");
     }
 
     @Test
@@ -72,15 +63,15 @@ public class AllFieldsConfiguredTest {
         PropertySheet ps = cm.getPropertySheet("all-config");
 
         boolean boolField = (Boolean) ps.get("boolField");
-        assertTrue("Failed to lookup boolean field", boolField);
+        assertTrue(boolField, "Failed to lookup boolean field");
 
         List listStringField = (List) ps.get("listStringField");
-        assertTrue("Failed to parse List<String> field", listStringField.size() == 2);
+        assertTrue(listStringField.size() == 2, "Failed to parse List<String> field");
 
         StringConfigurable sc = (StringConfigurable) ps.get("configurableField");
-        assertEquals("StringConfigurable not constructed correctly",new StringConfigurable("A","B","C"), sc);
+        assertEquals(new StringConfigurable("A","B","C"), sc, "StringConfigurable not constructed correctly");
 
-        assertTrue("Returned a value for an invalid field name", ps.get("monkeys") == null);
+        assertTrue(ps.get("monkeys") == null, "Returned a value for an invalid field name");
     }
 
 }

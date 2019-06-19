@@ -1,9 +1,11 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.io.IOException;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -14,16 +16,16 @@ public class SimpleFieldTest {
         ConfigurationManager cm = new ConfigurationManager("simpleFieldConfig.xml");
         SimpleFieldConfigurable sfc = (SimpleFieldConfigurable) cm.lookup(
                 "fieldTest");
-        Assert.assertEquals('a', sfc.charField);
-        Assert.assertEquals((Character)'b', sfc.characterField);
+        assertEquals('a', sfc.charField);
+        assertEquals((Character)'b', sfc.characterField);
     }
 
-    @Test(expected = PropertyException.class)
+    @Test
     public void testInvalidCharacterFields() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("simpleFieldConfig.xml");
-        SimpleFieldConfigurable sfc = (SimpleFieldConfigurable) cm.lookup(
-                "invalidCharacterFieldTest");
-        Assert.assertEquals('a', sfc.charField);
-        Assert.assertEquals((Character)'b', sfc.characterField);
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("simpleFieldConfig.xml");
+            SimpleFieldConfigurable sfc = (SimpleFieldConfigurable) cm.lookup(
+                    "invalidCharacterFieldTest");
+        });
     }
 }

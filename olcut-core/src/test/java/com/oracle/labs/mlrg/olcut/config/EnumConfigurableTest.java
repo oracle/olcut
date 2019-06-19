@@ -5,40 +5,20 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  *
- * @author stgreen
  */
 public class EnumConfigurableTest {
 
     public EnumConfigurableTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test
@@ -54,9 +34,9 @@ public class EnumConfigurableTest {
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("set1");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.B, ec.enum2);
-        assertTrue("Missing A", ec.enumSet1.contains(EnumConfigurable.Type.A));
-        assertTrue("Missing B", ec.enumSet1.contains(EnumConfigurable.Type.B));
-        assertTrue("Too big: " + ec.enumSet1, ec.enumSet1.size() == 2);
+        assertTrue(ec.enumSet1.contains(EnumConfigurable.Type.A), "Missing A");
+        assertTrue(ec.enumSet1.contains(EnumConfigurable.Type.B), "Missing B");
+        assertTrue(ec.enumSet1.size() == 2, "Too big: " + ec.enumSet1);
     }
 
     @Test public void defaultSet() throws IOException {
@@ -64,15 +44,17 @@ public class EnumConfigurableTest {
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("both");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.B, ec.enum2);
-        assertTrue("Missing A", ec.enumSet1.contains(EnumConfigurable.Type.A));
-        assertTrue("Missing F", ec.enumSet1.contains(EnumConfigurable.Type.F));
-        assertTrue("Too big: " + ec.enumSet1, ec.enumSet1.size() == 2);
+        assertTrue(ec.enumSet1.contains(EnumConfigurable.Type.A), "Missing A");
+        assertTrue(ec.enumSet1.contains(EnumConfigurable.Type.F), "Missing F");
+        assertTrue(ec.enumSet1.size() == 2, "Too big: " + ec.enumSet1);
     }
 
-    @Test(expected=PropertyException.class)
+    @Test
     public void badSetValue() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("badset");
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
+            EnumConfigurable ec = (EnumConfigurable) cm.lookup("badset");
+        });
     }
 
     @Test
@@ -83,10 +65,12 @@ public class EnumConfigurableTest {
         assertEquals(EnumConfigurable.Type.A, ec.enum2);
     }
 
-    @Test(expected=PropertyException.class)
+    @Test
     public void badValue() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
-        EnumConfigurable ec = (EnumConfigurable) cm.lookup("badvalue");
+        assertThrows(PropertyException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager("enumConfig.xml");
+            EnumConfigurable ec = (EnumConfigurable) cm.lookup("badvalue");
+        });
     }
 
     @Test

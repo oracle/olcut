@@ -4,11 +4,12 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.Option;
 import com.oracle.labs.mlrg.olcut.config.Options;
 import com.oracle.labs.mlrg.olcut.config.StringListConfigurable;
-import org.junit.Test;
 
 import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class ArgumentParsingTest {
 
@@ -28,9 +29,9 @@ public class ArgumentParsingTest {
         ParsingOptions o = new ParsingOptions();
         ConfigurationManager cm = new ConfigurationManager(args,o);
         StringListConfigurable slc = (StringListConfigurable) cm.lookup("listTest");
-        assertEquals("Loading from " + name + " failed.", "a", slc.strings.get(0));
-        assertEquals("Loading from " + name + " failed.", "b", slc.strings.get(1));
-        assertEquals("Loading from " + name + " failed.", "c", slc.strings.get(2));
+        assertEquals("a", slc.strings.get(0), "Loading from " + name + " failed.");
+        assertEquals("b", slc.strings.get(1), "Loading from " + name + " failed.");
+        assertEquals("c", slc.strings.get(2), "Loading from " + name + " failed.");
     }
 
     public static class ParsingOptions implements Options {

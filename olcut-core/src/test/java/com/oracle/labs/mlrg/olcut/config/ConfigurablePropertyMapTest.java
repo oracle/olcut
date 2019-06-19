@@ -1,13 +1,12 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.IOException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Before;
-import org.junit.Test;
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -16,7 +15,7 @@ public class ConfigurablePropertyMapTest {
 
     public File f;
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         f = File.createTempFile("config", ".xml");
         f.deleteOnExit();
