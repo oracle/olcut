@@ -1,7 +1,9 @@
 package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.BasicConfigurable;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
@@ -54,7 +56,7 @@ public class RemoveTest {
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(Integer.toString(7)));
         m.put("d", new SimpleProperty(Double.toString(2.71)));
-        cm.addConfigurable(BasicConfigurable.class, "a", m);
+        cm.addConfiguration(new ConfigurationData("a",BasicConfigurable.class.getName(),m));
         boolean removed = cm.removeConfigurable("a");
         Assert.assertTrue(removed);
         try{
@@ -70,7 +72,7 @@ public class RemoveTest {
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(Integer.toString(7)));
         m.put("d", new SimpleProperty(Double.toString(2.71)));
-        cm.addConfigurable(BasicConfigurable.class, "a", m);
+        cm.addConfiguration(new ConfigurationData("a",BasicConfigurable.class.getName(),m));
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         boolean removed = cm.removeConfigurable("a");
         Assert.assertTrue(removed);

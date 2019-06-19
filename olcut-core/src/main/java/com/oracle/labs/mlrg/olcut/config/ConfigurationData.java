@@ -12,6 +12,9 @@
  */
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriter;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriterException;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 
 import java.io.Serializable;
@@ -19,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Carrier for property data. Principally a {@link Map} from {@link String} to {@link Property}, and
@@ -47,9 +51,12 @@ public class ConfigurationData implements Serializable {
     private final boolean exportable;
     
     private final boolean importable;
-    
+
+    /**
+     * The time to lease this object.
+     */
     private final long leaseTime;
-    
+
     /**
      * The (possibly <code>null</code>) name of a component that has a list
      * of configuration entries to use when registering this component with
@@ -196,6 +203,35 @@ public class ConfigurationData implements Serializable {
      */
     public boolean contains(String propName) {
         return properties.containsKey(propName);
+    }
+
+    /**
+     * Copies this ConfigurationData. The copy is disconnected from the original as
+     * it contains a different map (though all the elements are immutable and the same references).
+     * @return A copy of this object.
+     */
+    public ConfigurationData copy() {
+        return new ConfigurationData(name,className,properties,serializedForm,entriesName,exportable,importable,leaseTime);
+    }
+
+    public void save(ConfigWriter configWriter) throws ConfigWriterException {
+        Map<String,String> attributes = new HashMap<>();
+
+        attributes.put(ConfigLoader.NAME,name);
+        attributes.put(ConfigLoader.TYPE,className);
+        attributes.put(ConfigLoader.IMPORT,""+isImportable());
+        attributes.put(ConfigLoader.EXPORT,""+isExportable());
+        if (getLeaseTime() > 0) {
+            attributes.put(ConfigLoader.LEASETIME, "" + getLeaseTime());
+        }
+        if (getSerializedForm() != null) {
+            attributes.put(ConfigLoader.SERIALIZED,getSerializedForm());
+        }
+        if (getEntriesName() != null) {
+            attributes.put(ConfigLoader.ENTRIES,getEntriesName());
+        }
+
+        configWriter.writeComponent(attributes,getProperties());
     }
 
 }

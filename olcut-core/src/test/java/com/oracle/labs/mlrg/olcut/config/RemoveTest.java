@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -67,7 +68,7 @@ public class RemoveTest {
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
         m.put("d", new SimpleProperty(""+2.71));
-        cm.addConfigurable(BasicConfigurable.class, "a", m);
+        cm.addConfiguration(new ConfigurationData("a",BasicConfigurable.class.getName(),m));
         boolean removed = cm.removeConfigurable("a");
         Assert.assertTrue(removed);
         try{
@@ -83,7 +84,7 @@ public class RemoveTest {
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
         m.put("d", new SimpleProperty(""+2.71));
-        cm.addConfigurable(BasicConfigurable.class, "a", m);
+        cm.addConfiguration(new ConfigurationData("a",BasicConfigurable.class.getName(),m));
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         boolean removed = cm.removeConfigurable("a");
         Assert.assertTrue(removed);
@@ -93,6 +94,6 @@ public class RemoveTest {
     public void removeUninstantiatedWithEmbeddedComponents() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("importConfig.xml");
         PropertySheet ps = cm.getPropertySheet("l1");
-        assertEquals(cm.getNumConfigured(), 0);
+        assertEquals(cm.getNumInstantiated(), 0);
     }
 }

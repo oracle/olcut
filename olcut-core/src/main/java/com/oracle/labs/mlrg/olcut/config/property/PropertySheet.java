@@ -1,4 +1,4 @@
-package com.oracle.labs.mlrg.olcut.config;
+package com.oracle.labs.mlrg.olcut.config.property;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -30,13 +30,16 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
-import com.oracle.labs.mlrg.olcut.config.io.ConfigWriter;
-import com.oracle.labs.mlrg.olcut.config.io.ConfigWriterException;
-import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
-import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
-import com.oracle.labs.mlrg.olcut.config.property.Property;
-import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.config.ComponentListener;
+import com.oracle.labs.mlrg.olcut.config.Config;
+import com.oracle.labs.mlrg.olcut.config.ConfigManager;
+import com.oracle.labs.mlrg.olcut.config.Configurable;
+import com.oracle.labs.mlrg.olcut.config.ConfigurableName;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.FieldType;
+import com.oracle.labs.mlrg.olcut.config.InternalConfigurationException;
+import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.util.IOUtil;
 
 /**
@@ -62,43 +65,25 @@ public class PropertySheet<T extends Configurable> {
 
     protected T owner = null;
 
-    /**
-     * The time to lease this object.
-     */
-    protected final long leaseTime;
-
-    /**
-     * The name of the component containing a list of configuration entries.
-     */
-    protected final String entriesName;
-
-    protected final boolean exportable;
-
-    protected final boolean importable;
-
-    protected final String serializedForm;
-
     protected final Class<T> ownerClass;
 
     protected final String instanceName;
 
+    protected final ConfigurationData data;
+
     @SuppressWarnings("unchecked")
-    protected PropertySheet(T configurable, String name,
+    public PropertySheet(T configurable,
                          ConfigurationManager cm, ConfigurationData rpd) {
-        this((Class<T>)configurable.getClass(), name, cm, rpd);
+        this((Class<T>)configurable.getClass(), cm, rpd);
         owner = configurable;
     }
 
-    protected PropertySheet(Class<T> confClass, String name,
+    public PropertySheet(Class<T> confClass,
             ConfigurationManager cm, ConfigurationData rpd) {
         this.ownerClass = confClass;
         this.cm = cm;
-        this.instanceName = name;
-        this.exportable = rpd.isExportable();
-        this.importable = rpd.isImportable();
-        this.serializedForm = rpd.getSerializedForm();
-        this.leaseTime = rpd.getLeaseTime();
-        this.entriesName = rpd.getEntriesName();
+        this.instanceName = rpd.getName();
+        this.data = rpd;
 
         processAnnotations(this, confClass);
 
@@ -115,24 +100,20 @@ public class PropertySheet<T extends Configurable> {
         propValues.putAll(rpd.getProperties());
     }
 
-    public PropertySheet(PropertySheet<T> other) {
+    protected PropertySheet(PropertySheet<T> other) {
         this.ownerClass = other.ownerClass;
         this.cm = other.cm;
         this.instanceName = other.instanceName;
-        this.exportable = other.exportable;
-        this.importable = other.importable;
-        this.serializedForm = other.serializedForm;
-        this.leaseTime = other.leaseTime;
-        this.entriesName = other.entriesName;
+        this.data = other.data;
         this.propValues.putAll(other.propValues);
     }
 
     public boolean isExportable() {
-        return exportable;
+        return data.isExportable();
     }
 
     public boolean isImportable() {
-        return importable;
+        return data.isImportable();
     }
 
     public Set<String> getPropertyNames() {
@@ -171,11 +152,11 @@ public class PropertySheet<T extends Configurable> {
     }
 
     public long getLeaseTime() {
-        return leaseTime;
+        return data.getLeaseTime();
     }
 
     public String getEntriesName() {
-        return entriesName;
+        return data.getEntriesName();
     }
 
     /**
@@ -223,8 +204,8 @@ public class PropertySheet<T extends Configurable> {
 
                 //
                 // Should we load a serialized form?
-                if (serializedForm != null) {
-                    String actualLocation = flattenString("", serializedForm);
+                if (data.getSerializedForm() != null) {
+                    String actualLocation = flattenString("", data.getSerializedForm());
                     InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
                     if (serStream != null) {
                         try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
@@ -246,7 +227,7 @@ public class PropertySheet<T extends Configurable> {
                 }
 
                 logger.finer(String.format("Creating %s", getInstanceName()));
-                if (cm.showCreations) {
+                if (cm.showCreations()) {
                     logger.info("CM using:");
                     for (URL u : cm.getConfigURLs()) {
                         logger.info(u.toString());
@@ -747,10 +728,6 @@ public class PropertySheet<T extends Configurable> {
         }
 
         propValues.put(key, val);
-
-        if (instanceName != null) {
-            cm.fireConfChanged(instanceName, key);
-        }
     }
     /**
      * Gets the raw value associated with this name
@@ -865,35 +842,6 @@ public class PropertySheet<T extends Configurable> {
                 }
             }
         }
-    }
-
-    public void save(ConfigWriter configWriter) throws ConfigWriterException {
-        Set<String> registeredProperties = getRegisteredProperties();
-        Map<String,String> attributes = new HashMap<>();
-        Map<String,Property> properties = new HashMap<>();
-
-        attributes.put(ConfigLoader.NAME,instanceName);
-        attributes.put(ConfigLoader.TYPE,getConfigurableClass().getName());
-        attributes.put(ConfigLoader.IMPORT,""+isImportable());
-        attributes.put(ConfigLoader.EXPORT,""+isExportable());
-        if (getLeaseTime() > 0) {
-            attributes.put(ConfigLoader.LEASETIME, "" + getLeaseTime());
-        }
-        if (serializedForm != null) {
-            attributes.put(ConfigLoader.SERIALIZED,serializedForm);
-        }
-        if (getEntriesName() != null) {
-            attributes.put(ConfigLoader.ENTRIES,getEntriesName());
-        }
-
-        for (String propName : registeredProperties) {
-            Property propVal = getProperty(propName);
-            if (propVal != null) {
-                properties.put(propName,propVal);
-            }
-        }
-
-        configWriter.writeComponent(attributes,properties);
     }
 
 }
