@@ -192,6 +192,11 @@ public final class ProvenanceUtil {
     }
 
     public static String computeName(ConfiguredObjectProvenance obj, int number) {
-        return obj.getClassName() + "-" + number;
+        String className = obj.getClassName();
+        int lastDot = className.lastIndexOf(".");
+        if (lastDot != -1) {
+            className = className.substring(lastDot+1);
+        }
+        return className.toLowerCase() + "-" + number;
     }
 }
