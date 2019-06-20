@@ -138,6 +138,18 @@ public final class ProvenanceUtil {
                 Provenance prov = p.getB();
                 if (prov instanceof ObjectProvenance) {
                     processingQueue.add((ObjectProvenance)prov);
+                } else if (prov instanceof ListProvenance) {
+                    for (Provenance listElement : ((ListProvenance<Provenance>) prov)) {
+                        if (listElement instanceof ObjectProvenance) {
+                            processingQueue.add((ObjectProvenance)listElement);
+                        }
+                    }
+                } else if (prov instanceof MapProvenance) {
+                    for (Pair<String,Provenance> mapElement : (MapProvenance<Provenance>) prov) {
+                        if (mapElement.getB() instanceof ObjectProvenance) {
+                            processingQueue.add((ObjectProvenance)mapElement.getB());
+                        }
+                    }
                 }
             }
         }
