@@ -2,6 +2,7 @@ package com.oracle.labs.mlrg.olcut.config;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -211,6 +212,7 @@ public interface Options {
             }
             cq.addAll(Arrays.asList(curr.getInterfaces()));
         }
+        ret.removeIf(f -> Modifier.isStatic(f.getModifiers()));
         return ret;
     }
 
@@ -244,6 +246,7 @@ public interface Options {
             }
             cq.addAll(Arrays.asList(curr.getInterfaces()));
         }
+        ret.removeIf(f -> Modifier.isStatic(f.getModifiers()));
         return ret;
     }
 
@@ -264,7 +267,7 @@ public interface Options {
         while (!cq.isEmpty()) {
             Class curr = cq.remove();
             for (Field f : curr.getDeclaredFields()) {
-                if (Options.class.isAssignableFrom(f.getType())) {
+                if (Options.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
                     Class<? extends Options> nextOptions = (Class<? extends Options>)f.getType();
                     ret.add(nextOptions);
                     // Add to the processing queue, via a set to make sure we don't double count fields.
@@ -272,7 +275,7 @@ public interface Options {
                 }
             }
             for (Field f : curr.getFields()) {
-                if (Options.class.isAssignableFrom(f.getType())) {
+                if (Options.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
                     Class<? extends Options> nextOptions = (Class<? extends Options>)f.getType();
                     ret.add(nextOptions);
                     // Add to the processing queue, via a set to make sure we don't double count fields.

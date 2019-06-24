@@ -10,6 +10,8 @@ import java.lang.annotation.Target;
  * An annotation that can be added directly to variables that should be
  * configurable. We don't require a default value, as we can assign that
  * default during construction by declaring the annotated field with a value.
+ *
+ * Config should not be applied to a static field.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

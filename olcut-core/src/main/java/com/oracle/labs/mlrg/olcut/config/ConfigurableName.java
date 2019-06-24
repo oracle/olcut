@@ -8,11 +8,11 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation that denotes where the String value of the component's name should be stored.
+ *
+ * ConfigurableName should not be applied to a static field.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @ConfigProperty
-public @interface ConfigurableName {
-
-}
+public @interface ConfigurableName { }
