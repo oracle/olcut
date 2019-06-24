@@ -10,11 +10,11 @@ import java.lang.annotation.Target;
  * An annotation that denotes where the ConfigurationManager should be stored.
  *
  * Use this sparingly.
+ *
+ * ConfigManager should not be applied to a static field.
  */
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @ConfigProperty
-public @interface ConfigManager {
-
-}
+public @interface ConfigManager { }

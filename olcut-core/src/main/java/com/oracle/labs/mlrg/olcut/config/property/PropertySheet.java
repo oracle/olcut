@@ -9,6 +9,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
@@ -807,6 +808,7 @@ public class PropertySheet<T extends Configurable> {
             }
             cq.addAll(Arrays.asList(curr.getInterfaces()));
         }
+        ret.removeIf(f -> Modifier.isStatic(f.getModifiers()));
         return ret;
     }
 
