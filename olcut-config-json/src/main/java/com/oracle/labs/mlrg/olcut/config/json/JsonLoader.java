@@ -20,6 +20,7 @@ import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -62,26 +63,36 @@ public class JsonLoader implements ConfigLoader {
     }
 
     /**
-     * Loads a set of configuration data from the location
-     *
-     * @throws IOException if an I/O or parse error occurs
+     * Loads json configuration data from the location
      */
     @Override
-    public void load(URL url) throws ConfigLoaderException, IOException {
-        JsonParser parser = factory.createParser(url);
-        parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
+    public void load(URL url) throws ConfigLoaderException {
         if (url.getProtocol().equals("file")) {
             workingDir = new File(url.getFile()).getParent();
         } else {
             workingDir = "";
         }
-        parseJson(parser);
-        parser.close();
+        try (JsonParser parser = factory.createParser(url)) {
+            parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
+            parseJson(parser);
+        } catch (IOException e) {
+            String msg = "Error while parsing " + url.toString() + ": " + e.getMessage();
+            throw new ConfigLoaderException(e, msg);
+        }
     }
 
+    /**
+     * Loads json configuration data from the stream
+     */
     @Override
-    public String getExtension() {
-        return "json";
+    public void load(InputStream stream) throws ConfigLoaderException {
+        try (JsonParser parser = factory.createParser(stream)) {
+            parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
+            parseJson(parser);
+        } catch (IOException e) {
+            String msg = "Error while parsing input: " + e.getMessage();
+            throw new ConfigLoaderException(e, msg);
+        }
     }
 
     public Map<String, ConfigurationData> getPropertyMap() {

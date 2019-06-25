@@ -1,7 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config.io;
 
 /**
- *
+ * Thrown by the configuration system when loading a configuration file that is malformed.
  */
 public class ConfigLoaderException extends RuntimeException {
 

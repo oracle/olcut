@@ -21,6 +21,7 @@ import us.bpsm.edn.parser.Parsers;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -138,22 +139,36 @@ public class EdnLoader implements ConfigLoader {
     }
 
     @Override
-    public void load(URL url) throws ConfigLoaderException, IOException {
-        try (Parseable pbr = Parsers.newParseable(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)))) {
-            if (url.getProtocol().equals("file")) {
-                workingDir = new File(url.getFile()).getParent();
-            } else {
-                workingDir = "";
-            }
-            parseEdn(pbr);
+    public void load(URL url) throws ConfigLoaderException {
+        if (url.getProtocol().equals("file")) {
+            workingDir = new File(url.getFile()).getParent();
+        } else {
+            workingDir = "";
+        }
+        try {
+            innerLoad(url.openStream());
         } catch (EdnException e) {
             throw new ConfigLoaderException(e, "Edn failed to parse url: " + url.toString());
+        } catch (IOException e) {
+            throw new ConfigLoaderException(e, "Failed to load url: " + url.toString());
         }
     }
 
     @Override
-    public String getExtension() {
-        return "edn";
+    public void load(InputStream stream) throws ConfigLoaderException {
+        try {
+            innerLoad(stream);
+        } catch (EdnException e) {
+            throw new ConfigLoaderException(e, "Edn failed to parse stream.");
+        }
+    }
+
+    private void innerLoad(InputStream stream) throws EdnException {
+        try (Parseable pbr = Parsers.newParseable(new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)))) {
+            parseEdn(pbr);
+        } catch (IOException e) {
+            throw new ConfigLoaderException(e, "Edn failed to load or parse stream.");
+        }
     }
 
     private void parseEdn(Parseable in) {

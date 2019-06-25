@@ -1,10 +1,10 @@
 package com.oracle.labs.mlrg.olcut.config.io;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 /**
- *
+ * An interface for configuration loading from on disk formats like xml or json.
  */
 public interface ConfigLoader {
 
@@ -33,8 +33,21 @@ public interface ConfigLoader {
     public static final String SERIALIZEDOBJECTS = "serialized-objects";
     public static final String FILES = "config-files";
 
-    public void load(URL url) throws ConfigLoaderException, IOException;
+    /**
+     * Loads configuration from the supplied URL. Will attempt to load it as a
+     * classpath resource first.
+     * @param url The URL to load from.
+     * @throws ConfigLoaderException Thrown if the configuration is malformed or the URL is not resolvable.
+     */
+    public void load(URL url) throws ConfigLoaderException;
 
-    public String getExtension();
+    /**
+     * Loads configuration from the stream.
+     *
+     * Note: does not close the stream.
+     * @param stream The stream to load from.
+     * @throws ConfigLoaderException Thrown if the configuration is malformed.
+     */
+    public void load(InputStream stream) throws ConfigLoaderException;
 
 }

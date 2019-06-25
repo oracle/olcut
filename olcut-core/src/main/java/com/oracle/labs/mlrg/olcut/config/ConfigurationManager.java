@@ -1537,7 +1537,7 @@ public class ConfigurationManager implements Closeable {
     }
 
     /**
-     * Writes the configuration to the given writer.
+     * Writes the configuration to the given stream. Does not close the stream.
      *
      * @param writer The writer to write to.
      * @param extension The extension to write out, which selects the ConfigWriter to use.
