@@ -26,14 +26,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Static utilities and helpers for working with Provenance objects.
  */
 public final class ProvenanceUtil {
 
     private static final Logger logger = Logger.getLogger(ProvenanceUtil.class.getName());
 
     public enum HashType {
-        SHA1("SHA1"), SHA256("SHA-256"), MD5("MD5");
+        SHA1("SHA1"), SHA256("SHA-256"), SHA512("SHA-512"), MD5("MD5");
 
         public final String name;
         HashType(String name) {
@@ -203,7 +203,14 @@ public final class ProvenanceUtil {
         return data;
     }
 
-    public static String computeName(ConfiguredObjectProvenance obj, int number) {
+    /**
+     * Creates a name for a provenance object on it's host class's simple name and the supplied
+     * id number.
+     * @param obj The provenance object.
+     * @param number The id number.
+     * @return A String name.
+     */
+    public static String computeName(ObjectProvenance obj, int number) {
         String className = obj.getClassName();
         int lastDot = className.lastIndexOf(".");
         if (lastDot != -1) {
@@ -211,4 +218,6 @@ public final class ProvenanceUtil {
         }
         return className.toLowerCase() + "-" + number;
     }
+
+
 }
