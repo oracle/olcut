@@ -37,7 +37,7 @@ public final class HashProvenance implements PrimitiveProvenance<String> {
 
     @Override
     public String getValue() {
-        return value;
+        return type.name+"["+value+"]";
     }
 
     public HashType getType() {
@@ -61,6 +61,6 @@ public final class HashProvenance implements PrimitiveProvenance<String> {
 
     @Override
     public String toString() {
-        return "Hash(type="+type+",value="+value+")";
+        return getValue();
     }
 }
