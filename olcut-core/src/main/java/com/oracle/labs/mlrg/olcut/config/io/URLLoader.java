@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Queue;
 
 /**
- *
+ * Loads in configurations from URLs. Manages the queue of URLs to be processed.
  */
 public class URLLoader {
 
@@ -42,17 +42,13 @@ public class URLLoader {
 
     public void load() throws ConfigLoaderException {
         URL curURL;
-        try {
-            while (!urlQueue.isEmpty()) {
-                curURL = urlQueue.poll();
-                String filename = curURL.getFile();
-                int i = filename.lastIndexOf('.');
-                String extension = i > 0 ? filename.substring(i+1).toLowerCase() : "";
-                ConfigLoader loader = getLoader(extension);
-                loader.load(curURL);
-            }
-        } catch (IOException e) {
-            throw new ConfigLoaderException(e, e.getMessage());
+        while (!urlQueue.isEmpty()) {
+            curURL = urlQueue.poll();
+            String filename = curURL.getFile();
+            int i = filename.lastIndexOf('.');
+            String extension = i > 0 ? filename.substring(i+1).toLowerCase() : "";
+            ConfigLoader loader = getLoader(extension);
+            loader.load(curURL);
         }
     }
 
@@ -78,7 +74,7 @@ public class URLLoader {
             FileFormatFactory factory = formatFactoryMap.get(extension);
             if (factory != null) {
                 loader = factory.getLoader(this,rpdMap,existingRPD,serializedObjects,globalProperties);
-                loaderMap.put(loader.getExtension(),loader);
+                loaderMap.put(extension,loader);
             } else {
                 throw new PropertyException(extension,"Failed to load a handler for '" + extension + "' files.");
             }

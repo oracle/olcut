@@ -83,41 +83,49 @@ public class SAXLoader implements ConfigLoader {
     }
 
     /**
-     * Loads a set of configuration data from the location
-     *
-     * @throws IOException if an I/O or parse error occurs
+     * Loads xml configuration data from the location
      */
     @Override
-    public void load(URL url) throws ConfigLoaderException, IOException {
-        InputStream is = null;
-        try {
+    public void load(URL url) throws ConfigLoaderException {
+        try (InputStream is = url.openStream()){
             if (url.getProtocol().equals("file")) {
                 String workingDir = new File(url.getFile()).getParent();
                 handler.setCurWorkingDir(workingDir);
             } else {
                 handler.setCurWorkingDir("");
             }
-            is = url.openStream();
-            xr.parse(new InputSource(is));
-            is.close();
+            innerLoad(is,url.toString());
+        } catch (IOException e) {
+            throw new ConfigLoaderException(e, e.getMessage());
+        }
+    }
+
+    /**
+     * Loads xml configuration data from the stream
+     */
+    @Override
+    public void load(InputStream stream) throws ConfigLoaderException {
+        innerLoad(stream,"");
+    }
+
+    private void innerLoad(InputStream stream, String location) {
+        try {
+            xr.parse(new InputSource(stream));
         } catch (SAXParseException e) {
-            String msg = "Error while parsing line " + e.getLineNumber()
-                    + " of " + url + ": " + e.getMessage();
+            String msg;
+            if (location != null && !location.isEmpty()) {
+                msg = "Error while parsing line " + e.getLineNumber()
+                        + " of " + location + ": " + e.getMessage();
+            } else {
+                msg = "Error while parsing line " + e.getLineNumber()
+                        + " of input: " + e.getMessage();
+            }
             throw new ConfigLoaderException(e, msg);
         } catch (SAXException e) {
             throw new ConfigLoaderException(e, "Problem with XML: " + e);
         } catch (IOException e) {
             throw new ConfigLoaderException(e, e.getMessage());
-        } finally {
-            if (is != null) {
-                is.close();
-            }
         }
-    }
-
-    @Override
-    public String getExtension() {
-        return "xml";
     }
 
     public Map<String, ConfigurationData> getPropertyMap() {
