@@ -4,7 +4,12 @@ import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil.HashType;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
 /**
+ * A provenance object which records object fields.
  *
+ * Must record the class name of the host object so it can be recovered.
+ *
+ * All classes which implement this interface must expose a public constructor
+ * which accepts a Map&lt;String,Provenance&gt; which is used in deserialisation.
  */
 public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Provenance>> {
 
@@ -17,6 +22,13 @@ public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Prove
      */
     public String getClassName();
 
+    /**
+     * Generates a String representation of this provenance.
+     *
+     * Commonly used to implement toString.
+     * @param name The name to give the provenance.
+     * @return A string representation.
+     */
     default public String generateString(String name) {
         StringBuilder sb = new StringBuilder();
 

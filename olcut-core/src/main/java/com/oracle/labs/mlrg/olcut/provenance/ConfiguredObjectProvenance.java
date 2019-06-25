@@ -45,6 +45,12 @@ public interface ConfiguredObjectProvenance extends ObjectProvenance {
         return Collections.unmodifiableList(iterable).iterator();
     }
 
+    /**
+     * Returns a new instance of the null provenance, used when fields of a
+     * configured object are null.
+     * @param className The class name of the host object.
+     * @return A null provenance.
+     */
     public static ConfiguredObjectProvenance getEmptyProvenance(String className) {
         return new NullConfiguredProvenance(className);
     }

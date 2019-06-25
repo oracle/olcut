@@ -1,13 +1,14 @@
 package com.oracle.labs.mlrg.olcut.provenance.impl;
 
 import com.oracle.labs.mlrg.olcut.provenance.ConfiguredObjectProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.Provenancable;
 import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 
 import java.util.Collections;
 import java.util.Map;
 
 /**
- *
+ * A provenance object to use for null valued fields of {@link Provenancable} objects.
  */
 public class NullConfiguredProvenance implements ConfiguredObjectProvenance {
     private static final long serialVersionUID = 1L;

@@ -40,6 +40,10 @@ public final class HashProvenance implements PrimitiveProvenance<String> {
         return value;
     }
 
+    public HashType getType() {
+        return type;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

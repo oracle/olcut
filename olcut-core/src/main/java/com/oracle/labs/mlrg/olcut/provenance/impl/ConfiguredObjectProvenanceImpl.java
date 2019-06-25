@@ -39,7 +39,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * A pile of reflection based magic used to automatically extract the values of configurable
+ * fields. Supports all the types used by the configuration system, except for
+ * Random as it's impossible to generate a true provenance for a {@link java.util.Random} instance.
  */
 public class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenance {
     private static final long serialVersionUID = 1L;
