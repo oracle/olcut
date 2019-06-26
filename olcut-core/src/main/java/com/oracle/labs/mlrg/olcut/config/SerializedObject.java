@@ -11,7 +11,7 @@ import java.io.ObjectInputStream;
  * A class to hold the information for a serialized Object that is defined in a
  * configuration file.
  */
-public class SerializedObject<T> {
+public final class SerializedObject<T> {
 
     private ConfigurationManager configurationManager;
 
