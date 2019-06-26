@@ -11,14 +11,21 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
 
     private final Map<String,FlatMarshalledProvenance> map;
 
+    private final String objectName;
+
     private final String objectClassName;
 
     private final String provenanceClassName;
 
-    public ObjectMarshalledProvenance(Map<String, FlatMarshalledProvenance> map, String objectClassName, String provenanceClassName) {
+    public ObjectMarshalledProvenance(String objectName, Map<String, FlatMarshalledProvenance> map, String objectClassName, String provenanceClassName) {
+        this.objectName = objectName;
         this.map = Collections.unmodifiableMap(map);
         this.objectClassName = objectClassName;
         this.provenanceClassName = provenanceClassName;
+    }
+
+    public String getName() {
+        return objectName;
     }
 
     public Map<String, FlatMarshalledProvenance> getMap() {

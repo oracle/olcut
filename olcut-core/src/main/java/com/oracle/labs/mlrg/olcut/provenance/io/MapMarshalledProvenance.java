@@ -12,7 +12,7 @@ import java.util.Objects;
 /**
  *
  */
-public final class MapMarshalledProvenance implements FlatMarshalledProvenance {
+public final class MapMarshalledProvenance implements FlatMarshalledProvenance, Iterable<Pair<String,SimpleMarshalledProvenance>> {
 
     private final Map<String, SimpleMarshalledProvenance> map;
 
@@ -24,6 +24,7 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance {
         this.map = Collections.emptyMap();
     }
 
+    @Override
     public Iterator<Pair<String, SimpleMarshalledProvenance>> iterator() {
         return new MapMarshalledProvenanceIterator(map.entrySet().iterator());
     }
