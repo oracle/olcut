@@ -14,9 +14,16 @@ public final class EnumProvenance<E extends Enum> implements PrimitiveProvenance
 
     private final E value;
 
+    private final String enumClass;
+
     public EnumProvenance(String key, E value) {
         this.key = key;
         this.value = value;
+        this.enumClass = value.getClass().getName();
+    }
+
+    public String getEnumClass() {
+        return enumClass;
     }
 
     @Override
@@ -35,12 +42,13 @@ public final class EnumProvenance<E extends Enum> implements PrimitiveProvenance
         if (!(o instanceof EnumProvenance)) return false;
         EnumProvenance that = (EnumProvenance) o;
         return key.equals(that.key) &&
-                value.equals(that.value);
+                value.equals(that.value) &&
+                enumClass.equals(that.enumClass);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(key, value);
+        return Objects.hash(key, value, enumClass);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.oracle.labs.mlrg.olcut.provenance.io;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -8,7 +9,7 @@ import java.util.logging.Logger;
 /**
  *
  */
-public final class ListMarshalledProvenance implements FlatMarshalledProvenance {
+public final class ListMarshalledProvenance implements FlatMarshalledProvenance, Iterable<SimpleMarshalledProvenance> {
     private static final Logger logger = Logger.getLogger(ListMarshalledProvenance.class.getName());
 
     private final List<SimpleMarshalledProvenance> simpleList;
@@ -37,5 +38,10 @@ public final class ListMarshalledProvenance implements FlatMarshalledProvenance 
     @Override
     public String toString() {
         return simpleList.toString();
+    }
+
+    @Override
+    public Iterator<SimpleMarshalledProvenance> iterator() {
+        return simpleList.iterator();
     }
 }

@@ -2,20 +2,20 @@ package com.oracle.labs.mlrg.olcut.provenance.primitives;
 
 import com.oracle.labs.mlrg.olcut.provenance.PrimitiveProvenance;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
- * A {@link PrimitiveProvenance} which records a date/time value.
+ * A {@link PrimitiveProvenance} which records a date/time value with time zone offset.
  */
-public final class DateTimeProvenance implements PrimitiveProvenance<LocalDateTime> {
+public final class DateTimeProvenance implements PrimitiveProvenance<OffsetDateTime> {
     private static final long serialVersionUID = 1L;
 
     private final String key;
 
-    private final LocalDateTime value;
+    private final OffsetDateTime value;
 
-    public DateTimeProvenance(String key, LocalDateTime value) {
+    public DateTimeProvenance(String key, OffsetDateTime value) {
         this.key = key;
         this.value = value;
     }
@@ -26,7 +26,7 @@ public final class DateTimeProvenance implements PrimitiveProvenance<LocalDateTi
     }
 
     @Override
-    public LocalDateTime getValue() {
+    public OffsetDateTime getValue() {
         return value;
     }
 
