@@ -1,8 +1,10 @@
 package com.oracle.labs.mlrg.olcut.provenance.impl;
 
 import com.oracle.labs.mlrg.olcut.provenance.ConfiguredObjectProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.Provenancable;
 import com.oracle.labs.mlrg.olcut.provenance.Provenance;
+import com.oracle.labs.mlrg.olcut.provenance.ProvenanceException;
 
 import java.util.Collections;
 import java.util.Map;
@@ -17,6 +19,14 @@ public class NullConfiguredProvenance implements ConfiguredObjectProvenance {
 
     public NullConfiguredProvenance(String className) {
         this.className = className;
+    }
+
+    public NullConfiguredProvenance(Map<String,Provenance> map) {
+        if (map.containsKey(ObjectProvenance.CLASS_NAME)) {
+            this.className = map.get(ObjectProvenance.CLASS_NAME).toString();
+        } else {
+            throw new ProvenanceException("Failed to find class name when constructing ExampleProvenance");
+        }
     }
 
     @Override

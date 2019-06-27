@@ -7,9 +7,11 @@ import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import com.oracle.labs.mlrg.olcut.provenance.ConfiguredObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ListProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.MapProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.PrimitiveProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.Provenancable;
 import com.oracle.labs.mlrg.olcut.provenance.Provenance;
+import com.oracle.labs.mlrg.olcut.provenance.ProvenanceException;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.BooleanProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.ByteProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.CharProvenance;
@@ -31,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,18 +46,48 @@ import java.util.logging.Logger;
  * fields. Supports all the types used by the configuration system, except for
  * Random as it's impossible to generate a true provenance for a {@link java.util.Random} instance.
  */
-public class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenance {
+public final class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenance {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = Logger.getLogger(ConfiguredObjectProvenanceImpl.class.getName());
 
+    protected static final String HOST_STRING_NAME = "host-string-name";
+
     protected final String className;
-    protected final String hostTypeName;
+    protected final String hostTypeStringName;
     protected final Map<String, Provenance> configuredParameters;
 
-    public <T extends Configurable> ConfiguredObjectProvenanceImpl(T host, String hostTypeName) {
+    public <T extends Configurable> ConfiguredObjectProvenanceImpl(T host, String hostTypeStringName) {
         this.className = host.getClass().getName();
-        this.hostTypeName = hostTypeName;
+        this.hostTypeStringName = hostTypeStringName;
         this.configuredParameters = Collections.unmodifiableMap(getConfiguredFields(host));
+    }
+
+    /**
+     * Constructs a ConfiguredObjectProvenanceImpl from a provenance map.
+     *
+     * This constructor cannot verify that the map contains only configured parameters, as
+     * that could trigger class loading of the host class. Thus it must contain at most
+     * the configured parameters, {@link ObjectProvenance#CLASS_NAME}, and {@link ConfiguredObjectProvenanceImpl#HOST_STRING_NAME} provenances.
+     * @param map The configured parameters map.
+     */
+    public ConfiguredObjectProvenanceImpl(Map<String,Provenance> map) {
+        Map<String,Provenance> tmp = new HashMap<>(map);
+        if (tmp.containsKey(ObjectProvenance.CLASS_NAME)) {
+            this.className = tmp.remove(ObjectProvenance.CLASS_NAME).toString();
+        } else {
+            throw new ProvenanceException("Failed to find class name when constructing ConfiguredObjectProvenanceImpl");
+        }
+        if (tmp.containsKey(HOST_STRING_NAME)) {
+            this.hostTypeStringName = tmp.remove(HOST_STRING_NAME).toString();
+        } else {
+            throw new ProvenanceException("Failed to find host type short name when constructing ConfiguredObjectProvenanceImpl");
+        }
+        this.configuredParameters = Collections.unmodifiableMap(tmp);
+    }
+
+    @Override
+    public Map<String, PrimitiveProvenance<?>> getInstanceValues() {
+        return Collections.singletonMap(HOST_STRING_NAME, new StringProvenance(HOST_STRING_NAME,hostTypeStringName));
     }
 
     @Override
@@ -69,7 +102,22 @@ public class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenanc
 
     @Override
     public String toString() {
-        return generateString(hostTypeName);
+        return generateString(hostTypeStringName);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ConfiguredObjectProvenanceImpl)) return false;
+        ConfiguredObjectProvenanceImpl pairs = (ConfiguredObjectProvenanceImpl) o;
+        return className.equals(pairs.className) &&
+                hostTypeStringName.equals(pairs.hostTypeStringName) &&
+                configuredParameters.equals(pairs.configuredParameters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(className, hostTypeStringName, configuredParameters);
     }
 
     private static <T extends Configurable> Map<String, Provenance> getConfiguredFields(T host) {
