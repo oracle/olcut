@@ -2,7 +2,6 @@ package com.oracle.labs.mlrg.olcut.provenance.io;
 
 import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.PrimitiveProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceException;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil.HashType;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.BooleanProvenance;

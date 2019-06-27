@@ -12,11 +12,11 @@ import java.util.Objects;
 /**
  *
  */
-public final class MapMarshalledProvenance implements FlatMarshalledProvenance, Iterable<Pair<String,SimpleMarshalledProvenance>> {
+public final class MapMarshalledProvenance implements FlatMarshalledProvenance, Iterable<Pair<String,FlatMarshalledProvenance>> {
 
-    private final Map<String, SimpleMarshalledProvenance> map;
+    private final Map<String, FlatMarshalledProvenance> map;
 
-    public MapMarshalledProvenance(Map<String, SimpleMarshalledProvenance> map) {
+    public MapMarshalledProvenance(Map<String, FlatMarshalledProvenance> map) {
         this.map = Collections.unmodifiableMap(new HashMap<>(map));
     }
 
@@ -25,7 +25,7 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
     }
 
     @Override
-    public Iterator<Pair<String, SimpleMarshalledProvenance>> iterator() {
+    public Iterator<Pair<String, FlatMarshalledProvenance>> iterator() {
         return new MapMarshalledProvenanceIterator(map.entrySet().iterator());
     }
 
@@ -47,11 +47,11 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
         return Objects.hash(map);
     }
 
-    private static class MapMarshalledProvenanceIterator implements Iterator<Pair<String, SimpleMarshalledProvenance>> {
+    private static class MapMarshalledProvenanceIterator implements Iterator<Pair<String, FlatMarshalledProvenance>> {
 
-        private final Iterator<Entry<String, SimpleMarshalledProvenance>> itr;
+        private final Iterator<Entry<String, FlatMarshalledProvenance>> itr;
 
-        public MapMarshalledProvenanceIterator(Iterator<Map.Entry<String, SimpleMarshalledProvenance>> itr) {
+        public MapMarshalledProvenanceIterator(Iterator<Map.Entry<String, FlatMarshalledProvenance>> itr) {
             this.itr = itr;
         }
 
@@ -61,8 +61,8 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
         }
 
         @Override
-        public Pair<String, SimpleMarshalledProvenance> next() {
-            Map.Entry<String, SimpleMarshalledProvenance> item = itr.next();
+        public Pair<String, FlatMarshalledProvenance> next() {
+            Map.Entry<String, FlatMarshalledProvenance> item = itr.next();
             return new Pair<>(item.getKey(),item.getValue());
         }
     }

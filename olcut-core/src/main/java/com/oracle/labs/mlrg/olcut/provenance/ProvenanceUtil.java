@@ -242,48 +242,38 @@ public final class ProvenanceUtil {
         for (Pair<String,Provenance> e : provenance) {
             String key = e.getA();
             Provenance prov = e.getB();
-            if (prov instanceof ListProvenance) {
-                List<SimpleMarshalledProvenance> list = new ArrayList<>();
-
-                for (Provenance p : (ListProvenance<?>)prov) {
-                    if (p instanceof ObjectProvenance) {
-                        ObjectProvenance objProv = (ObjectProvenance) p;
-                        list.add(new SimpleMarshalledProvenance(key,computeName(objProv,map.get(objProv)),objProv));
-                    } else if (p instanceof PrimitiveProvenance) {
-                        list.add(new SimpleMarshalledProvenance((PrimitiveProvenance<?>)p));
-                    } else {
-                        throw new ProvenanceException("Unexpected Provenance subclass - found " + p.getClass().getName() + " expected {PrimitiveProvenance, ObjectProvenance}");
-                    }
-                }
-
-                outputMap.put(key,new ListMarshalledProvenance(list));
-            } else if (prov instanceof MapProvenance) {
-                Map<String,SimpleMarshalledProvenance> propMap = new HashMap<>();
-
-                for (Pair<String,? extends Provenance> pair : (MapProvenance<?>)prov) {
-                    Provenance valueProv = pair.getB();
-                    if (valueProv instanceof ObjectProvenance) {
-                        ObjectProvenance objProv = (ObjectProvenance) valueProv;
-                        propMap.put(pair.getA(),new SimpleMarshalledProvenance(pair.getA(),computeName(objProv,map.get(objProv)),objProv));
-                    } else if (valueProv instanceof PrimitiveProvenance) {
-                        propMap.put(pair.getA(),new SimpleMarshalledProvenance((PrimitiveProvenance<?>)valueProv));
-                    } else {
-                        throw new ProvenanceException("Unexpected Provenance subclass - found " + valueProv.getClass().getName() + " expected {PrimitiveProvenance, ObjectProvenance}");
-                    }
-                }
-
-                outputMap.put(key,new MapMarshalledProvenance(propMap));
-            } else if (prov instanceof ObjectProvenance) {
-                ObjectProvenance objProv = (ObjectProvenance) prov;
-                outputMap.put(key,new SimpleMarshalledProvenance(key,computeName(objProv,map.get(objProv)),objProv));
-            } else if (prov instanceof PrimitiveProvenance) {
-                outputMap.put(key,new SimpleMarshalledProvenance((PrimitiveProvenance<?>)prov));
-            } else {
-                throw new ProvenanceException("Unexpected Provenance subclass - found " + prov.getClass().getName() + " expected {ListProvenance, MapProvenance, PrimitiveProvenance, ObjectProvenance}");
-            }
+            FlatMarshalledProvenance marshalledProvenance = flattenSingleProvenance(prov,key,map);
+            outputMap.put(key,marshalledProvenance);
         }
 
         return new ObjectMarshalledProvenance(name,outputMap,provenance.getClassName(),provenance.getClass().getName());
+    }
+
+    private static FlatMarshalledProvenance flattenSingleProvenance(Provenance prov, String key, Map<ObjectProvenance,Integer> map) {
+        if (prov instanceof ListProvenance) {
+            List<FlatMarshalledProvenance> list = new ArrayList<>();
+
+            for (Provenance p : (ListProvenance<?>)prov) {
+                list.add(flattenSingleProvenance(p,key,map));
+            }
+
+            return new ListMarshalledProvenance(list);
+        } else if (prov instanceof MapProvenance) {
+            Map<String,FlatMarshalledProvenance> propMap = new HashMap<>();
+
+            for (Pair<String,? extends Provenance> pair : (MapProvenance<?>)prov) {
+                propMap.put(pair.getA(),flattenSingleProvenance(pair.getB(),pair.getA(),map));
+            }
+
+            return new MapMarshalledProvenance(propMap);
+        } else if (prov instanceof ObjectProvenance) {
+            ObjectProvenance objProv = (ObjectProvenance) prov;
+            return new SimpleMarshalledProvenance(key,computeName(objProv,map.get(objProv)),objProv);
+        } else if (prov instanceof PrimitiveProvenance) {
+            return new SimpleMarshalledProvenance((PrimitiveProvenance<?>)prov);
+        } else {
+            throw new ProvenanceException("Unexpected Provenance subclass - found " + prov.getClass().getName() + " expected {ListProvenance, MapProvenance, PrimitiveProvenance, ObjectProvenance}");
+        }
     }
 
     private static void extractProvenanceToQueue(Queue<ObjectProvenance> processingQueue, ObjectProvenance curProv) {
@@ -347,27 +337,7 @@ public final class ProvenanceUtil {
             Map<String, Provenance> arguments = new HashMap<>();
 
             for (Map.Entry<String, FlatMarshalledProvenance> e : curProv.getMap().entrySet()) {
-                FlatMarshalledProvenance fmp = e.getValue();
-                Provenance extractedProv;
-                if (fmp instanceof SimpleMarshalledProvenance) {
-                    extractedProv = unmarshalSimple(curProv.getName(),(SimpleMarshalledProvenance)e.getValue(),unmarshalledObjects,marshalledObjects);
-                } else if (fmp instanceof ListMarshalledProvenance) {
-                    ListMarshalledProvenance lmp = (ListMarshalledProvenance) fmp;
-                    List<Provenance> convertedList = new ArrayList<>();
-                    for (SimpleMarshalledProvenance smp : lmp) {
-                        convertedList.add(unmarshalSimple(curProv.getName(),smp,unmarshalledObjects,marshalledObjects));
-                    }
-                    extractedProv = new ListProvenance<>(convertedList);
-                } else if (fmp instanceof MapMarshalledProvenance) {
-                    MapMarshalledProvenance mmp = (MapMarshalledProvenance) fmp;
-                    Map<String,Provenance> convertedMap = new HashMap<>();
-                    for (Pair<String,SimpleMarshalledProvenance> tuple : mmp) {
-                        convertedMap.put(tuple.getA(), unmarshalSimple(curProv.getName(),tuple.getB(),unmarshalledObjects,marshalledObjects));
-                    }
-                    extractedProv = new MapProvenance<>(convertedMap);
-                } else {
-                    throw new ProvenanceException("Unknown MarshalledProvenance subclass " + fmp.getClass().getName());
-                }
+                Provenance extractedProv = unmarshalFlat(curProv.getName(),e.getValue(),unmarshalledObjects,marshalledObjects);
                 arguments.put(e.getKey(),extractedProv);
             }
 
@@ -387,25 +357,44 @@ public final class ProvenanceUtil {
         }
     }
 
-    private static Provenance unmarshalSimple(String hostProvName, SimpleMarshalledProvenance smp, Map<String,ObjectProvenance> unmarshalledObjects, Map<String,ObjectMarshalledProvenance> marshalledObjects) {
-        if (smp.isReference()) {
-            String refName = smp.getValue();
-            if (unmarshalledObjects.containsKey(refName)) {
-                return unmarshalledObjects.get(refName);
-            } else if (marshalledObjects.containsKey(refName)) {
-                // Need to recurse into the object as it's not been unmarshalled.
-                // First remove it from the list (so if we reference it again it will throw ProvenanceException).
-                ObjectMarshalledProvenance omp = marshalledObjects.remove(refName);
-                // Recurse into the marshalled object provenance
-                ObjectProvenance unmarshalled = unmarshalProvenance(omp, unmarshalledObjects, marshalledObjects);
-                // Put the unmarshalled object provenance into the map and return it.
-                unmarshalledObjects.put(refName, unmarshalled);
-                return unmarshalled;
+    private static Provenance unmarshalFlat(String hostProvName, FlatMarshalledProvenance fmp, Map<String,ObjectProvenance> unmarshalledObjects, Map<String,ObjectMarshalledProvenance> marshalledObjects) {
+        if (fmp instanceof SimpleMarshalledProvenance) {
+            SimpleMarshalledProvenance smp = (SimpleMarshalledProvenance) fmp;
+            if (smp.isReference()) {
+                String refName = smp.getValue();
+                if (unmarshalledObjects.containsKey(refName)) {
+                    return unmarshalledObjects.get(refName);
+                } else if (marshalledObjects.containsKey(refName)) {
+                    // Need to recurse into the object as it's not been unmarshalled.
+                    // First remove it from the list (so if we reference it again it will throw ProvenanceException).
+                    ObjectMarshalledProvenance omp = marshalledObjects.remove(refName);
+                    // Recurse into the marshalled object provenance
+                    ObjectProvenance unmarshalled = unmarshalProvenance(omp, unmarshalledObjects, marshalledObjects);
+                    // Put the unmarshalled object provenance into the map and return it.
+                    unmarshalledObjects.put(refName, unmarshalled);
+                    return unmarshalled;
+                } else {
+                    throw new ProvenanceException("Invalid provenance object " + hostProvName + " refers to an object called " + refName + " which is not present (or forms a cycle).");
+                }
             } else {
-                throw new ProvenanceException("Invalid provenance object " + hostProvName + " refers to an object called " + refName + " which is not present (or forms a cycle).");
+                return smp.unmarshallPrimitive();
             }
+        } else if (fmp instanceof ListMarshalledProvenance) {
+            ListMarshalledProvenance lmp = (ListMarshalledProvenance) fmp;
+            List<Provenance> convertedList = new ArrayList<>();
+            for (FlatMarshalledProvenance smp : lmp) {
+                convertedList.add(unmarshalFlat(hostProvName,smp,unmarshalledObjects,marshalledObjects));
+            }
+            return new ListProvenance<>(convertedList);
+        } else if (fmp instanceof MapMarshalledProvenance) {
+            MapMarshalledProvenance mmp = (MapMarshalledProvenance) fmp;
+            Map<String,Provenance> convertedMap = new HashMap<>();
+            for (Pair<String,FlatMarshalledProvenance> tuple : mmp) {
+                convertedMap.put(tuple.getA(), unmarshalFlat(hostProvName,tuple.getB(),unmarshalledObjects,marshalledObjects));
+            }
+            return new MapProvenance<>(convertedMap);
         } else {
-            return smp.unmarshallPrimitive();
+            throw new ProvenanceException("Unexpected FlatMarshalledProvenance subclass, found " + fmp.getClass().getName());
         }
     }
 }
