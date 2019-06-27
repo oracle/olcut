@@ -9,11 +9,12 @@ import com.oracle.labs.mlrg.olcut.util.Pair;
  * Must record the class name of the host object so it can be recovered.
  *
  * All classes which implement this interface must expose a public constructor
- * which accepts a Map&lt;String,Provenance&gt; which is used in deserialisation.
+ * which accepts a Map&lt;String,Provenance&gt; which is used in deserialisation,
+ * and have consistent implementations of equals and hashCode.
  */
 public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Provenance>> {
 
-    public static final String CLASS_NAME = "class_name";
+    public static final String CLASS_NAME = "class-name";
     public static final HashType DEFAULT_HASH_TYPE = HashType.SHA256;
 
     /**

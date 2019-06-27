@@ -22,13 +22,13 @@ public interface ConfiguredObjectProvenance extends ObjectProvenance {
 
     /**
      * Returns a map containing the derived values describing the specific instance of
-     * the object. For example the number of times it's RNG was used, the number of features
-     * in a specific dataset etc.
+     * the object. For example the number of times it's RNG was used, the hash of any data
+     * processed by the object etc.
      *
      * Defaults to returning {@link Collections#emptyMap}.
      * @return The instance values.
      */
-    default public Map<String, PrimitiveProvenance> getInstanceValues() {
+    default public Map<String, PrimitiveProvenance<?>> getInstanceValues() {
         return Collections.emptyMap();
     }
 
@@ -39,7 +39,7 @@ public interface ConfiguredObjectProvenance extends ObjectProvenance {
         for (Map.Entry<String,Provenance> m : getConfiguredParameters().entrySet()) {
             iterable.add(new Pair<>(m.getKey(),m.getValue()));
         }
-        for (Map.Entry<String,PrimitiveProvenance> m : getInstanceValues().entrySet()) {
+        for (Map.Entry<String,PrimitiveProvenance<?>> m : getInstanceValues().entrySet()) {
             iterable.add(new Pair<>(m.getKey(),m.getValue()));
         }
         return Collections.unmodifiableList(iterable).iterator();
