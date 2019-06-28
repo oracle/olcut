@@ -739,7 +739,7 @@ public class ConfigurationManager implements Closeable {
             }
         }
 
-        return arguments.toArray(unnamedArguments);
+        return arguments.toArray(new String[0]);
     }
 
     /**

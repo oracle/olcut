@@ -37,18 +37,17 @@ public final class ConfiguredObjectProvenanceImpl extends SkeletalConfiguredObje
     protected static ExtractedInfo extractProvenanceInfo(Map<String,Provenance> map) {
         String className;
         String hostTypeStringName;
-        Map<String,Provenance> tmp = new HashMap<>(map);
-        if (tmp.containsKey(ObjectProvenance.CLASS_NAME)) {
-            className = tmp.remove(ObjectProvenance.CLASS_NAME).toString();
+        Map<String,Provenance> configuredParameters = new HashMap<>(map);
+        if (configuredParameters.containsKey(ObjectProvenance.CLASS_NAME)) {
+            className = configuredParameters.remove(ObjectProvenance.CLASS_NAME).toString();
         } else {
             throw new ProvenanceException("Failed to find class name when constructing ConfiguredObjectProvenanceImpl");
         }
-        if (tmp.containsKey(HOST_SHORT_NAME)) {
-            hostTypeStringName = tmp.remove(HOST_SHORT_NAME).toString();
+        if (configuredParameters.containsKey(HOST_SHORT_NAME)) {
+            hostTypeStringName = configuredParameters.remove(HOST_SHORT_NAME).toString();
         } else {
             throw new ProvenanceException("Failed to find host type short name when constructing ConfiguredObjectProvenanceImpl");
         }
-        Map<String,Provenance> configuredParameters = Collections.unmodifiableMap(tmp);
 
         return new ExtractedInfo(className,hostTypeStringName,configuredParameters,Collections.emptyMap());
     }
