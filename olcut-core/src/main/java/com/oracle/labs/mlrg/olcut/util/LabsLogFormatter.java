@@ -13,6 +13,8 @@ package com.oracle.labs.mlrg.olcut.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -62,7 +64,7 @@ public class LabsLogFormatter extends Formatter {
     public String format(LogRecord record) {
         String message = formatMessage(record);
         if(terse) {
-            return message + "\n";
+            return message + '\n';
         } else {
             String cn = record.getSourceClassName();
             int p = cn.lastIndexOf('.');
@@ -85,7 +87,7 @@ public class LabsLogFormatter extends Formatter {
                 pw.close();
                 msg = msg + "\n" + sw.toString();
             }
-            return msg + "\n";
+            return msg + '\n';
         }
     }
 
@@ -94,15 +96,20 @@ public class LabsLogFormatter extends Formatter {
     }
 
     public static void setAllLogFormatters(Level level) {
-        for (Handler h : Logger.getLogger("").getHandlers()) {
-            h.setLevel(level);
-            h.setFormatter(new LabsLogFormatter());
-            try {
-                h.setEncoding("utf-8");
-            } catch (Exception ex) {
-                logger.severe("Error setting output encoding");
+        AccessController.doPrivileged((PrivilegedAction<Void>)
+            () -> {
+                for (Handler h : Logger.getLogger("").getHandlers()) {
+                    h.setLevel(level);
+                    h.setFormatter(new LabsLogFormatter());
+                    try {
+                        h.setEncoding("utf-8");
+                    } catch (Exception ex) {
+                        logger.severe("Error setting output encoding");
+                    }
+                }
+                return null;
             }
-        }
+        );
     }
 
 }

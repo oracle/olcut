@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -67,18 +69,23 @@ public class JsonLoader implements ConfigLoader {
      */
     @Override
     public void load(URL url) throws ConfigLoaderException {
-        if (url.getProtocol().equals("file")) {
-            workingDir = new File(url.getFile()).getParent();
-        } else {
-            workingDir = "";
-        }
-        try (JsonParser parser = factory.createParser(url)) {
-            parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
-            parseJson(parser);
-        } catch (IOException e) {
-            String msg = "Error while parsing " + url.toString() + ": " + e.getMessage();
-            throw new ConfigLoaderException(e, msg);
-        }
+        AccessController.doPrivileged((PrivilegedAction<Void>)
+                () -> {
+                    if (url.getProtocol().equals("file")) {
+                        workingDir = new File(url.getFile()).getParent();
+                    } else {
+                        workingDir = "";
+                    }
+                    try (JsonParser parser = factory.createParser(url)) {
+                        parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
+                        parseJson(parser);
+                    } catch (IOException e) {
+                        String msg = "Error while parsing " + url.toString() + ": " + e.getMessage();
+                        throw new ConfigLoaderException(e, msg);
+                    }
+                    return null;
+                }
+        );
     }
 
     /**

@@ -3,7 +3,6 @@ package com.oracle.labs.mlrg.olcut.config;
 import java.io.IOException;
 import java.util.Map;
 
-import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import org.junit.Assert;
 import org.junit.Test;
 

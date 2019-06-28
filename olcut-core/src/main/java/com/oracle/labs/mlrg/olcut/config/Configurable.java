@@ -13,7 +13,6 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import com.oracle.labs.mlrg.olcut.config.property.Property;
-import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 
 import java.io.IOException;
 

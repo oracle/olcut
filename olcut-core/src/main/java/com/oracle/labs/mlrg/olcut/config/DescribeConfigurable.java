@@ -6,7 +6,6 @@ import com.oracle.labs.mlrg.olcut.config.io.FileFormatFactory;
 import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
 import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
-import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 
 import java.io.ByteArrayOutputStream;

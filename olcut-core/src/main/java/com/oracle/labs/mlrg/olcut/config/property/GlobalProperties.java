@@ -3,6 +3,8 @@ package com.oracle.labs.mlrg.olcut.config.property;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -26,7 +28,7 @@ public class GlobalProperties extends ImmutableGlobalProperties {
      * Imports the system properties into GlobalProperties.
      */
     public void importSystemProperties() {
-        Properties props = System.getProperties();
+        Properties props = AccessController.doPrivileged((PrivilegedAction<Properties>) System::getProperties);
         for (Map.Entry<Object,Object> e : props.entrySet()) {
             String param = (String) e.getKey();
             String value = (String) e.getValue();

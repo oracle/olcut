@@ -4,7 +4,7 @@ import com.oracle.labs.mlrg.olcut.config.ComponentListener;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
+import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 
 import java.rmi.Remote;
