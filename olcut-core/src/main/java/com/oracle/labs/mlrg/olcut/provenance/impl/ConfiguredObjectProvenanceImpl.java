@@ -1,65 +1,23 @@
 package com.oracle.labs.mlrg.olcut.provenance.impl;
 
-import com.oracle.labs.mlrg.olcut.config.Config;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
-import com.oracle.labs.mlrg.olcut.config.FieldType;
-import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
-import com.oracle.labs.mlrg.olcut.provenance.ConfiguredObjectProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.ListProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.MapProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.PrimitiveProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.Provenancable;
 import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceException;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.BooleanProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.ByteProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.CharProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.DoubleProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.EnumProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.FloatProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.IntProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.LongProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.ShortProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.StringProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.URIProvenance;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A pile of reflection based magic used to automatically extract the values of configurable
  * fields. Supports all the types used by the configuration system, except for
  * Random as it's impossible to generate a true provenance for a {@link java.util.Random} instance.
  */
-public final class ConfiguredObjectProvenanceImpl implements ConfiguredObjectProvenance {
-    private static final long serialVersionUID = 1L;
-    private static final Logger logger = Logger.getLogger(ConfiguredObjectProvenanceImpl.class.getName());
-
-    protected static final String HOST_STRING_NAME = "host-string-name";
-
-    protected final String className;
-    protected final String hostTypeStringName;
-    protected final Map<String, Provenance> configuredParameters;
+public final class ConfiguredObjectProvenanceImpl extends SkeletalConfiguredObjectProvenance {
 
     public <T extends Configurable> ConfiguredObjectProvenanceImpl(T host, String hostTypeStringName) {
-        this.className = host.getClass().getName();
-        this.hostTypeStringName = hostTypeStringName;
-        this.configuredParameters = Collections.unmodifiableMap(getConfiguredFields(host));
+        super(host,hostTypeStringName);
     }
 
     /**
@@ -67,317 +25,31 @@ public final class ConfiguredObjectProvenanceImpl implements ConfiguredObjectPro
      *
      * This constructor cannot verify that the map contains only configured parameters, as
      * that could trigger class loading of the host class. Thus it must contain at most
-     * the configured parameters, {@link ObjectProvenance#CLASS_NAME}, and {@link ConfiguredObjectProvenanceImpl#HOST_STRING_NAME} provenances.
+     * the configured parameters, {@link ObjectProvenance#CLASS_NAME}, and
+     * {@link SkeletalConfiguredObjectProvenance#HOST_SHORT_NAME} provenances.
      * @param map The configured parameters map.
      */
     public ConfiguredObjectProvenanceImpl(Map<String,Provenance> map) {
+        super(extractProvenanceInfo(map));
+    }
+
+    protected static ExtractedInfo extractProvenanceInfo(Map<String,Provenance> map) {
+        String className;
+        String hostTypeStringName;
         Map<String,Provenance> tmp = new HashMap<>(map);
         if (tmp.containsKey(ObjectProvenance.CLASS_NAME)) {
-            this.className = tmp.remove(ObjectProvenance.CLASS_NAME).toString();
+            className = tmp.remove(ObjectProvenance.CLASS_NAME).toString();
         } else {
             throw new ProvenanceException("Failed to find class name when constructing ConfiguredObjectProvenanceImpl");
         }
-        if (tmp.containsKey(HOST_STRING_NAME)) {
-            this.hostTypeStringName = tmp.remove(HOST_STRING_NAME).toString();
+        if (tmp.containsKey(HOST_SHORT_NAME)) {
+            hostTypeStringName = tmp.remove(HOST_SHORT_NAME).toString();
         } else {
             throw new ProvenanceException("Failed to find host type short name when constructing ConfiguredObjectProvenanceImpl");
         }
-        this.configuredParameters = Collections.unmodifiableMap(tmp);
-    }
+        Map<String,Provenance> configuredParameters = Collections.unmodifiableMap(tmp);
 
-    @Override
-    public Map<String, PrimitiveProvenance<?>> getInstanceValues() {
-        return Collections.singletonMap(HOST_STRING_NAME, new StringProvenance(HOST_STRING_NAME,hostTypeStringName));
-    }
-
-    @Override
-    public Map<String, Provenance> getConfiguredParameters() {
-        return configuredParameters;
-    }
-
-    @Override
-    public String getClassName() {
-        return className;
-    }
-
-    @Override
-    public String toString() {
-        return generateString(hostTypeStringName);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ConfiguredObjectProvenanceImpl)) return false;
-        ConfiguredObjectProvenanceImpl pairs = (ConfiguredObjectProvenanceImpl) o;
-        return className.equals(pairs.className) &&
-                hostTypeStringName.equals(pairs.hostTypeStringName) &&
-                configuredParameters.equals(pairs.configuredParameters);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(className, hostTypeStringName, configuredParameters);
-    }
-
-    private static <T extends Configurable> Map<String, Provenance> getConfiguredFields(T host) {
-        Map<String, Provenance> map = new HashMap<>();
-        Class<? extends Configurable> hostClass = host.getClass();
-        Set<Field> fields = PropertySheet.getAllFields(hostClass);
-        try {
-            for (Field f : fields) {
-                boolean accessible = f.isAccessible();
-                f.setAccessible(true);
-                // if configurable
-                if (f.isAnnotationPresent(Config.class)) {
-                    FieldType ft = FieldType.getFieldType(f);
-                    switch (ft) {
-                        case BOOLEAN:
-                        case BYTE:
-                        case CHAR:
-                        case SHORT:
-                        case INTEGER:
-                        case LONG:
-                        case FLOAT:
-                        case DOUBLE:
-                        case STRING:
-                        case FILE:
-                        case PATH:
-                        case ENUM:
-                        case CONFIGURABLE:
-                        case ATOMIC_INTEGER:
-                        case ATOMIC_LONG:
-                            Optional<Provenance> opt = convertPrimitive(ft,f.getType(),f.getName(),f.get(host));
-                            if (opt.isPresent()) {
-                                map.put(f.getName(), opt.get());
-                            }
-                            break;
-                        case BYTE_ARRAY:
-                        case CHAR_ARRAY:
-                        case SHORT_ARRAY:
-                        case INTEGER_ARRAY:
-                        case LONG_ARRAY:
-                        case FLOAT_ARRAY:
-                        case DOUBLE_ARRAY:
-                            map.put(f.getName(), convertPrimitiveArray(ft, f, f.get(host)));
-                            break;
-                        case STRING_ARRAY:
-                        case CONFIGURABLE_ARRAY:
-                            map.put(f.getName(), convertObjectArray(ft, f, (Object[]) f.get(host)));
-                            break;
-                        case LIST:
-                        case ENUM_SET:
-                        case SET: {
-                            List<Class<?>> genericClasses = PropertySheet.getGenericClass(f);
-                            if (genericClasses.size() != 1) {
-                                logger.log(Level.SEVERE, "Invalid configurable field definition, field not recorded - found too many or too few generic type parameters for field " + f.getName());
-                            } else {
-                                map.put(f.getName(), convertCollection(f, (Collection) f.get(host), genericClasses.get(0)));
-                            }
-                            break;
-                        }
-                        case MAP: {
-                            List<Class<?>> genericClasses = PropertySheet.getGenericClass(f);
-                            if (genericClasses.size() != 2) {
-                                logger.log(Level.SEVERE, "Invalid configurable field definition, field not recorded - found too many or too few generic type parameters for field " + f.getName());
-                            } else {
-                                map.put(f.getName(), convertMap(f, (Map) f.get(host), genericClasses.get(1)));
-                            }
-                            break;
-                        }
-                        case RANDOM:
-                        default:
-                            logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + f.getName() + "' not recorded.");
-                            break;
-                    }
-                }
-                f.setAccessible(accessible);
-            }
-        } catch (ClassCastException e) {
-            logger.log(Level.SEVERE, "Failed to cast field from host object " + host.toString() + ". Fields not recorded.", e);
-        } catch (IllegalAccessException e) {
-            logger.log(Level.SEVERE, "Failed to access field in host object " + host.toString() + ". Fields not recorded.", e);
-        }
-        return map;
-    }
-
-    private static ListProvenance convertPrimitiveArray(FieldType ft, Field f, Object object) {
-        String fieldName = f.getName();
-        ArrayList<PrimitiveProvenance> list = new ArrayList<>();
-        switch (ft) {
-            case BYTE_ARRAY: {
-                byte[] array = (byte[]) object;
-                for (byte e : array) {
-                    list.add(new ByteProvenance(fieldName,e));
-                }
-                break;
-            }
-            case CHAR_ARRAY:{
-                char[] array = (char[]) object;
-                for (char e : array) {
-                    list.add(new CharProvenance(fieldName,e));
-                }
-                break;
-            }
-            case SHORT_ARRAY:{
-                short[] array = (short[]) object;
-                for (short e : array) {
-                    list.add(new ShortProvenance(fieldName,e));
-                }
-                break;
-            }
-            case INTEGER_ARRAY:{
-                int[] array = (int[]) object;
-                for (int e : array) {
-                    list.add(new IntProvenance(fieldName,e));
-                }
-                break;
-            }
-            case LONG_ARRAY:{
-                long[] array = (long[]) object;
-                for (long e : array) {
-                    list.add(new LongProvenance(fieldName,e));
-                }
-                break;
-            }
-            case FLOAT_ARRAY:{
-                float[] array = (float[]) object;
-                for (float e : array) {
-                    list.add(new FloatProvenance(fieldName,e));
-                }
-                break;
-            }
-            case DOUBLE_ARRAY:{
-                double[] array = (double[]) object;
-                for (double e : array) {
-                    list.add(new DoubleProvenance(fieldName,e));
-                }
-                break;
-            }
-            default:
-                logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + f.getName() + "' not recorded.");
-                return new ListProvenance<>();
-        }
-        return new ListProvenance<>(list);
-    }
-
-    private static ListProvenance convertObjectArray(FieldType ft, Field f, Object[] array) {
-        String fieldName = f.getName();
-        switch (ft) {
-            case STRING_ARRAY:
-                List<StringProvenance> sp = new ArrayList<>();
-                for (Object o : array) {
-                    String s = (String) o;
-                    sp.add(new StringProvenance(fieldName,s));
-                }
-                return new ListProvenance<>(sp);
-            case CONFIGURABLE_ARRAY:
-                List<Provenance> lp = new ArrayList<>();
-                for (Object o : array) {
-                    if (o == null) {
-                        lp.add(ConfiguredObjectProvenance.getEmptyProvenance(f.getType().getComponentType().getName()));
-                    } else if (o instanceof Provenancable) {
-                        Provenancable p = (Provenancable) o;
-                        lp.add(p.getProvenance());
-                    } else {
-                        logger.log(Level.WARNING, "Automatic provenance generated for Configurable class, consider opting into provenance by implementing Provenancable on class " + o.getClass().toString());
-                        lp.add(new ConfiguredObjectProvenanceImpl((Configurable)o, fieldName));
-                    }
-                }
-                return new ListProvenance<>(lp);
-            default:
-                logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + f.getName() + "' not recorded.");
-                return new ListProvenance();
-        }
-    }
-
-    private static ListProvenance convertCollection(Field f, Collection collection, Class<?> genericType) {
-        String fieldName = f.getName();
-        FieldType genericFieldType = FieldType.getFieldType(genericType);
-        List<Provenance> list = new ArrayList<>();
-
-        for (Object o : collection) {
-            Optional<Provenance> opt = convertPrimitive(genericFieldType,genericType,fieldName,o);
-            opt.ifPresent(list::add);
-        }
-
-        return new ListProvenance<>(list);
-    }
-
-    private static MapProvenance convertMap(Field f, Map<?,?> inputMap, Class<?> genericType) {
-        FieldType genericFieldType = FieldType.getFieldType(genericType);
-        Map<String,Provenance> outputMap = new HashMap<>();
-
-        for (Map.Entry<?,?> e : inputMap.entrySet()) {
-            String key = e.getKey().toString();
-            Optional<Provenance> opt = convertPrimitive(genericFieldType,genericType,key,e.getValue());
-            if (opt.isPresent()) {
-                outputMap.put(key,opt.get());
-            }
-        }
-
-        return new MapProvenance<>(outputMap);
-    }
-
-    private static Optional<Provenance> convertPrimitive(FieldType ft, Class<?> fieldClass, String fieldName, Object o) {
-        switch (ft) {
-            case BOOLEAN:
-                return Optional.of(new BooleanProvenance(fieldName, (Boolean) o));
-            case BYTE:
-                return Optional.of(new ByteProvenance(fieldName, (Byte) o));
-            case CHAR:
-                return Optional.of(new CharProvenance(fieldName, (Character) o));
-            case SHORT:
-                return Optional.of(new ShortProvenance(fieldName, (Short) o));
-            case INTEGER:
-                return Optional.of(new IntProvenance(fieldName, (Integer) o));
-            case LONG:
-                return Optional.of(new LongProvenance(fieldName, (Long) o));
-            case FLOAT:
-                return Optional.of(new FloatProvenance(fieldName, (Float) o));
-            case DOUBLE:
-                return Optional.of(new DoubleProvenance(fieldName, (Double) o));
-            case STRING:
-                return Optional.of(new StringProvenance(fieldName, (String) o));
-            case FILE:
-                return Optional.of(new URIProvenance(fieldName, ((File) o).toURI()));
-            case PATH:
-                return Optional.of(new URIProvenance(fieldName, ((Path) o).toUri()));
-            case ENUM:
-                return Optional.of(new EnumProvenance<>(fieldName, (Enum) o));
-            case CONFIGURABLE:
-                if (o == null) {
-                    return Optional.of(ConfiguredObjectProvenance.getEmptyProvenance(fieldClass.getName()));
-                } else if (o instanceof Provenancable) {
-                    return Optional.of(((Provenancable) o).getProvenance());
-                } else {
-                    logger.log(Level.WARNING, "Automatic provenance generated for Configurable class, consider opting into provenance by implementing Provenancable on class " + o.getClass().toString());
-                    return Optional.of(new ConfiguredObjectProvenanceImpl((Configurable)o, fieldName));
-                }
-            case ATOMIC_INTEGER:
-                return Optional.of(new IntProvenance(fieldName, ((AtomicInteger) o).get()));
-            case ATOMIC_LONG:
-                return Optional.of(new LongProvenance(fieldName, ((AtomicLong) o).get()));
-            case RANDOM:
-                logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + fieldName + "' not recorded.");
-                return Optional.empty();
-            case BYTE_ARRAY:
-            case CHAR_ARRAY:
-            case SHORT_ARRAY:
-            case INTEGER_ARRAY:
-            case LONG_ARRAY:
-            case FLOAT_ARRAY:
-            case DOUBLE_ARRAY:
-            case STRING_ARRAY:
-            case CONFIGURABLE_ARRAY:
-            case LIST:
-            case ENUM_SET:
-            case SET:
-            case MAP:
-            default:
-                logger.log(Level.SEVERE, "Automatic provenance not supported for nested field type " + ft + ", field '" + fieldName + "' not recorded.");
-                return Optional.empty();
-        }
+        return new ExtractedInfo(className,hostTypeStringName,configuredParameters,Collections.emptyMap());
     }
 
 }

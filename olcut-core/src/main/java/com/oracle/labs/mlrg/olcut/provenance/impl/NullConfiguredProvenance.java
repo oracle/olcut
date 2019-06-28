@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * A provenance object to use for null valued fields of {@link Provenancable} objects.
  */
-public class NullConfiguredProvenance implements ConfiguredObjectProvenance {
+public final class NullConfiguredProvenance implements ConfiguredObjectProvenance {
     private static final long serialVersionUID = 1L;
 
     private final String className;
@@ -25,7 +25,7 @@ public class NullConfiguredProvenance implements ConfiguredObjectProvenance {
         if (map.containsKey(ObjectProvenance.CLASS_NAME)) {
             this.className = map.get(ObjectProvenance.CLASS_NAME).toString();
         } else {
-            throw new ProvenanceException("Failed to find class name when constructing ExampleProvenance");
+            throw new ProvenanceException("Failed to find class name when constructing NullConfiguredProvenance");
         }
     }
 
