@@ -5,11 +5,11 @@ import java.io.Serializable;
 /**
  * A supertype for Provenance objects.
  *
- * One day it will be sealed, currently it should
- * only be extended by {@link PrimitiveProvenance}, {@link ListProvenance},
- * {@link MapProvenance}, and {@link ObjectProvenance}.
+ * One day it will be sealed, currently it is only
+ * extended by {@link ListProvenance}, {@link MapProvenance},
+ * {@link ObjectProvenance} and {@link PrimitiveProvenance}.
  *
- * Directly subclassing this is likely to break the serialisation mechanisms
- * for this package.
+ * Directly subclassing this will cause the serialisation mechanisms
+ * for this package to throw ProvenanceException.
  */
 public interface Provenance extends Serializable { }
