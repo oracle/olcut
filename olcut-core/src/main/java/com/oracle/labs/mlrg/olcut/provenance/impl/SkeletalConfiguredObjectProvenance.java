@@ -3,7 +3,7 @@ package com.oracle.labs.mlrg.olcut.provenance.impl;
 import com.oracle.labs.mlrg.olcut.config.Config;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.FieldType;
-import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
+import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.provenance.ConfiguredObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ListProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.MapProvenance;
@@ -25,6 +25,8 @@ import com.oracle.labs.mlrg.olcut.provenance.primitives.URIProvenance;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,7 +75,8 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
     protected <T extends Configurable> SkeletalConfiguredObjectProvenance(T host, String hostShortName) {
         this.className = host.getClass().getName();
         this.hostShortName = hostShortName;
-        this.configuredParameters = Collections.unmodifiableMap(getConfiguredFields(host));
+        Map<String,Provenance> provMap = AccessController.doPrivileged((PrivilegedAction<Map<String,Provenance>>)() -> getConfiguredFields(host));
+        this.configuredParameters = Collections.unmodifiableMap(provMap);
     }
 
     /**

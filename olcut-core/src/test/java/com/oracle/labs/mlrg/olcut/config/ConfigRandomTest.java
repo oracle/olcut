@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import org.junit.Test;
 
 /**

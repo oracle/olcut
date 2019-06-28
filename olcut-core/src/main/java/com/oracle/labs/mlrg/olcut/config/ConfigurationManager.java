@@ -11,7 +11,6 @@ import com.oracle.labs.mlrg.olcut.config.property.ImmutableGlobalProperties;
 import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
 import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
-import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
 import com.oracle.labs.mlrg.olcut.util.Pair;
@@ -27,6 +26,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,7 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
-import static com.oracle.labs.mlrg.olcut.config.property.PropertySheet.StoredFieldType;
+import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
 
 /**
  * Manages a set of <code>Configurable</code>s, their parametrization and the relationships between them. Configurations
@@ -327,13 +330,18 @@ public class ConfigurationManager implements Closeable {
         // *Must* be last as it can cause Configurable instantiation.
         // Throws an exception if there are unknown named arguments at this stage.
         try {
-            unnamedArguments = parseOptionArguments(argumentsList, options);
+            unnamedArguments = AccessController.doPrivileged((PrivilegedExceptionAction<String[]>) () -> parseOptionArguments(argumentsList, options));
+        } catch (PrivilegedActionException e) {
+            Exception inner = e.getException();
+            if (inner instanceof IllegalAccessException) {
+                throw new ArgumentException(e, "Failed to write argument into Options");
+            } else if ((inner instanceof InstantiationException) || (inner instanceof NoSuchMethodException) || (inner instanceof InvocationTargetException)) {
+                throw new ArgumentException(e, "Failed to instantiate a field of Options.");
+            } else {
+                throw new ArgumentException(inner, "Unexpected exception thrown when reading arguments - " + inner.getMessage());
+            }
         } catch (PropertyException e) {
-            throw new ArgumentException(e, e.getMsg() + "\n\n" + usage);
-        } catch (IllegalAccessException e) {
-            throw new ArgumentException(e, "Failed to write argument into Options");
-        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-            throw new ArgumentException(e, "Failed to instantiate a field of Options.");
+            throw new ArgumentException(e, e.getMessage() + "\n\n" + usage);
         }
     }
 
@@ -468,24 +476,28 @@ public class ConfigurationManager implements Closeable {
     }
 
     private static URL findURL(String input, String argumentName) {
-        URL url = ConfigurationManager.class.getResource(input);
-        if (url == null) {
-            File file = new File(input);
-            if (file.exists()) {
-                try {
-                    url = file.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    throw new ArgumentException(e, argumentName, "Can't load config file: " + input);
+        return AccessController.doPrivileged((PrivilegedAction<URL>)
+                () -> {
+                    URL url = ConfigurationManager.class.getResource(input);
+                    if (url == null) {
+                        File file = new File(input);
+                        if (file.exists()) {
+                            try {
+                                url = file.toURI().toURL();
+                            } catch (MalformedURLException e) {
+                                throw new ArgumentException(e, argumentName, "Can't load config file: " + input);
+                            }
+                        } else {
+                            try {
+                                url = (new URI(input)).toURL();
+                            } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
+                                throw new ArgumentException(argumentName, "Can't find config file: " + input);
+                            }
+                        }
+                    }
+                    return url;
                 }
-            } else {
-                try {
-                    url = (new URI(input)).toURL();
-                } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
-                    throw new ArgumentException(argumentName, "Can't find config file: " + input);
-                }
-            }
-        }
-        return url;
+        );
     }
 
     /**
@@ -595,7 +607,7 @@ public class ConfigurationManager implements Closeable {
             }
         }
 
-        boolean consumed = false;
+        boolean consumed;
         for (int i = 0; i < arguments.size(); i++) {
             consumed = false;
             String curArg = arguments.get(i);

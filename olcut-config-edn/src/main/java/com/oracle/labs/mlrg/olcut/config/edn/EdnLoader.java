@@ -26,6 +26,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -140,18 +142,23 @@ public class EdnLoader implements ConfigLoader {
 
     @Override
     public void load(URL url) throws ConfigLoaderException {
-        if (url.getProtocol().equals("file")) {
-            workingDir = new File(url.getFile()).getParent();
-        } else {
-            workingDir = "";
-        }
-        try {
-            innerLoad(url.openStream());
-        } catch (EdnException e) {
-            throw new ConfigLoaderException(e, "Edn failed to parse url: " + url.toString());
-        } catch (IOException e) {
-            throw new ConfigLoaderException(e, "Failed to load url: " + url.toString());
-        }
+        AccessController.doPrivileged((PrivilegedAction<Void>)
+                () -> {
+                    if (url.getProtocol().equals("file")) {
+                        workingDir = new File(url.getFile()).getParent();
+                    } else {
+                        workingDir = "";
+                    }
+                    try {
+                        innerLoad(url.openStream());
+                    } catch (EdnException e) {
+                        throw new ConfigLoaderException(e, "Edn failed to parse url: " + url.toString());
+                    } catch (IOException e) {
+                        throw new ConfigLoaderException(e, "Failed to load url: " + url.toString());
+                    }
+                    return null;
+                }
+        );
     }
 
     @Override

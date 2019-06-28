@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -87,17 +89,22 @@ public class SAXLoader implements ConfigLoader {
      */
     @Override
     public void load(URL url) throws ConfigLoaderException {
-        try (InputStream is = url.openStream()){
-            if (url.getProtocol().equals("file")) {
-                String workingDir = new File(url.getFile()).getParent();
-                handler.setCurWorkingDir(workingDir);
-            } else {
-                handler.setCurWorkingDir("");
-            }
-            innerLoad(is,url.toString());
-        } catch (IOException e) {
-            throw new ConfigLoaderException(e, e.getMessage());
-        }
+        AccessController.doPrivileged((PrivilegedAction<Void>)
+                () -> {
+                    try (InputStream is = url.openStream()) {
+                        if (url.getProtocol().equals("file")) {
+                            String workingDir = new File(url.getFile()).getParent();
+                            handler.setCurWorkingDir(workingDir);
+                        } else {
+                            handler.setCurWorkingDir("");
+                        }
+                        innerLoad(is, url.toString());
+                    } catch (IOException e) {
+                        throw new ConfigLoaderException(e, e.getMessage());
+                    }
+                    return null;
+                }
+        );
     }
 
     /**

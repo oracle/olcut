@@ -6,6 +6,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * A class to hold the information for a serialized Object that is defined in a
@@ -53,26 +55,28 @@ public final class SerializedObject<T> {
     @SuppressWarnings("unchecked")// throws PropertyException if the serialised type doesn't match the class name.
     public T getObject() throws PropertyException {
         if (object == null) {
-            String actualLocation = configurationManager.getImmutableGlobalProperties().replaceGlobalProperties(name, null, location);
-            InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
-            try {
-                Class<T> objectClass = (Class<T>) Class.forName(className);
-                if (serStream != null) {
-                    try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
-                        //
-                        // Read the object and cast it into this class for return;
-                        object = objectClass.cast(ois.readObject());
-                    } catch (ClassCastException ex) {
-                        throw new PropertyException(ex, name, "Failed to cast object to type " + objectClass.getName());
-                    } catch (IOException ex) {
-                        throw new PropertyException(ex, name, "Error reading serialized form from " + actualLocation);
+            object = AccessController.doPrivileged((PrivilegedAction<T>) () -> {
+                String actualLocation = configurationManager.getImmutableGlobalProperties().replaceGlobalProperties(name, null, location);
+                InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
+                try {
+                    Class<T> objectClass = (Class<T>) Class.forName(className);
+                    if (serStream != null) {
+                        try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
+                            //
+                            // Read the object and cast it into this class for return;
+                            return objectClass.cast(ois.readObject());
+                        } catch (ClassCastException ex) {
+                            throw new PropertyException(ex, name, "Failed to cast object to type " + objectClass.getName());
+                        } catch (IOException ex) {
+                            throw new PropertyException(ex, name, "Error reading serialized form from " + actualLocation);
+                        }
+                    } else {
+                        throw new PropertyException(name, "Failed to open stream from location " + actualLocation);
                     }
-                } else {
-                    throw new PropertyException(name, "Failed to open stream from location " + actualLocation);
+                } catch (ClassNotFoundException ex) {
+                    throw new PropertyException(ex, name, "Serialized class " + className + " not found for " + actualLocation);
                 }
-            } catch (ClassNotFoundException ex) {
-                throw new PropertyException(ex, name, "Serialized class " + className + " not found for " + actualLocation);
-            }
+            });
         }
         return object;
     }

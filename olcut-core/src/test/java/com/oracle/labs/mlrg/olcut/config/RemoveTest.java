@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.oracle.labs.mlrg.olcut.config.property.Property;
-import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import org.junit.After;
 import org.junit.AfterClass;

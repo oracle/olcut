@@ -5,7 +5,6 @@ import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.Options;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.property.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.ArgumentException;
 import com.oracle.labs.mlrg.olcut.config.InternalConfigurationException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
