@@ -15,6 +15,7 @@ import java.util.Map;
  * Random as it's impossible to generate a true provenance for a {@link java.util.Random} instance.
  */
 public final class ConfiguredObjectProvenanceImpl extends SkeletalConfiguredObjectProvenance {
+    private static final long serialVersionUID = 1L;
 
     public <T extends Configurable> ConfiguredObjectProvenanceImpl(T host, String hostTypeStringName) {
         super(host,hostTypeStringName);
