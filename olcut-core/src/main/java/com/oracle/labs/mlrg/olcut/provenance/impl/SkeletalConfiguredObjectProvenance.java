@@ -92,7 +92,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
     protected SkeletalConfiguredObjectProvenance(ExtractedInfo info) {
         this.className = info.className;
         this.hostShortName = info.hostShortName;
-        this.configuredParameters = info.configuredParameters;
+        this.configuredParameters = Collections.unmodifiableMap(new HashMap<>(info.configuredParameters));
     }
 
     /**
@@ -338,8 +338,13 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 return Optional.of(new FloatProvenance(fieldName, (Float) o));
             case DOUBLE:
                 return Optional.of(new DoubleProvenance(fieldName, (Double) o));
-            case STRING:
-                return Optional.of(new StringProvenance(fieldName, (String) o));
+            case STRING: {
+                if (o == null) {
+                    return Optional.of(new StringProvenance(fieldName, ""));
+                } else {
+                    return Optional.of(new StringProvenance(fieldName, (String) o));
+                }
+            }
             case FILE:
                 return Optional.of(new URIProvenance(fieldName, ((File) o).toURI()));
             case PATH:

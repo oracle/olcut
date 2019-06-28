@@ -11,6 +11,10 @@ import java.util.Map;
 
 /**
  * Provenance for a specific object known to the config system.
+ *
+ * By convention all provenances which do not refer to an object field
+ * use hyphens as separators. Provenances which refer to an object field
+ * use standard Java camel case.
  */
 public interface ConfiguredObjectProvenance extends ObjectProvenance {
 

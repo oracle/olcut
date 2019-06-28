@@ -11,6 +11,10 @@ import com.oracle.labs.mlrg.olcut.util.Pair;
  * All classes which implement this interface must expose a public constructor
  * which accepts a Map&lt;String,Provenance&gt; which is used in deserialisation,
  * and have consistent implementations of equals and hashCode.
+ *
+ * By convention all provenances which do not refer to an object field
+ * use hyphens as separators for their name. Provenances which refer to an object field
+ * use standard Java camel case.
  */
 public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Provenance>> {
 
