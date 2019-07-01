@@ -54,7 +54,15 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
         this(key, value, provenance.getClass().getName(), true, "");
     }
 
-    private SimpleMarshalledProvenance(String key, String value, String provenanceClassName, boolean isReference, String additional) {
+    /**
+     * Used for serialisation.
+     * @param key
+     * @param value
+     * @param provenanceClassName
+     * @param isReference
+     * @param additional
+     */
+    public SimpleMarshalledProvenance(String key, String value, String provenanceClassName, boolean isReference, String additional) {
         this.key = key;
         this.value = value;
         this.provenanceClassName = provenanceClassName;
@@ -134,6 +142,10 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
 
     public String getProvenanceClassName() {
         return provenanceClassName;
+    }
+
+    public String getAdditional() {
+        return additional;
     }
 
     @Override

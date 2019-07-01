@@ -46,12 +46,13 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
         if (!(o instanceof ObjectMarshalledProvenance)) return false;
         ObjectMarshalledProvenance that = (ObjectMarshalledProvenance) o;
         return map.equals(that.map) &&
+                objectName.equals(that.objectName) &&
                 objectClassName.equals(that.objectClassName) &&
                 provenanceClassName.equals(that.provenanceClassName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(map, objectClassName, provenanceClassName);
+        return Objects.hash(map, objectName, objectClassName, provenanceClassName);
     }
 }

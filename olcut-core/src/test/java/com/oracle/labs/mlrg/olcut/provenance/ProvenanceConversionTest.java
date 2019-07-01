@@ -72,7 +72,7 @@ public class ProvenanceConversionTest {
         Assert.assertEquals(objProv,unmarshalledProvenance);
     }
 
-    private static Provenance constructProvenance(SplittableRandom rng, int depth, int width, String key) {
+    public static Provenance constructProvenance(SplittableRandom rng, int depth, int width, String key) {
         if (depth == 0) {
             // base case, generate primitives
             return new IntProvenance(key,rng.nextInt(30));
@@ -94,7 +94,7 @@ public class ProvenanceConversionTest {
         }
     }
 
-    private static final class SimpleObjectProvenance implements ObjectProvenance {
+    public static final class SimpleObjectProvenance implements ObjectProvenance {
         private final ListProvenance<Provenance> prov;
 
         public SimpleObjectProvenance(ListProvenance<Provenance> prov) {
