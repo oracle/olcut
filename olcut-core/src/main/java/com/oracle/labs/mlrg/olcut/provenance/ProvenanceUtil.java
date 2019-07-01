@@ -10,6 +10,8 @@ import com.oracle.labs.mlrg.olcut.provenance.io.MapMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.MarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.SimpleMarshalledProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.EnumProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.HashProvenance;
 import com.oracle.labs.mlrg.olcut.util.IOUtil;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
@@ -268,7 +270,11 @@ public final class ProvenanceUtil {
             return new MapMarshalledProvenance(propMap);
         } else if (prov instanceof ObjectProvenance) {
             ObjectProvenance objProv = (ObjectProvenance) prov;
-            return new SimpleMarshalledProvenance(key,computeName(objProv,map.get(objProv)),objProv);
+            return new SimpleMarshalledProvenance(key, computeName(objProv, map.get(objProv)), objProv);
+        } else if (prov instanceof HashProvenance) {
+            return new SimpleMarshalledProvenance((HashProvenance) prov);
+        } else if (prov instanceof EnumProvenance) {
+            return new SimpleMarshalledProvenance((EnumProvenance<?>)prov);
         } else if (prov instanceof PrimitiveProvenance) {
             return new SimpleMarshalledProvenance((PrimitiveProvenance<?>)prov);
         } else {
