@@ -3,7 +3,6 @@ package com.oracle.labs.mlrg.olcut.config.json;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.oracle.labs.mlrg.olcut.provenance.io.MarshalledProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
 
 /**
  *
