@@ -1,7 +1,10 @@
 package com.oracle.labs.mlrg.olcut.provenance;
 
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil.HashType;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.IntProvenance;
 import com.oracle.labs.mlrg.olcut.util.Pair;
+
+import java.util.Map;
 
 /**
  * A provenance object which records object fields.
@@ -50,4 +53,17 @@ public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Prove
         return sb.toString();
     }
 
+    @SuppressWarnings("unchecked") // Guarded by isInstance check
+    public static <T extends Provenance> T checkAndExtractProvenance(Map<String,Provenance> map, String name, Class<T> type, String provClassName) throws ProvenanceException {
+        if (map.containsKey(name)) {
+            Provenance tmp = map.remove(name);
+            if (type.isInstance(tmp)) {
+                return (T) tmp;
+            } else {
+                throw new ProvenanceException("Failed to cast " + name + " when constructing " + provClassName + ", found " + tmp);
+            }
+        } else {
+            throw new ProvenanceException("Failed to find " + name + " when constructing " + provClassName);
+        }
+    }
 }

@@ -281,7 +281,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                         Provenancable p = (Provenancable) o;
                         lp.add(p.getProvenance());
                     } else {
-                        logger.log(Level.WARNING, "Automatic provenance generated for Configurable class, consider opting into provenance by implementing Provenancable on class " + o.getClass().toString());
+                        logger.log(Level.WARNING, "Automatic provenance generated for Configurable class, consider opting into provenance by implementing Provenancable on " + o.getClass().toString());
                         lp.add(new ConfiguredObjectProvenanceImpl((Configurable)o, fieldName));
                     }
                 }
@@ -357,7 +357,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 } else if (o instanceof Provenancable) {
                     return Optional.of(((Provenancable) o).getProvenance());
                 } else {
-                    logger.log(Level.WARNING, "Automatic provenance generated for Configurable class, consider opting into provenance by implementing Provenancable on class " + o.getClass().toString());
+                    logger.log(Level.WARNING, "Automatic provenance generated for Configurable class, consider opting into provenance by implementing Provenancable on " + o.getClass().toString());
                     return Optional.of(new ConfiguredObjectProvenanceImpl((Configurable)o, fieldName));
                 }
             case ATOMIC_INTEGER:
@@ -388,7 +388,9 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
 
     @Override
     public Map<String, PrimitiveProvenance<?>> getInstanceValues() {
-        return Collections.singletonMap(HOST_SHORT_NAME, new StringProvenance(HOST_SHORT_NAME, hostShortName));
+        Map<String,PrimitiveProvenance<?>> output = new HashMap<>();
+        output.put(HOST_SHORT_NAME, new StringProvenance(HOST_SHORT_NAME, hostShortName));
+        return output;
     }
 
     @Override
@@ -409,8 +411,8 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ConfiguredObjectProvenanceImpl)) return false;
-        ConfiguredObjectProvenanceImpl pairs = (ConfiguredObjectProvenanceImpl) o;
+        if (!(o instanceof SkeletalConfiguredObjectProvenance)) return false;
+        SkeletalConfiguredObjectProvenance pairs = (SkeletalConfiguredObjectProvenance) o;
         return className.equals(pairs.className) &&
                 hostShortName.equals(pairs.hostShortName) &&
                 configuredParameters.equals(pairs.configuredParameters);
