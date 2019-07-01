@@ -6,28 +6,19 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.provenance.ExampleProvenancableConfigurable;
 import com.oracle.labs.mlrg.olcut.provenance.ListProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.MapProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.SimpleObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil;
 import com.oracle.labs.mlrg.olcut.provenance.io.MarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.IntProvenance;
-import com.oracle.labs.mlrg.olcut.util.Pair;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.SplittableRandom;
 
 import static com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.constructProvenance;
