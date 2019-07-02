@@ -70,6 +70,17 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
         this.additional = additional;
     }
 
+    @Override
+    public String toString() {
+        return "SimpleMarshalledProvenance{" +
+                "key='" + key + '\'' +
+                ", value='" + value + '\'' +
+                ", additional='" + additional + '\'' +
+                ", provenanceClassName='" + provenanceClassName + '\'' +
+                ", isReference=" + isReference +
+                '}';
+    }
+
     /**
      * Only unmarshalls the Provenance if it's a PrimitiveProvenance,
      * throws ProvenanceException if it stores a reference to an ObjectProvenance.

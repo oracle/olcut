@@ -41,6 +41,16 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
     }
 
     @Override
+    public String toString() {
+        return "ObjectMarshalledProvenance{" +
+                "map=" + map +
+                ", objectName='" + objectName + '\'' +
+                ", objectClassName='" + objectClassName + '\'' +
+                ", provenanceClassName='" + provenanceClassName + '\'' +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ObjectMarshalledProvenance)) return false;
