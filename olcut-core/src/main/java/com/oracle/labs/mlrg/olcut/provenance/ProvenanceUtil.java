@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -76,6 +77,19 @@ public final class ProvenanceUtil {
             hexChars[(j << 1) + 1] = hexCharacterArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    public static String hashList(HashType hashType, List<String> list) {
+        try {
+            MessageDigest md = MessageDigest.getInstance(hashType.name);
+            for (String curString : list) {
+                md.digest(curString.getBytes(StandardCharsets.UTF_8));
+            }
+            return bytesToHexString(md.digest());
+        } catch (NoSuchAlgorithmException e) {
+            logger.log(Level.SEVERE,"Failed to load standard hash algorithm " + hashType.name);
+            return "invalid-algorithm-specified";
+        }
     }
 
     public static String hashResource(HashType hashType, Path path) {
