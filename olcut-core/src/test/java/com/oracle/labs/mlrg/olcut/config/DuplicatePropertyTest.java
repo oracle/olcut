@@ -1,6 +1,6 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;

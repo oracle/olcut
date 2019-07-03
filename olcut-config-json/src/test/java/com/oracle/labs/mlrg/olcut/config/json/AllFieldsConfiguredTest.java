@@ -2,8 +2,6 @@ package com.oracle.labs.mlrg.olcut.config.json;
 
 import com.oracle.labs.mlrg.olcut.config.AllFieldsConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.PropertySheet;
-import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +24,7 @@ public class AllFieldsConfiguredTest {
     public void setUp() throws IOException {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
         f = File.createTempFile("all-config", ".json");
-        //f.deleteOnExit();
+        f.deleteOnExit();
     }
 
     @Test
@@ -55,23 +53,6 @@ public class AllFieldsConfiguredTest {
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         AllFieldsConfigurable ac2 = (AllFieldsConfigurable) cm2.lookup("all-config");
         assertEquals(ac,ac2, "Imported config not equal to generated object");
-    }
-
-    @Test
-    public void getTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("allConfig.json");
-        PropertySheet ps = cm.getPropertySheet("all-config");
-
-        boolean boolField = (Boolean) ps.get("boolField");
-        assertTrue(boolField, "Failed to lookup boolean field");
-
-        List listStringField = (List) ps.get("listStringField");
-        assertTrue(listStringField.size() == 2, "Failed to parse List<String> field");
-
-        StringConfigurable sc = (StringConfigurable) ps.get("configurableField");
-        assertEquals(new StringConfigurable("A","B","C"), sc, "StringConfigurable not constructed correctly");
-
-        assertTrue(ps.get("monkeys") == null, "Returned a value for an invalid field name");
     }
 
 }

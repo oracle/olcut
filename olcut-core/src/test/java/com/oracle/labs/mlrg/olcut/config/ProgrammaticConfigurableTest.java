@@ -1,11 +1,10 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.util.LabsLogFormatter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +14,10 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 /**
  *
  */
@@ -22,17 +25,10 @@ public class ProgrammaticConfigurableTest {
 
     private static final Logger logger = Logger.getLogger(ProgrammaticConfigurableTest.class.getName());
 
-    public ProgrammaticConfigurableTest() {
-    }
-
     @BeforeAll
     public static void setUpClass() throws Exception {
-        Logger l = Logger.getLogger("");
-        for(Handler h : l.getHandlers()) {
-            h.setLevel(Level.FINER);
-        }
+        LabsLogFormatter.setAllLogFormatters(Level.FINER);
     }
-
 
     /**
      * Tests adding a configurable with the default properties.
@@ -40,7 +36,7 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addDefaultStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
-        cm.addConfigurable(StringConfigurable.class, "c");
+        cm.addConfiguration(StringConfigurable.class, "c");
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
         assertEquals("", sc.one);
         assertEquals("", sc.two);
@@ -53,11 +49,11 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addStringConfigurable() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
-        Map<String,Property> m = new HashMap<>();
+        Map<String, Property> m = new HashMap<>();
         for(String s : new String[] {"one", "two", "three"}) {
             m.put(s, new SimpleProperty(s));
         }
-        cm.addConfigurable(StringConfigurable.class, "c", m);
+        cm.addConfiguration(new ConfigurationData("c",StringConfigurable.class.getName(),m));
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
         assertEquals("one", sc.one);
         assertEquals("two", sc.two);
@@ -75,7 +71,7 @@ public class ProgrammaticConfigurableTest {
         for(String s : new String[] {"one"}) {
             m.put(s, new SimpleProperty(s));
         }
-        cm.addConfigurable(StringConfigurable.class, "c", m);
+        cm.addConfiguration(new ConfigurationData("c",StringConfigurable.class.getName(),m));
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
         assertEquals("one", sc.one);
         assertEquals("", sc.two);
@@ -84,7 +80,7 @@ public class ProgrammaticConfigurableTest {
         for(String s : new String[]{"one", "three"}) {
             m.put(s, new SimpleProperty(s));
         }
-        cm.addConfigurable(StringConfigurable.class, "d", m);
+        cm.addConfiguration(new ConfigurationData("d",StringConfigurable.class.getName(),m));
         sc = (StringConfigurable) cm.lookup("d");
         assertEquals("one", sc.one);
         assertEquals("", sc.two);
@@ -98,10 +94,10 @@ public class ProgrammaticConfigurableTest {
     public void addConfigurableWithBadProperty() throws IOException {
         assertThrows(PropertyException.class, () -> {
             ConfigurationManager cm = new ConfigurationManager("basicConfig.xml");
-            Map<String, Property> m = new HashMap<>();
+            Map<String,Property> m = new HashMap<>();
             m.put("s", new SimpleProperty("one"));
             m.put("i", new SimpleProperty("two"));
-            cm.addConfigurable(BasicConfigurable.class, "c", m);
+            cm.addConfiguration(new ConfigurationData("c",BasicConfigurable.class.getName(),m));
             BasicConfigurable bc = (BasicConfigurable) cm.lookup("c");
             assertEquals("one", bc.s);
             assertEquals(2, bc.i);
@@ -120,7 +116,7 @@ public class ProgrammaticConfigurableTest {
         for(String s : new String[] {"one", "two", "three"}) {
             m.put(s, new SimpleProperty(s));
         }
-        cm.addConfigurable(StringConfigurable.class, "a", m);
+        cm.addConfiguration(new ConfigurationData("a",StringConfigurable.class.getName(),m));
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         assertEquals("one", sc.one);
         assertEquals("two", sc.two);
@@ -136,18 +132,17 @@ public class ProgrammaticConfigurableTest {
         assertThrows(IllegalArgumentException.class, () -> {
             ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
             StringConfigurable sc = (StringConfigurable) cm.lookup("a");
-            Map<String, Property> m = new HashMap<>();
-            for (String s : new String[]{"one", "two", "three"}) {
+            Map<String,Property> m = new HashMap<>();
+            for(String s : new String[] {"one", "two", "three"}) {
                 m.put(s, new SimpleProperty(s));
             }
-            cm.addConfigurable(StringConfigurable.class, "a", m);
+            cm.addConfiguration(new ConfigurationData("a",StringConfigurable.class.getName(),m));
             sc = (StringConfigurable) cm.lookup("a");
         });
     }
 
     @Test
     public void testWriting() throws IOException {
-
         //
         // Add a component.
         ConfigurationManager cm = new ConfigurationManager("stringConfig.xml");
@@ -155,7 +150,8 @@ public class ProgrammaticConfigurableTest {
         for(String s : new String[]{"one", "two", "three"}) {
             m.put(s, new SimpleProperty(s));
         }
-        cm.addConfigurable(StringConfigurable.class, "c", m);
+        cm.addConfiguration(new ConfigurationData("c",StringConfigurable.class.getName(),m));
+        StringConfigurable c = (StringConfigurable) cm.lookup("c");
 
         //
         // Write the file.

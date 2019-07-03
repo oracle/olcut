@@ -1,30 +1,30 @@
 package com.oracle.labs.mlrg.olcut.config.json;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
-import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
-import com.oracle.labs.mlrg.olcut.config.ListProperty;
-import com.oracle.labs.mlrg.olcut.config.MapProperty;
-import com.oracle.labs.mlrg.olcut.config.Property;
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
-import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
-import com.oracle.labs.mlrg.olcut.config.URLLoader;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -44,9 +44,9 @@ public class JsonLoader implements ConfigLoader {
 
     private final URLLoader parent;
 
-    private final Map<String, RawPropertyData> rpdMap;
+    private final Map<String, ConfigurationData> rpdMap;
 
-    private final Map<String, RawPropertyData> existingRPD;
+    private final Map<String, ConfigurationData> existingRPD;
 
     private final Map<String, SerializedObject> serializedObjects;
 
@@ -54,8 +54,8 @@ public class JsonLoader implements ConfigLoader {
 
     private String workingDir;
 
-    public JsonLoader(JsonFactory factory, URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD,
-                     Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) {
+    public JsonLoader(JsonFactory factory, URLLoader parent, Map<String, ConfigurationData> rpdMap, Map<String, ConfigurationData> existingRPD,
+                      Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) {
         this.factory = factory;
         this.parent = parent;
         this.rpdMap = rpdMap;
@@ -65,29 +65,44 @@ public class JsonLoader implements ConfigLoader {
     }
 
     /**
-     * Loads a set of configuration data from the location
-     *
-     * @throws IOException if an I/O or parse error occurs
+     * Loads json configuration data from the location
      */
     @Override
-    public void load(URL url) throws ConfigLoaderException, IOException {
-        JsonParser parser = factory.createParser(url);
-        parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
-        if (url.getProtocol().equals("file")) {
-            workingDir = new File(url.getFile()).getParent();
-        } else {
-            workingDir = "";
-        }
-        parseJson(parser);
-        parser.close();
+    public void load(URL url) throws ConfigLoaderException {
+        AccessController.doPrivileged((PrivilegedAction<Void>)
+                () -> {
+                    if (url.getProtocol().equals("file")) {
+                        workingDir = new File(url.getFile()).getParent();
+                    } else {
+                        workingDir = "";
+                    }
+                    try (JsonParser parser = factory.createParser(url)) {
+                        parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
+                        parseJson(parser);
+                    } catch (IOException e) {
+                        String msg = "Error while parsing " + url.toString() + ": " + e.getMessage();
+                        throw new ConfigLoaderException(e, msg);
+                    }
+                    return null;
+                }
+        );
     }
 
+    /**
+     * Loads json configuration data from the stream
+     */
     @Override
-    public String getExtension() {
-        return "json";
+    public void load(InputStream stream) throws ConfigLoaderException {
+        try (JsonParser parser = factory.createParser(stream)) {
+            parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
+            parseJson(parser);
+        } catch (IOException e) {
+            String msg = "Error while parsing input: " + e.getMessage();
+            throw new ConfigLoaderException(e, msg);
+        }
     }
 
-    public Map<String, RawPropertyData> getPropertyMap() {
+    public Map<String, ConfigurationData> getPropertyMap() {
         return rpdMap;
     }
 
@@ -172,7 +187,7 @@ public class JsonLoader implements ConfigLoader {
             throw new ConfigLoaderException("lease timeout " + lt +
                     " specified for component that does not have export set, at node " + node.toString());
         }
-        long leaseTime = -1;
+        long leaseTime = ConfigurationData.DEFAULT_LEASE_TIME;
         if (lt != null) {
             try {
                 leaseTime = Long.parseLong(lt.textValue());
@@ -186,9 +201,11 @@ public class JsonLoader implements ConfigLoader {
             }
         }
         JsonNode entriesNameNode = node.get(ConfigLoader.ENTRIES);
+        String entriesName = entriesNameNode != null ? entriesNameNode.textValue() : null;
         JsonNode serializedFormNode = node.get(ConfigLoader.SERIALIZED);
+        String serializedForm = serializedFormNode != null ? serializedFormNode.textValue() : null;
 
-        RawPropertyData rpd;
+        ConfigurationData rpd;
         if (override != null) {
             //
             // If we're overriding an existing type, then we should pull
@@ -198,7 +215,7 @@ public class JsonLoader implements ConfigLoader {
             // properties. If that's the case, then things might get
             // really weird. We'll log an override with a specified type
             // just in case.
-            RawPropertyData spd = rpdMap.get(override);
+            ConfigurationData spd = rpdMap.get(override);
             if (spd == null) {
                 spd = existingRPD.get(override);
                 if (spd == null) {
@@ -213,26 +230,15 @@ public class JsonLoader implements ConfigLoader {
             if (curType == null) {
                 curType = spd.getClassName();
             }
-            rpd = new RawPropertyData(curComponent, curType,
-                    spd.getProperties());
+            rpd = new ConfigurationData(curComponent, curType, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
             overriding = true;
         } else {
             if (rpdMap.get(curComponent) != null) {
                 throw new ConfigLoaderException("duplicate definition for "
                         + curComponent);
             }
-            rpd = new RawPropertyData(curComponent, curType, null);
+            rpd = new ConfigurationData(curComponent, curType, serializedForm, entriesName, exportable, importable, leaseTime);
         }
-
-        //
-        // Set the lease time.
-        rpd.setExportable(exportable);
-        rpd.setImportable(importable);
-        rpd.setLeaseTime(leaseTime);
-        String entriesName = entriesNameNode != null ? entriesNameNode.textValue() : null;
-        rpd.setEntriesName(entriesName);
-        String serializedForm = serializedFormNode != null ? serializedFormNode.textValue() : null;
-        rpd.setSerializedForm(serializedForm);
 
         ObjectNode properties = (ObjectNode) node.get(ConfigLoader.PROPERTIES);
         // properties is null if there are no properties specified in the json

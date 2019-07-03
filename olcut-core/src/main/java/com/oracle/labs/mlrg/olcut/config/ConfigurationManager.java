@@ -1,21 +1,35 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriter;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriterException;
+import com.oracle.labs.mlrg.olcut.config.io.FileFormatFactory;
+import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperty;
+import com.oracle.labs.mlrg.olcut.config.property.ImmutableGlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
-import javax.management.MBeanServer;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -35,7 +50,6 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
 
@@ -46,7 +60,7 @@ import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
  * @see Configurable
  * @see PropertySheet
  */
-public class ConfigurationManager implements Cloneable, Closeable {
+public class ConfigurationManager implements Closeable {
     private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
 
     public static final Option configFileOption = new Option() {
@@ -108,25 +122,18 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * Used to support new config file formats at runtime.
      * Initialised with xml.
      */
-    private static Map<String,FileFormatFactory> formatFactoryMap = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<String, FileFormatFactory> formatFactoryMap = Collections.synchronizedMap(new HashMap<>());
 
     static {
         formatFactoryMap.put("xml",new XMLConfigFactory());
     }
 
-    private List<ConfigurationChangeListener> changeListeners =
-            new ArrayList<>();
+    protected final Map<String, PropertySheet<? extends Configurable>> symbolTable;
 
-    protected Map<String, PropertySheet<? extends Configurable>> symbolTable =
+    protected final Map<ConfigWrapper,PropertySheet<? extends Configurable>> configuredComponents =
             new LinkedHashMap<>();
 
-    protected Map<ConfigWrapper,PropertySheet<? extends Configurable>> configuredComponents =
-            new LinkedHashMap<>();
-
-    protected Map<String,PropertySheet<? extends Configurable>> addedComponents =
-            new LinkedHashMap<>();
-
-    protected final Map<String, RawPropertyData> rawPropertyMap;
+    protected final Map<String, ConfigurationData> configurationDataMap;
 
     protected final GlobalProperties globalProperties;
     
@@ -134,11 +141,9 @@ public class ConfigurationManager implements Cloneable, Closeable {
 
     protected final GlobalProperties origGlobal;
 
-    protected boolean showCreations;
+    protected final boolean showCreations;
 
-    private LinkedList<URL> configURLs = new LinkedList<>();
-
-    private MBeanServer mbs;
+    private final LinkedList<URL> configURLs = new LinkedList<>();
 
     private String[] unnamedArguments = new String[0];
 
@@ -264,6 +269,8 @@ public class ConfigurationManager implements Cloneable, Closeable {
         // Validate the supplied Options struct is coherent and generate a usage statement.
         usage = validateOptions(options,defaultConfigPath,useConfigFiles);
 
+        symbolTable = new LinkedHashMap<>();
+
         // Check if the user requested the usage statement.
         if ((arguments.length == 1) && (arguments[0].equals("--"+usageOption.longName()) || arguments[0].equals("--"+helpOption.longName()))) {
             throw new UsageException(usage);
@@ -290,7 +297,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
         configURLs.addAll(urls);
         URLLoader loader = new URLLoader(configURLs,formatFactoryMap);
         loader.load();
-        rawPropertyMap = loader.getPropertyMap();
+        configurationDataMap = loader.getPropertyMap();
         globalProperties = loader.getGlobalProperties();
         serializedObjects = new HashMap<>();
         for(Map.Entry<String,SerializedObject> e : loader.getSerializedObjects().entrySet()) {
@@ -306,14 +313,16 @@ public class ConfigurationManager implements Cloneable, Closeable {
 
         //
         // Load system properties into global properties
-        ConfigurationManagerUtils.importSystemProperties(globalProperties);
+        globalProperties.importSystemProperties();
 
         //
         // we can't config the configuration manager with itself so we
         // do some of these config items manually.
         GlobalProperty sC = globalProperties.get("showCreations");
         if(sC != null) {
-            this.showCreations = "true".equals(sC.getValue());
+            this.showCreations = Boolean.parseBoolean(sC.getValue());
+        } else {
+            this.showCreations = false;
         }
 
         //
@@ -321,25 +330,39 @@ public class ConfigurationManager implements Cloneable, Closeable {
         // *Must* be last as it can cause Configurable instantiation.
         // Throws an exception if there are unknown named arguments at this stage.
         try {
-            unnamedArguments = parseOptionArguments(argumentsList, options);
+            unnamedArguments = AccessController.doPrivileged((PrivilegedExceptionAction<String[]>) () -> parseOptionArguments(argumentsList, options));
+        } catch (PrivilegedActionException e) {
+            Exception inner = e.getException();
+            if (inner instanceof IllegalAccessException) {
+                throw new ArgumentException(e, "Failed to write argument into Options");
+            } else if ((inner instanceof InstantiationException) || (inner instanceof NoSuchMethodException) || (inner instanceof InvocationTargetException)) {
+                throw new ArgumentException(e, "Failed to instantiate a field of Options.");
+            } else {
+                throw new ArgumentException(inner, "Unexpected exception thrown when reading arguments - " + inner.getMessage());
+            }
         } catch (PropertyException e) {
-            throw new ArgumentException(e, e.getMsg() + "\n\n" + usage);
-        } catch (IllegalAccessException e) {
-            throw new ArgumentException(e, "Failed to write argument into Options");
-        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-            throw new ArgumentException(e, "Failed to instantiate a field of Options.");
+            throw new ArgumentException(e, e.getMessage() + "\n\n" + usage);
         }
     }
 
-    private ConfigurationManager(Map<String, RawPropertyData> newrpm, GlobalProperties newgp, List<ConfigurationChangeListener> newcl, Map<String, PropertySheet<? extends Configurable>> newSymbolTable, Map<String, SerializedObject> newSerializedObjects, GlobalProperties newOrigGlobal) {
-        this.rawPropertyMap = newrpm;
+    private ConfigurationManager(Map<String, ConfigurationData> newrpm, GlobalProperties newgp, Map<String, PropertySheet<? extends Configurable>> newSymbolTable, Map<String, SerializedObject> newSerializedObjects, GlobalProperties newOrigGlobal) {
+        this.configurationDataMap = newrpm;
         this.globalProperties = newgp;
-        this.changeListeners = newcl;
         this.symbolTable = newSymbolTable;
         this.serializedObjects = newSerializedObjects;
         this.origGlobal = newOrigGlobal;
+        GlobalProperty sC = globalProperties.get("showCreations");
+        if(sC != null) {
+            this.showCreations = Boolean.parseBoolean(sC.getValue());
+        } else {
+            this.showCreations = false;
+        }
     }
 
+    /**
+     * Adds a file format factory to allow ConfigurationManager to read and write that format.
+     * @param f The file format factory to add.
+     */
     public static void addFileFormatFactory(FileFormatFactory f) {
         formatFactoryMap.put(f.getExtension(),f);
     }
@@ -453,24 +476,28 @@ public class ConfigurationManager implements Cloneable, Closeable {
     }
 
     private static URL findURL(String input, String argumentName) {
-        URL url = ConfigurationManager.class.getResource(input);
-        if (url == null) {
-            File file = new File(input);
-            if (file.exists()) {
-                try {
-                    url = file.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    throw new ArgumentException(e, argumentName, "Can't load config file: " + input);
+        return AccessController.doPrivileged((PrivilegedAction<URL>)
+                () -> {
+                    URL url = ConfigurationManager.class.getResource(input);
+                    if (url == null) {
+                        File file = new File(input);
+                        if (file.exists()) {
+                            try {
+                                url = file.toURI().toURL();
+                            } catch (MalformedURLException e) {
+                                throw new ArgumentException(e, argumentName, "Can't load config file: " + input);
+                            }
+                        } else {
+                            try {
+                                url = (new URI(input)).toURL();
+                            } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
+                                throw new ArgumentException(argumentName, "Can't find config file: " + input);
+                            }
+                        }
+                    }
+                    return url;
                 }
-            } else {
-                try {
-                    url = (new URI(input)).toURL();
-                } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
-                    throw new ArgumentException(argumentName, "Can't find config file: " + input);
-                }
-            }
-        }
-        return url;
+        );
     }
 
     /**
@@ -496,7 +523,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
             if (curArg.startsWith(CONFIGURABLE_OVERRIDE)) {
                 String[] split = curArg.substring(3).split("\\.");
                 if (split.length == 2) {
-                    RawPropertyData rpd = rawPropertyMap.get(split[0]);
+                    ConfigurationData rpd = configurationDataMap.get(split[0]);
                     if (rpd != null) {
                         if (checkConfigurableField(rpd.getClassName(),split[1])) {
                             // Found a valid configurable field, consume argument.
@@ -534,7 +561,6 @@ public class ConfigurationManager implements Cloneable, Closeable {
                 }
             }
         }
-
     }
 
     /**
@@ -581,7 +607,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
             }
         }
 
-        boolean consumed = false;
+        boolean consumed;
         for (int i = 0; i < arguments.size(); i++) {
             consumed = false;
             String curArg = arguments.get(i);
@@ -713,7 +739,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
             }
         }
 
-        return arguments.toArray(unnamedArguments);
+        return arguments.toArray(new String[0]);
     }
 
     /**
@@ -724,7 +750,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * @return A list of URLs pointing to olcut config files.
      * @throws ArgumentException If an argument is poorly formatted or missing a mandatory parameter.
      */
-    private List<URL> parseConfigFiles(List<String> arguments) throws ArgumentException {
+    private static List<URL> parseConfigFiles(List<String> arguments) throws ArgumentException {
         List<URL> urls = new ArrayList<>();
 
         String confStr = "-" + configFileOption.charName();
@@ -791,61 +817,42 @@ public class ConfigurationManager implements Cloneable, Closeable {
 
     /**
      * Parses a string into a list of string, respecting escaping of the delimiter, and also allowing quotes.
-     * @param input
-     * @return
+     * @param input A delimiter separated string.
+     * @return A list of strings.
      */
     public static List<String> parseStringList(String input) {
         List<String> tokensList = new ArrayList<>();
         boolean inQuotes = false;
         boolean escaped = false;
         StringBuilder buffer = new StringBuilder();
-        if (IS_WINDOWS) {
-            for (char c : input.toCharArray()) {
-                switch (c) {
-                    case ARG_DELIMITER:
-                        if (inQuotes || escaped) {
-                            buffer.append(c);
-                        } else {
-                            tokensList.add(buffer.toString());
-                            buffer = new StringBuilder();
-                        }
-                        escaped = false;
-                        break;
-                    case WIN_ESCAPE_CHAR:
-                        escaped = true;
-                        break;
-                    case '\"':
-                        // Note fall through here to gather up the quotes.
-                        inQuotes = !inQuotes;
-                    default:
+        for (char c : input.toCharArray()) {
+            switch (c) {
+                case ARG_DELIMITER:
+                    if (inQuotes || escaped) {
                         buffer.append(c);
-                        escaped = false;
-                        break;
-                }
-            }
-        } else {
-            for (char c : input.toCharArray()) {
-                switch (c) {
-                    case ARG_DELIMITER:
-                        if (inQuotes || escaped) {
-                            buffer.append(c);
-                        } else {
-                            tokensList.add(buffer.toString());
-                            buffer = new StringBuilder();
-                        }
-                        escaped = false;
-                        break;
-                    case ESCAPE_CHAR:
+                    } else {
+                        tokensList.add(buffer.toString());
+                        buffer = new StringBuilder();
+                    }
+                    escaped = false;
+                    break;
+                case WIN_ESCAPE_CHAR:
+                    if (IS_WINDOWS) {
                         escaped = true;
-                        break;
-                    case '\"':
-                        // Note fall through here to gather up the quotes.
-                        inQuotes = !inQuotes;
-                    default:
-                        buffer.append(c);
-                        escaped = false;
-                        break;
-                }
+                    }
+                    break;
+                case ESCAPE_CHAR:
+                    if (!IS_WINDOWS) {
+                        escaped = true;
+                    }
+                    break;
+                case '\"':
+                    // Note fall through here to gather up the quotes.
+                    inQuotes = !inQuotes;
+                default:
+                    buffer.append(c);
+                    escaped = false;
+                    break;
             }
         }
         tokensList.add(buffer.toString());
@@ -853,40 +860,27 @@ public class ConfigurationManager implements Cloneable, Closeable {
     }
 
     private boolean checkConfigurableField(String configurableClass, String fieldName) {
-        Class<? extends Configurable> clazz = null;
-        // catch is empty as this is only called with classes from RawPropertyData,
-        // which has already checked it's configurable.
-        try {
-            clazz = (Class<? extends Configurable>) Class.forName(configurableClass);
-        } catch (ClassNotFoundException e) {
-            logger.log(Level.SEVERE, "Failed to load " + configurableClass);
+        StoredFieldType sft = getStoredFieldType(configurableClass,fieldName);
+        if (sft == StoredFieldType.MAP) {
+            logger.warning("Dude seriously, a Map? On the command line? Maps aren't supported.");
         }
-        return checkConfigurableField(clazz,fieldName);
+        return sft == StoredFieldType.LIST || sft == StoredFieldType.STRING;
     }
 
-    private boolean checkConfigurableField(Class<? extends Configurable> configurableClass, String fieldName) {
-        Set<Field> fields = PropertySheet.getAllFields(configurableClass);
-        boolean found = false;
-        for (Field f : fields) {
-            if (f.getName().equals(fieldName) && (f.getAnnotation(Config.class) != null)) {
-                if (Map.class.isAssignableFrom(f.getType())) {
-                    logger.warning("Dude seriously, a Map? On the command line? Maps aren't supported.");
-                    break;
-                } else {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        return found;
-    }
-
+    // Warnings suppressed as it throws PropertyException if given an invalid class name.
+    // The class name is checked elsewhere in the code so this should never be thrown.
+    @SuppressWarnings("unchecked")
     private StoredFieldType getStoredFieldType(String configurableClass, String fieldName) {
         Class<? extends Configurable> clazz = null;
-        // catch is empty as this is only called with classes from RawPropertyData,
+        // catch is empty as this is only called with classes from ConfigurationData,
         // which has already checked it's configurable.
         try {
-            clazz = (Class<? extends Configurable>) Class.forName(configurableClass);
+            Class<?> tmpClazz = Class.forName(configurableClass);
+            if (Configurable.class.isAssignableFrom(tmpClazz)) {
+                clazz = (Class<? extends Configurable>) tmpClazz;
+            } else {
+                throw new PropertyException("",fieldName,configurableClass + " does not extends Configurable.");
+            }
         } catch (ClassNotFoundException e) {
             logger.log(Level.SEVERE, "Failed to load " + configurableClass);
         }
@@ -921,6 +915,14 @@ public class ConfigurationManager implements Cloneable, Closeable {
     }
 
     /**
+     * Should object instantiations be logged. Turned on via a system property.
+     * @return True if object instantiations should be logged.
+     */
+    public boolean showCreations() {
+        return showCreations;
+    }
+
+    /**
      * Adds a set of properties at the given URL to the current configuration
      * manager.
      */
@@ -933,7 +935,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
         URLLoader loader = new URLLoader(configURLs,formatFactoryMap);
         loader.load();
         GlobalProperties tgp = loader.getGlobalProperties();
-        Map<String, RawPropertyData> trpm = loader.getPropertyMap();
+        Map<String, ConfigurationData> trpm = loader.getPropertyMap();
         for(Map.Entry<String,SerializedObject> e : loader.getSerializedObjects().entrySet()) {
             e.getValue().setConfigurationManager(this);
             serializedObjects.put(e.getKey(), e.getValue());
@@ -947,8 +949,8 @@ public class ConfigurationManager implements Cloneable, Closeable {
             globalProperties.setValue(e.getKey(), e.getValue());
             origGlobal.setValue(e.getKey(), e.getValue());
         }
-        for(Map.Entry<String, RawPropertyData> e : trpm.entrySet()) {
-            RawPropertyData opd = rawPropertyMap.put(e.getKey(), e.getValue());
+        for(Map.Entry<String, ConfigurationData> e : trpm.entrySet()) {
+            ConfigurationData opd = configurationDataMap.put(e.getKey(), e.getValue());
         }
 
     }
@@ -956,22 +958,26 @@ public class ConfigurationManager implements Cloneable, Closeable {
     /**
      * Overrides a simple property in a specific configurable in this configuration manager.
      *
-     * Throws {@link PropertyException} if the configurable/property doesn't exist, has already been instantiated, or isn't a simple property.
+     * Throws {@link PropertyException} if the configurable/property doesn't exist, has already been instantiated, or doesn't match the field type.
      * @param componentName The name of the component.
      * @param propertyName The name of the property/field.
      * @param value The value to set it to.
      */
-    public void overrideConfigurableProperty(String componentName, String propertyName, String value) {
-        RawPropertyData rpd = rawPropertyMap.get(componentName);
+    public void overrideConfigurableProperty(String componentName, String propertyName, Property value) {
+        ConfigurationData rpd = configurationDataMap.get(componentName);
         if (rpd != null) {
             if (!symbolTable.containsKey(componentName)) {
                 StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
-                if (type == StoredFieldType.STRING) {
-                    rpd.add(propertyName, new SimpleProperty(value));
+                if ((type == StoredFieldType.STRING) && (value instanceof SimpleProperty)) {
+                    rpd.add(propertyName, value);
+                } else if ((type == StoredFieldType.LIST) && (value instanceof ListProperty)) {
+                    rpd.add(propertyName, value);
+                } else if ((type == StoredFieldType.MAP) && (value instanceof MapProperty)) {
+                    rpd.add(propertyName, value);
                 } else if (type == StoredFieldType.NONE) {
                     throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.getClassName());
                 } else {
-                    throw new PropertyException(componentName, propertyName, "Incompatible field type, found " + type);
+                    throw new PropertyException(componentName, propertyName, "Incompatible field type, found " + type + ", expected " + value.getClass().getSimpleName());
                 }
             } else {
                 throw new PropertyException(componentName, "Properties can only be overridden before the object is constructed.");
@@ -979,87 +985,13 @@ public class ConfigurationManager implements Cloneable, Closeable {
         } else {
             throw new PropertyException(componentName, "Failed to find component " + componentName);
         }
-    }
-
-    /**
-     * Overrides a list/array/set property in a specific configurable in this configuration manager.
-     * <p>
-     * Throws {@link PropertyException} if the configurable/property doesn't exist, has already been instantiated, or isn't a list/array/set.
-     *
-     * @param componentName The name of the component.
-     * @param propertyName  The name of the property/field.
-     * @param value         The value to set it to.
-     */
-    public void overrideConfigurableProperty(String componentName, String propertyName, List<String> value) {
-        RawPropertyData rpd = rawPropertyMap.get(componentName);
-        if (rpd != null) {
-            if (!symbolTable.containsKey(componentName)) {
-                StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
-                if (type == StoredFieldType.LIST) {
-                    rpd.add(propertyName, ListProperty.createFromStringList(value));
-                } else if (type == StoredFieldType.NONE) {
-                    throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.getClassName());
-                } else {
-                    throw new PropertyException(componentName, propertyName, "Incompatible field type, found " + type);
-                }
-            } else {
-                throw new PropertyException(componentName, "Properties can only be overridden before the object is constructed.");
-            }
-        } else {
-            throw new PropertyException(componentName, "Failed to find component " + componentName);
-        }
-    }
-
-    /**
-     * Overrides a map property in a specific configurable in this configuration manager.
-     * <p>
-     * Throws {@link PropertyException} if the configurable/property doesn't exist, has already been instantiated, or isn't a map.
-     *
-     * @param componentName The name of the component.
-     * @param propertyName  The name of the property/field.
-     * @param value         The value to set it to.
-     */
-    public void overrideConfigurableProperty(String componentName, String propertyName, Map<String, String> value) {
-        RawPropertyData rpd = rawPropertyMap.get(componentName);
-        if (rpd != null) {
-            if (!symbolTable.containsKey(componentName)) {
-                StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
-                if (type == StoredFieldType.MAP) {
-                    rpd.add(propertyName, MapProperty.createFromStringMap(value));
-                } else if (type == StoredFieldType.NONE) {
-                    throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.getClassName());
-                } else {
-                    throw new PropertyException(componentName, propertyName, "Incompatible field type, found " + type);
-                }
-            } else {
-                throw new PropertyException(componentName, "Properties can only be overridden before the object is constructed.");
-            }
-        } else {
-            throw new PropertyException(componentName, "Failed to find component " + componentName);
-        }
-    }
-
-    /**
-     * Gets the current MBean server, creating one if necessary.
-     * @return the current MBean server, or <code>null</code> if there isn't
-     * one available.
-     */
-    protected MBeanServer getMBeanServer() {
-        if(mbs == null) {
-            mbs = ManagementFactory.getPlatformMBeanServer();
-        }
-        return mbs;
     }
 
     /**
      * Shuts down the configuration manager, which is a no-op on the standard version.
      */
-    public synchronized void shutdown() { }
-
     @Override
-    public void close() {
-        shutdown();
-    }
+    public synchronized void close() { }
 
     /**
      * Get any unnamed arguments that weren't parsed into an {@link Options}
@@ -1071,22 +1003,31 @@ public class ConfigurationManager implements Cloneable, Closeable {
     }
 
     /**
-     * Gets the raw properties associated with a given instance.
+     * Gets the configuration data associated with a given instance.
+     *
+     * Allows the modification of configuration for future objects.
      * @param instanceName the name of the instance whose properties we want
-     * @return the associated raw property data, or null if there is no data
+     * @return the associated configuration data, or {@link Optional#empty} if there is no data
      * associated with the given instance name.
      */
-    public RawPropertyData getRawProperties(String instanceName) {
-        return rawPropertyMap.get(instanceName);
+    public Optional<ConfigurationData> getConfigurationData(String instanceName) {
+        ConfigurationData data = configurationDataMap.get(instanceName);
+        if (data == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(data);
+        }
     }
 
     /**
      * Does this ConfigurationManager know about an instance called instanceName.
+     *
+     * Does not trigger class instantiation or configuration.
      * @param instanceName The name to check.
      * @return True if it contains a {@link Configurable} called instanceName.
      */
     public boolean containsConfigurable(String instanceName) {
-        return rawPropertyMap.containsKey(instanceName);
+        return configurationDataMap.containsKey(instanceName);
     }
 
     /**
@@ -1095,28 +1036,24 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * @param instanceName the instance name of the object
      * @return the property sheet for the object.
      */
-    public PropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
+    @SuppressWarnings("unchecked") // Warning suppressed as it's behind an isAssignableFrom check.
+    protected PropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
         if(!symbolTable.containsKey(instanceName)) {
             // if it is not in the symbol table, so construct
             // it based upon our raw property data
-            RawPropertyData rpd = rawPropertyMap.get(instanceName);
+            ConfigurationData rpd = configurationDataMap.get(instanceName);
             if(rpd != null) {
                 String className = rpd.getClassName();
                 try {
-                    Class cls = Class.forName(className);
-                    if (Configurable.class.isAssignableFrom(cls)) {
-
-                        // now load the property-sheet by using the class annotation
-                        PropertySheet<? extends Configurable> propertySheet =
-                                getNewPropertySheet((Class<? extends Configurable>) cls,instanceName, this, rpd);
-
+                    Class<?> confClass = Class.forName(className);
+                    if (Configurable.class.isAssignableFrom(confClass)) {
+                        PropertySheet<? extends Configurable> propertySheet = new PropertySheet<>((Class<? extends Configurable>)confClass,this,rpd);
                         symbolTable.put(instanceName, propertySheet);
                     } else {
-                        throw new PropertyException(instanceName, "Unable to cast " + className +
-                                " to com.oracle.labs.mlrg.olcut.config.Configurable");
+                        throw new PropertyException(rpd.getName(), "Class " + className + " does not implement Configurable.");
                     }
-                } catch(ClassNotFoundException e) {
-                    throw new PropertyException(e, "Class " + className + " not found");
+                } catch (ClassNotFoundException e) {
+                    throw new PropertyException(e, rpd.getName(), "Class " + className + " not found");
                 }
             }
         }
@@ -1127,14 +1064,16 @@ public class ConfigurationManager implements Cloneable, Closeable {
     /**
      * Gets all instances that are of the given type.
      *
+     * Only returns the names of the instantiated objects.
+     *
      * @param type the desired type of instance
      * @return the set of all instances
      */
-    public Collection<String> getInstanceNames(Class<? extends Configurable> type) {
-        Collection<String> instanceNames = new ArrayList<String>();
+    public Set<String> getInstanceNames(Class<? extends Configurable> type) {
+        Set<String> instanceNames = new HashSet<>();
 
-        for(PropertySheet ps : symbolTable.values()) {
-            if(!ps.isInstantiated()) {
+        for (PropertySheet ps : symbolTable.values()) {
+            if (!ps.isInstantiated()) {
                 continue;
             }
 
@@ -1152,14 +1091,14 @@ public class ConfigurationManager implements Cloneable, Closeable {
      *
      * @return all component named registered to this instance of <code>ConfigurationManager</code>
      */
-    public Collection<String> getComponentNames() {
-        return new ArrayList<>(rawPropertyMap.keySet());
+    public Set<String> getComponentNames() {
+        return new HashSet<>(configurationDataMap.keySet());
     }
 
     /**
      * Looks up an object that has been specified in the configuration
      * as one that was serialized. Note that such an object does not need
-     * to be a component.
+     * to be configurable.
      * @param objectName the name of the object to lookup.
      * @return the deserialized object, or <code>null</code> if the object 
      * with that name does not occur in the configuration.
@@ -1216,7 +1155,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      */
     public Configurable lookup(String instanceName, ComponentListener cl)
             throws InternalConfigurationException {
-        return lookup(instanceName, null, true);
+        return lookup(instanceName, cl, true);
     }
 
     /**
@@ -1269,18 +1208,8 @@ public class ConfigurationManager implements Cloneable, Closeable {
         // Remember that we configured this component, removing it from the
         // list of added components if necessary.
         configuredComponents.put(new ConfigWrapper(ret), ps);
-        addedComponents.remove(instanceName);
 
         return ret;
-    }
-
-    /**
-     * Gets the number of added (i.e., uninstantiated components)
-     *
-     * @return the number of added components in this configuration manager.
-     */
-    public int getNumAdded() {
-        return addedComponents.size();
     }
 
     /**
@@ -1288,7 +1217,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
      *
      * @return the number of instantiated components in this configuration manager.
      */
-    public int getNumConfigured() {
+    public int getNumInstantiated() {
         return configuredComponents.size();
     }
 
@@ -1311,6 +1240,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
         return comps.get(0);
     }
 
+    @SuppressWarnings("unchecked") // Casts to T are implicitly checked as we use Class<T> to find the names.
     public <T extends Configurable> List<T> lookupAll(Class<T> c) {
         List<T> ret = new ArrayList<>();
 
@@ -1320,7 +1250,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
         // name, ignoring those things marked as importable.
         if(!c.isInterface()) {
             String className = c.getName();
-            for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
+            for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
                 if (e.getValue().getClassName().equals(className) &&
                         !e.getValue().isImportable()) {
                     ret.add((T)lookup(e.getKey()));
@@ -1330,11 +1260,11 @@ public class ConfigurationManager implements Cloneable, Closeable {
             //
             // If we have an interface and no registry, lookup all the
             // implementing classes and return them.
-            for (Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
+            for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
                 try {
                     Class clazz = Class.forName(e.getValue().getClassName());
                     if (!e.getValue().isImportable() && c.isAssignableFrom(clazz) && !clazz.isInterface()) {
-                        ret.add((T)innerLookup(e.getKey(),null,false));
+                        ret.add((T)innerLookup(e.getKey(),null,true));
                     }
                 } catch (ClassNotFoundException ex) {
                     throw new PropertyException(ex,e.getKey(),"Class not found for component " + e.getKey());
@@ -1364,15 +1294,15 @@ public class ConfigurationManager implements Cloneable, Closeable {
      */
     public <T extends Configurable> List<String> listAll(Class<T> c) {
         List<String> ret = new ArrayList<>();
-        for(Map.Entry<String, RawPropertyData> e : rawPropertyMap.entrySet()) {
-            RawPropertyData rpd = e.getValue();
+        for(Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
+            ConfigurationData rpd = e.getValue();
             try {
                 Class pclass = Class.forName(rpd.getClassName());
                 if (c.isAssignableFrom(pclass)) {
                     ret.add(e.getKey());
                 }
             } catch(ClassNotFoundException ex) {
-                logger.warning(String.format("Non class %s found in config",
+                logger.warning(String.format("No class %s found in ConfigurationManager",
                         rpd.getClassName()));
             }
         }
@@ -1381,91 +1311,46 @@ public class ConfigurationManager implements Cloneable, Closeable {
     }
 
     /**
-     * Given a <code>Configurable</code>-class/interface, all property-sheets which are subclassing/implementing this
-     * class/interface are collected and returned.  No <code>Configurable</code> will be instantiated by this method.
-     */
-    public List<PropertySheet> getPropSheets(Class<? extends Configurable> confClass) {
-        List<PropertySheet> psCol = new ArrayList<PropertySheet>();
-
-        for(PropertySheet ps : symbolTable.values()) {
-            if(confClass.isAssignableFrom(ps.getConfigurableClass())) {
-                psCol.add(ps);
-            }
-        }
-
-        return psCol;
-    }
-
-    /**
-     * Registers a new configurable to this configuration manager.
+     * Adds an empty ConfigurationData with the specified name and specified class.
      *
-     * @param confClass The class of the configurable to be instantiated and to be added to this configuration manager
-     *                  instance.
-     * @param name      The desired  lookup-name of the configurable
-     * @param props     The properties to be used for component configuration
-     * @throws IllegalArgumentException if the there's already a component with the same <code>name</code> that's been instantiated by
-     *                                  this configuration manager instance.
-     */
-    public void addConfigurable(Class<? extends Configurable> confClass,
-                                String name, Map<String, Property> props) {
-        if(name == null) {
-            name = confClass.getName();
-        }
-
-        if(symbolTable.containsKey(name)) {
-            throw new IllegalArgumentException("tried to override existing component name");
-        }
-
-        PropertySheet<? extends Configurable> ps = getPropSheetInstanceFromClass(confClass, props, name);
-        symbolTable.put(name, ps);
-        rawPropertyMap.put(name, new RawPropertyData(name, confClass.getName()));
-        addedComponents.put(name, ps);
-        for(ConfigurationChangeListener changeListener : changeListeners) {
-            changeListener.componentAdded(this, ps);
-        }
-    }
-
-    /**
-     * Registers a new configurable to this configuration manager.
-     *
-     * @param confClass    The class of the configurable to be instantiated and to be added to this configuration
+     * @param confClass    The class of the configurable to be added to this configuration
      *                     manager instance.
-     * @param instanceName The desired  lookup-instanceName of the configurable
-     * @throws IllegalArgumentException if the there's already a component with the same <code>instanceName</code>
+     * @param instanceName The desired lookup name of the configurable, if it's empty or null it's replaced with {@link Class#getSimpleName()}.
+     * @throws IllegalArgumentException if the there's already a configurable with the same <code>instanceName</code>
      *                                  registered to this configuration manager instance.
      */
-    public void addConfigurable(Class<? extends Configurable> confClass,
-                                String instanceName) {
-        addConfigurable(confClass, instanceName, new HashMap<>());
+    public void addConfiguration(Class<? extends Configurable> confClass,
+                                 String instanceName) {
+        if (instanceName == null || instanceName.isEmpty()) {
+            instanceName = confClass.getSimpleName();
+        }
+
+        ConfigurationData data = new ConfigurationData(instanceName,confClass.getName());
+        addConfiguration(data);
     }
 
     /**
      * Removes a configurable from this configuration manager.
      * @param name the name of the configurable to remove
-     * @return the property sheet associated with the component, or <code>null</code>
-     * if no such component exists.
+     * @return <code>true</code> if a configurable was removed, or <code>false</code> otherwise.
      */
-    public PropertySheet removeConfigurable(String name) {
+    public boolean removeConfigurable(String name) {
+        if (configurationDataMap.containsKey(name)) {
+            configurationDataMap.remove(name);
 
-        PropertySheet ps = getPropertySheet(name);
-        if(ps == null) {
-            return null;
+            if (symbolTable.containsKey(name)) {
+                PropertySheet<? extends Configurable> ps = symbolTable.remove(name);
+                //
+                // If this one's been instantiated, remove it from there too!
+                if(ps.isInstantiated()) {
+                    configuredComponents.remove(new ConfigWrapper(ps.getOwner()));
+                }
+            }
+
+            return true;
+        } else {
+            return false;
         }
-
-        symbolTable.remove(name);
-        rawPropertyMap.remove(name);
-        addedComponents.remove(name);
-
-        //
-        // If this one's been configured, remove it from there too!
-        if(ps.isInstantiated()) {
-            configuredComponents.remove(new ConfigWrapper(ps.getOwner()));
-        }
-
-        for(ConfigurationChangeListener changeListener : changeListeners) {
-            changeListener.componentRemoved(this, ps);
-        }
-        return ps;
     }
 
     public void addSubConfiguration(ConfigurationManager subCM) {
@@ -1478,25 +1363,56 @@ public class ConfigurationManager implements Cloneable, Closeable {
         if(!overwrite) {
             for(String addCompName : subCM.getComponentNames()) {
                 if(compNames.contains(addCompName)) {
-                    throw new RuntimeException(addCompName
+                    throw new PropertyException(addCompName, addCompName
                             + " is already registered to system configuration");
                 }
             }
             for(String globProp : subCM.globalProperties.keySet()) {
                 if(globalProperties.keySet().contains(globProp)) {
-                    throw new IllegalArgumentException(globProp
+                    throw new PropertyException(globProp, globProp
                             + " is already registered as global property");
                 }
             }
         }
 
         globalProperties.putAll(subCM.globalProperties);
-        for(PropertySheet ps : subCM.symbolTable.values()) {
-            ps.setCM(this);
+        for(Map.Entry<String,PropertySheet<? extends Configurable>> e : subCM.symbolTable.entrySet()) {
+            PropertySheet<? extends Configurable> newPS = e.getValue().copy();
+            newPS.setCM(this);
+            symbolTable.put(e.getKey(),newPS);
         }
 
-        symbolTable.putAll(subCM.symbolTable);
-        rawPropertyMap.putAll(subCM.rawPropertyMap);
+        configurationDataMap.putAll(subCM.configurationDataMap);
+    }
+
+
+    /**
+     * Registers a new ConfigurationData with this ConfigurationManager. Does not trigger instantiation of the
+     * object or class loading.
+     *
+     * @param newData     The properties to be used for component configuration
+     * @throws IllegalArgumentException if the there's already a component with the same <code>name</code> that's been instantiated by
+     *                                  this configuration manager instance.
+     */
+    public void addConfiguration(ConfigurationData newData) {
+        String instanceName = newData.getName();
+        if (symbolTable.containsKey(instanceName)) {
+            throw new IllegalArgumentException("tried to override existing instantiated component name");
+        }
+
+        configurationDataMap.put(instanceName, newData);
+    }
+
+    /**
+     * Adds all the configurations in the list to this ConfigurationManager.
+     *
+     * Does not trigger class loading or validation of the ConfigurationData objects.
+     * @param newData The configurations to ingest.
+     */
+    public void addConfiguration(List<ConfigurationData> newData) {
+        for (ConfigurationData data : newData) {
+            addConfiguration(data);
+        }
     }
 
     /**
@@ -1521,7 +1437,6 @@ public class ConfigurationManager implements Cloneable, Closeable {
      * @param propertyName The name of the global property or <code>null</code> if no such property exists
      */
     public String getGlobalProperty(String propertyName) {
-        //        propertyName = propertyName.startsWith("$") ? propertyName : "${" + propertyName + "}";
         GlobalProperty globProp = globalProperties.get(propertyName);
         if(globProp == null) {
             return null;
@@ -1554,7 +1469,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
         }
     }
 
-    public String getStrippedComponentName(String propertyName) {
+    protected String getStrippedComponentName(String propertyName) {
         assert propertyName != null;
 
         while(propertyName.startsWith("$")) {
@@ -1565,54 +1480,11 @@ public class ConfigurationManager implements Cloneable, Closeable {
         return propertyName;
     }
 
-    /** Adds a new listener for configuration change events. */
-    public void addConfigurationChangeListener(ConfigurationChangeListener l) {
-        if(l == null) {
-            return;
-        }
-
-        changeListeners.add(l);
-    }
-
-    /** Removes a listener for configuration change events. */
-    public void removeConfigurationChangeListener(ConfigurationChangeListener l) {
-        if(l == null) {
-            return;
-        }
-
-        changeListeners.remove(l);
-    }
-
-    /**
-     * Informs all registered <code>ConfigurationChangeListener</code>s about a configuration changes the component
-     * named <code>configurableName</code>.
-     */
-    void fireConfChanged(String configurableName, String propertyName) {
-        assert getComponentNames().contains(configurableName);
-
-        for(ConfigurationChangeListener changeListener : changeListeners) {
-            changeListener.configurationChanged(configurableName, propertyName,
-                    this);
-        }
-    }
-
-    /**
-     * Informs all registered <code>ConfigurationChangeListener</code>s about the component previously named
-     * <code>oldName</code>
-     */
-    void fireRenamedConfigurable(String oldName, String newName) {
-        assert getComponentNames().contains(newName);
-
-        for(ConfigurationChangeListener changeListener : changeListeners) {
-            changeListener.componentRenamed(this, getPropertySheet(newName),
-                    oldName);
-        }
-    }
-
     /**
      * Test whether the given configuration manager instance equals this instance in terms of same configuration.
      * This equals implementation does not care about instantiation of components.
      */
+    @Override
     public boolean equals(Object obj) {
         if(!(obj instanceof ConfigurationManager)) {
             return false;
@@ -1620,18 +1492,18 @@ public class ConfigurationManager implements Cloneable, Closeable {
 
         ConfigurationManager cm = (ConfigurationManager) obj;
 
-        Collection<String> setA = new HashSet<String>(getComponentNames());
-        Collection<String> setB = new HashSet<String>(cm.getComponentNames());
+        Collection<String> setA = new HashSet<>(getComponentNames());
+        Collection<String> setB = new HashSet<>(cm.getComponentNames());
         if(!setA.equals(setB)) {
             return false;
         }
 
         // make sure that all components are the same
         for(String instanceName : getComponentNames()) {
-            PropertySheet myPropSheet = getPropertySheet(instanceName);
-            PropertySheet otherPropSheet = cm.getPropertySheet(instanceName);
+            ConfigurationData myData = configurationDataMap.get(instanceName);
+            ConfigurationData otherData = cm.configurationDataMap.get(instanceName);
 
-            if(!otherPropSheet.equals(myPropSheet)) {
+            if(!myData.equals(otherData)) {
                 return false;
             }
         }
@@ -1642,53 +1514,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(configuredComponents, addedComponents, rawPropertyMap, globalProperties, serializedObjects, origGlobal, showCreations);
-    }
-
-    /** Creates a deep copy of the given CM instance. */
-    // This is not tested yet !!!
-    public Object clone() throws CloneNotSupportedException {
-        Map<String,RawPropertyData> newrpm = new HashMap<>(rawPropertyMap);
-        GlobalProperties newgp = new GlobalProperties(globalProperties);
-        List<ConfigurationChangeListener> newcl = new ArrayList<>(changeListeners);
-        Map<String, PropertySheet<? extends Configurable>> newSymbolTable = new LinkedHashMap<>();
-        for(Map.Entry<String, PropertySheet<? extends Configurable>> symbol : symbolTable.entrySet()) {
-            newSymbolTable.put(symbol.getKey(), symbol.getValue().clone());
-        }
-        Map<String,SerializedObject> newSerializedObjects = new HashMap<>();
-        GlobalProperties newOrigGlobal = new GlobalProperties(origGlobal);
-
-        return new ConfigurationManager(newrpm,newgp,newcl,newSymbolTable,newSerializedObjects,newOrigGlobal);
-    }
-
-    /**
-     * Creates an instance of the given {@link Configurable} by using the default parameters as defined by the
-     * class annotations to parametrize the component. Default parameters will be overridden if their names are
-     * contained in the given <code>props</code>-map
-     */
-    public Configurable getInstance(Class<? extends Configurable> targetClass,
-                                    Map<String, Property> props) throws PropertyException {
-
-        PropertySheet ps = getPropSheetInstanceFromClass(targetClass, props, null);
-
-        return ps.getOwner();
-    }
-
-    /**
-     * Instantiates the given <code>targetClass</code> and instruments it using default properties or the properties
-     * given by the <code>defaultProps</code>.
-     */
-    protected PropertySheet<? extends Configurable> getPropSheetInstanceFromClass(Class<? extends Configurable> targetClass,
-                                                                                  Map<String, Property> defaultProps,
-                                                                                  String componentName) {
-        RawPropertyData rpd = new RawPropertyData(componentName,
-                targetClass.getName());
-
-        for(Map.Entry<String,Property> conf : defaultProps.entrySet()) {
-            rpd.add(conf.getKey(), conf.getValue());
-        }
-
-        return getNewPropertySheet(targetClass, componentName, this, rpd);
+        return Objects.hash(configuredComponents, configurationDataMap, globalProperties, serializedObjects, origGlobal, showCreations);
     }
 
     /**
@@ -1696,10 +1522,8 @@ public class ConfigurationManager implements Cloneable, Closeable {
      *
      * Only writes out instantiated components.
      *
-     * @param file
-     *                place to save the configuration
-     * @throws IOException
-     *                 if an error occurs while writing to the file
+     * @param file Place to save the configuration.
+     * @throws IOException If an error occurs while writing to the file.
      */
     public void save(File file) throws IOException {
         save(file, false);
@@ -1708,14 +1532,12 @@ public class ConfigurationManager implements Cloneable, Closeable {
     /**
      * Saves the current configuration to the given file.
      *
-     * @param file
-     *                place to save the configuration
-     * @param writeAll if <code>true</code> all components will be written,
+     * @param file Place to save the configuration.
+     * @param writeAll If <code>true</code> all components will be written,
      * whether they were instantiated or not.  If <code>false</code>
      * then only those components that were instantiated or added programatically
      * will be written.
-     * @throws IOException
-     *                 if an error occurs while writing to the file
+     * @throws IOException if an error occurs while writing to the file.
      */
     public void save(File file, boolean writeAll) throws IOException {
         String filename = file.getName();
@@ -1727,15 +1549,15 @@ public class ConfigurationManager implements Cloneable, Closeable {
     }
 
     /**
-     * Writes the configuration to the given writer.
+     * Writes the configuration to the given stream. Does not close the stream.
      *
-     * @param writer the writer to write to
+     * @param writer The writer to write to.
      * @param extension The extension to write out, which selects the ConfigWriter to use.
-     * @param writeAll if <code>true</code> all components will be written, 
+     * @param writeAll If <code>true</code> all components will be written,
      * whether they were instantiated or not.  If <code>false</code>
      * then only those components that were instantiated or added programatically
      * will be written.
-     * @throws IOException
+     * @throws IOException if an error occurs while writing to the file.
      */
     public void save(OutputStream writer, String extension, boolean writeAll) throws IOException {
         FileFormatFactory factory = formatFactoryMap.get(extension);
@@ -1752,15 +1574,17 @@ public class ConfigurationManager implements Cloneable, Closeable {
 
     /**
      * Writes out the configuration to the supplied writer. Closes the writer.
-     * @param writer
-     * @param writeAll
-     * @throws ConfigWriterException
+     * @param writer The config writer to use.
+     * @param writeAll If <code>true</code> all components will be written,
+     * whether they were instantiated or not.  If <code>false</code>
+     * then only those components that were instantiated or added programatically
+     * will be written.
+     * @throws ConfigWriterException If an error occurs while writing the configuration.
      */
     protected void write(ConfigWriter writer, boolean writeAll) throws ConfigWriterException {
         writer.writeStartDocument();
         //
         // Write out the global properties.
-        Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
 
         Map<String,String> properties = new HashMap<>();
         for (String propName : origGlobal.keySet()) {
@@ -1769,7 +1593,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
             // any values overridden on the command line.
             String propVal = globalProperties.get(propName).toString();
 
-            Matcher matcher = pattern.matcher(propName);
+            Matcher matcher = GlobalProperty.globalSymbolPattern.matcher(propName);
             propName = matcher.matches() ? matcher.group(1) : propName;
 
             properties.put(propName,propVal);
@@ -1784,14 +1608,9 @@ public class ConfigurationManager implements Cloneable, Closeable {
         //
         // A copy of the raw property data that we can use to keep track of what's
         // been written.
-        Set<String> allNames = new HashSet<>(rawPropertyMap.keySet());
+        Set<String> allNames = new HashSet<>(configurationDataMap.keySet());
         for (PropertySheet ps : configuredComponents.values()) {
-            ps.save(writer);
-            allNames.remove(ps.getInstanceName());
-        }
-
-        for (PropertySheet ps : addedComponents.values()) {
-            ps.save(writer);
+            configurationDataMap.get(ps.getInstanceName()).save(writer);
             allNames.remove(ps.getInstanceName());
         }
 
@@ -1799,8 +1618,7 @@ public class ConfigurationManager implements Cloneable, Closeable {
         // If we're supposed to, write the rest of the stuff.
         if (writeAll) {
             for(String instanceName : allNames) {
-                PropertySheet ps = getPropertySheet(instanceName);
-                ps.save(writer);
+                configurationDataMap.get(instanceName).save(writer);
             }
         }
         writer.writeEndComponents();
@@ -1809,12 +1627,8 @@ public class ConfigurationManager implements Cloneable, Closeable {
         writer.close();
     }
 
-    protected <T extends Configurable> PropertySheet<T> getNewPropertySheet(T conf, String name, ConfigurationManager cm, RawPropertyData rpd) {
-        return new PropertySheet<>(conf,name,cm,rpd);
-    }
-
-    protected <T extends Configurable> PropertySheet<T> getNewPropertySheet(Class<T> conf, String name, ConfigurationManager cm, RawPropertyData rpd) {
-        return new PropertySheet<>(conf,name,cm,rpd);
+    protected <T extends Configurable> PropertySheet<T> createPropertySheet(T configurable, ConfigurationManager cm, ConfigurationData rpd) {
+        return new PropertySheet<>(configurable,cm,rpd);
     }
 
     /**
@@ -1978,19 +1792,16 @@ public class ConfigurationManager implements Cloneable, Closeable {
                 }
                 field.setAccessible(accessible);
             }
-            RawPropertyData rpd = new RawPropertyData(name, confClass.getName(), m);
+            ConfigurationData rpd = new ConfigurationData(name, confClass.getName(), m);
 
-            PropertySheet<? extends Configurable> ps = getNewPropertySheet(configurable, name, this, rpd);
+            PropertySheet<? extends Configurable> ps = createPropertySheet(configurable, this, rpd);
             symbolTable.put(name, ps);
-            rawPropertyMap.put(name, rpd);
+            configurationDataMap.put(name, rpd);
             configuredComponents.put(new ConfigWrapper(configurable), ps);
-            for(ConfigurationChangeListener changeListener : changeListeners) {
-                changeListener.componentAdded(this, ps);
-            }
             return name;
         } catch (PropertyException ex) {
             throw ex;
-        } catch (Exception ex) {
+        } catch (RuntimeException | IllegalAccessException ex) {
             throw new PropertyException(ex, name, propertyName,
                     String.format("Error importing %s for propName %s",
                             name, propertyName));
@@ -2020,4 +1831,30 @@ public class ConfigurationManager implements Cloneable, Closeable {
         return new ListProperty(propList);
     }
 
+    /**
+     * A wrapper for a Configurable that tests for equality. Used in the configuredComponents map.
+     */
+    private static class ConfigWrapper {
+
+        public final Configurable config;
+
+        ConfigWrapper(Configurable config) {
+            this.config = config;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof ConfigWrapper) {
+                return config == ((ConfigWrapper)other).config;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return config.hashCode();
+        }
+
+    }
 }

@@ -1,38 +1,28 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.oracle.labs.mlrg.olcut.config.edn;
 
-import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.ConfigurationManagerUtils;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.StringListConfigurable;
-
-import java.io.IOException;
+import com.oracle.labs.mlrg.olcut.util.Util;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 
 /**
  *
  */
 public class GlobalPropertyTest {
 
-    public GlobalPropertyTest() {
-    }
-
     @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }
-
 
     @Test
     public void noProperty() throws IOException, PropertyException {
@@ -126,7 +116,7 @@ public class GlobalPropertyTest {
     public void distinguishedProps() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.edn");
         StringConfigurable sc = (StringConfigurable) cm.lookup("distinguished");
-        assertEquals(ConfigurationManagerUtils.getHostName(), sc.one);
+        assertEquals(Util.getHostName(), sc.one);
         assertEquals(System.getProperty("user.name"), sc.two);
     }
     

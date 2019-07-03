@@ -12,6 +12,8 @@
  */
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.property.Property;
+
 import java.io.IOException;
 
 /**
@@ -27,7 +29,8 @@ import java.io.IOException;
  * Typically the constructor does little, if any work, since the component has not been configured yet. </li>
  * <li> <b>Configuration</b> - Shortly after instantiation, the component's fields are written by inserting parsed
  * values from a {@link PropertySheet}. The PropertySheet is usually derived from an external configuration file, but
- * can be constructed programmatically as a {@link java.util.Map} from String to Object. If some properties
+ * can be constructed programmatically as a {@link java.util.Map} from String to {@link Property}.
+ * If some properties
  * defined for a component does not fulfill the property definition given by the annotation (type, range, etc.) a
  * <code>PropertyException</code> is thrown. </li>
  * <li> <b>Post Config</b> - After the fields have been initialised, the system calls the {@link Configurable#postConfig()}

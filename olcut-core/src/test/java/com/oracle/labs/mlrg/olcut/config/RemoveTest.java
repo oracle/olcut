@@ -1,5 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,24 +9,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-
 public class RemoveTest {
-
-    public RemoveTest() {
-    }
-
 
     @Test
     public void testInstantiatedRemove() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("basicConfig.xml");
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
-        PropertySheet ps = cm.removeConfigurable("a");
-        assertNotNull(ps);
-        assertEquals(bc.s, ps.getRaw("s").toString());
-        assertEquals(bc.i, Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals(bc.d, Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        boolean removed = cm.removeConfigurable("a");
+        assertTrue(removed);
         try {
             BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
             fail("Found a removed component");
@@ -34,11 +29,8 @@ public class RemoveTest {
     @Test
     public void testUninstantiatedRemove() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("basicConfig.xml");
-        PropertySheet ps = cm.removeConfigurable("a");
-        assertNotNull(ps);
-        assertEquals("one", ps.getRaw("s").toString());
-        assertEquals(2, Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals(3.0, Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        boolean removed = cm.removeConfigurable("a");
+        assertTrue(removed);
         try{
             BasicConfigurable nbc = (BasicConfigurable) cm.lookup("a");
             fail("Found a removed component");
@@ -48,16 +40,13 @@ public class RemoveTest {
     @Test
     public void removeProgramaticallyAddedUninstantiated() throws IOException {
         ConfigurationManager cm = new ConfigurationManager();
-        Map<String,Property> m = new HashMap<>();
+        Map<String, Property> m = new HashMap<>();
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
         m.put("d", new SimpleProperty(""+2.71));
-        cm.addConfigurable(BasicConfigurable.class, "a", m);
-        PropertySheet ps = cm.removeConfigurable("a");
-        assertNotNull(ps);
-        assertEquals(m.get("s"), ps.getRaw("s"));
-        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
+        cm.addConfiguration(new ConfigurationData("a",BasicConfigurable.class.getName(),m));
+        boolean removed = cm.removeConfigurable("a");
+        assertTrue(removed);
         try{
             BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
             fail("Found a removed component");
@@ -71,19 +60,9 @@ public class RemoveTest {
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
         m.put("d", new SimpleProperty(""+2.71));
-        cm.addConfigurable(BasicConfigurable.class, "a", m);
+        cm.addConfiguration(new ConfigurationData("a",BasicConfigurable.class.getName(),m));
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
-        PropertySheet ps = cm.removeConfigurable("a");
-        assertNotNull(ps);
-        assertEquals(m.get("s"), ps.getRaw("s"));
-        assertEquals(Integer.parseInt(((SimpleProperty) m.get("i")).getValue()), Integer.parseInt(ps.getRaw("i").toString()));
-        assertEquals(Double.parseDouble(((SimpleProperty) m.get("d")).getValue()), Double.parseDouble(ps.getRaw("d").toString()), 0.001);
-    }
-
-    @Test
-    public void removeUninstantiatedWithEmbeddedComponents() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("importConfig.xml");
-        PropertySheet ps = cm.getPropertySheet("l1");
-        assertEquals(cm.getNumConfigured(), 0);
+        boolean removed = cm.removeConfigurable("a");
+        assertTrue(removed);
     }
 }

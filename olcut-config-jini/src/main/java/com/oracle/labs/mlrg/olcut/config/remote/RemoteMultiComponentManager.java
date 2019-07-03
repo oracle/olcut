@@ -39,7 +39,7 @@ public class RemoteMultiComponentManager<T extends Configurable> extends RemoteC
 
     private T[] components;
 
-    int p;
+    private int p;
 
     private static final Logger logger = Logger.getLogger(RemoteMultiComponentManager.class.getName());
     
@@ -63,7 +63,7 @@ public class RemoteMultiComponentManager<T extends Configurable> extends RemoteC
             getComponents();
         }
         if (components.length == 0) {
-            throw new PropertyException(new ClassNotFoundException("Error finding class " + clazz.getName()));
+            throw new PropertyException(new ClassNotFoundException("Error finding class " + clazz.getName()),"","Error finding instances of class " + clazz.getName());
         }
         p %= components.length;
         return components[p++];
@@ -81,7 +81,8 @@ public class RemoteMultiComponentManager<T extends Configurable> extends RemoteC
         getComponents();
     }
 
-    public void shutdown() {
-        cm.shutdown();
+    @Override
+    public void close() {
+        cm.close();
     }
 }

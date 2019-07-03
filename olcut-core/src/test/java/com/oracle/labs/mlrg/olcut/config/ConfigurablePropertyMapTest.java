@@ -27,11 +27,11 @@ public class ConfigurablePropertyMapTest {
 
         FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("fooMap");
 
-        assertEquals(fm.map.get("first").name, "foo1");
-        assertEquals(fm.map.get("first").value, 1);
+        assertEquals("foo1", fm.map.get("first").name);
+        assertEquals(1, fm.map.get("first").value);
 
-        assertEquals(fm.map.get("second").name, "foo2");
-        assertEquals(fm.map.get("second").value, 2);
+        assertEquals("foo2",fm.map.get("second").name);
+        assertEquals(2,fm.map.get("second").value);
     }
 
     @Test
@@ -40,11 +40,11 @@ public class ConfigurablePropertyMapTest {
 
         FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("overriddenMap");
 
-        assertEquals(fm.map.get("first").name, "foo3");
-        assertEquals(fm.map.get("first").value, 20);
+        assertEquals("foo3", fm.map.get("first").name);
+        assertEquals(20, fm.map.get("first").value);
 
-        assertEquals(fm.map.get("second").name, "foo2");
-        assertEquals(fm.map.get("second").value, 2);
+        assertEquals("foo2", fm.map.get("second").name);
+        assertEquals(2, fm.map.get("second").value);
     }
 
     @Test
@@ -52,7 +52,7 @@ public class ConfigurablePropertyMapTest {
         ConfigurationManager cm1 = new ConfigurationManager("configurablePropMap.xml");
         FooMapConfigurable s1 = (FooMapConfigurable) cm1.lookup("fooMap");
         cm1.save(f, true);
-        assertEquals(3, cm1.getNumConfigured());
+        assertEquals(3, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         FooMapConfigurable s2 = (FooMapConfigurable) cm2.lookup("fooMap");
         assertEquals(s1, s2);
@@ -62,7 +62,7 @@ public class ConfigurablePropertyMapTest {
     public void saveAllWithNoInstantiationGeneric() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("configurablePropMap.xml");
         cm1.save(f, true);
-        assertEquals(0, cm1.getNumConfigured());
+        assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
         FooMapConfigurable s1 = (FooMapConfigurable) cm1.lookup("fooMap");
         FooMapConfigurable s2 = (FooMapConfigurable) cm2.lookup("fooMap");

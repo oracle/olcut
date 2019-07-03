@@ -1,18 +1,17 @@
 package com.oracle.labs.mlrg.olcut.config.xml;
 
-import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
-import com.oracle.labs.mlrg.olcut.config.ConfigWriter;
-import com.oracle.labs.mlrg.olcut.config.ConfigWriterException;
-import com.oracle.labs.mlrg.olcut.config.ListProperty;
-import com.oracle.labs.mlrg.olcut.config.MapProperty;
-import com.oracle.labs.mlrg.olcut.config.Property;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriter;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriterException;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
-import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,7 +19,7 @@ import java.util.Map.Entry;
  *
  */
 public class XMLConfigWriter implements ConfigWriter {
-    private XMLStreamWriter writer;
+    private final XMLStreamWriter writer;
 
     public XMLConfigWriter(XMLStreamWriter writer) {
         this.writer = writer;

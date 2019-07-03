@@ -46,10 +46,10 @@ public class RegistryTest {
     @AfterEach
     public void tearDown() throws Exception {
         if(cm1 != null) {
-            cm1.shutdown();
+            cm1.close();
         }
         if(cm2 != null) {
-            cm2.shutdown();
+            cm2.close();
         }
     }
 
@@ -71,7 +71,7 @@ public class RegistryTest {
     public void testSpecificRegister() throws IOException {
         cm1 = new JiniConfigurationManager("/com/oracle/labs/mlrg/olcut/config/remote/specificRegConfig.xml");
         RegistryConfigurable rc = (RegistryConfigurable) cm1.lookup("servercomp");
-        cm1.shutdown();
+        cm1.close();
         assertNotNull(rc);
     }
 
