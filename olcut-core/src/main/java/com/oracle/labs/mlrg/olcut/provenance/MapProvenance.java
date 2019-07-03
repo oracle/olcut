@@ -10,17 +10,26 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- *
+ * A Provenance which is a map from {@link String} to other {@link Provenance}
+ * objects.
  */
 public final class MapProvenance<T extends Provenance> implements Provenance, Iterable<Pair<String,T>> {
     private static final long serialVersionUID = 1L;
 
     private final Map<String,T> map;
 
+    /**
+     * Creates a MapProvenance from a map. The map is defensively copied
+     * and immutable.
+     * @param map The map of provenances.
+     */
     public MapProvenance(Map<String,T> map) {
         this.map = Collections.unmodifiableMap(new HashMap<>(map));
     }
 
+    /**
+     * Creates an empty MapProvenance.
+     */
     public MapProvenance() {
         this.map = Collections.emptyMap();
     }
@@ -48,6 +57,14 @@ public final class MapProvenance<T extends Provenance> implements Provenance, It
         return Objects.hash(map);
     }
 
+    /**
+     * Creates a map provenance from a map of {@link Provenancable} objects by calling {@link Provenancable#getProvenance()}
+     * on each element.
+     * @param map The map of provenancable objects.
+     * @param <T> The type of provenance emitted.
+     * @param <U> The provenancable type.
+     * @return A MapProvenance.
+     */
     public static <T extends Provenance, U extends Provenancable<T>> MapProvenance<T> createMapProvenance(Map<String,U> map) {
         if (map == null || map.isEmpty()) {
             return new MapProvenance<>();
@@ -62,6 +79,11 @@ public final class MapProvenance<T extends Provenance> implements Provenance, It
         }
     }
 
+    /**
+     * Creates a map provenance from a map of floats.
+     * @param map The map of floats.
+     * @return A MapProvenance.
+     */
     public static MapProvenance<FloatProvenance> createMapProvenanceFromFloats(Map<String,Float> map) {
         if (map == null || map.isEmpty()) {
             return new MapProvenance<>();

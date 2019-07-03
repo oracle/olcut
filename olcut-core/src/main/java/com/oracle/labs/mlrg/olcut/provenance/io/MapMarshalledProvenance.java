@@ -10,7 +10,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 /**
- *
+ * A marshalled provenance which contains a map of other {@link FlatMarshalledProvenance} objects.
+ * This can recursively include other lists or maps.
  */
 public final class MapMarshalledProvenance implements FlatMarshalledProvenance, Iterable<Pair<String,FlatMarshalledProvenance>> {
 

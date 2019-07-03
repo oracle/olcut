@@ -11,5 +11,11 @@ import java.io.Serializable;
  *
  * Directly subclassing this will cause the serialisation mechanisms
  * for this package to throw ProvenanceException.
+ *
+ * Provenance implementations must override {@link Object#equals},
+ * {@link Object#hashCode} and {@link Object#toString} to ensure
+ * correct operation.
+ *
+ * Provenance implementations should be immutable.
  */
 public interface Provenance extends Serializable { }

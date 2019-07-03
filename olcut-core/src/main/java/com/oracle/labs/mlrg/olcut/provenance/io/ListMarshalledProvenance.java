@@ -7,19 +7,20 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
- *
+ * A marshalled provenance which contains a list of other {@link FlatMarshalledProvenance} objects.
+ * This can recursively include other lists or maps.
  */
 public final class ListMarshalledProvenance implements FlatMarshalledProvenance, Iterable<FlatMarshalledProvenance> {
     private static final Logger logger = Logger.getLogger(ListMarshalledProvenance.class.getName());
 
-    private final List<FlatMarshalledProvenance> simpleList;
+    private final List<FlatMarshalledProvenance> list;
 
-    public ListMarshalledProvenance(List<FlatMarshalledProvenance> simpleList) {
-        this.simpleList = Collections.unmodifiableList(simpleList);
+    public ListMarshalledProvenance(List<FlatMarshalledProvenance> list) {
+        this.list = Collections.unmodifiableList(list);
     }
 
-    public List<FlatMarshalledProvenance> getSimpleList() {
-        return simpleList;
+    public List<FlatMarshalledProvenance> getList() {
+        return list;
     }
 
     @Override
@@ -27,21 +28,21 @@ public final class ListMarshalledProvenance implements FlatMarshalledProvenance,
         if (this == o) return true;
         if (!(o instanceof ListMarshalledProvenance)) return false;
         ListMarshalledProvenance that = (ListMarshalledProvenance) o;
-        return getSimpleList().equals(that.getSimpleList());
+        return getList().equals(that.getList());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSimpleList());
+        return Objects.hash(getList());
     }
 
     @Override
     public String toString() {
-        return simpleList.toString();
+        return list.toString();
     }
 
     @Override
     public Iterator<FlatMarshalledProvenance> iterator() {
-        return simpleList.iterator();
+        return list.iterator();
     }
 }

@@ -79,6 +79,13 @@ public final class ProvenanceUtil {
         return new String(hexChars);
     }
 
+    /**
+     * Hashes a list of strings by extracting the bytes using a UTF-8 charset
+     * and passing them into the appropriate {@link MessageDigest}.
+     * @param hashType The type of hash to perform.
+     * @param list The list of strings to hash.
+     * @return A hexadecimal string representation of the hash.
+     */
     public static String hashList(HashType hashType, List<String> list) {
         try {
             MessageDigest md = MessageDigest.getInstance(hashType.name);
@@ -92,10 +99,24 @@ public final class ProvenanceUtil {
         }
     }
 
+    /**
+     * Hashes a file on disk by reading the bytes and passing them through the
+     * appropriate {@link MessageDigest}.
+     * @param hashType The type of hash to perform.
+     * @param path The file.
+     * @return A hexadecimal string representation of the hash.
+     */
     public static String hashResource(HashType hashType, Path path) {
         return hashResource(hashType,path.toFile());
     }
 
+    /**
+     * Hashes a file on disk by reading the bytes and passing them through the
+     * appropriate {@link MessageDigest}.
+     * @param hashType The type of hash to perform.
+     * @param file The file.
+     * @return A hexadecimal string representation of the hash.
+     */
     public static String hashResource(HashType hashType, File file) {
         try {
             MessageDigest md = MessageDigest.getInstance(hashType.name);
@@ -116,6 +137,13 @@ public final class ProvenanceUtil {
         }
     }
 
+    /**
+     * Hashes a resource stream by reading the bytes and passing them through the
+     * appropriate {@link MessageDigest}.
+     * @param hashType The type of hash to perform.
+     * @param file The URI for the stream.
+     * @return A hexadecimal string representation of the hash.
+     */
     public static String hashResource(HashType hashType, URI file) {
         try {
             MessageDigest md = MessageDigest.getInstance(hashType.name);
@@ -171,6 +199,14 @@ public final class ProvenanceUtil {
         return output;
     }
 
+    /**
+     * Extracts a single {@link ConfigurationData} from a ConfiguredObjectProvenance, flattening out
+     * object references by replacing them with their names.
+     * @param obj The object to extract configuration from.
+     * @param objName The name of the object to use.
+     * @param map The Map of other objects and their ids.
+     * @return A configuration for the object.
+     */
     private static ConfigurationData extractSingleConfiguration(ConfiguredObjectProvenance obj, String objName, Map<ConfiguredObjectProvenance,Integer> map) {
         ConfigurationData data = new ConfigurationData(objName,obj.getClassName());
 
@@ -227,6 +263,13 @@ public final class ProvenanceUtil {
         return className.toLowerCase() + "-" + number;
     }
 
+    /**
+     * Marshals the provenance into a list of flattened objects.
+     *
+     * Similar to the configuration extraction, but preserves all the information.
+     * @param provenance The provenance to marshal.
+     * @return A list of marshalled objects.
+     */
     public static List<ObjectMarshalledProvenance> marshalProvenance(ObjectProvenance provenance) {
         Map<ObjectProvenance,Integer> provenanceTracker = new LinkedHashMap<>();
 
@@ -252,6 +295,14 @@ public final class ProvenanceUtil {
         return output;
     }
 
+    /**
+     * Marshals a single provenance into a single marshalled object, replacing all the ObjectProvenance
+     * fields with references to their name-id tuples (generated using {@link ProvenanceUtil#computeName}.
+     * @param provenance The provenance to marshal.
+     * @param name The name of the provenance.
+     * @param map The map of other provenances in this object graph.
+     * @return A single marshalled provenance.
+     */
     private static ObjectMarshalledProvenance marshalSingleProvenance(ObjectProvenance provenance, String name, Map<ObjectProvenance,Integer> map) {
         Map<String, FlatMarshalledProvenance> outputMap = new HashMap<>();
 
@@ -265,6 +316,14 @@ public final class ProvenanceUtil {
         return new ObjectMarshalledProvenance(name,outputMap,provenance.getClassName(),provenance.getClass().getName());
     }
 
+    /**
+     * Converts a provenance into a subclass of {@link FlatMarshalledProvenance}. If the provenance is
+     * an {@link ObjectProvenance} it's converted into a reference and returns a {@link SimpleMarshalledProvenance}.
+     * @param prov The provenance to convert.
+     * @param key The name to give the provenance.
+     * @param map The map of ObjectProvenances in this object graph.
+     * @return A single flattened marshalled provenance.
+     */
     private static FlatMarshalledProvenance flattenSingleProvenance(Provenance prov, String key, Map<ObjectProvenance,Integer> map) {
         if (prov instanceof ListProvenance) {
             List<FlatMarshalledProvenance> list = new ArrayList<>();
@@ -296,6 +355,12 @@ public final class ProvenanceUtil {
         }
     }
 
+    /**
+     * Extracts all the {@link ObjectProvenance} objects from a single provenance object, adding
+     * them to the end of the queue.
+     * @param processingQueue The queue of provenance objects.
+     * @param curProv The current provenance object.
+     */
     private static void extractProvenanceToQueue(Queue<ObjectProvenance> processingQueue, ObjectProvenance curProv) {
         for (Pair<String, Provenance> p : curProv) {
             Provenance prov = p.getB();
@@ -340,11 +405,11 @@ public final class ProvenanceUtil {
     /**
      * Recursively unmarshalls a single ObjectMarshalledProvenance, updating the two maps to keep track of the
      * state.
-     * @param curProv
-     * @param unmarshalledObjects
-     * @param marshalledObjects
-     * @return
-     * @throws ProvenanceException
+     * @param curProv The current marshalled provenance.
+     * @param unmarshalledObjects The map of unmarshalled objects.
+     * @param marshalledObjects The map of marshalled objects.
+     * @return A constructed ObjectProvenance.
+     * @throws ProvenanceException If the ObjectProvenance could not be constructed, or if it failed to load the class.
      */
     private static ObjectProvenance unmarshalProvenance(ObjectMarshalledProvenance curProv, Map<String,ObjectProvenance> unmarshalledObjects, Map<String,ObjectMarshalledProvenance> marshalledObjects) throws ProvenanceException {
         String provenanceClassName = curProv.getProvenanceClassName();
@@ -377,6 +442,18 @@ public final class ProvenanceUtil {
         }
     }
 
+    /**
+     * Converts a FlatMarshalledProvenance into a Provenance, either by recursively calling {@link ProvenanceUtil#unmarshalFlat} on
+     * the elements of a list or map, by recursively calling {@link ProvenanceUtil#unmarshalProvenance} on an ObjectMarshalledProvenance
+     * or calling {@link SimpleMarshalledProvenance#unmarshallPrimitive()} on a primitive.
+     *
+     * Throws provenance exception if there is a cycle or an unexpected class was found.
+     * @param hostProvName The host provenance name, used for error messages.
+     * @param fmp The marshalled provenance to unmarshal.
+     * @param unmarshalledObjects The current map of unmarshalled ObjectProvenances.
+     * @param marshalledObjects The current map of marshalled provenances.
+     * @return A provenance object.
+     */
     private static Provenance unmarshalFlat(String hostProvName, FlatMarshalledProvenance fmp, Map<String,ObjectProvenance> unmarshalledObjects, Map<String,ObjectMarshalledProvenance> marshalledObjects) {
         if (fmp instanceof SimpleMarshalledProvenance) {
             SimpleMarshalledProvenance smp = (SimpleMarshalledProvenance) fmp;

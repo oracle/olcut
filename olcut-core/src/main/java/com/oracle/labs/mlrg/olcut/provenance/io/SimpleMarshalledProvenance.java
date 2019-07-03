@@ -24,7 +24,12 @@ import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
+ * A marshalled provenance representing a primitive type, or a reference to
+ * another {@link ObjectMarshalledProvenance} in the marshalled object stream.
  *
+ * If the {@link PrimitiveProvenance} requires extra information beyond it's
+ * key and value, this class must be updated to have a specific constructor
+ * for that type.
  */
 public final class SimpleMarshalledProvenance implements FlatMarshalledProvenance {
 
@@ -38,29 +43,53 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
 
     private final boolean isReference;
 
+    /**
+     * Constructs a SimpleMarshalledProvenance from an enum provenance,
+     * storing the enum class.
+     * @param enumProv The enum provenance to store.
+     * @param <E> The type of the enum.
+     */
     public <E extends Enum> SimpleMarshalledProvenance(EnumProvenance<E> enumProv) {
         this(enumProv.getKey(), enumProv.getValue().toString(), enumProv.getClass().getName(), false, enumProv.getEnumClass());
     }
 
+    /**
+     * Constructs a SimpleMarshalledProvenance from a hash provenance,
+     * storing the hash type.
+     * @param provenance A hash provenance.
+     */
     public SimpleMarshalledProvenance(HashProvenance provenance) {
         this(provenance.getKey(), provenance.getValue(), provenance.getClass().getName(), false, provenance.getType().toString());
     }
 
+    /**
+     * Constructs a SimpleMarshalledProvenance from a PrimitiveProvenance.
+     * @param provenance The provenance.
+     * @param <T> The type of primitive.
+     */
     public <T> SimpleMarshalledProvenance(PrimitiveProvenance<T> provenance) {
         this(provenance.getKey(), provenance.getValue().toString(), provenance.getClass().getName(), false, "");
     }
 
+    /**
+     * Constructs a SimpleMarshalledProvenance which refers to the specified
+     * ObjectProvenance. The value must match the name given to that
+     * object in the current marshalled object stream.
+     * @param key The key.
+     * @param value The name of the provenance object in the marshalled object stream.
+     * @param provenance The provenance object.
+     */
     public SimpleMarshalledProvenance(String key, String value, ObjectProvenance provenance) {
         this(key, value, provenance.getClass().getName(), true, "");
     }
 
     /**
-     * Used for serialisation.
-     * @param key
-     * @param value
-     * @param provenanceClassName
-     * @param isReference
-     * @param additional
+     * Used for deserialisation.
+     * @param key The key.
+     * @param value The value of this provenance.
+     * @param provenanceClassName The class name of the provenance.
+     * @param isReference Is this object a reference to another provenance in the stream.
+     * @param additional Any additional information like hash type or enum class.
      */
     public SimpleMarshalledProvenance(String key, String value, String provenanceClassName, boolean isReference, String additional) {
         this.key = key;
