@@ -8,13 +8,18 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Provenance for a list of provenancable types.
+ * Provenance for a list of provenance objects.
  */
 public final class ListProvenance<T extends Provenance> implements Provenance, Iterable<T> {
     private static final long serialVersionUID = 1L;
 
     private final List<T> list;
 
+    /**
+     * Creates a ListProvenance from the supplied list. The
+     * list is defensively copied and immutable.
+     * @param list The input list.
+     */
     public ListProvenance(List<T> list) {
         this.list = Collections.unmodifiableList(new ArrayList<>(list));
     }
@@ -49,6 +54,14 @@ public final class ListProvenance<T extends Provenance> implements Provenance, I
         return Objects.hash(list);
     }
 
+    /**
+     * Creates a list provenance from a {@link Collection} of objects which
+     * implement {@link Provenancable}.
+     * @param collection The collection to extract provenance from.
+     * @param <T> The type of the provenance.
+     * @param <U> The provenancable type of the collection.
+     * @return A ListProvenance containing the provenances from the collection.
+     */
     public static <T extends Provenance, U extends Provenancable<T>> ListProvenance<T> createListProvenance(Collection<U> collection) {
         if (collection == null || collection.isEmpty()) {
             return new ListProvenance<>();

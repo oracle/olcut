@@ -121,6 +121,13 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
         }
     }
 
+    /**
+     * Extracts the configurable fields from the host object via a pile of reflection based
+     * magic. Operates on {@link FieldType}s.
+     * @param host The host object.
+     * @param <T> The type of the host object.
+     * @return A map containing the field names and associated provenances.
+     */
     private static <T extends Configurable> Map<String, Provenance> getConfiguredFields(T host) {
         Map<String, Provenance> map = new HashMap<>();
         Class<? extends Configurable> hostClass = host.getClass();
@@ -202,7 +209,18 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
         return map;
     }
 
-    private static ListProvenance convertPrimitiveArray(FieldType ft, Field f, Object object) {
+    /**
+     * Converts a primitive array to a {@link ListProvenance}. Returns an
+     * empty ListProvenance if the object is null.
+     * @param ft The field type.
+     * @param f The field object.
+     * @param object The object to lookup.
+     * @return A ListProvenance.
+     */
+    private static ListProvenance<?> convertPrimitiveArray(FieldType ft, Field f, Object object) {
+        if (object == null) {
+            return new ListProvenance<>();
+        }
         String fieldName = f.getName();
         ArrayList<PrimitiveProvenance> list = new ArrayList<>();
         switch (ft) {
@@ -262,7 +280,17 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
         return new ListProvenance<>(list);
     }
 
-    private static ListProvenance convertObjectArray(FieldType ft, Field f, Object[] array) {
+    /**
+     * Converts an array of strings or configurables into a ListProvenance.
+     * @param ft The field type.
+     * @param f The field object.
+     * @param array The array to convert.
+     * @return A ListProvenance.
+     */
+    private static ListProvenance<?> convertObjectArray(FieldType ft, Field f, Object[] array) {
+        if (array == null) {
+            return new ListProvenance<>();
+        }
         String fieldName = f.getName();
         switch (ft) {
             case STRING_ARRAY:
@@ -292,34 +320,68 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
         }
     }
 
-    private static ListProvenance convertCollection(Field f, Collection collection, Class<?> genericType) {
-        String fieldName = f.getName();
-        FieldType genericFieldType = FieldType.getFieldType(genericType);
-        List<Provenance> list = new ArrayList<>();
+    /**
+     * Converts a collection into a ListProvenance. Returns an empty ListProvenance if
+     * the collection is null.
+     * @param f The field object.
+     * @param collection The collection to convert.
+     * @param genericType The generic type bound of the collection.
+     * @return A ListProvenance.
+     */
+    private static ListProvenance<?> convertCollection(Field f, Collection collection, Class<?> genericType) {
+        if (collection == null) {
+            return new ListProvenance<>();
+        } else {
+            String fieldName = f.getName();
+            FieldType genericFieldType = FieldType.getFieldType(genericType);
+            List<Provenance> list = new ArrayList<>();
 
-        for (Object o : collection) {
-            Optional<Provenance> opt = convertPrimitive(genericFieldType,genericType,fieldName,o);
-            opt.ifPresent(list::add);
-        }
-
-        return new ListProvenance<>(list);
-    }
-
-    private static MapProvenance convertMap(Field f, Map<?,?> inputMap, Class<?> genericType) {
-        FieldType genericFieldType = FieldType.getFieldType(genericType);
-        Map<String,Provenance> outputMap = new HashMap<>();
-
-        for (Map.Entry<?,?> e : inputMap.entrySet()) {
-            String key = e.getKey().toString();
-            Optional<Provenance> opt = convertPrimitive(genericFieldType,genericType,key,e.getValue());
-            if (opt.isPresent()) {
-                outputMap.put(key,opt.get());
+            for (Object o : collection) {
+                Optional<Provenance> opt = convertPrimitive(genericFieldType, genericType, fieldName, o);
+                opt.ifPresent(list::add);
             }
-        }
 
-        return new MapProvenance<>(outputMap);
+            return new ListProvenance<>(list);
+        }
     }
 
+    /**
+     * Converts a map into a ListProvenance. Returns an empty MapProvenance if the
+     * map is null.
+     * @param f The field object.
+     * @param inputMap The map to convert.
+     * @param genericType The generic type bound of the map value.
+     * @return A MapProvenance.
+     */
+    private static MapProvenance<?> convertMap(Field f, Map<?,?> inputMap, Class<?> genericType) {
+        if (inputMap == null) {
+            return new MapProvenance<>();
+        } else {
+            FieldType genericFieldType = FieldType.getFieldType(genericType);
+            Map<String, Provenance> outputMap = new HashMap<>();
+
+            for (Map.Entry<?, ?> e : inputMap.entrySet()) {
+                String key = e.getKey().toString();
+                Optional<Provenance> opt = convertPrimitive(genericFieldType, genericType, key, e.getValue());
+                if (opt.isPresent()) {
+                    outputMap.put(key, opt.get());
+                }
+            }
+
+            return new MapProvenance<>(outputMap);
+        }
+    }
+
+    /**
+     * Converts a simple field into a provenance, returning {@link Optional#empty} if
+     * the object is null, or if the object is a {@link java.util.Random} instance or
+     * not a simple field.
+     * @param ft The field type.
+     * @param fieldClass The class of the field.
+     * @param fieldName The name of the field.
+     * @param o The object to inspect.
+     * @return A provenance.
+     */
     private static Optional<Provenance> convertPrimitive(FieldType ft, Class<?> fieldClass, String fieldName, Object o) {
         switch (ft) {
             case BOOLEAN:
@@ -346,11 +408,23 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 }
             }
             case FILE:
-                return Optional.of(new URIProvenance(fieldName, ((File) o).toURI()));
+                if (o == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(new URIProvenance(fieldName, ((File) o).toURI()));
+                }
             case PATH:
-                return Optional.of(new URIProvenance(fieldName, ((Path) o).toUri()));
+                if (o == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(new URIProvenance(fieldName, ((Path) o).toUri()));
+                }
             case ENUM:
-                return Optional.of(new EnumProvenance<>(fieldName, (Enum) o));
+                if (o == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(new EnumProvenance<>(fieldName, (Enum) o));
+                }
             case CONFIGURABLE:
                 if (o == null) {
                     return Optional.of(ConfiguredObjectProvenance.getEmptyProvenance(fieldClass.getName()));
@@ -386,6 +460,13 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
         }
     }
 
+    /**
+     * Returns the instance parameters for this provenance.
+     *
+     * Subclasses must call this first, before adding additional instance
+     * parameters to the returned map.
+     * @return A map of provenances.
+     */
     @Override
     public Map<String, PrimitiveProvenance<?>> getInstanceValues() {
         Map<String,PrimitiveProvenance<?>> output = new HashMap<>();

@@ -7,7 +7,8 @@ import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil.HashType;
 import java.util.Objects;
 
 /**
- *
+ * A provenance which records the String representation of a hash,
+ * along with the type of hash function which generated it.
  */
 public final class HashProvenance implements PrimitiveProvenance<String> {
     private static final long serialVersionUID = 1L;

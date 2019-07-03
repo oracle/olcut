@@ -5,7 +5,11 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * A marshalled provenance representing an
+ * {@link com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance} subclass.
  *
+ * Contains the name of the object, the class name of the provenance's host object,
+ * and the class name of the provenance object.
  */
 public final class ObjectMarshalledProvenance implements MarshalledProvenance {
 

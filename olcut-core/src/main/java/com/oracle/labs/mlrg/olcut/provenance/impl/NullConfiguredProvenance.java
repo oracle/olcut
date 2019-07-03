@@ -11,6 +11,8 @@ import java.util.Map;
 
 /**
  * A provenance object to use for null valued fields of {@link Provenancable} objects.
+ *
+ * Only contains the class name.
  */
 public final class NullConfiguredProvenance implements ConfiguredObjectProvenance {
     private static final long serialVersionUID = 1L;
