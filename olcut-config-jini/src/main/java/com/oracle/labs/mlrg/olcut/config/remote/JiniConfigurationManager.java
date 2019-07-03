@@ -5,14 +5,11 @@ import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.Options;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.config.ArgumentException;
 import com.oracle.labs.mlrg.olcut.config.InternalConfigurationException;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.UsageException;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.net.URL;
 import java.rmi.Remote;
 import java.util.Arrays;
@@ -24,12 +21,11 @@ import java.util.logging.Logger;
 
 /**
  * Manages a set of <code>Configurable</code>s, their parametrization and the relationships between them. Configurations
- * can be specified either by xml or on-the-fly during runtime.
+ * can be specified either by a configuration file or on-the-fly during runtime.
  *
  * This configuration manager has a Jini component registry and can look up or serve classes over the network.
  *
  * @see Configurable
- * @see PropertySheet
  */
 public class JiniConfigurationManager extends ConfigurationManager {
     private static final Logger logger = Logger.getLogger(JiniConfigurationManager.class.getName());
@@ -45,8 +41,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
     }
 
     /**
-     * Creates a jini new configuration manager. Initial properties are loaded from the given location. No need to keep the notion
-     * of 'context' around anymore we will just pass around this property manager.
+     * Creates a jini new configuration manager. Initial properties are loaded from the given location.
      *
      * @param location place to load initial properties from
      */
@@ -59,8 +54,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
     }
 
     /**
-     * Creates a new jini configuration manager. Initial properties are loaded from the given location. No need to keep the notion
-     * of 'context' around anymore we will just pass around this property manager.
+     * Creates a new jini configuration manager. Initial properties are loaded from the given location.
      *
      * @param url place to load initial properties from
      */
@@ -148,7 +142,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
     public void addProperties(URL url) throws PropertyException {
         super.addProperties(url);
 
-        if(registry == null) {
+        if (registry == null) {
             setUpRegistry();
         }
     }
@@ -158,12 +152,17 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * configured before anything else is looked up.
      */
     private void setUpRegistry() {
-        PropertySheet ps = getPropertySheet("registry");
-        if(ps == null) {
-            return;
-        }
-        if(ComponentRegistry.class.isAssignableFrom(ps.getOwnerClass())) {
-            registry = (ComponentRegistry) lookup("registry");
+        ConfigurationData registryData = configurationDataMap.get("registry");
+        if (registryData != null) {
+            String className = registryData.getClassName();
+            try {
+                Class<?> registryClass = Class.forName(className);
+                if (ComponentRegistry.class.isAssignableFrom(registryClass)) {
+                    registry = (ComponentRegistry) lookup("registry");
+                }
+            } catch (ClassNotFoundException e) {
+                throw new PropertyException(e, "registry", "Class " + className + " not found");
+            }
         }
     }
     
@@ -222,10 +221,10 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * component registry that we may have is shut down.
      */
     @Override
-    public synchronized void shutdown() {
+    public synchronized void close() {
         if(registry != null) {
             logger.info("Shutting down registry");
-            registry.shutdown();
+            registry.close();
             registry = null;
         }
     }
@@ -236,28 +235,24 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @param instanceName the instance name of the object
      * @return the property sheet for the object.
      */
-    public ServablePropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
+    @Override
+    protected ServablePropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
         if(!symbolTable.containsKey(instanceName)) {
             // if it is not in the symbol table, so construct
             // it based upon our raw property data
-            RawPropertyData rpd = rawPropertyMap.get(instanceName);
+            ConfigurationData rpd = configurationDataMap.get(instanceName);
             if(rpd != null) {
                 String className = rpd.getClassName();
                 try {
-                    Class cls = Class.forName(className);
-                    if (Configurable.class.isAssignableFrom(cls)) {
-
-                        // now load the property-sheet by using the class annotation
-                        ServablePropertySheet<? extends Configurable> propertySheet =
-                                getNewPropertySheet((Class<? extends Configurable>) cls,instanceName, this, rpd);
-
+                    Class<?> confClass = Class.forName(className);
+                    if (Configurable.class.isAssignableFrom(confClass)) {
+                        ServablePropertySheet<? extends Configurable> propertySheet = new ServablePropertySheet<>((Class<? extends Configurable>)confClass,this,rpd);
                         symbolTable.put(instanceName, propertySheet);
                     } else {
-                        throw new PropertyException(instanceName, "Unable to cast " + className +
-                                " to com.oracle.labs.mlrg.olcut.config.Configurable");
+                        throw new PropertyException(rpd.getName(), "Class " + className + " does not implement Configurable.");
                     }
-                } catch(ClassNotFoundException e) {
-                    throw new PropertyException(e);
+                } catch (ClassNotFoundException e) {
+                    throw new PropertyException(e, rpd.getName(), "Class " + className + " not found");
                 }
             }
         }
@@ -293,7 +288,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
         // Get the property sheet for this component.
         ServablePropertySheet<? extends Configurable> ps = getPropertySheet(instanceName);
         
-        if(ps == null) {
+        if (ps == null) {
             return null;
         }
         
@@ -307,7 +302,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
         //
         // We'll also try a lookup if one is suggested by the importable attribute
         // for a component.
-        if(registry != null && !ps.isExportable() &&
+        if (registry != null && !ps.isExportable() &&
                 ((ps.size() == 0 && ps.implementsRemote()) || ps.isImportable())) {
             logger.log(Level.FINER, "Attempted to lookup in registry");
             ret = registry.lookup(ps, cl);
@@ -315,7 +310,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
 
         //
         // Need we look farther?
-        if(ret == null) {
+        if (ret == null) {
             ret = super.lookup(instanceName, cl, reuseComponent);
 
             //
@@ -418,6 +413,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * Test whether the given configuration manager instance equals this instance in terms of same configuration.
      * This equals implementation does not care about instantiation of components.
      */
+    @Override
     public boolean equals(Object obj) {
         if(!(obj instanceof JiniConfigurationManager)) {
             return super.equals(obj);
@@ -433,10 +429,10 @@ public class JiniConfigurationManager extends ConfigurationManager {
 
         // make sure that all components are the same
         for(String instanceName : getComponentNames()) {
-            PropertySheet myPropSheet = getPropertySheet(instanceName);
-            PropertySheet otherPropSheet = cm.getPropertySheet(instanceName);
+            ConfigurationData myData = configurationDataMap.get(instanceName);
+            ConfigurationData otherData = cm.configurationDataMap.get(instanceName);
 
-            if(!otherPropSheet.equals(myPropSheet)) {
+            if(!myData.equals(otherData)) {
                 return false;
             }
         }
@@ -445,20 +441,8 @@ public class JiniConfigurationManager extends ConfigurationManager {
         return cm.getImmutableGlobalProperties().equals(getImmutableGlobalProperties());
     }
 
-    /** Creates a deep copy of the given CM instance. */
     @Override
-    public Object clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException("JiniConfigurationManager cannot be cloned.");
+    protected <T extends Configurable> ServablePropertySheet<T> createPropertySheet(T conf, ConfigurationManager cm, ConfigurationData rpd) {
+        return new ServablePropertySheet<>(conf,(JiniConfigurationManager)cm,rpd);
     }
-
-    @Override
-    protected <T extends Configurable> ServablePropertySheet<T> getNewPropertySheet(T conf, String name, ConfigurationManager cm, RawPropertyData rpd) {
-        return new ServablePropertySheet<>(conf,name,(JiniConfigurationManager)cm,rpd);
-    }
-
-    @Override
-    protected <T extends Configurable> ServablePropertySheet<T> getNewPropertySheet(Class<T> conf, String name, ConfigurationManager cm, RawPropertyData rpd) {
-        return new ServablePropertySheet<>(conf,name,(JiniConfigurationManager)cm,rpd);
-    }
-
 }

@@ -1,11 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.oracle.labs.mlrg.olcut.config;
 
-
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.util.Util;
 import java.io.IOException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
- * @author stgreen
  */
 public class GlobalPropertyTest {
 
@@ -29,6 +24,15 @@ public class GlobalPropertyTest {
 
     @AfterAll
     public static void tearDownClass() throws Exception {
+    }
+
+    @Test
+    public void recursive() {
+        ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
+        StringConfigurable sc = (StringConfigurable) cm.lookup("recursive");
+        assertEquals("ab",sc.one);
+        assertEquals("abc",sc.two);
+        assertEquals("gamma",sc.three);
     }
     
     @Test
@@ -122,7 +126,7 @@ public class GlobalPropertyTest {
     public void distinguishedProps() {
         ConfigurationManager cm = new ConfigurationManager("globalPropertyConfig.xml");
         StringConfigurable sc = (StringConfigurable) cm.lookup("distinguished");
-        assertEquals(ConfigurationManagerUtils.getHostName(), sc.one);
+        assertEquals(Util.getHostName(), sc.one);
         assertEquals(System.getProperty("user.name"), sc.two);
     }
     

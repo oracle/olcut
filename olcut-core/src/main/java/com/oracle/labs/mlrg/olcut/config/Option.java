@@ -11,6 +11,8 @@ import java.lang.annotation.Target;
  *
  * Defaults to the value set during construction. Supports all the types supported
  * by the {@link Config} annotation.
+ *
+ * Option should not be applied to a static field.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -25,4 +27,5 @@ public @interface Option {
 
     public static char EMPTY_CHAR = '\0';
     public static char SPACE_CHAR = ' ';
+
 }

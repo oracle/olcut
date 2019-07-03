@@ -5,10 +5,9 @@ import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
-import net.jini.core.lease.Lease;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 
-import java.util.logging.Level;
+import java.rmi.Remote;
 import java.util.logging.Logger;
 
 /**
@@ -18,71 +17,66 @@ import java.util.logging.Logger;
 public class ServablePropertySheet<T extends Configurable> extends PropertySheet<T> {
     private static final Logger logger = Logger.getLogger(ServablePropertySheet.class.getName());
 
-    private boolean implementsRemote;
-
-    /**
-     * The time to lease this object.
-     */
-    private long leaseTime = Lease.ANY;
-
-    /**
-     * The name of the component containing a list of configuration entries.
-     */
-    private String entriesName;
+    private final boolean implementsRemote;
 
     /**
      * The configuration entries to use for service registration or matching.
      */
-    private ConfigurationEntry[] entries;
+    private final ConfigurationEntry[] entries;
 
-    private JiniConfigurationManager jcm;
-
-    public ServablePropertySheet(T configurable, String name,
-                                 JiniConfigurationManager cm, RawPropertyData rpd) {
-        this((Class<T>) configurable.getClass(), name, cm, rpd);
+    protected ServablePropertySheet(T configurable,
+                                 JiniConfigurationManager cm, ConfigurationData rpd) {
+        this((Class<T>) configurable.getClass(), cm, rpd);
         owner = configurable;
-        jcm = cm;
     }
 
-    public ServablePropertySheet(Class<T> confClass, String name,
-                                 JiniConfigurationManager cm, RawPropertyData rpd) {
-        super(confClass,name,cm,rpd);
-        jcm = cm;
+    protected ServablePropertySheet(Class<T> confClass,
+                                 JiniConfigurationManager cm, ConfigurationData rpd) {
+        super(confClass,cm,rpd);
 
         //
         // Does this class implement remote?
-        for (Class iface : ownerClass.getInterfaces()) {
-            if (iface.equals(java.rmi.Remote.class)) {
-                implementsRemote = true;
-            }
-        }
-
-        leaseTime = rpd.getLeaseTime();
-        entriesName = rpd.getEntriesName();
+        implementsRemote = Remote.class.isAssignableFrom(ownerClass);
 
         //
         // If we're supposed to have configuration entries, then get them now.
-        if (entriesName != null) {
+        if (data.getEntriesName() != null) {
             ConfigurationEntries ce
-                    = (ConfigurationEntries) cm.lookup(entriesName);
+                    = (ConfigurationEntries) cm.lookup(data.getEntriesName());
             if (ce == null) {
                 throw new PropertyException(instanceName, "entries",
-                        "Cannot find entries component " + entriesName);
+                        "Cannot find entries component " + data.getEntriesName());
             }
             entries = ce.getEntries();
+        } else {
+            entries = null;
+        }
+    }
+
+    protected ServablePropertySheet(ServablePropertySheet<T> other){
+        super(other);
+
+        //
+        // Does this class implement remote?
+        implementsRemote = Remote.class.isAssignableFrom(other.ownerClass);
+
+        //
+        // If we're supposed to have configuration entries, then get them now.
+        if (data.getEntriesName() != null) {
+            ConfigurationEntries ce
+                    = (ConfigurationEntries) cm.lookup(data.getEntriesName());
+            if (ce == null) {
+                throw new PropertyException(instanceName, "entries",
+                        "Cannot find entries component " + data.getEntriesName());
+            }
+            entries = ce.getEntries();
+        } else {
+            entries = null;
         }
     }
 
     public boolean implementsRemote() {
         return implementsRemote;
-    }
-
-    public void setLeaseTime(long leaseTime) {
-        this.leaseTime = leaseTime;
-    }
-
-    public long getLeaseTime() {
-        return leaseTime;
     }
 
     public ConfigurationEntry[] getEntries() {
@@ -93,7 +87,7 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
     public synchronized T getOwner(ComponentListener<T> cl, boolean reuseComponent) {
         if (!isInstantiated() || !reuseComponent) {
 
-            ComponentRegistry registry = jcm.getComponentRegistry();
+            ComponentRegistry registry = ((JiniConfigurationManager)cm).getComponentRegistry();
             //
             // See if we should do a lookup in a service registry.
             if (registry != null
@@ -130,17 +124,21 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
      */
     @Override
     public JiniConfigurationManager getConfigurationManager() {
-        return jcm;
+        return (JiniConfigurationManager) cm;
     }
 
     @Override
     public void setCM(ConfigurationManager cm) {
         if (cm instanceof JiniConfigurationManager) {
             this.cm = cm;
-            this.jcm = (JiniConfigurationManager) cm;
         } else {
             throw new IllegalArgumentException("Must pass a JiniConfigurationManager to a ServablePropertySheet");
         }
+    }
+
+    @Override
+    public ServablePropertySheet<T> copy() {
+        return new ServablePropertySheet<>(this);
     }
 
 }

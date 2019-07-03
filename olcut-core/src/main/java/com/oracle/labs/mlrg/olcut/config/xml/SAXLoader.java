@@ -1,5 +1,4 @@
 /*
- *
  * Copyright 1999-2004 Carnegie Mellon University.
  * Portions Copyright 2004 Sun Microsystems, Inc.
  * Portions Copyright 2004 Mitsubishi Electric Research Laboratories.
@@ -17,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,18 +28,17 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
-import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
-import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
-import com.oracle.labs.mlrg.olcut.config.ListProperty;
-import com.oracle.labs.mlrg.olcut.config.MapProperty;
-import com.oracle.labs.mlrg.olcut.config.Property;
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
-import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
-import com.oracle.labs.mlrg.olcut.config.URLLoader;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -56,9 +56,9 @@ public class SAXLoader implements ConfigLoader {
 
     private final URLLoader parent;
 
-    private final Map<String, RawPropertyData> rpdMap;
+    private final Map<String, ConfigurationData> rpdMap;
 
-    private final Map<String, RawPropertyData> existingRPD;
+    private final Map<String, ConfigurationData> existingRPD;
     
     private final Map<String, SerializedObject> serializedObjects;
     
@@ -68,7 +68,7 @@ public class SAXLoader implements ConfigLoader {
 
     private final ConfigSAXHandler handler;
 
-    public SAXLoader(URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD,
+    public SAXLoader(URLLoader parent, Map<String, ConfigurationData> rpdMap, Map<String, ConfigurationData> existingRPD,
                      Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) throws ParserConfigurationException, SAXException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         xr = factory.newSAXParser().getXMLReader();
@@ -85,44 +85,57 @@ public class SAXLoader implements ConfigLoader {
     }
 
     /**
-     * Loads a set of configuration data from the location
-     *
-     * @throws IOException if an I/O or parse error occurs
+     * Loads xml configuration data from the location
      */
     @Override
-    public void load(URL url) throws ConfigLoaderException, IOException {
-        InputStream is = null;
+    public void load(URL url) throws ConfigLoaderException {
+        AccessController.doPrivileged((PrivilegedAction<Void>)
+                () -> {
+                    try (InputStream is = url.openStream()) {
+                        if (url.getProtocol().equals("file")) {
+                            String workingDir = new File(url.getFile()).getParent();
+                            handler.setCurWorkingDir(workingDir);
+                        } else {
+                            handler.setCurWorkingDir("");
+                        }
+                        innerLoad(is, url.toString());
+                    } catch (IOException e) {
+                        throw new ConfigLoaderException(e, e.getMessage());
+                    }
+                    return null;
+                }
+        );
+    }
+
+    /**
+     * Loads xml configuration data from the stream
+     */
+    @Override
+    public void load(InputStream stream) throws ConfigLoaderException {
+        innerLoad(stream,"");
+    }
+
+    private void innerLoad(InputStream stream, String location) {
         try {
-            if (url.getProtocol().equals("file")) {
-                String workingDir = new File(url.getFile()).getParent();
-                handler.setCurWorkingDir(workingDir);
-            } else {
-                handler.setCurWorkingDir("");
-            }
-            is = url.openStream();
-            xr.parse(new InputSource(is));
-            is.close();
+            xr.parse(new InputSource(stream));
         } catch (SAXParseException e) {
-            String msg = "Error while parsing line " + e.getLineNumber()
-                    + " of " + url + ": " + e.getMessage();
+            String msg;
+            if (location != null && !location.isEmpty()) {
+                msg = "Error while parsing line " + e.getLineNumber()
+                        + " of " + location + ": " + e.getMessage();
+            } else {
+                msg = "Error while parsing line " + e.getLineNumber()
+                        + " of input: " + e.getMessage();
+            }
             throw new ConfigLoaderException(e, msg);
         } catch (SAXException e) {
             throw new ConfigLoaderException(e, "Problem with XML: " + e);
         } catch (IOException e) {
             throw new ConfigLoaderException(e, e.getMessage());
-        } finally {
-            if (is != null) {
-                is.close();
-            }
         }
     }
 
-    @Override
-    public String getExtension() {
-        return "xml";
-    }
-
-    public Map<String, RawPropertyData> getPropertyMap() {
+    public Map<String, ConfigurationData> getPropertyMap() {
         return rpdMap;
     }
 
@@ -138,9 +151,9 @@ public class SAXLoader implements ConfigLoader {
      * A SAX XML Handler implementation that builds up the map of raw property
      * data objects
      */
-    class ConfigSAXHandler extends DefaultHandler {
+    private class ConfigSAXHandler extends DefaultHandler {
 
-        RawPropertyData rpd = null;
+        ConfigurationData rpd = null;
 
         Locator locator;
 
@@ -191,7 +204,7 @@ public class SAXLoader implements ConfigLoader {
                                 + " does not have export set",
                                 locator);
                     }
-                    long leaseTime = -1;
+                    long leaseTime = ConfigurationData.DEFAULT_LEASE_TIME;
                     if (lt != null) {
                         try {
                             leaseTime = Long.parseLong(lt);
@@ -226,7 +239,7 @@ public class SAXLoader implements ConfigLoader {
                         // properties. If that's the case, then things might get
                         // really weird. We'll log an override with a specified type
                         // just in case.
-                        RawPropertyData spd = rpdMap.get(override);
+                        ConfigurationData spd = rpdMap.get(override);
                         if (spd == null) {
                             spd = existingRPD.get(override);
                             if (spd == null) {
@@ -241,32 +254,21 @@ public class SAXLoader implements ConfigLoader {
                         if (curType == null) {
                             curType = spd.getClassName();
                         }
-                        rpd = new RawPropertyData(curComponent, curType,
-                                spd.getProperties());
+                        rpd = new ConfigurationData(curComponent, curType, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
                         overriding = true;
                     } else {
                         if (rpdMap.get(curComponent) != null) {
-                            throw new SAXParseException("duplicate definition for "
-                                    + curComponent, locator);
+                            throw new SAXParseException("duplicate definition for " + curComponent, locator);
                         }
-                        rpd = new RawPropertyData(curComponent, curType, null);
+                        rpd = new ConfigurationData(curComponent, curType, serializedForm, entriesName, exportable, importable, leaseTime);
                     }
-
-                    //
-                    // Set the lease time.
-                    rpd.setExportable(exportable);
-                    rpd.setImportable(importable);
-                    rpd.setLeaseTime(leaseTime);
-                    rpd.setEntriesName(entriesName);
-                    rpd.setSerializedForm(serializedForm);
                     break;
                 case PROPERTY: {
                     String name = attributes.getValue(ConfigLoader.NAME);
                     String value = attributes.getValue(ConfigLoader.VALUE);
                     if (attributes.getLength() != 2 || name == null || value == null) {
                         throw new SAXParseException("property element must only have "
-                                + "'name' and 'value' attributes",
-                                locator);
+                                + "'name' and 'value' attributes", locator);
                     }
                     if (rpd == null) {
                         // we are not in a component so add this to the global
@@ -278,8 +280,7 @@ public class SAXLoader implements ConfigLoader {
                             throw new SAXParseException("Invalid global property name: " + name, locator);
                         }
                     } else if (rpd.contains(name) && !overriding) {
-                        throw new SAXParseException("Duplicate property: " + name,
-                                locator);
+                        throw new SAXParseException("Duplicate property: " + name, locator);
                     } else {
                         rpd.add(name, new SimpleProperty(value));
                     }
@@ -297,8 +298,7 @@ public class SAXLoader implements ConfigLoader {
                 case ITEM:
                 case TYPE:
                     if (attributes.getLength() != 0) {
-                        throw new SAXParseException("unknown 'item' attribute",
-                                locator);
+                        throw new SAXParseException("unknown 'item' attribute", locator);
                     } else if (itemList == null) {
                         throw new SAXParseException("'item' or 'type' elements must be inside a 'propertylist'", locator);
                     }
@@ -365,16 +365,14 @@ public class SAXLoader implements ConfigLoader {
                     break;
                 }
                 default:
-                    throw new SAXParseException("Unknown element '" + qName + "'",
-                            locator);
+                    throw new SAXParseException("Unknown element '" + qName + "'", locator);
             }
         }
 
         /* (non-Javadoc)
          * @see org.xml.sax.ContentHandler#characters(char[], int, int)
          */
-        public void characters(char[] ch, int start, int length)
-                throws SAXParseException {
+        public void characters(char[] ch, int start, int length) {
             if (curItem != null) {
                 curItem.append(ch, start, length);
             }

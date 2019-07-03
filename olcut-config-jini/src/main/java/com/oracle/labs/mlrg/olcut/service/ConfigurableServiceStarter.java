@@ -24,15 +24,14 @@
 
 package com.oracle.labs.mlrg.olcut.service;
 
-import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.util.LabsLogFormatter;
 import com.oracle.labs.mlrg.olcut.config.Config;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import java.io.File;
+
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.FileHandler;
@@ -154,10 +153,10 @@ public class ConfigurableServiceStarter implements Configurable {
             }
 
             //
-            // Add a shutdown hook to stop the services.
+            // Add a close hook to stop the services.
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 starter.stopServices();
-                cm.shutdown();
+                cm.close();
             }));
 
             starter.waitForServices();

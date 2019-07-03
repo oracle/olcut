@@ -2,6 +2,9 @@ package com.oracle.labs.mlrg.olcut.config;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -166,15 +169,19 @@ public interface Options {
         }
         output.add(option.longName());
         output.add(type);
-        Object extractedField = null;
-        try {
-            boolean accessible = f.isAccessible();
-            f.setAccessible(true);
-            extractedField = f.get(obj);
-            f.setAccessible(accessible);
-        } catch (IllegalAccessException e) {
-            Logger.getLogger(Options.class.getName()).fine("Failed to read default value from field " + option.longName());
-        }
+        Object extractedField = AccessController.doPrivileged((PrivilegedAction<Object>)
+                () -> {
+                    try {
+                        boolean accessible = f.isAccessible();
+                        f.setAccessible(true);
+                        Object fieldVal = f.get(obj);
+                        f.setAccessible(accessible);
+                        return fieldVal;
+                    } catch (IllegalAccessException e) {
+                        Logger.getLogger(Options.class.getName()).fine("Failed to read default value from field " + option.longName());
+                        return null;
+                    }
+                });
         String defaultVal = extractedField == null ? "" : extractedField.toString();
         output.add(defaultVal);
         output.add(option.usage());
@@ -190,28 +197,33 @@ public interface Options {
      * @return all of the fields annotated with {@link Option}.
      */
     public static Set<Field> getOptionFields(Class<? extends Options> options) {
-        Set<Field> ret = new HashSet<>();
-        Queue<Class> cq = new ArrayDeque<>();
-        cq.add(options);
-        while (!cq.isEmpty()) {
-            Class curr = cq.remove();
-            for (Field f : curr.getDeclaredFields()) {
-                if (f.getAnnotation(Option.class) != null) {
-                    ret.add(f);
+        return AccessController.doPrivileged((PrivilegedAction<Set<Field>>)
+                () -> {
+                    Set<Field> ret = new HashSet<>();
+                    Queue<Class> cq = new ArrayDeque<>();
+                    cq.add(options);
+                    while (!cq.isEmpty()) {
+                        Class curr = cq.remove();
+                        for (Field f : curr.getDeclaredFields()) {
+                            if (f.getAnnotation(Option.class) != null) {
+                                ret.add(f);
+                            }
+                        }
+                        for (Field f : curr.getFields()) {
+                            if (f.getAnnotation(Option.class) != null) {
+                                ret.add(f);
+                            }
+                        }
+                        Class sc = curr.getSuperclass();
+                        if (sc != null) {
+                            cq.add(sc);
+                        }
+                        cq.addAll(Arrays.asList(curr.getInterfaces()));
+                    }
+                    ret.removeIf(f -> Modifier.isStatic(f.getModifiers()));
+                    return ret;
                 }
-            }
-            for (Field f : curr.getFields()) {
-                if (f.getAnnotation(Option.class) != null) {
-                    ret.add(f);
-                }
-            }
-            Class sc = curr.getSuperclass();
-            if (sc != null) {
-                cq.add(sc);
-            }
-            cq.addAll(Arrays.asList(curr.getInterfaces()));
-        }
-        return ret;
+        );
     }
 
     /**
@@ -223,28 +235,33 @@ public interface Options {
      * @return all of the fields which subclass {@link Options}.
      */
     public static Set<Field> getOptions(Class<? extends Options> options) {
-        Set<Field> ret = new HashSet<>();
-        Queue<Class> cq = new ArrayDeque<>();
-        cq.add(options);
-        while (!cq.isEmpty()) {
-            Class curr = cq.remove();
-            for (Field f : curr.getDeclaredFields()) {
-                if (Options.class.isAssignableFrom(f.getType())) {
-                    ret.add(f);
+        return AccessController.doPrivileged((PrivilegedAction<Set<Field>>)
+                () -> {
+                    Set<Field> ret = new HashSet<>();
+                    Queue<Class> cq = new ArrayDeque<>();
+                    cq.add(options);
+                    while (!cq.isEmpty()) {
+                        Class curr = cq.remove();
+                        for (Field f : curr.getDeclaredFields()) {
+                            if (Options.class.isAssignableFrom(f.getType())) {
+                                ret.add(f);
+                            }
+                        }
+                        for (Field f : curr.getFields()) {
+                            if (Options.class.isAssignableFrom(f.getType())) {
+                                ret.add(f);
+                            }
+                        }
+                        Class sc = curr.getSuperclass();
+                        if (sc != null) {
+                            cq.add(sc);
+                        }
+                        cq.addAll(Arrays.asList(curr.getInterfaces()));
+                    }
+                    ret.removeIf(f -> Modifier.isStatic(f.getModifiers()));
+                    return ret;
                 }
-            }
-            for (Field f : curr.getFields()) {
-                if (Options.class.isAssignableFrom(f.getType())) {
-                    ret.add(f);
-                }
-            }
-            Class sc = curr.getSuperclass();
-            if (sc != null) {
-                cq.add(sc);
-            }
-            cq.addAll(Arrays.asList(curr.getInterfaces()));
-        }
-        return ret;
+        );
     }
 
     /**
@@ -254,39 +271,44 @@ public interface Options {
      * @param options the class who's fields we wish to walk.
      * @return all of the fields which subclass Options.
      */
+    @SuppressWarnings("unchecked")
     public static Set<Class<? extends Options>> getAllOptions(Class<? extends Options> options) {
-        Set<Class<? extends Options>> ret = new LinkedHashSet<>();
-        Set<Class<? extends Options>> tempSet = new HashSet<>();
-        ret.add(options);
-        Queue<Class> cq = new ArrayDeque<>();
-        cq.add(options);
-        while (!cq.isEmpty()) {
-            Class curr = cq.remove();
-            for (Field f : curr.getDeclaredFields()) {
-                if (Options.class.isAssignableFrom(f.getType())) {
-                    Class<? extends Options> nextOptions = (Class<? extends Options>)f.getType();
-                    ret.add(nextOptions);
-                    // Add to the processing queue, via a set to make sure we don't double count fields.
-                    tempSet.add(nextOptions);
+        return AccessController.doPrivileged((PrivilegedAction<Set<Class<? extends Options>>>)
+                () -> {
+                    Set<Class<? extends Options>> ret = new LinkedHashSet<>();
+                    Set<Class<? extends Options>> tempSet = new HashSet<>();
+                    ret.add(options);
+                    Queue<Class> cq = new ArrayDeque<>();
+                    cq.add(options);
+                    while (!cq.isEmpty()) {
+                        Class curr = cq.remove();
+                        for (Field f : curr.getDeclaredFields()) {
+                            if (Options.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
+                                Class<? extends Options> nextOptions = (Class<? extends Options>) f.getType();
+                                ret.add(nextOptions);
+                                // Add to the processing queue, via a set to make sure we don't double count fields.
+                                tempSet.add(nextOptions);
+                            }
+                        }
+                        for (Field f : curr.getFields()) {
+                            if (Options.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
+                                Class<? extends Options> nextOptions = (Class<? extends Options>) f.getType();
+                                ret.add(nextOptions);
+                                // Add to the processing queue, via a set to make sure we don't double count fields.
+                                tempSet.add(nextOptions);
+                            }
+                        }
+                        Class sc = curr.getSuperclass();
+                        if (sc != null) {
+                            cq.add(sc);
+                        }
+                        cq.addAll(Arrays.asList(curr.getInterfaces()));
+                        cq.addAll(tempSet);
+                        // Flush the temporary set.
+                        tempSet.clear();
+                    }
+                    return ret;
                 }
-            }
-            for (Field f : curr.getFields()) {
-                if (Options.class.isAssignableFrom(f.getType())) {
-                    Class<? extends Options> nextOptions = (Class<? extends Options>)f.getType();
-                    ret.add(nextOptions);
-                    // Add to the processing queue, via a set to make sure we don't double count fields.
-                    tempSet.add(nextOptions);
-                }
-            }
-            Class sc = curr.getSuperclass();
-            if (sc != null) {
-                cq.add(sc);
-            }
-            cq.addAll(Arrays.asList(curr.getInterfaces()));
-            cq.addAll(tempSet);
-            // Flush the temporary set.
-            tempSet.clear();
-        }
-        return ret;
+        );
     }
 }

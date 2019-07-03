@@ -1,16 +1,16 @@
 package com.oracle.labs.mlrg.olcut.config.edn;
 
-import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
-import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
-import com.oracle.labs.mlrg.olcut.config.ListProperty;
-import com.oracle.labs.mlrg.olcut.config.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
-import com.oracle.labs.mlrg.olcut.config.SimpleProperty;
-import com.oracle.labs.mlrg.olcut.config.URLLoader;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
 import us.bpsm.edn.EdnException;
 import us.bpsm.edn.Keyword;
 import us.bpsm.edn.Symbol;
@@ -21,10 +21,13 @@ import us.bpsm.edn.parser.Parsers;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +82,7 @@ public class EdnLoader implements ConfigLoader {
         }
     }
 
+    @SuppressWarnings("unchecked") // Must contain a symbol list.
     private String checkClassList(Object os) throws ConfigLoaderException {
         if(os instanceof List<?>) {
             return cnMapper.read((List<Symbol>) os);
@@ -121,13 +125,13 @@ public class EdnLoader implements ConfigLoader {
 
 
     private final URLLoader parent;
-    private final Map<String, RawPropertyData> rpdMap;
-    private final Map<String, RawPropertyData> existingRPD;
+    private final Map<String, ConfigurationData> rpdMap;
+    private final Map<String, ConfigurationData> existingRPD;
     private final Map<String, SerializedObject> serializedObjects;
     private final GlobalProperties globalProperties;
     private String workingDir;
 
-    public EdnLoader(URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD,
+    public EdnLoader(URLLoader parent, Map<String, ConfigurationData> rpdMap, Map<String, ConfigurationData> existingRPD,
                      Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) {
         this.parent = parent;
         this.rpdMap = rpdMap;
@@ -138,22 +142,41 @@ public class EdnLoader implements ConfigLoader {
     }
 
     @Override
-    public void load(URL url) throws ConfigLoaderException, IOException {
-        try (Parseable pbr = Parsers.newParseable(new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)))) {
-            if (url.getProtocol().equals("file")) {
-                workingDir = new File(url.getFile()).getParent();
-            } else {
-                workingDir = "";
-            }
-            parseEdn(pbr);
-        } catch (EdnException e) {
-            throw new ConfigLoaderException(e, "Edn failed to parse url: " + url.toString());
-        }
+    public void load(URL url) throws ConfigLoaderException {
+        AccessController.doPrivileged((PrivilegedAction<Void>)
+                () -> {
+                    if (url.getProtocol().equals("file")) {
+                        workingDir = new File(url.getFile()).getParent();
+                    } else {
+                        workingDir = "";
+                    }
+                    try {
+                        innerLoad(url.openStream());
+                    } catch (EdnException e) {
+                        throw new ConfigLoaderException(e, "Edn failed to parse url: " + url.toString());
+                    } catch (IOException e) {
+                        throw new ConfigLoaderException(e, "Failed to load url: " + url.toString());
+                    }
+                    return null;
+                }
+        );
     }
 
     @Override
-    public String getExtension() {
-        return "edn";
+    public void load(InputStream stream) throws ConfigLoaderException {
+        try {
+            innerLoad(stream);
+        } catch (EdnException e) {
+            throw new ConfigLoaderException(e, "Edn failed to parse stream.");
+        }
+    }
+
+    private void innerLoad(InputStream stream) throws EdnException {
+        try (Parseable pbr = Parsers.newParseable(new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)))) {
+            parseEdn(pbr);
+        } catch (IOException e) {
+            throw new ConfigLoaderException(e, "Edn failed to load or parse stream.");
+        }
     }
 
     private void parseEdn(Parseable in) {
@@ -269,10 +292,10 @@ public class EdnLoader implements ConfigLoader {
                 formed.add(componentsListItem.get(hasMap ? 1 : 0)); // type element
                 Map<Object, Object> m = new HashMap<>();
                 if(hasMap) {
-                    m.putAll((Map) componentsListItem.get(0));
+                    m.putAll((Map<?,?>) componentsListItem.get(0));
                 }
                 if(l.size() > 1 && l.get(1) instanceof Map<?, ?>) {
-                    m.putAll((Map) l.get(1));
+                    m.putAll((Map<?,?>) l.get(1));
                     lStart++;
                 }
                 formed.add(m);
@@ -293,17 +316,18 @@ public class EdnLoader implements ConfigLoader {
         String name = checkSymbol(componentListItem.get(0));
         String type = checkClassList(componentListItem.get(1));
         int propsStart = 2;
-        RawPropertyData rpd = new RawPropertyData(name, type, null);
+        ConfigurationData rpd = new ConfigurationData(name, type);
 
         boolean importable = false;
         boolean exportable = false;
         String override = null;
-        long leaseTime = 0L;
+        long leaseTime = ConfigurationData.DEFAULT_LEASE_TIME;
         String entriesName = null;
         String serializedForm = null;
 
         if(componentListItem.get(2) instanceof Map<?, ?>) {
-            Map<?, ?> modMap = ((Stream<Map.Entry<Keyword, Object>>) ((Map) componentListItem.get(2)).entrySet().stream())
+            @SuppressWarnings("unchecked") // Must be a keyword
+            Map<String, Object> modMap = ((Map<Keyword,Object>) componentListItem.get(2)).entrySet().stream()
                     .collect(Collectors.toMap(e -> checkKeyword(e.getKey()), Map.Entry::getValue));
             if(modMap.containsKey(ConfigLoader.INHERIT)) {
                 override = checkSymbolOrString(modMap.get(ConfigLoader.INHERIT));
@@ -329,7 +353,7 @@ public class EdnLoader implements ConfigLoader {
             }
 
             if(override != null) {
-                RawPropertyData spd = rpdMap.get(override);
+                ConfigurationData spd = rpdMap.get(override);
                 if(existingRPD != null) {
                     logger.info(existingRPD.toString());
                 }
@@ -344,20 +368,14 @@ public class EdnLoader implements ConfigLoader {
                     logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
                             spd.getName(), name , type, spd.getClassName()));
                 }
-                rpd = new RawPropertyData(name, type,
-                        spd.getProperties());
+                rpd = new ConfigurationData(name, type, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
             } else {
                 if (rpdMap.get(name) != null) {
                     throw new ConfigLoaderException("duplicate definition for "
                             + name);
                 }
-                rpd = new RawPropertyData(name, type, null);
+                rpd = new ConfigurationData(name, type, serializedForm, entriesName, exportable, importable, leaseTime);
             }
-            rpd.setExportable(exportable);
-            rpd.setExportable(importable);
-            rpd.setLeaseTime(leaseTime);
-            rpd.setEntriesName(entriesName);
-            rpd.setSerializedForm(serializedForm);
             propsStart = 3;
         }
         List<?> props = componentListItem.subList(propsStart, componentListItem.size());

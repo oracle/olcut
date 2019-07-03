@@ -1,9 +1,8 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +20,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests reading and writing all valid fields from a config file.
@@ -32,7 +35,7 @@ public class AllFieldsConfiguredTest {
     @BeforeEach
     public void setUp() throws IOException {
         f = File.createTempFile("all-config", ".xml");
-        //f.deleteOnExit();
+        f.deleteOnExit();
     }
 
     @Test
@@ -64,35 +67,18 @@ public class AllFieldsConfiguredTest {
     }
 
     @Test
-    public void getTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
-        PropertySheet ps = cm.getPropertySheet("all-config");
-
-        boolean boolField = (Boolean) ps.get("boolField");
-        assertTrue(boolField,"Failed to lookup boolean field");
-
-        List listStringField = (List) ps.get("listStringField");
-        assertTrue(listStringField.size() == 2,"Failed to parse List<String> field");
-
-        StringConfigurable sc = (StringConfigurable) ps.get("configurableField");
-        assertEquals(new StringConfigurable("A","B","C"), sc,"StringConfigurable not constructed correctly");
-
-        assertTrue(ps.get("monkeys") == null,"Returned a value for an invalid field name");
-    }
-
-    @Test
     public void overrideTest() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
 
         // Override various properties.
-        cm.overrideConfigurableProperty("all-config","boolField","false");
-        cm.overrideConfigurableProperty("all-config","doubleArrayField", Arrays.asList("3.14","2.77","1.0"));
+        cm.overrideConfigurableProperty("all-config","boolField",new SimpleProperty("false"));
+        cm.overrideConfigurableProperty("all-config","doubleArrayField", ListProperty.createFromStringList(Arrays.asList("3.14","2.77","1.0")));
         // This rearranges the elements of listConfigurableSubclassField
-        cm.overrideConfigurableProperty("all-config","listConfigurableSubclassField", Arrays.asList("second-configurable","first-configurable"));
+        cm.overrideConfigurableProperty("all-config","listConfigurableSubclassField", ListProperty.createFromStringList(Arrays.asList("second-configurable","first-configurable")));
         Map<String,String> newMap = new HashMap<>();
         newMap.put("one","1.0");
         newMap.put("two","2.0");
-        cm.overrideConfigurableProperty("all-config","mapDoubleField",newMap);
+        cm.overrideConfigurableProperty("all-config","mapDoubleField", MapProperty.createFromStringMap(newMap));
 
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
 
@@ -100,8 +86,8 @@ public class AllFieldsConfiguredTest {
         assertArrayEquals(new double[]{3.14,2.77,1.0},ac.doubleArrayField,1e-10);
         assertEquals(new StringConfigurable("alpha","beta","gamma"),ac.listConfigurableSubclassField.get(0));
         assertEquals(new StringConfigurable("A","B","C"),ac.listConfigurableSubclassField.get(1));
-        assertEquals(new Double(1.0),ac.mapDoubleField.get("one"));
-        assertEquals(new Double(2.0),ac.mapDoubleField.get("two"));
+        assertEquals(1.0,ac.mapDoubleField.get("one"),1e-10);
+        assertEquals(2.0,ac.mapDoubleField.get("two"),1e-10);
     }
 
     public static AllFieldsConfigurable generateConfigurable() {

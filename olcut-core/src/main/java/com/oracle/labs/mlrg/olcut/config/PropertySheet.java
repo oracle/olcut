@@ -9,14 +9,18 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -31,26 +35,22 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
+import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.util.IOUtil;
 
 /**
  * A property sheet which defines a collection of properties for a single
  * component in the system.
  */
-public class PropertySheet<T extends Configurable> implements Cloneable {
+public class PropertySheet<T extends Configurable> {
     private static final Logger logger = Logger.getLogger(PropertySheet.class.getName());
-
-    public enum PropertyType { CONFIG, COMPNAME, CONMAN }
 
     public enum StoredFieldType { LIST, MAP, STRING, NONE }
 
-    private Map<String, Config> registeredProperties
-            = new HashMap<>();
-
-    private Map<String, Property> propValues = new HashMap<>();
+    private final Map<String, Config> registeredProperties = new HashMap<>();
 
     /**
      * Maps the names of the component properties to their (possibly unresolved)
@@ -58,41 +58,31 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      * <p/>
      * Example: <code>frontend</code> to <code>${myFrontEnd}</code>
      */
-    private Map<String, Property> rawProps;
-
-    private Map<String, Property> flatProps;
+    private final Map<String, Property> propValues = new HashMap<>();
 
     protected ConfigurationManager cm;
 
-    protected T owner;
-
-    private RawPropertyData rpd;
-
-    private boolean exportable;
-
-    private boolean importable;
-
-    private String serializedForm;
+    protected T owner = null;
 
     protected final Class<T> ownerClass;
 
-    protected String instanceName;
+    protected final String instanceName;
 
-    public PropertySheet(T configurable, String name,
-                         ConfigurationManager cm, RawPropertyData rpd) {
-        this((Class<T>)configurable.getClass(), name, cm, rpd);
+    protected final ConfigurationData data;
+
+    @SuppressWarnings("unchecked")
+    protected PropertySheet(T configurable,
+                         ConfigurationManager cm, ConfigurationData rpd) {
+        this((Class<T>)configurable.getClass(), cm, rpd);
         owner = configurable;
     }
 
-    public PropertySheet(Class<T> confClass, String name,
-            ConfigurationManager cm, RawPropertyData rpd) {
-        ownerClass = confClass;
+    protected PropertySheet(Class<T> confClass,
+            ConfigurationManager cm, ConfigurationData rpd) {
+        this.ownerClass = confClass;
         this.cm = cm;
-        this.instanceName = name;
-        exportable = rpd.isExportable();
-        importable = rpd.isImportable();
-        serializedForm = rpd.getSerializedForm();
-        this.rpd = rpd;
+        this.instanceName = rpd.getName();
+        this.data = rpd;
 
         processAnnotations(this, confClass);
 
@@ -106,33 +96,27 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
             }
         }
 
-        // now apply all xml properties
-        flatProps = rpd.flatten(cm).getProperties();
-        rawProps = new HashMap<>(rpd.getProperties());
-
-        for (String propName : rawProps.keySet()) {
-            propValues.put(propName, flatProps.get(propName));
-        }
+        propValues.putAll(rpd.getProperties());
     }
 
-    public void setExportable(boolean exportable) {
-        this.exportable = exportable;
+    protected PropertySheet(PropertySheet<T> other) {
+        this.ownerClass = other.ownerClass;
+        this.cm = other.cm;
+        this.instanceName = other.instanceName;
+        this.data = other.data;
+        this.propValues.putAll(other.propValues);
     }
 
     public boolean isExportable() {
-        return exportable;
-    }
-
-    public void setImportable(boolean importable) {
-        this.importable = importable;
+        return data.isExportable();
     }
 
     public boolean isImportable() {
-        return importable;
+        return data.isImportable();
     }
 
     public Set<String> getPropertyNames() {
-        return new HashSet<>(rawProps.keySet());
+        return Collections.unmodifiableSet(propValues.keySet());
     }
 
     /**
@@ -155,17 +139,23 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
             return null;
         }
 
-        String ret = value.toString();
-        return cm.getImmutableGlobalProperties().replaceGlobalProperties(getInstanceName(),
-                name, ret);
+        return flattenString(name,value.toString());
+    }
+
+    private String flattenString(String name, String value) {
+        return cm.getImmutableGlobalProperties().replaceGlobalProperties(getInstanceName(), name, value);
     }
 
     public String getInstanceName() {
         return instanceName;
     }
 
-    public void setInstanceName(String newInstanceName) {
-        this.instanceName = newInstanceName;
+    public long getLeaseTime() {
+        return data.getLeaseTime();
+    }
+
+    public String getEntriesName() {
+        return data.getEntriesName();
     }
 
     /**
@@ -213,30 +203,38 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
 
                 //
                 // Should we load a serialized form?
-                if (serializedForm != null) {
-                    String actualLocation = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, null, serializedForm);
-                    InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
-                    if (serStream != null) {
-                        try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
-                            Object deser = ois.readObject();
-                            owner = ownerClass.cast(deser);
-                            return owner;
-                        } catch (IOException ex) {
-                            throw new PropertyException(ex, instanceName, null,
-                                    "Error reading serialized form from " + actualLocation);
-                        } catch (ClassNotFoundException ex) {
-                            throw new PropertyException(ex, instanceName, null,
-                                    "Serialized class not found at " + actualLocation);
-                        }
+                if (data.getSerializedForm() != null) {
+                    String actualLocation = flattenString("", data.getSerializedForm());
+                    T obj = AccessController.doPrivileged((PrivilegedAction<T>) () -> {
+                                InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
+                                if (serStream != null) {
+                                    try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
+                                        Object deser = ois.readObject();
+                                        owner = ownerClass.cast(deser);
+                                        return owner;
+                                    } catch (IOException ex) {
+                                        throw new PropertyException(ex, instanceName, null,
+                                                "Error reading serialized form from " + actualLocation);
+                                    } catch (ClassNotFoundException ex) {
+                                        throw new PropertyException(ex, instanceName, null,
+                                                "Serialized class not found at " + actualLocation);
+                                    }
+                                } else {
+                                    return null;
+                                }
+                            }
+                    );
+                    if (obj != null) {
+                        return obj;
                     }
                 }
 
                 if (ownerClass.isInterface()) {
-                    throw new PropertyException(instanceName,"Failed to lookup interface " + ownerClass.getName() + " in registry, or deserialise it.");
+                    throw new PropertyException(instanceName, "Failed to lookup interface " + ownerClass.getName() + " in registry, or deserialise it.");
                 }
 
                 logger.finer(String.format("Creating %s", getInstanceName()));
-                if (cm.showCreations) {
+                if (cm.showCreations()) {
                     logger.info("CM using:");
                     for (URL u : cm.getConfigURLs()) {
                         logger.info(u.toString());
@@ -244,20 +242,26 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                     logger.info(String.format("Creating %s type %s", instanceName,
                             ownerClass.getName()));
                 }
-                try {
-                    Constructor<T> constructor = ownerClass.getDeclaredConstructor();
-                    boolean isAccessible = constructor.isAccessible();
-                    constructor.setAccessible(true);
-                    owner = constructor.newInstance();
-                    constructor.setAccessible(isAccessible);
-                } catch (NoSuchMethodException ex) {
-                    throw new PropertyException(ex, instanceName, null,
-                            "No-args constructor not found for class " + ownerClass);
-                } catch (InvocationTargetException ex) {
-                    throw new InternalConfigurationException(ex, instanceName, null,
-                            "Can't instantiate class " + ownerClass);
-                }
-                setConfiguredFields(owner, this);
+                T obj = AccessController.doPrivileged((PrivilegedExceptionAction<T>) () -> {
+                            T newObj;
+                            try {
+                                Constructor<T> constructor = ownerClass.getDeclaredConstructor();
+                                boolean isAccessible = constructor.isAccessible();
+                                constructor.setAccessible(true);
+                                newObj = constructor.newInstance();
+                                constructor.setAccessible(isAccessible);
+                            } catch (NoSuchMethodException ex) {
+                                throw new PropertyException(ex, instanceName, null,
+                                        "No-args constructor not found for class " + ownerClass);
+                            } catch (InvocationTargetException ex) {
+                                throw new InternalConfigurationException(ex, instanceName, null,
+                                        "Can't instantiate class " + ownerClass);
+                            }
+                            setConfiguredFields(newObj, this);
+                            return newObj;
+                        }
+                );
+                owner = obj;
                 try {
                     owner.postConfig();
                 } catch (IOException e) {
@@ -267,28 +271,18 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                 } catch (RuntimeException e) {
                     throw new PropertyException(e, instanceName, null, "RuntimeException thrown by postConfig");
                 }
-                if (owner instanceof ConfigurableMXBean) {
-                    MBeanServer mbs = cm.getMBeanServer();
-                    String on = String.format("%s:type=%s,name=%s",
-                            ownerClass.getPackage().getName(),
-                            ownerClass.getSimpleName(),
-                            instanceName);
-                    try {
-                        ObjectName oname = new ObjectName(on);
-                        if (mbs != null) {
-                            mbs.registerMBean(owner, oname);
-                        }
-                    } catch (Exception e) {
-                        throw new PropertyException(e, instanceName, null, null);
-                    }
-                }
             }
-        } catch (IllegalAccessException e) {
-            throw new InternalConfigurationException(e, getInstanceName(), null, "Can't access class "
-                    + ownerClass);
-        } catch (InstantiationException e) {
-            throw new InternalConfigurationException(e, getInstanceName(), null, "Can't instantiate class "
-                    + ownerClass);
+        } catch (PrivilegedActionException e) {
+            Exception inner = e.getException();
+            if (inner instanceof IllegalAccessException) {
+                throw new InternalConfigurationException(inner, getInstanceName(), null, "Can't access class "
+                        + ownerClass);
+            } else if (inner instanceof InstantiationException) {
+                throw new InternalConfigurationException(inner, getInstanceName(), null, "Can't instantiate class "
+                        + ownerClass);
+            } else {
+                throw new InternalConfigurationException(inner, getInstanceName(), null, "Unexpected exception thrown by " + ownerClass);
+            }
         }
 
         return owner;
@@ -390,7 +384,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map parseMapField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> genericType, MapProperty input) {
+    static Map parseMapField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> genericType, MapProperty input) {
         FieldType genericft = FieldType.getFieldType(genericType);
         Map map = new HashMap<>();
         for (Map.Entry<String, SimpleProperty> e : input.getMap().entrySet()) {
@@ -401,7 +395,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     }
 
     @SuppressWarnings("unchecked")
-    public static Object parseArrayField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, FieldType ft, ListProperty input) {
+    static Object parseArrayField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, FieldType ft, ListProperty input) {
         //
         // This dance happens as some of the list types support class values,
         // and this is the first place where FieldType meets the value loaded
@@ -534,8 +528,9 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         }
         return output;
     }
+
     @SuppressWarnings("unchecked")
-    public static Object parseListField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, Class<?> genericClass, FieldType ft, ListProperty input) {
+    static Object parseListField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, Class<?> genericClass, FieldType ft, ListProperty input) {
         //
         // This dance happens as some of the list types support class values,
         // and this is the first place where FieldType meets the value loaded
@@ -606,7 +601,8 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         return output;
     }
 
-    public static Object parseSimpleField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, FieldType ft, String val) {
+    @SuppressWarnings("unchecked")
+    static Object parseSimpleField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> fieldClass, FieldType ft, String val) {
         switch (ft) {
             case STRING:
                 return val;
@@ -670,6 +666,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
             case PATH:
                 return Paths.get(val);
             case RANDOM:
+                logger.warning("Random @Config files are deprecated for removal in a future version.");
                 try {
                     return new Random(Integer.parseInt(val));
                 } catch (NumberFormatException ex) {
@@ -690,58 +687,6 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
             default:
                 throw new PropertyException(instanceName, fieldName, fieldName + " was not a simple configurable field");
         }
-    }
-
-    /**
-     * Checks this PropertySheet for the supplied fieldName, and returns
-     * the parsed value. Returns null if the property is not set in the sheet,
-     * and throws PropertyException if it's mandatory.
-     *
-     * Note: does not read default values from class files, it only returns values
-     * from the configuration.
-     * @param fieldName The field name to lookup.
-     * @return The field value parsed out of the configuration.
-     */
-    public Object get(String fieldName) throws PropertyException {
-        Set<Field> fields = getAllFields(ownerClass);
-        for (Field f : fields) {
-            if (f.getName().equals(fieldName) && (f.getAnnotation(Config.class) != null)) {
-                Config fieldAnnotation = f.getAnnotation(Config.class);
-                //
-                // Field exists in object, now check the property sheet.
-                // Handle empty values.
-
-                if (propValues.get(f.getName()) == null) {
-                    if (fieldAnnotation.mandatory()) {
-                        throw new PropertyException(getInstanceName(), f.getName(), f.getName() + " is mandatory in configuration");
-                    } else {
-                        return null;
-                    }
-                } else {
-                    FieldType ft = FieldType.getFieldType(f);
-                    List<Class<?>> genericList = getGenericClass(f);
-                    if (FieldType.arrayTypes.contains(ft)) {
-                        return parseArrayField(getConfigurationManager(), instanceName, f.getName(), f.getType(), ft, (ListProperty) propValues.get(f.getName()));
-                    } else if (FieldType.listTypes.contains(ft)) {
-                        if (genericList.size() == 1) {
-                            return parseListField(getConfigurationManager(), instanceName, f.getName(), f.getType(), genericList.get(0), ft, (ListProperty) propValues.get(f.getName()));
-                        } else {
-                            throw new PropertyException(getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
-                        }
-                    } else if (FieldType.simpleTypes.contains(ft)) {
-                        return parseSimpleField(getConfigurationManager(), instanceName, f.getName(),f.getType(),ft, flattenProp(f.getName()));
-                    } else {
-                        if (genericList.size() == 2) {
-                            return parseMapField(getConfigurationManager(), instanceName, f.getName(), genericList.get(1), (MapProperty) propValues.get(f.getName()));
-                        } else {
-                            throw new PropertyException(getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
-                        }
-                    }
-                }
-            }
-
-        }
-        return null;
     }
 
     /**
@@ -800,24 +745,8 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
             throw new PropertyException(instanceName, "","'" + key + "' is not a registered property");
         }
 
-        rawProps.put(key, val);
         propValues.put(key, val);
-
-        if (instanceName != null) {
-            cm.fireConfChanged(instanceName, key);
-        }
     }
-
-    /**
-     * Sets the raw property to the given name
-     *
-     * @param key the simple property name
-     * @param val the value for the property
-     */
-    public void setRaw(String key, Property val) {
-        rawProps.put(key, val);
-    }
-
     /**
      * Gets the raw value associated with this name
      *
@@ -825,8 +754,8 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      * @return the value as an object (it could be a SimpleProperty, a ListProperty, or a MapProperty
      * depending upon the property type)
      */
-    public Property getRaw(String name) {
-        return rawProps.get(name);
+    public Property getProperty(String name) {
+        return propValues.get(name);
     }
 
     /**
@@ -849,8 +778,8 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
     /**
      * Returns the names of registered properties of this PropertySheet object.
      */
-    public Collection<String> getRegisteredProperties() {
-        return Collections.unmodifiableCollection(registeredProperties.keySet());
+    public Set<String> getRegisteredProperties() {
+        return Collections.unmodifiableSet(registeredProperties.keySet());
     }
 
     public void setCM(ConfigurationManager cm) {
@@ -868,43 +797,11 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
         }
 
         PropertySheet ps = (PropertySheet) obj;
-        return rawProps.keySet().equals(ps.rawProps.keySet());
-
-// maybe we could test a little bit more here. suggestions?
+        return propValues.equals(ps.propValues);
     }
 
-    public PropertySheet<T> clone() {
-        try {
-            PropertySheet<T> ps = (PropertySheet<T>) super.clone();
-
-            ps.registeredProperties = new HashMap<>(this.registeredProperties);
-            ps.propValues = new HashMap<>(this.propValues);
-
-            ps.rawProps = new HashMap<>(this.rawProps);
-
-            // make deep copy of raw-lists
-            for (String regProp : ps.getRegisteredProperties()) {
-                Property o = rawProps.get(regProp);
-                if (o instanceof ListProperty) {
-                    ListProperty copy = ((ListProperty) o).copy();
-                    ps.rawProps.put(regProp, copy);
-                    ps.propValues.put(regProp, copy);
-                } else if (o instanceof MapProperty) {
-                    MapProperty copy = ((MapProperty) o).copy();
-                    ps.rawProps.put(regProp, copy);
-                    ps.propValues.put(regProp, copy);
-                }
-            }
-
-            ps.cm = cm;
-            ps.owner = null;
-            ps.instanceName = this.instanceName;
-
-            return ps;
-        } catch (CloneNotSupportedException e) {
-            logger.log(Level.WARNING,"CloneNotSupportedException thrown, even though it is", e);
-            return null;
-        }
+    public PropertySheet<T> copy() {
+        return new PropertySheet<>(this);
     }
 
     /**
@@ -915,20 +812,25 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      * @return all of the fields, so they can be checked for annotations.
      */
     public static Set<Field> getAllFields(Class<? extends Configurable> configurable) {
-        Set<Field> ret = new HashSet<>();
-        Queue<Class> cq = new ArrayDeque<>();
-        cq.add(configurable);
-        while (!cq.isEmpty()) {
-            Class curr = cq.remove();
-            ret.addAll(Arrays.asList(curr.getDeclaredFields()));
-            ret.addAll(Arrays.asList(curr.getFields()));
-            Class sc = curr.getSuperclass();
-            if (sc != null) {
-                cq.add(sc);
-            }
-            cq.addAll(Arrays.asList(curr.getInterfaces()));
-        }
-        return ret;
+        return AccessController.doPrivileged((PrivilegedAction<Set<Field>>)
+                () -> {
+                    Set<Field> ret = new HashSet<>();
+                    Queue<Class> cq = new ArrayDeque<>();
+                    cq.add(configurable);
+                    while (!cq.isEmpty()) {
+                        Class curr = cq.remove();
+                        ret.addAll(Arrays.asList(curr.getDeclaredFields()));
+                        ret.addAll(Arrays.asList(curr.getFields()));
+                        Class sc = curr.getSuperclass();
+                        if (sc != null) {
+                            cq.add(sc);
+                        }
+                        cq.addAll(Arrays.asList(curr.getInterfaces()));
+                    }
+                    ret.removeIf(f -> Modifier.isStatic(f.getModifiers()));
+                    return ret;
+                }
+        );
     }
 
     /**
@@ -938,7 +840,7 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
      * @param propertySheet of type PropertySheet
      * @param configurable of type <code>Class&lt;? extends Configurable&gt;</code>
      */
-    public static <T extends Configurable> void processAnnotations(PropertySheet<T> propertySheet,
+    private static <T extends Configurable> void processAnnotations(PropertySheet<T> propertySheet,
             Class<T> configurable) throws PropertyException {
         Set<Field> classFields = getAllFields(configurable);
 
@@ -963,35 +865,6 @@ public class PropertySheet<T extends Configurable> implements Cloneable {
                 }
             }
         }
-    }
-
-    public void save(ConfigWriter configWriter) throws ConfigWriterException {
-        Collection<String> registeredProperties = getRegisteredProperties();
-        Map<String,String> attributes = new HashMap<>();
-        Map<String,Property> properties = new HashMap<>();
-
-        attributes.put(ConfigLoader.NAME,instanceName);
-        attributes.put(ConfigLoader.TYPE,getConfigurableClass().getName());
-        attributes.put(ConfigLoader.IMPORT,""+isImportable());
-        attributes.put(ConfigLoader.EXPORT,""+isExportable());
-        if (rpd.getLeaseTime() > 0) {
-            attributes.put(ConfigLoader.LEASETIME, "" + rpd.getLeaseTime());
-        }
-        if (serializedForm != null) {
-            attributes.put(ConfigLoader.SERIALIZED,serializedForm);
-        }
-        if (rpd.getEntriesName() != null) {
-            attributes.put(ConfigLoader.ENTRIES,rpd.getEntriesName());
-        }
-
-        for (String propName : registeredProperties) {
-            Property propVal = getRaw(propName);
-            if (propVal != null) {
-                properties.put(propName,propVal);
-            }
-        }
-
-        configWriter.writeComponent(attributes,properties);
     }
 
 }

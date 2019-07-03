@@ -1,14 +1,14 @@
 package com.oracle.labs.mlrg.olcut.config.xml;
 
-import com.oracle.labs.mlrg.olcut.config.ConfigLoader;
-import com.oracle.labs.mlrg.olcut.config.ConfigLoaderException;
-import com.oracle.labs.mlrg.olcut.config.ConfigWriter;
-import com.oracle.labs.mlrg.olcut.config.ConfigWriterException;
-import com.oracle.labs.mlrg.olcut.config.FileFormatFactory;
-import com.oracle.labs.mlrg.olcut.config.GlobalProperties;
-import com.oracle.labs.mlrg.olcut.config.RawPropertyData;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriter;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigWriterException;
+import com.oracle.labs.mlrg.olcut.config.io.FileFormatFactory;
+import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
-import com.oracle.labs.mlrg.olcut.config.URLLoader;
+import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -36,7 +36,7 @@ public class XMLConfigFactory implements FileFormatFactory {
     }
 
     @Override
-    public ConfigLoader getLoader(URLLoader parent, Map<String, RawPropertyData> rpdMap, Map<String, RawPropertyData> existingRPD, Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) throws ConfigLoaderException {
+    public ConfigLoader getLoader(URLLoader parent, Map<String, ConfigurationData> rpdMap, Map<String, ConfigurationData> existingRPD, Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) throws ConfigLoaderException {
         try {
             return new SAXLoader(parent, rpdMap, existingRPD, serializedObjects, globalProperties);
         } catch (SAXException | ParserConfigurationException e) {

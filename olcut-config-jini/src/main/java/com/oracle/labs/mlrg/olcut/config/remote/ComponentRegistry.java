@@ -8,6 +8,7 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurableName;
 import com.sun.jini.config.ConfigUtil;
 import com.sun.jini.tool.ClassServer;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -62,7 +63,7 @@ import net.jini.lookup.ServiceDiscoveryManager;
  * A configurable container that can be used to register object proxies with a Jini
  * registry.
  */
-public class ComponentRegistry implements Configurable, DiscoveryListener,
+public class ComponentRegistry implements Closeable, Configurable, DiscoveryListener,
         ServiceDiscoveryListener, LeaseListener {
     private static final Logger logger = Logger.getLogger(ComponentRegistry.class.getName());
 
@@ -174,12 +175,6 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      */
     private ClassServer classServer;
 
-    /* TODO: check if this field is necessary. It must be accessed via reflection if so.
-     * The configuration manager that created us.  We'll need this to get the 
-     * instance names of components that want to register themselves.
-     * private ConfigurationManager cm;
-     */
-
     /**
      * A service registry manager for our components.
      */
@@ -207,7 +202,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * sheets for those looker-uppers.  We'll use this to add new items of this
      * type if they become available.
      */
-    private Map<Class, Set<ComponentListener>> classListeners = new HashMap<>();
+    private Map<Class, Set<ComponentListener<? extends Configurable>>> classListeners = new HashMap<>();
 
     /**
      * Exporters for the services that we've registered and for the things we
@@ -389,9 +384,9 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     public Map<String,List<String>> dumpJiniServices() {
         ServiceRegistrar[] registrars =
                 sdm.getDiscoveryManager().getRegistrars();
-        Map<String,List<String>> ret = new HashMap<String, List<String>>();
+        Map<String,List<String>> ret = new HashMap<>();
         for(ServiceRegistrar r : registrars) {
-            List<String> svcs = new ArrayList<String>();
+            List<String> svcs = new ArrayList<>();
             try {
                 ServiceMatches sm = r.lookup(new ServiceTemplate(null, null,
                         null), Integer.MAX_VALUE);
@@ -431,7 +426,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * the {@link java.rmi.Remote} interface or if the component type has more
      * than one property sheet associated with it in the configuration.
      */
-    public void register(Configurable c, ServablePropertySheet ps) throws PropertyException {
+    public void register(Configurable c, ServablePropertySheet<? extends Configurable> ps) throws PropertyException {
 
         if(!(c instanceof Remote)) {
             throw new IllegalArgumentException("Component class " +
@@ -485,11 +480,11 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
 
             //
             // Register the service in all of the registries that we found.
-            for(int i = 0; i < regs.length; i++) {
-                ServiceRegistration sr = regs[i].register(si, leaseTime);
+            for (ServiceRegistrar reg : regs) {
+                ServiceRegistration sr = reg.register(si, leaseTime);
 
-                if(logger.isLoggable(Level.FINER)) {
-                    logger.finer(String.format("Registering %s with %s", si, regs[i]));
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.finer(String.format("Registering %s with %s", si, reg));
                 }
 
                 //
@@ -578,11 +573,11 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         }
     }
     
-    private void addListener(Class c, ComponentListener cl) {
+    private <T extends Configurable> void addListener(Class<T> c, ComponentListener<T> cl) {
         if(cl == null) {
             return;
         }
-        Set<ComponentListener> s = classListeners.computeIfAbsent(c, k -> new HashSet<>());
+        Set<ComponentListener<?>> s = classListeners.computeIfAbsent(c, k -> new HashSet<>());
         s.add(cl);
     }
 
@@ -595,7 +590,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * can be notified of service changes.
      * @return an array containing the matching components
      */
-    public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener cl) {
+    public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener<T> cl) {
         return lookup(c,maxMatches,cl,null);
     }
 
@@ -612,7 +607,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * @param entries The ConfigurationEntries to filter on.
      * @return an array containing the matching components
      */
-    public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener cl, ConfigurationEntry[] entries) {
+    public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener<T> cl, ConfigurationEntry[] entries) {
         if(sdm == null) {
             return (T[]) new Configurable[0];
         }
@@ -684,7 +679,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
      * @return the named component, or <code>null</code> if no such component
      * can be found.
      */
-    public <T extends Configurable> T lookup(ServablePropertySheet<T> cps, ComponentListener cl) {
+    public <T extends Configurable> T lookup(ServablePropertySheet<T> cps, ComponentListener<T> cl) {
 
         if(sdm == null) {
             return null;
@@ -761,7 +756,8 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
     /**
      * Unregisters the services.
      */
-    public void shutdown() {
+    @Override
+    public void close() {
 
         logger.fine("Shutting down component registry");
         for(ServiceRegistration sr : registrations) {
@@ -813,7 +809,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         // We'll need to look for listeners on all of the interfaces that this
         // class implements.
         for(Class iface : c.getInterfaces()) {
-            Set<ComponentListener> listeners = classListeners.get(iface);
+            Set<ComponentListener<? extends Configurable>> listeners = classListeners.get(iface);
             if(listeners == null) {
                 continue;
             }
@@ -834,7 +830,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         lookedUp.remove(component);
         Class c = component.getClass();
         for(Class iface : c.getInterfaces()) {
-            Set<ComponentListener> listeners = classListeners.get(iface);
+            Set<ComponentListener<?>> listeners = classListeners.get(iface);
             if(listeners == null) {
                 continue;
             }
@@ -854,7 +850,7 @@ public class ComponentRegistry implements Configurable, DiscoveryListener,
         lookedUp.remove((Configurable) pre.service);
         lookedUp.add((Configurable) post.service);
         for(Class iface : c.getInterfaces()) {
-            Set<ComponentListener> listeners = classListeners.get(iface);
+            Set<ComponentListener<?>> listeners = classListeners.get(iface);
             if(listeners == null) {
                 continue;
             }

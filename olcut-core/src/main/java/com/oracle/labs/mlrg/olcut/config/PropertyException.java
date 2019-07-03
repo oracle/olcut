@@ -15,10 +15,9 @@ package com.oracle.labs.mlrg.olcut.config;
 /** Indicates that a problem occurred while setting one or more properties for this component */
 public class PropertyException extends RuntimeException {
 
-    private String instanceName;
-    private String propertyName;
-    private String msg;
-
+    private final String instanceName;
+    private final String propertyName;
+    private final String msg;
 
     /**
      * Creates a new property exception.
@@ -83,11 +82,6 @@ public class PropertyException extends RuntimeException {
         } else {
             this.msg = msg;
         }
-    }
-
-
-    public PropertyException(ClassNotFoundException e) {
-        super(e);
     }
 
     /** @return Returns the msg. */

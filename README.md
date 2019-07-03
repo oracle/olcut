@@ -337,6 +337,32 @@ that property was not defined in the configuration file.
 If the above arguments are supplied then the trainer object will be instantiated with
 the epochs field set to the value 5.
 
+## Java Security Manager
+
+The configuration and provenance systems use reflection to construct and inspect classes,
+as such when running with a Java security manager you need to give the olcut jar appropriate
+permissions. We have tested this set of permissions which allows the configuration and
+provenance systems to work:
+
+    // OLCUT permissions
+    grant codeBase "file:/path/to/olcut/olcut-core-5.0.0.jar" {
+            permission java.lang.RuntimePermission "accessDeclaredMembers";
+            permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
+            permission java.util.logging.LoggingPermission "control";
+            permission java.io.FilePermission "<<ALL FILES>>", "read";
+            permission java.util.PropertyPermission "*", "read,write";
+    };
+
+The read FilePermission can be restricted to the jars which contain
+configuration files, configuration files on disk, and the locations of
+serialised objects. The one here provides access to the complete filesystem, as
+the necessary read locations are program specific. If you need to save an OLCUT
+configuration out then you will also need to add write permissions for the save
+location. 
+
+The remote component loading system requires a further set of permissions which
+we haven't completely captured.
+
 ## Remote Components
 
 The configuration system can make use of Jini and RMI to help instantiate a

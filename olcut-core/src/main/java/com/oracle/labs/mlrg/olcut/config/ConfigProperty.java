@@ -11,6 +11,4 @@ import java.lang.annotation.RetentionPolicy;
  * @see ConfigurableName
  */
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ConfigProperty {
-
-}
+public @interface ConfigProperty { }

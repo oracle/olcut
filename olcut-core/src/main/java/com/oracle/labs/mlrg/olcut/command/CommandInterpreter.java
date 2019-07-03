@@ -962,8 +962,6 @@ public class CommandInterpreter extends Thread {
         
     }
     
-    
-    
     private HashSet<Class> supportedMethodParameters =
             new HashSet<Class>(Arrays.asList(
                     String.class,
@@ -1081,7 +1079,9 @@ public class CommandInterpreter extends Thread {
                     } else if (currParam == Double.class || currParam == double.class) {
                         invokeParams[i] = Double.parseDouble(arg);
                     } else if (currParam.isEnum()) {
-                        invokeParams[i] = Enum.valueOf((Class<Enum>)currParam, arg.toUpperCase());
+                        @SuppressWarnings("unchecked") //Enum cast guarded by isEnum check
+                        Object tmp = Enum.valueOf((Class<Enum>)currParam, arg.toUpperCase());
+                        invokeParams[i] = tmp;
                     } else if (currParam == Boolean.class || currParam == boolean.class) {
                         invokeParams[i] = Boolean.parseBoolean(arg);
                     } else if (currParam == File.class) {
@@ -1101,13 +1101,10 @@ public class CommandInterpreter extends Thread {
                             Arrays.toString(args),
                             currParam.getName(),
                             usage);
-                    
                 }
             }
             return (String)m.invoke(group, invokeParams);
         }
-        
-        
     }
     
     /**
