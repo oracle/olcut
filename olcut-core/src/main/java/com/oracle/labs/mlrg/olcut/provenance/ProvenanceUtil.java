@@ -51,6 +51,14 @@ public final class ProvenanceUtil {
         HashType(String name) {
             this.name = name;
         }
+
+        public MessageDigest getDigest() {
+            try {
+                return MessageDigest.getInstance(name);
+            } catch (NoSuchAlgorithmException e) {
+                throw new ProvenanceException("Unable to construct MessageDigest for HashType " + name,e);
+            }
+        }
     }
 
     private ProvenanceUtil(){}
@@ -87,16 +95,11 @@ public final class ProvenanceUtil {
      * @return A hexadecimal string representation of the hash.
      */
     public static String hashList(HashType hashType, List<String> list) {
-        try {
-            MessageDigest md = MessageDigest.getInstance(hashType.name);
-            for (String curString : list) {
-                md.digest(curString.getBytes(StandardCharsets.UTF_8));
-            }
-            return bytesToHexString(md.digest());
-        } catch (NoSuchAlgorithmException e) {
-            logger.log(Level.SEVERE,"Failed to load standard hash algorithm " + hashType.name);
-            return "invalid-algorithm-specified";
+        MessageDigest md = hashType.getDigest();
+        for (String curString : list) {
+            md.digest(curString.getBytes(StandardCharsets.UTF_8));
         }
+        return bytesToHexString(md.digest());
     }
 
     /**
@@ -118,22 +121,17 @@ public final class ProvenanceUtil {
      * @return A hexadecimal string representation of the hash.
      */
     public static String hashResource(HashType hashType, File file) {
-        try {
-            MessageDigest md = MessageDigest.getInstance(hashType.name);
-            byte[] buffer = new byte[16384];
-            int count;
-            try (InputStream bis = IOUtil.getInputStream(file)) {
-                while ((count = bis.read(buffer)) > 0) {
-                    md.update(buffer, 0, count);
-                }
-                return bytesToHexString(md.digest());
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "IOException when reading from file " + file);
-                return bytesToHexString(md.digest());
+        MessageDigest md = hashType.getDigest();
+        byte[] buffer = new byte[16384];
+        int count;
+        try (InputStream bis = IOUtil.getInputStream(file)) {
+            while ((count = bis.read(buffer)) > 0) {
+                md.update(buffer, 0, count);
             }
-        } catch (NoSuchAlgorithmException e) {
-            logger.log(Level.SEVERE,"Failed to load standard hash algorithm " + hashType.name);
-            return "invalid-algorithm-specified";
+            return bytesToHexString(md.digest());
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "IOException when reading from file " + file);
+            return bytesToHexString(md.digest());
         }
     }
 
@@ -145,22 +143,17 @@ public final class ProvenanceUtil {
      * @return A hexadecimal string representation of the hash.
      */
     public static String hashResource(HashType hashType, URI file) {
-        try {
-            MessageDigest md = MessageDigest.getInstance(hashType.name);
-            byte[] buffer = new byte[16384];
-            int count;
-            try (InputStream bis = new BufferedInputStream(file.toURL().openStream())) {
-                while ((count = bis.read(buffer)) > 0) {
-                    md.update(buffer, 0, count);
-                }
-                return bytesToHexString(md.digest());
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "IOException when reading from file " + file);
-                return bytesToHexString(md.digest());
+        MessageDigest md = hashType.getDigest();
+        byte[] buffer = new byte[16384];
+        int count;
+        try (InputStream bis = new BufferedInputStream(file.toURL().openStream())) {
+            while ((count = bis.read(buffer)) > 0) {
+                md.update(buffer, 0, count);
             }
-        } catch (NoSuchAlgorithmException e) {
-            logger.log(Level.SEVERE,"Failed to load standard hash algorithm " + hashType.name);
-            return "invalid-algorithm-specified";
+            return bytesToHexString(md.digest());
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "IOException when reading from file " + file);
+            return bytesToHexString(md.digest());
         }
     }
 
