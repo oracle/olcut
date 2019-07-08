@@ -34,6 +34,14 @@ public final class MapProvenance<T extends Provenance> implements Provenance, It
         this.map = Collections.emptyMap();
     }
 
+    /**
+     * An unmodifiable view on the provenance map.
+     * @return The provenance map.
+     */
+    public Map<String,T> getMap() {
+        return map;
+    }
+
     @Override
     public Iterator<Pair<String, T>> iterator() {
         return new MapProvenanceIterator<>(map.entrySet().iterator());

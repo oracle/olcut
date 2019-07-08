@@ -31,6 +31,14 @@ public final class ListProvenance<T extends Provenance> implements Provenance, I
         this.list = Collections.emptyList();
     }
 
+    /**
+     * An unmodifiable view on the provenance list.
+     * @return The provenance list.
+     */
+    public List<T> getList() {
+        return list;
+    }
+
     @Override
     public Iterator<T> iterator() {
         return list.iterator();
