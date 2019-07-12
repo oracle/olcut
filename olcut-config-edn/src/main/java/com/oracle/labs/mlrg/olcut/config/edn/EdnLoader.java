@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class EdnLoader implements ConfigLoader {
 
@@ -142,7 +141,7 @@ public class EdnLoader implements ConfigLoader {
     }
 
     @Override
-    public void load(URL url) throws ConfigLoaderException {
+    public final void load(URL url) throws ConfigLoaderException {
         AccessController.doPrivileged((PrivilegedAction<Void>)
                 () -> {
                     if (url.getProtocol().equals("file")) {

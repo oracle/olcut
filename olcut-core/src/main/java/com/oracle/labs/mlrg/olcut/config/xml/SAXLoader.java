@@ -88,7 +88,7 @@ public class SAXLoader implements ConfigLoader {
      * Loads xml configuration data from the location
      */
     @Override
-    public void load(URL url) throws ConfigLoaderException {
+    public final void load(URL url) throws ConfigLoaderException {
         AccessController.doPrivileged((PrivilegedAction<Void>)
                 () -> {
                     try (InputStream is = url.openStream()) {

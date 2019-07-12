@@ -53,7 +53,7 @@ public final class SerializedObject<T> {
      * @throws PropertyException if the object cannot be deserialized.
      */
     @SuppressWarnings("unchecked")// throws PropertyException if the serialised type doesn't match the class name.
-    public T getObject() throws PropertyException {
+    public final T getObject() throws PropertyException {
         if (object == null) {
             object = AccessController.doPrivileged((PrivilegedAction<T>) () -> {
                 String actualLocation = configurationManager.getImmutableGlobalProperties().replaceGlobalProperties(name, null, location);
