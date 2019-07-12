@@ -68,7 +68,7 @@ public class JsonLoader implements ConfigLoader {
      * Loads json configuration data from the location
      */
     @Override
-    public void load(URL url) throws ConfigLoaderException {
+    public final void load(URL url) throws ConfigLoaderException {
         AccessController.doPrivileged((PrivilegedAction<Void>)
                 () -> {
                     if (url.getProtocol().equals("file")) {

@@ -27,7 +27,7 @@ public class GlobalProperties extends ImmutableGlobalProperties {
     /**
      * Imports the system properties into GlobalProperties.
      */
-    public void importSystemProperties() {
+    public final void importSystemProperties() {
         Properties props = AccessController.doPrivileged((PrivilegedAction<Properties>) System::getProperties);
         for (Map.Entry<Object,Object> e : props.entrySet()) {
             String param = (String) e.getKey();
