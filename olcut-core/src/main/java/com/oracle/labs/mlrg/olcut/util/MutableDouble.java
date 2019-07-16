@@ -16,6 +16,10 @@ public class MutableDouble extends Number {
         value = 0L;
     }
 
+    public MutableDouble(Number other) {
+        value = other.doubleValue();
+    }
+
     public void increment(double other) {
         value += other;
     }

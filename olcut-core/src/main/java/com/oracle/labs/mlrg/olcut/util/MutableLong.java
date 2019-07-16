@@ -16,6 +16,10 @@ public class MutableLong extends Number {
         value = 0L;
     }
 
+    public MutableLong(Number other) {
+        value = other.longValue();
+    }
+
     public void increment(long other) {
         value += other;
     }
