@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -139,14 +140,14 @@ public final class ProvenanceUtil {
      * Hashes a resource stream by reading the bytes and passing them through the
      * appropriate {@link MessageDigest}.
      * @param hashType The type of hash to perform.
-     * @param file The URI for the stream.
+     * @param file The URL for the stream.
      * @return A hexadecimal string representation of the hash.
      */
-    public static String hashResource(HashType hashType, URI file) {
+    public static String hashResource(HashType hashType, URL file) {
         MessageDigest md = hashType.getDigest();
         byte[] buffer = new byte[16384];
         int count;
-        try (InputStream bis = new BufferedInputStream(file.toURL().openStream())) {
+        try (InputStream bis = new BufferedInputStream(file.openStream())) {
             while ((count = bis.read(buffer)) > 0) {
                 md.update(buffer, 0, count);
             }
