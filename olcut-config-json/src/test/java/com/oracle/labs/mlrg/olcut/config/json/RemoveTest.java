@@ -3,7 +3,6 @@ package com.oracle.labs.mlrg.olcut.config.json;
 import com.oracle.labs.mlrg.olcut.config.BasicConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
@@ -11,18 +10,17 @@ import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.jupiter.api.BeforeEach;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 
 public class RemoveTest {
 
-    @BeforeEach
+    @BeforeAll
     public void setUp() {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }

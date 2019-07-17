@@ -29,7 +29,7 @@ public class NameTest {
         ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearray");
         assertEquals("stringconfigurablearray",lc.getName());
         StringConfigurable[] l = lc.getArray();
-        assertTrue(l.length == 3);
+        assertEquals(3, l.length);
         String firstOne = l[0].one;
         assertEquals("alpha",firstOne);
         String secondOne = l[1].one;

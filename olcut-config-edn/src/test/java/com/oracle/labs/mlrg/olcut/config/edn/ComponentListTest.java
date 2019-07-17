@@ -25,21 +25,17 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class ComponentListTest {
 
-    public ComponentListTest() {
-    }
-
     @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }
-
 
     @Test
     public void componentListTest() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("componentListConfig.edn");
         ListConfigurable lc = (ListConfigurable) cm.lookup("simple");
         List<Configurable> l = lc.getList();
-        assertTrue(l.size() == 2);
+        assertEquals(2, l.size());
         for (Configurable c : l) {
             assertNotNull(c);
         }

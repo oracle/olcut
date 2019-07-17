@@ -19,8 +19,6 @@ public class PostConfigTest {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }
 
-    public PostConfigTest() { }
-
     @Test
     public void postConfigTest() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("postConfig.edn");

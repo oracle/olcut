@@ -15,8 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class PropertyChainingTest {
 
-    public PropertyChainingTest() { }
-
     @BeforeAll
     public static void setUpClass() throws IOException {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());

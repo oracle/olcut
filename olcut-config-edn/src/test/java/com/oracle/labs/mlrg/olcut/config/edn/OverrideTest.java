@@ -21,14 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class OverrideTest {
 
-    public OverrideTest() {
-    }
-
     @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }
-
 
     @Test
     public void overrideWithSameType() throws IOException {

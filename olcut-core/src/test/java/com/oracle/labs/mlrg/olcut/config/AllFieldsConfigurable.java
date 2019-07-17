@@ -1,11 +1,16 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -149,6 +154,18 @@ public class AllFieldsConfigurable implements Configurable {
     public Path pathField;
 
     @Config
+    public URL urlField;
+
+    @Config
+    public LocalDate dateField;
+
+    @Config
+    public OffsetDateTime dateTimeField;
+
+    @Config
+    public OffsetTime timeField;
+
+    @Config
     public Random randomField;
 
     @Config
@@ -169,16 +186,16 @@ public class AllFieldsConfigurable implements Configurable {
         if (longField != that.longField) {logger.log(Level.INFO,"longField differs, this = " + longField + ", other = " + that.longField); return false;}
         if (Float.compare(that.floatField, floatField) != 0) {logger.log(Level.INFO,"floatField differs, this = " + floatField + ", other = " + that.floatField); return false;}
         if (Double.compare(that.doubleField, doubleField) != 0) {logger.log(Level.INFO,"doubleField differs, this = " + doubleField + ", other = " + that.doubleField); return false;}
-        if (name != null ? !name.equals(that.name) : that.name != null) {logger.log(Level.INFO,"name differs, this = " + name + ", other = " + that.name); return false;}
-        if (BoolField != null ? !BoolField.equals(that.BoolField) : that.BoolField != null) {logger.log(Level.INFO,"BoolField differs, this = " + BoolField + ", other = " + that.BoolField); return false;}
-        if (ByteField != null ? !ByteField.equals(that.ByteField) : that.ByteField != null) {logger.log(Level.INFO,"ByteField differs, this = " + ByteField + ", other = " + that.ByteField); return false;}
-        if (characterField != null ? !characterField.equals(that.characterField) : that.characterField != null) {logger.log(Level.INFO,"characterField differs, this = " + characterField + ", other = " + that.characterField); return false;}
-        if (ShortField != null ? !ShortField.equals(that.ShortField) : that.ShortField != null) {logger.log(Level.INFO,"ShortField differs, this = " + ShortField + ", other = " + that.ShortField); return false;}
-        if (integerField != null ? !integerField.equals(that.integerField) : that.integerField != null) {logger.log(Level.INFO,"integerField differs, this = " + integerField + ", other = " + that.integerField); return false;}
-        if (LongField != null ? !LongField.equals(that.LongField) : that.LongField != null) {logger.log(Level.INFO,"LongField differs, this = " + LongField + ", other = " + that.LongField); return false;}
-        if (FloatField != null ? !FloatField.equals(that.FloatField) : that.FloatField != null) {logger.log(Level.INFO,"FloatField differs, this = " + FloatField + ", other = " + that.FloatField); return false;}
-        if (DoubleField != null ? !DoubleField.equals(that.DoubleField) : that.DoubleField != null) {logger.log(Level.INFO,"DoubleField differs, this = " + DoubleField + ", other = " + that.DoubleField); return false;}
-        if (stringField != null ? !stringField.equals(that.stringField) : that.stringField != null) {logger.log(Level.INFO,"stringField differs, this = " + stringField + ", other = " + that.stringField); return false;}
+        if (!Objects.equals(name, that.name)) {logger.log(Level.INFO,"name differs, this = " + name + ", other = " + that.name); return false;}
+        if (!Objects.equals(BoolField, that.BoolField)) {logger.log(Level.INFO,"BoolField differs, this = " + BoolField + ", other = " + that.BoolField); return false;}
+        if (!Objects.equals(ByteField, that.ByteField)) {logger.log(Level.INFO,"ByteField differs, this = " + ByteField + ", other = " + that.ByteField); return false;}
+        if (!Objects.equals(characterField, that.characterField)) {logger.log(Level.INFO,"characterField differs, this = " + characterField + ", other = " + that.characterField); return false;}
+        if (!Objects.equals(ShortField, that.ShortField)) {logger.log(Level.INFO,"ShortField differs, this = " + ShortField + ", other = " + that.ShortField); return false;}
+        if (!Objects.equals(integerField, that.integerField)) {logger.log(Level.INFO,"integerField differs, this = " + integerField + ", other = " + that.integerField); return false;}
+        if (!Objects.equals(LongField, that.LongField)) {logger.log(Level.INFO,"LongField differs, this = " + LongField + ", other = " + that.LongField); return false;}
+        if (!Objects.equals(FloatField, that.FloatField)) {logger.log(Level.INFO,"FloatField differs, this = " + FloatField + ", other = " + that.FloatField); return false;}
+        if (!Objects.equals(DoubleField, that.DoubleField)) {logger.log(Level.INFO,"DoubleField differs, this = " + DoubleField + ", other = " + that.DoubleField); return false;}
+        if (!Objects.equals(stringField, that.stringField)) {logger.log(Level.INFO,"stringField differs, this = " + stringField + ", other = " + that.stringField); return false;}
         if (!Arrays.equals(byteArrayField, that.byteArrayField)) {logger.log(Level.INFO,"byteArrayField differs, this = " + byteArrayField + ", other = " + that.byteArrayField); return false;}
         if (!Arrays.equals(charArrayField, that.charArrayField)) {logger.log(Level.INFO,"charArrayField differs, this = " + charArrayField + ", other = " + that.charArrayField); return false;}
         if (!Arrays.equals(shortArrayField, that.shortArrayField)) {logger.log(Level.INFO,"shortArrayField differs, this = " + shortArrayField + ", other = " + that.shortArrayField); return false;}
@@ -186,9 +203,9 @@ public class AllFieldsConfigurable implements Configurable {
         if (!Arrays.equals(longArrayField, that.longArrayField)) {logger.log(Level.INFO,"longArrayField differs, this = " + longArrayField + ", other = " + that.longArrayField); return false;}
         if (!Arrays.equals(floatArrayField, that.floatArrayField)) {logger.log(Level.INFO,"floatArrayField differs, this = " + floatArrayField + ", other = " + that.floatArrayField); return false;}
         if (!Arrays.equals(doubleArrayField, that.doubleArrayField)) {logger.log(Level.INFO,"doubleArrayField differs, this = " + doubleArrayField + ", other = " + that.doubleArrayField); return false;}
-        if (configurableField != null ? !configurableField.equals(that.configurableField) : that.configurableField != null)
+        if (!Objects.equals(configurableField, that.configurableField))
             {logger.log(Level.INFO,"configurableField differs, this = " + configurableField + ", other = " + that.configurableField); return false;}
-        if (configurableSubclassField != null ? !configurableSubclassField.equals(that.configurableSubclassField) : that.configurableSubclassField != null)
+        if (!Objects.equals(configurableSubclassField, that.configurableSubclassField))
             {logger.log(Level.INFO,"configurableSubclassField differs, this = " + configurableSubclassField + ", other = " + that.configurableSubclassField); return false;}
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(stringArrayField, that.stringArrayField)) {logger.log(Level.INFO,"stringArrayField differs, this = " + stringArrayField + ", other = " + that.stringArrayField); return false;}
@@ -196,40 +213,44 @@ public class AllFieldsConfigurable implements Configurable {
         if (!Arrays.equals(configurableArrayField, that.configurableArrayField)) {logger.log(Level.INFO,"configurableArrayField differs, this = " + configurableArrayField + ", other = " + that.configurableArrayField); return false;}
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(configurableSubclassArrayField, that.configurableSubclassArrayField)) {logger.log(Level.INFO,"configurableSubclassArrayField differs, this = " + configurableSubclassArrayField + ", other = " + that.configurableSubclassArrayField); return false;}
-        if (listDoubleField != null ? !listDoubleField.equals(that.listDoubleField) : that.listDoubleField != null)
+        if (!Objects.equals(listDoubleField, that.listDoubleField))
             {logger.log(Level.INFO,"listDoubleField differs, this = " + listDoubleField + ", other = " + that.listDoubleField); return false;}
-        if (listStringField != null ? !listStringField.equals(that.listStringField) : that.listStringField != null)
+        if (!Objects.equals(listStringField, that.listStringField))
             {logger.log(Level.INFO,"listStringField differs, this = " + listStringField + ", other = " + that.listStringField); return false;}
-        if (listConfigurableSubclassField != null ? !listConfigurableSubclassField.equals(that.listConfigurableSubclassField) : that.listConfigurableSubclassField != null)
+        if (!Objects.equals(listConfigurableSubclassField, that.listConfigurableSubclassField))
             {logger.log(Level.INFO,"listConfigurableSubclassField differs, this = " + listConfigurableSubclassField + ", other = " + that.listConfigurableSubclassField); return false;}
-        if (setDoubleField != null ? !setDoubleField.equals(that.setDoubleField) : that.setDoubleField != null)
+        if (!Objects.equals(setDoubleField, that.setDoubleField))
             {logger.log(Level.INFO,"setDoubleField differs, this = " + setDoubleField + ", other = " + that.setDoubleField); return false;}
-        if (setStringField != null ? !setStringField.equals(that.setStringField) : that.setStringField != null)
+        if (!Objects.equals(setStringField, that.setStringField))
             {logger.log(Level.INFO,"setStringField differs, this = " + setStringField + ", other = " + that.setStringField); return false;}
-        if (setPathField != null ? !setPathField.equals(that.setPathField) : that.setPathField != null) {logger.log(Level.INFO,"setPathField differs, this = " + setPathField + ", other = " + that.setPathField); return false;}
-        if (setConfigurableSubclassField != null ? !setConfigurableSubclassField.equals(that.setConfigurableSubclassField) : that.setConfigurableSubclassField != null)
+        if (!Objects.equals(setPathField, that.setPathField)) {logger.log(Level.INFO,"setPathField differs, this = " + setPathField + ", other = " + that.setPathField); return false;}
+        if (!Objects.equals(setConfigurableSubclassField, that.setConfigurableSubclassField))
             {logger.log(Level.INFO,"setConfigurableSubclassField differs, this = " + setConfigurableSubclassField + ", other = " + that.setConfigurableSubclassField); return false;}
-        if (mapDoubleField != null ? !mapDoubleField.equals(that.mapDoubleField) : that.mapDoubleField != null)
+        if (!Objects.equals(mapDoubleField, that.mapDoubleField))
             {logger.log(Level.INFO,"mapDoubleField differs, this = " + mapDoubleField + ", other = " + that.mapDoubleField); return false;}
-        if (mapStringField != null ? !mapStringField.equals(that.mapStringField) : that.mapStringField != null)
+        if (!Objects.equals(mapStringField, that.mapStringField))
             {logger.log(Level.INFO,"mapStringField differs, this = " + mapStringField + ", other = " + that.mapStringField); return false;}
-        if (mapFileField != null ? !mapFileField.equals(that.mapFileField) : that.mapFileField != null)
+        if (!Objects.equals(mapFileField, that.mapFileField))
             {logger.log(Level.INFO,"mapFileField differs, this = " + mapFileField + ", other = " + that.mapFileField); return false;}
-        if (mapConfigurableSubclassField != null ? !mapConfigurableSubclassField.equals(that.mapConfigurableSubclassField) : that.mapConfigurableSubclassField != null)
+        if (!Objects.equals(mapConfigurableSubclassField, that.mapConfigurableSubclassField))
             {logger.log(Level.INFO,"mapConfigurableSubclassField differs, this = " + mapConfigurableSubclassField + ", other = " + that.mapConfigurableSubclassField); return false;}
-        if (enumSetField != null ? !enumSetField.equals(that.enumSetField) : that.enumSetField != null) {logger.log(Level.INFO,"enumSetField differs, this = " + enumSetField + ", other = " + that.enumSetField); return false;}
+        if (!Objects.equals(enumSetField, that.enumSetField)) {logger.log(Level.INFO,"enumSetField differs, this = " + enumSetField + ", other = " + that.enumSetField); return false;}
         if (atomicIntegerField != null ? atomicIntegerField.intValue() != that.atomicIntegerField.intValue() : that.atomicIntegerField != null)
             {logger.log(Level.INFO,"atomicIntegerField differs, this = " + atomicIntegerField + ", other = " + that.atomicIntegerField); return false;}
         if (atomicLongField != null ? atomicLongField.longValue() != that.atomicLongField.longValue() : that.atomicLongField != null)
             {logger.log(Level.INFO,"atomicLongField differs, this = " + atomicLongField + ", other = " + that.atomicLongField); return false;}
-        if (fileField != null ? !fileField.equals(that.fileField) : that.fileField != null) {logger.log(Level.INFO,"fileField differs, this = " + fileField + ", other = " + that.fileField); return false;}
-        if (pathField != null ? !pathField.equals(that.pathField) : that.pathField != null) {logger.log(Level.INFO,"pathField differs, this = " + pathField + ", other = " + that.pathField); return false;}
+        if (!Objects.equals(fileField, that.fileField)) {logger.log(Level.INFO,"fileField differs, this = " + fileField + ", other = " + that.fileField); return false;}
+        if (!Objects.equals(pathField, that.pathField)) {logger.log(Level.INFO,"pathField differs, this = " + pathField + ", other = " + that.pathField); return false;}
+        if (!Objects.equals(urlField, that.urlField)) {logger.log(Level.INFO,"urlField differs, this = " + urlField + ", other = " + that.urlField); return false;}
+        if (!Objects.equals(dateField, that.dateField)) {logger.log(Level.INFO,"dateField differs, this = " + dateField + ", other = " + that.dateField); return false;}
+        if (!Objects.equals(dateTimeField, that.dateTimeField)) {logger.log(Level.INFO,"dateTimeField differs, this = " + dateTimeField + ", other = " + that.dateTimeField); return false;}
+        if (!Objects.equals(timeField, that.timeField)) {logger.log(Level.INFO,"timeField differs, this = " + timeField + ", other = " + that.timeField); return false;}
         /* java.util.Random doesn't implement equals.
          * if (listRandomField != null ? !listRandomField.equals(that.listRandomField) : that.listRandomField != null)
          * {logger.log(Level.INFO,"listRandomField differs, this = " + listRandomField + ", other = " + that.listRandomField); return false;}
          * if (randomField != null ? !randomField.equals(that.randomField) : that.randomField != null) {logger.log(Level.INFO,"randomField differs, this = " + randomField + ", other = " + that.randomField); return false;}
          */
-        return enumField != null ? enumField.equals(that.enumField) : that.enumField == null;
+        return Objects.equals(enumField, that.enumField);
     }
 
     @Override
@@ -283,6 +304,10 @@ public class AllFieldsConfigurable implements Configurable {
         result = 31 * result + (atomicLongField != null ? atomicLongField.intValue() : 0);
         result = 31 * result + (fileField != null ? fileField.hashCode() : 0);
         result = 31 * result + (pathField != null ? pathField.hashCode() : 0);
+        result = 31 * result + (urlField != null ? urlField.hashCode() : 0);
+        result = 31 * result + (dateField != null ? dateField.hashCode() : 0);
+        result = 31 * result + (dateTimeField != null ? dateTimeField.hashCode() : 0);
+        result = 31 * result + (timeField != null ? timeField.hashCode() : 0);
         /* java.util.Random doesn't do hashCode consistent with equals either.
         result = 31 * result + (listRandomField != null ? listRandomField.hashCode() : 0);
         result = 31 * result + (randomField != null ? randomField.hashCode() : 0);

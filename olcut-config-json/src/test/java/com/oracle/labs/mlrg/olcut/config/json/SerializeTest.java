@@ -28,14 +28,10 @@ public class SerializeTest {
 
     private Path serPath;
 
-    public SerializeTest() {
-    }
-
     @BeforeAll
     public static void setUpClass() throws IOException {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
-
 
     @BeforeEach
     public void setUp() throws IOException {

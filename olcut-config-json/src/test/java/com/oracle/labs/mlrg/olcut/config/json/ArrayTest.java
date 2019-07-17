@@ -5,6 +5,8 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 
 import java.io.IOException;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -15,6 +17,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * A set of tests for array types using Config
  */
 public class ArrayTest {
+
+    @BeforeAll
+    public void setUp() {
+        ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
+    }
 
     @Test
     public void arrayTest() throws IOException {

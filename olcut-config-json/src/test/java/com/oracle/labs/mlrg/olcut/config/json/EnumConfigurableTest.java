@@ -23,14 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class EnumConfigurableTest {
 
-    public EnumConfigurableTest() {
-    }
-
     @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
-
 
     @Test
     public void both() throws IOException {
@@ -47,7 +43,7 @@ public class EnumConfigurableTest {
         assertEquals(EnumConfigurable.Type.B, ec.enum2);
         assertTrue(ec.enumSet1.contains(EnumConfigurable.Type.A), "Missing A");
         assertTrue(ec.enumSet1.contains(EnumConfigurable.Type.B), "Missing B");
-        assertTrue(ec.enumSet1.size() == 2, "Too big: " + ec.enumSet1);
+        assertEquals(2, ec.enumSet1.size(), "Too big: " + ec.enumSet1);
     }
 
     @Test public void defaultSet() throws IOException {
@@ -57,7 +53,7 @@ public class EnumConfigurableTest {
         assertEquals(EnumConfigurable.Type.B, ec.enum2);
         assertTrue(ec.enumSet1.contains(EnumConfigurable.Type.A), "Missing A");
         assertTrue(ec.enumSet1.contains(EnumConfigurable.Type.F), "Missing F");
-        assertTrue(ec.enumSet1.size() == 2, "Too big: " + ec.enumSet1);
+        assertEquals(2, ec.enumSet1.size(), "Too big: " + ec.enumSet1);
     }
 
     @Test

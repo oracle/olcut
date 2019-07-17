@@ -2,7 +2,11 @@ package com.oracle.labs.mlrg.olcut.config;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +54,11 @@ public enum FieldType {
     ATOMIC_LONG(AtomicLong.class),
     FILE(File.class),
     PATH(Path.class),
+    URL(URL.class),
     RANDOM(Random.class),
+    DATE_TIME(OffsetDateTime.class),
+    DATE(LocalDate.class),
+    TIME(OffsetTime.class),
     ENUM(Enum.class);
 
     private static final Class<?> configurableClass = Configurable.class;
@@ -70,7 +78,7 @@ public enum FieldType {
 
     public final static EnumSet<FieldType> simpleTypes = EnumSet.of(BOOLEAN, BYTE, CHAR, SHORT, INTEGER, LONG, FLOAT, DOUBLE, STRING,
                                                                     CONFIGURABLE, ATOMIC_INTEGER,
-                                                                    ATOMIC_LONG, FILE, PATH, RANDOM, ENUM);
+                                                                    ATOMIC_LONG, FILE, PATH, URL, RANDOM, DATE_TIME, DATE, TIME, ENUM);
 
     public final static EnumSet<FieldType> mapTypes = EnumSet.of(MAP);
 

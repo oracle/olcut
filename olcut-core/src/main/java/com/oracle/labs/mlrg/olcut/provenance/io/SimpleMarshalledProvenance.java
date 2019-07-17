@@ -2,25 +2,32 @@ package com.oracle.labs.mlrg.olcut.provenance.io;
 
 import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.PrimitiveProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceException;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil.HashType;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.BooleanProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.ByteProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.CharProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.DateProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.DateTimeProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.DoubleProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.EnumProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.FileProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.FloatProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.HashProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.IntProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.LongProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.ShortProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.StringProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.URIProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.TimeProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.URLProvenance;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.Objects;
 
 /**
@@ -119,7 +126,7 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
     @SuppressWarnings("unchecked")//Suppressing enum casting warnings.
     public <T> PrimitiveProvenance<T> unmarshallPrimitive() {
         if (isReference) {
-            throw new ProvenanceException("Attempted to unmarshall a reference via `unmarshallPrimitive`");
+            throw new ProvenanceException("Attempted to unmarshall a reference via 'unmarshallPrimitive'");
         }
         try {
             Class<?> provClass = Class.forName(provenanceClassName);
@@ -131,6 +138,8 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
                 unmarshalled = new ByteProvenance(key,Byte.parseByte(value));
             } else if (provClass.equals(CharProvenance.class)) {
                 unmarshalled = new CharProvenance(key,value.charAt(0));
+            } else if (provClass.equals(DateProvenance.class)) {
+                unmarshalled = new DateProvenance(key, LocalDate.parse(value));
             } else if (provClass.equals(DateTimeProvenance.class)) {
                 unmarshalled = new DateTimeProvenance(key, OffsetDateTime.parse(value));
             } else if (provClass.equals(DoubleProvenance.class)) {
@@ -139,6 +148,8 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
                 Class<? extends Enum> enumClass = (Class<? extends Enum>) Class.forName(additional);
                 Enum<? extends Enum> enumValue = Enum.valueOf(enumClass,value);
                 unmarshalled = new EnumProvenance<>(key,enumValue);
+            } else if (provClass.equals(FileProvenance.class)) {
+                unmarshalled = new FileProvenance(key,new File(value));
             } else if (provClass.equals(FloatProvenance.class)) {
                 unmarshalled = new FloatProvenance(key,Float.parseFloat(value));
             } else if (provClass.equals(HashProvenance.class)) {
@@ -151,18 +162,20 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
                 unmarshalled = new ShortProvenance(key,Short.parseShort(value));
             } else if (provClass.equals(StringProvenance.class)) {
                 unmarshalled = new StringProvenance(key,value);
-            } else if (provClass.equals(URIProvenance.class)) {
-                unmarshalled = new URIProvenance(key,new URI(value));
+            } else if (provClass.equals(TimeProvenance.class)) {
+                unmarshalled = new TimeProvenance(key, OffsetTime.parse(value));
+            } else if (provClass.equals(URLProvenance.class)) {
+                unmarshalled = new URLProvenance(key,new URL(value));
             } else {
                 throw new ProvenanceException("Unknown Provenance subclass, found " + provClass.getName());
             }
             return unmarshalled;
+        } catch (MalformedURLException e) {
+            throw new ProvenanceException("Failed to parse url for provenance " + key + ".", e);
         } catch (NumberFormatException e) {
             throw new ProvenanceException("Failed to parse number for provenance " + key + ".", e);
         } catch (IllegalArgumentException e) {
             throw new ProvenanceException("Failed to parse enum constant for provenance " + key + ".", e);
-        } catch (URISyntaxException e) {
-            throw new ProvenanceException("Found invalid URI when unmarshalling provenance with key " + key + ".", e);
         } catch (ClassNotFoundException e) {
             throw new ProvenanceException("Failed to load class for " + provenanceClassName, e);
         }
