@@ -3,7 +3,7 @@ package com.oracle.labs.mlrg.olcut.util;
 /**
  * A mutable version of java.lang.Double.
  */
-public class MutableDouble extends Number {
+public class MutableDouble extends MutableNumber {
     private static final long serialVersionUID = 1L;
 
     private double value;
@@ -14,6 +14,10 @@ public class MutableDouble extends Number {
 
     public MutableDouble() {
         value = 0L;
+    }
+
+    public MutableDouble(MutableDouble other) {
+        value = other.value;
     }
 
     public MutableDouble(Number other) {
@@ -87,5 +91,10 @@ public class MutableDouble extends Number {
     @Override
     public String toString() {
         return ""+value;
+    }
+
+    @Override
+    public MutableDouble copy() {
+        return new MutableDouble(value);
     }
 }
