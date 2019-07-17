@@ -3,7 +3,7 @@ package com.oracle.labs.mlrg.olcut.util;
 /**
  * A mutable version of java.lang.Long.
  */
-public class MutableLong extends Number {
+public class MutableLong extends MutableNumber {
     private static final long serialVersionUID = 1L;
 
     private long value;
@@ -14,6 +14,10 @@ public class MutableLong extends Number {
 
     public MutableLong() {
         value = 0L;
+    }
+
+    public MutableLong(MutableLong other) {
+        value = other.value;
     }
 
     public MutableLong(Number other) {
@@ -87,5 +91,10 @@ public class MutableLong extends Number {
     @Override
     public String toString() {
         return ""+value;
+    }
+
+    @Override
+    public MutableLong copy() {
+        return new MutableLong(value);
     }
 }
