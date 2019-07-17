@@ -24,9 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class ImportConfigTest {
 
-    public ImportConfigTest() {
-    }
-
     File f;
 
     @BeforeAll
@@ -34,16 +31,10 @@ public class ImportConfigTest {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }
 
-
     @BeforeEach
     public void setUp() throws IOException {
         f = File.createTempFile("config", ".edn");
         f.deleteOnExit();
-    }
-
-    @AfterEach
-    public void tearDown() {
-        f.delete();
     }
 
     @Test

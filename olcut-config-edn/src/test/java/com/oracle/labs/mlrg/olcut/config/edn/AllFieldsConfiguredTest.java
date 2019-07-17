@@ -5,12 +5,12 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -24,14 +24,14 @@ public class AllFieldsConfiguredTest {
     public void setUp() throws IOException {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
         f = File.createTempFile("all-config", ".edn");
-        //f.deleteOnExit();
+        f.deleteOnExit();
     }
 
     @Test
     public void loadConfig() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("allConfig.edn");
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
-        assertTrue(ac!=null, "Failed to load all-config");
+        assertNotNull(ac, "Failed to load all-config");
     }
 
     @Test

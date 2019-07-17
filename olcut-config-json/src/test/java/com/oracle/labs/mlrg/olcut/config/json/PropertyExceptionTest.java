@@ -15,9 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class PropertyExceptionTest {
 
-    public PropertyExceptionTest() {
-    }
-
     @BeforeAll
     public static void setUpClass() throws IOException {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());

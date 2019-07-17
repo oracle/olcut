@@ -7,10 +7,6 @@ package com.oracle.labs.mlrg.olcut.provenance;
  *
  * When adding a new PrimitiveProvenance the ProvenanceUtil and SimpleMarshalledProvenance
  * classes must also be updated to be taught about the new type.
- *
- * Must implement a public constructor which accepts a series of Strings, one
- * for the key, one which accepts the output of it's toString for
- * the value, along with other information if required.
  */
 public interface PrimitiveProvenance<T> extends Provenance {
 

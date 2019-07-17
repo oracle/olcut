@@ -17,14 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class TypeConfigTest {
     
-    public TypeConfigTest() {
-    }
-
     @BeforeAll
     public static void setUpClass() throws IOException {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
-
 
     @Test
     public void defaultValues() throws IOException {
@@ -73,7 +69,6 @@ public class TypeConfigTest {
         assertEquals(bc1.s, "two");
         assertEquals(bc1.i, 3);
         assertEquals(bc1.d, 6.3, 1E-9);
-               
     }
 
 }

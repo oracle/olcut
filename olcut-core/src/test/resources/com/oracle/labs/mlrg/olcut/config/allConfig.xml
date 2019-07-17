@@ -72,6 +72,10 @@
         <property name="atomicLongField" value="123456789"/>
         <property name="fileField" value="/tmp/a-file.txt"/>
         <property name="pathField" value="/tmp/a-path.txt"/>
+        <property name="urlField" value="file:///tmp/a-file-url.txt"/>
+        <property name="dateField" value="1948-06-21"/>
+        <property name="dateTimeField" value="1949-06-16T20:30:00+01:00"/>
+        <property name="timeField" value="12:34+00:00"/>
         <property name="randomField" value="12345"/>
         <propertylist name="enumSetField">
             <item>A</item>

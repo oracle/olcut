@@ -14,15 +14,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  */
 public class StartableTest {
-
-    public StartableTest() {
-    }
 
     @BeforeAll
     public static void setUpClass() throws IOException {
@@ -33,10 +31,10 @@ public class StartableTest {
     public void simpleTest() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("startableConfig.json");
         StartableConfigurable sc = (StartableConfigurable) cm.lookup("startme");
-        assertTrue(!sc.isDone());
+        assertFalse(sc.isDone());
         sc.join();
         List<String> l = sc.getResult();
-        assertTrue(l.size() == 5);
+        assertEquals(5, l.size());
         for(String s : l) {
             assertEquals(s, "foo");
         }

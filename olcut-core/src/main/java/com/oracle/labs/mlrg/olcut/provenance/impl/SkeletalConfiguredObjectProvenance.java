@@ -13,20 +13,28 @@ import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.BooleanProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.ByteProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.CharProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.DateProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.DateTimeProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.DoubleProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.EnumProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.FileProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.FloatProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.IntProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.LongProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.ShortProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.StringProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.URIProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.TimeProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.URLProvenance;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -151,6 +159,9 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                         case STRING:
                         case FILE:
                         case PATH:
+                        case URL:
+                        case DATE:
+                        case TIME:
                         case ENUM:
                         case CONFIGURABLE:
                         case ATOMIC_INTEGER:
@@ -411,13 +422,37 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 if (o == null) {
                     return Optional.empty();
                 } else {
-                    return Optional.of(new URIProvenance(fieldName, ((File) o).toURI()));
+                    return Optional.of(new FileProvenance(fieldName, (File) o));
                 }
             case PATH:
                 if (o == null) {
                     return Optional.empty();
                 } else {
-                    return Optional.of(new URIProvenance(fieldName, ((Path) o).toUri()));
+                    return Optional.of(new FileProvenance(fieldName, (Path) o));
+                }
+            case URL:
+                if (o == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(new URLProvenance(fieldName, (URL) o));
+                }
+            case DATE_TIME:
+                if (o == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(new DateTimeProvenance(fieldName, (OffsetDateTime) o));
+                }
+            case DATE:
+                if (o == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(new DateProvenance(fieldName, (LocalDate) o));
+                }
+            case TIME:
+                if (o == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(new TimeProvenance(fieldName, (OffsetTime) o));
                 }
             case ENUM:
                 if (o == null) {
@@ -435,11 +470,19 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                     return Optional.of(new ConfiguredObjectProvenanceImpl((Configurable)o, fieldName));
                 }
             case ATOMIC_INTEGER:
-                return Optional.of(new IntProvenance(fieldName, ((AtomicInteger) o).get()));
+                if (o == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(new IntProvenance(fieldName, ((AtomicInteger) o).get()));
+                }
             case ATOMIC_LONG:
-                return Optional.of(new LongProvenance(fieldName, ((AtomicLong) o).get()));
+                if (o == null) {
+                    return Optional.empty();
+                } else {
+                    return Optional.of(new LongProvenance(fieldName, ((AtomicLong) o).get()));
+                }
             case RANDOM:
-                logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + fieldName + "' not recorded.");
+                logger.log(Level.SEVERE, "Random is deprecated and not supported in the provenance system, field '" + fieldName + "' not recorded.");
                 return Optional.empty();
             case BYTE_ARRAY:
             case CHAR_ARRAY:

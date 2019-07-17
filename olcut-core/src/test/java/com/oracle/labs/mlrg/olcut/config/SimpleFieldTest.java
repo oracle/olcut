@@ -1,6 +1,5 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 

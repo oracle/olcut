@@ -23,8 +23,6 @@ public class MapTest {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }
 
-    public MapTest() { }
-
     @Test
     public void mapTest() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("mapConfig.edn");

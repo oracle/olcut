@@ -21,8 +21,6 @@ public class ConfigRandomTest {
         ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
     }
 
-    public ConfigRandomTest() { }
-
     @Test
     public void configRandom() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("randomConfig.edn");

@@ -6,13 +6,17 @@ import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,7 +27,8 @@ import org.junit.jupiter.api.Test;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests reading and writing all valid fields from a config file.
@@ -42,7 +47,7 @@ public class AllFieldsConfiguredTest {
     public void loadConfig() throws IOException {
         ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
-        assertTrue(ac!=null, "Failed to load all-config");
+        assertNotNull(ac, "Failed to load all-config");
     }
 
     @Test
@@ -190,6 +195,14 @@ public class AllFieldsConfiguredTest {
         ac.atomicLongField = new AtomicLong(123456789);
         ac.fileField = new File("/tmp/a-file.txt");
         ac.pathField = Paths.get("/tmp/a-path.txt");
+        try {
+            ac.urlField = new URL("file:///tmp/a-file-url.txt");
+        } catch (MalformedURLException e) {
+            fail("Malformed URL");
+        }
+        ac.dateField = LocalDate.parse("1948-06-21");
+        ac.dateTimeField = OffsetDateTime.parse("1949-06-16T20:30:00+01:00");
+        ac.timeField = OffsetTime.parse("12:34:00+00:00");
         ac.randomField = new Random(1234);
         ac.enumField = AllFieldsConfigurable.Type.F;
 

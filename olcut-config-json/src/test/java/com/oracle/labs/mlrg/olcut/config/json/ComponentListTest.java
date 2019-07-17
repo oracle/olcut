@@ -25,9 +25,6 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class ComponentListTest {
 
-    public ComponentListTest() {
-    }
-
     @BeforeAll
     public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
@@ -38,7 +35,7 @@ public class ComponentListTest {
         ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
         ListConfigurable lc = (ListConfigurable) cm.lookup("simple");
         List<Configurable> l = lc.getList();
-        assertTrue(l.size() == 2);
+        assertEquals(2, l.size());
         for (Configurable c : l) {
             assertNotNull(c);
         }
@@ -60,7 +57,7 @@ public class ComponentListTest {
         ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
         ListConfigurable lc = (ListConfigurable) cm.lookup("typed");
         List<Configurable> l = lc.getList();
-        assertTrue(l.size() == 3);
+        assertEquals(3, l.size());
         for (Configurable c : l) {
             assertNotNull(c);
             assertEquals(c.getClass(), StringConfigurable.class);
@@ -72,35 +69,10 @@ public class ComponentListTest {
         ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
         ListConfigurable lc = (ListConfigurable) cm.lookup("dualtyped");
         List<Configurable> l = lc.getList();
-        assertTrue(l.size() == 5);
+        assertEquals(5, l.size());
         int simp = 0;
         int string = 0;
-        for (int i = 0; i < l.size(); i++) {
-            Configurable c = l.get(i);
-            assertNotNull(c);
-            if(c.getClass().equals(SimpleConfigurable.class)) {
-                simp++;
-            } else if(c.getClass().equals(StringConfigurable.class)) {
-                string++;
-            } else {
-                fail("Unknown class: " + c.getClass());
-            }
-        }
-
-        assertTrue(simp == 2);
-        assertTrue(string == 3);
-    }
-
-    @Test
-    public void comboTypedTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
-        ListConfigurable lc = (ListConfigurable) cm.lookup("combotyped");
-        List<Configurable> l = lc.getList();
-        assertTrue(l.size() == 4);
-        int simp = 0;
-        int string = 0;
-        for (int i = 0; i < l.size(); i++) {
-            Configurable c = l.get(i);
+        for (Configurable c : l) {
             assertNotNull(c);
             if (c.getClass().equals(SimpleConfigurable.class)) {
                 simp++;
@@ -110,8 +82,31 @@ public class ComponentListTest {
                 fail("Unknown class: " + c.getClass());
             }
         }
-        assertTrue(simp == 1);
-        assertTrue(string == 3);
+
+        assertEquals(2, simp);
+        assertEquals(3, string);
+    }
+
+    @Test
+    public void comboTypedTest() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
+        ListConfigurable lc = (ListConfigurable) cm.lookup("combotyped");
+        List<Configurable> l = lc.getList();
+        assertEquals(4, l.size());
+        int simp = 0;
+        int string = 0;
+        for (Configurable c : l) {
+            assertNotNull(c);
+            if (c.getClass().equals(SimpleConfigurable.class)) {
+                simp++;
+            } else if (c.getClass().equals(StringConfigurable.class)) {
+                string++;
+            } else {
+                fail("Unknown class: " + c.getClass());
+            }
+        }
+        assertEquals(1, simp);
+        assertEquals(3, string);
     }
 
     @Test
@@ -119,7 +114,7 @@ public class ComponentListTest {
         ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
         ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearray");
         StringConfigurable[] l = lc.getArray();
-        assertTrue(l.length == 3);
+        assertEquals(3, l.length);
         String firstOne = l[0].one;
         assertEquals("alpha",firstOne);
         String secondOne = l[1].one;

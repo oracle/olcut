@@ -12,12 +12,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -665,6 +670,30 @@ public class PropertySheet<T extends Configurable> {
                 return new File(val);
             case PATH:
                 return Paths.get(val);
+            case DATE:
+                try {
+                    return LocalDate.parse(val);
+                } catch (DateTimeParseException ex) {
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s could not be parsed by LocalDate.parse()", val));
+                }
+            case DATE_TIME:
+                try {
+                    return OffsetDateTime.parse(val);
+                } catch (DateTimeParseException ex) {
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s could not be parsed by OffsetDateTime.parse()", val));
+                }
+            case TIME:
+                try {
+                    return OffsetTime.parse(val);
+                } catch (DateTimeParseException ex) {
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s could not be parsed by OffsetTime.parse()", val));
+                }
+            case URL:
+                try {
+                    return new URL(val);
+                } catch (MalformedURLException ex) {
+                    throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a valid URL", val));
+                }
             case RANDOM:
                 logger.warning("Random @Config files are deprecated for removal in a future version.");
                 try {
