@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class ArrayTest {
 
     @BeforeAll
-    public void setUp() {
+    public static void setUp() {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
 
