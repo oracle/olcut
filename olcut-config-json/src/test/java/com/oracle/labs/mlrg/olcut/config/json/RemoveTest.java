@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class RemoveTest {
 
     @BeforeAll
-    public void setUp() {
+    public static void setUp() {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
 
