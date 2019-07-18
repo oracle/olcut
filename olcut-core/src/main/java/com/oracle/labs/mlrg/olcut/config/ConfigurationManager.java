@@ -158,11 +158,10 @@ public class ConfigurationManager implements Closeable {
     }
 
     /**
-     * Creates a new configuration manager. Initial properties are loaded from the given location. No need to keep the notion
-     * of 'context' around anymore we will just pass around this property manager.
+     * Creates a new configuration manager. Initial configuration are loaded from the given location.
      *
-     * @param path place to load initial properties from
-     * @throws ConfigLoaderException if an error occurs while loading properties from the location
+     * @param path place to load initial configuration from
+     * @throws ConfigLoaderException if an error occurs while loading configuration from the location
      */
     public ConfigurationManager(String path) throws PropertyException, ConfigLoaderException {
     	this(new String[]{"-"+configFileOption.charName(),path},EMPTY_OPTIONS);
@@ -170,14 +169,24 @@ public class ConfigurationManager implements Closeable {
 
 
     /**
-     * Creates a new configuration manager. Initial properties are loaded from the given URL. No need to keep the notion
-     * of 'context' around anymore we will just pass around this property manager.
+     * Creates a new configuration manager. Initial configurations are loaded from the given URL.
      *
-     * @param url URL to load initial properties from
-     * @throws ConfigLoaderException if an error occurs while loading properties from the URL
+     * @param url URL to load initial configuration from
+     * @throws ConfigLoaderException if an error occurs while loading configuration from the URL
      */
     public ConfigurationManager(URL url) throws PropertyException, ConfigLoaderException {
         this(new String[]{"-"+configFileOption.charName(),url.toString()},EMPTY_OPTIONS);
+    }
+
+    /**
+     * Creates a new configuration manager. Initial properties are loaded from the supplied list of locations.
+     *
+     * @param configFilePaths The list of config files to load.
+     * @throws PropertyException if there is a configuration error.
+     * @throws ConfigLoaderException If an error occurs while loading configuration from the URL.
+     */
+    public ConfigurationManager(List<String> configFilePaths) throws PropertyException, ConfigLoaderException {
+        this(createConfigFileList(configFilePaths),EMPTY_OPTIONS);
     }
 
     /**
@@ -357,6 +366,24 @@ public class ConfigurationManager implements Closeable {
         } else {
             this.showCreations = false;
         }
+    }
+
+    /**
+     * Converts a list of strings referencing paths into a comma separated list suitable for parsing
+     * by {@link ConfigurationManager#parseStringList}.
+     * @param configFiles The paths to combine.
+     * @return A two element string array.
+     */
+    private static String[] createConfigFileList(List<String> configFiles) {
+        StringBuilder sb = new StringBuilder();
+
+        for (String s : configFiles) {
+            sb.append(s);
+            sb.append(',');
+        }
+        sb.deleteCharAt(sb.length()-1);
+
+        return new String[]{"-"+configFileOption.charName(),sb.toString()};
     }
 
     /**

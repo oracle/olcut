@@ -1,21 +1,15 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 
 /**
  * A test for using the @Config annotation.
  */
 public class TypeConfigTest {
     
-    public TypeConfigTest() {
-    }
-    
-
     @Test
     public void defaultValues() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("typeConfig.xml");
@@ -32,11 +26,11 @@ public class TypeConfigTest {
     @Test
     public void configuredTypes() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("typeConfig.xml");
-        BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
+        BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("type-a");
         assertEquals(bc1.s, "one");
         assertEquals(bc1.i, 2);
         assertEquals(bc1.d, 3.0, 1E-9);
-        bc1 = (BasicConfigurable) cm1.lookup("b");
+        bc1 = (BasicConfigurable) cm1.lookup("type-b");
         assertEquals(bc1.s, "two");
         assertEquals(bc1.i, 3);
         assertEquals(bc1.d, 6.3, 1E-9);
@@ -45,7 +39,7 @@ public class TypeConfigTest {
     @Test
     public void listTypes() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("typeConfig.xml");
-        ListTypeConfigurable lc1 = (ListTypeConfigurable) cm1.lookup("l1");
+        ListTypeConfigurable lc1 = (ListTypeConfigurable) cm1.lookup("type-list");
         Configurable[] cl = lc1.getList();
         BasicConfigurable bc1 = (BasicConfigurable) cl[0];
         assertEquals(bc1.s, "default");
