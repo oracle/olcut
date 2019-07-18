@@ -21,11 +21,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.JarURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -33,7 +40,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
+import java.util.jar.JarEntry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -155,6 +164,53 @@ public final class ProvenanceUtil {
             logger.log(Level.SEVERE, "IOException when reading from file " + file);
             return bytesToHexString(md.digest());
         }
+    }
+
+    /**
+     * If the url is a file or jar file url, extract the file modified time and return it.
+     * If the file modified time of a jar entry is not available then it tries to
+     * get the creation time.
+     *
+     * Otherwise return {@link Optional#empty}.
+     * @param url The url to check
+     * @return The {@link Optional#of} {@link OffsetDateTime} or {@link Optional#empty}.
+     */
+    public static Optional<OffsetDateTime> getModifiedTime(URL url) {
+        String protocol = url.getProtocol();
+        try {
+            if (protocol.equals("file")) {
+                File f = new File(url.toURI());
+                long modifiedTime = f.lastModified();
+                if (modifiedTime != 0L) {
+                    OffsetDateTime time = OffsetDateTime.ofInstant(Instant.ofEpochMilli(modifiedTime), ZoneId.systemDefault());
+                    return Optional.of(time);
+                }
+            } else if (protocol.equals("jar")) {
+                URLConnection con = url.openConnection();
+                if (con instanceof JarURLConnection) {
+                    JarURLConnection jarCon = (JarURLConnection) con;
+                    JarEntry entry = jarCon.getJarEntry();
+                    if (entry != null) {
+                        FileTime modifiedTime = entry.getLastModifiedTime();
+                        if (modifiedTime != null) {
+                            OffsetDateTime time = OffsetDateTime.ofInstant(modifiedTime.toInstant(), ZoneId.systemDefault());
+                            return Optional.of(time);
+                        } else {
+                            FileTime creationTime = entry.getCreationTime();
+                            if (creationTime != null) {
+                                OffsetDateTime time = OffsetDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault());
+                                return Optional.of(time);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (URISyntaxException e) {
+            logger.log(Level.WARNING,"Error parsing supplied url, failed to find modified time for " + url,e);
+        } catch (IOException e) {
+            logger.log(Level.WARNING,"IOException when connecting to jar url, failed to find modified time for " + url,e);
+        }
+        return Optional.empty();
     }
 
     /**
