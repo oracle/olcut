@@ -167,6 +167,23 @@ public final class ProvenanceUtil {
     }
 
     /**
+     * Unwraps a {@link ListProvenance} of {@link PrimitiveProvenance}s into a list
+     * of the values those provenances hold.
+     * @param listProvenance The list to unwrap.
+     * @param <T> The type of the primitive provenance value.
+     * @return A list of the stored values.
+     */
+    public static <T, U extends PrimitiveProvenance<T>> List<T> unwrap(ListProvenance<U> listProvenance) {
+        List<T> output = new ArrayList<>();
+
+        for (PrimitiveProvenance<T> p : listProvenance) {
+            output.add(p.getValue());
+        }
+
+        return output;
+    }
+
+    /**
      * If the url is a file or jar file url, extract the file modified time and return it.
      * If the file modified time of a jar entry is not available then it tries to
      * get the creation time.
