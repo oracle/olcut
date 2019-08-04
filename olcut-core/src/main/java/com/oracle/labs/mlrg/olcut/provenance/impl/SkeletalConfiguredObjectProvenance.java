@@ -160,6 +160,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                         case FILE:
                         case PATH:
                         case URL:
+                        case DATE_TIME:
                         case DATE:
                         case TIME:
                         case ENUM:

@@ -695,7 +695,7 @@ public class PropertySheet<T extends Configurable> {
                     throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a valid URL", val));
                 }
             case RANDOM:
-                logger.warning("Random @Config files are deprecated for removal in a future version.");
+                logger.warning("@Config on Random fields is deprecated for removal in a future version.");
                 try {
                     return new Random(Integer.parseInt(val));
                 } catch (NumberFormatException ex) {
