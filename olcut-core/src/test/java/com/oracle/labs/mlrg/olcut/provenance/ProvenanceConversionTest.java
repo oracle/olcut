@@ -1,5 +1,6 @@
 package com.oracle.labs.mlrg.olcut.provenance;
 
+import com.oracle.labs.mlrg.olcut.config.AllFieldsConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
@@ -43,6 +44,24 @@ public class ProvenanceConversionTest {
     }
 
     @Test
+    public void largeConversionTest() {
+        ConfigurationManager cm1 = new ConfigurationManager("/com/oracle/labs/mlrg/olcut/config/allConfig.xml");
+        AllFieldsConfigurable e = (AllFieldsConfigurable) cm1.lookup("all-config");
+        assertNotNull(e, "Failed to load example config");
+
+        List<ConfigurationData> configs = ProvenanceUtil.extractConfiguration(e.getProvenance());
+        assertEquals(14,configs.size());
+
+        ConfigurationManager cm2 = new ConfigurationManager();
+        cm2.addConfiguration(configs);
+
+        AllFieldsConfigurable newE = (AllFieldsConfigurable) cm2.lookup("allfieldsconfigurable-0");
+        assertNotNull(newE, "Failed to load config from provenance");
+
+        assertEquals(e,newE);
+    }
+
+    @Test
     public void marshallingTest() {
         ConfigurationManager cm1 = new ConfigurationManager("/com/oracle/labs/mlrg/olcut/provenance/example-provenance-config.xml");
         ExampleProvenancableConfigurable e = (ExampleProvenancableConfigurable) cm1.lookup("example-config");
@@ -52,6 +71,22 @@ public class ProvenanceConversionTest {
 
         List<ObjectMarshalledProvenance> marshalledProvenances = ProvenanceUtil.marshalProvenance(provenance);
         assertEquals(8,marshalledProvenances.size());
+
+        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(marshalledProvenances);
+
+        assertEquals(provenance,unmarshalledProvenance);
+    }
+
+    @Test
+    public void largeMarshallingTest() {
+        ConfigurationManager cm1 = new ConfigurationManager("/com/oracle/labs/mlrg/olcut/config/allConfig.xml");
+        AllFieldsConfigurable e = (AllFieldsConfigurable) cm1.lookup("all-config");
+        assertNotNull(e, "Failed to load example config");
+
+        ObjectProvenance provenance = e.getProvenance();
+
+        List<ObjectMarshalledProvenance> marshalledProvenances = ProvenanceUtil.marshalProvenance(provenance);
+        assertEquals(4,marshalledProvenances.size());
 
         ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(marshalledProvenances);
 

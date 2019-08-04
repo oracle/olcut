@@ -1,5 +1,9 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.provenance.ConfiguredObjectProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.Provenancable;
+import com.oracle.labs.mlrg.olcut.provenance.impl.ConfiguredObjectProvenanceImpl;
+
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
@@ -21,7 +25,7 @@ import java.util.logging.Logger;
 /**
  * A Configurable with all the possible field types.
  */
-public class AllFieldsConfigurable implements Configurable {
+public class AllFieldsConfigurable implements Configurable, Provenancable<ConfiguredObjectProvenance> {
     private static final Logger logger = Logger.getLogger(AllFieldsConfigurable.class.getName());
 
     public enum Type {A, B, C, D, E, F};
@@ -172,6 +176,65 @@ public class AllFieldsConfigurable implements Configurable {
     public Type enumField;
 
     @Override
+    public String toString() {
+        return "AllFieldsConfigurable{" +
+                "name='" + name + '\'' +
+                ", boolField=" + boolField +
+                ", BoolField=" + BoolField +
+                ", byteField=" + byteField +
+                ", ByteField=" + ByteField +
+                ", charField=" + charField +
+                ", characterField=" + characterField +
+                ", shortField=" + shortField +
+                ", ShortField=" + ShortField +
+                ", intField=" + intField +
+                ", integerField=" + integerField +
+                ", longField=" + longField +
+                ", LongField=" + LongField +
+                ", floatField=" + floatField +
+                ", FloatField=" + FloatField +
+                ", doubleField=" + doubleField +
+                ", DoubleField=" + DoubleField +
+                ", stringField='" + stringField + '\'' +
+                ", byteArrayField=" + Arrays.toString(byteArrayField) +
+                ", charArrayField=" + Arrays.toString(charArrayField) +
+                ", shortArrayField=" + Arrays.toString(shortArrayField) +
+                ", intArrayField=" + Arrays.toString(intArrayField) +
+                ", longArrayField=" + Arrays.toString(longArrayField) +
+                ", floatArrayField=" + Arrays.toString(floatArrayField) +
+                ", doubleArrayField=" + Arrays.toString(doubleArrayField) +
+                ", configurableField=" + configurableField +
+                ", configurableSubclassField=" + configurableSubclassField +
+                ", stringArrayField=" + Arrays.toString(stringArrayField) +
+                ", configurableArrayField=" + Arrays.toString(configurableArrayField) +
+                ", configurableSubclassArrayField=" + Arrays.toString(configurableSubclassArrayField) +
+                ", listDoubleField=" + listDoubleField +
+                ", listStringField=" + listStringField +
+                ", listRandomField=" + listRandomField +
+                ", listConfigurableSubclassField=" + listConfigurableSubclassField +
+                ", setDoubleField=" + setDoubleField +
+                ", setStringField=" + setStringField +
+                ", setPathField=" + setPathField +
+                ", setConfigurableSubclassField=" + setConfigurableSubclassField +
+                ", mapDoubleField=" + mapDoubleField +
+                ", mapStringField=" + mapStringField +
+                ", mapFileField=" + mapFileField +
+                ", mapConfigurableSubclassField=" + mapConfigurableSubclassField +
+                ", enumSetField=" + enumSetField +
+                ", atomicIntegerField=" + atomicIntegerField +
+                ", atomicLongField=" + atomicLongField +
+                ", fileField=" + fileField +
+                ", pathField=" + pathField +
+                ", urlField=" + urlField +
+                ", dateField=" + dateField +
+                ", dateTimeField=" + dateTimeField +
+                ", timeField=" + timeField +
+                ", randomField=" + randomField +
+                ", enumField=" + enumField +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -186,7 +249,7 @@ public class AllFieldsConfigurable implements Configurable {
         if (longField != that.longField) {logger.log(Level.INFO,"longField differs, this = " + longField + ", other = " + that.longField); return false;}
         if (Float.compare(that.floatField, floatField) != 0) {logger.log(Level.INFO,"floatField differs, this = " + floatField + ", other = " + that.floatField); return false;}
         if (Double.compare(that.doubleField, doubleField) != 0) {logger.log(Level.INFO,"doubleField differs, this = " + doubleField + ", other = " + that.doubleField); return false;}
-        if (!Objects.equals(name, that.name)) {logger.log(Level.INFO,"name differs, this = " + name + ", other = " + that.name); return false;}
+        //if (!Objects.equals(name, that.name)) {logger.log(Level.INFO,"name differs, this = " + name + ", other = " + that.name); return false;}
         if (!Objects.equals(BoolField, that.BoolField)) {logger.log(Level.INFO,"BoolField differs, this = " + BoolField + ", other = " + that.BoolField); return false;}
         if (!Objects.equals(ByteField, that.ByteField)) {logger.log(Level.INFO,"ByteField differs, this = " + ByteField + ", other = " + that.ByteField); return false;}
         if (!Objects.equals(characterField, that.characterField)) {logger.log(Level.INFO,"characterField differs, this = " + characterField + ", other = " + that.characterField); return false;}
@@ -314,5 +377,10 @@ public class AllFieldsConfigurable implements Configurable {
         */
         result = 31 * result + (enumField != null ? enumField.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public ConfiguredObjectProvenance getProvenance() {
+        return new ConfiguredObjectProvenanceImpl(this,"Test");
     }
 }
