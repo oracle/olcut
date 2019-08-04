@@ -123,8 +123,8 @@
             <item>pi</item>
         </propertylist>
         <propertylist name="setPathField">
-            <item>first-path</item>
-            <item>second-path</item>
+            <item>/foo/bar/first-path</item>
+            <item>/foo/bar/second-path</item>
         </propertylist>
         <propertylist name="setConfigurableSubclassField">
             <item>first-configurable</item>
@@ -140,9 +140,9 @@
             <entry key="second" value="B"/>
         </propertymap>
         <propertymap name="mapFileField">
-            <entry key="first" value="first-file"/>
-            <entry key="second" value="second-file"/>
-            <entry key="third" value="third-file"/>
+            <entry key="first" value="/foo/bar/first-file"/>
+            <entry key="second" value="/foo/bar/second-file"/>
+            <entry key="third" value="/foo/bar/third-file"/>
         </propertymap>
         <propertymap name="mapConfigurableSubclassField">
             <entry key="first" value="first-configurable"/>

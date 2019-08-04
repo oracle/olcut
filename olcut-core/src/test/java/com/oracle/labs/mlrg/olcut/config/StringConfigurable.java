@@ -1,5 +1,9 @@
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.provenance.ConfiguredObjectProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.Provenancable;
+import com.oracle.labs.mlrg.olcut.provenance.impl.ConfiguredObjectProvenanceImpl;
+
 import java.io.Serializable;
 import java.util.logging.Logger;
 
@@ -7,7 +11,7 @@ import java.util.logging.Logger;
  * A configurable with a few strings. Uses the @Config annotation to directly
  * annotate configurable members.
  */
-public class StringConfigurable implements Configurable, Serializable {
+public class StringConfigurable implements Configurable, Provenancable<ConfiguredObjectProvenance>, Serializable {
 
     protected Logger logger;
 
@@ -49,5 +53,10 @@ public class StringConfigurable implements Configurable, Serializable {
         result = 31 * result + two.hashCode();
         result = 31 * result + three.hashCode();
         return result;
+    }
+
+    @Override
+    public ConfiguredObjectProvenance getProvenance() {
+        return new ConfiguredObjectProvenanceImpl(this,"StringConfigurable");
     }
 }

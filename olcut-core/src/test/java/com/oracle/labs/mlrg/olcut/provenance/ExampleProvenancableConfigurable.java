@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- *
+ * Test class for the provenance system.
  */
 public final class ExampleProvenancableConfigurable implements Configurable, Provenancable<ExampleProvenance> {
 
