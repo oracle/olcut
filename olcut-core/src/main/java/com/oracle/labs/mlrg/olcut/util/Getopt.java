@@ -26,13 +26,13 @@ package com.oracle.labs.mlrg.olcut.util;
 
 import java.util.logging.Logger;
 
-public class Getopt {
+public final class Getopt {
 	private static final Logger logger = Logger.getLogger(Getopt.class.getName());
 
-	private String[] argList = null;        // the argument List to be parsed
-	private String optStr = null;        // the string of arguments in the form "ab:" see getopt man
-	public String optArg = null;    // argument of an option
-	public int optInd = 0;        // index of the option
+	private final String[] argList;// the argument List to be parsed
+	private final String optStr;   // the string of arguments in the form "ab:" see getopt man
+	public String optArg;          // argument of an option
+	public int optInd = 0;         // index of the option
 	private int nbArgs = 0;        // number of args in the argList
 	private int optPos = 1;        // position of option letter in current argument scanned
 

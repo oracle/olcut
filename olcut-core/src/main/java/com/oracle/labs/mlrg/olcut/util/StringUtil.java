@@ -18,7 +18,7 @@ import java.text.Normalizer;
 /**
  * String utilities.
  */
-public abstract class StringUtil {
+public final class StringUtil {
 
     // Unconstructable.
     private StringUtil() { }
@@ -110,7 +110,6 @@ public abstract class StringUtil {
     	return text;
     }
 
-    
 }
 
   

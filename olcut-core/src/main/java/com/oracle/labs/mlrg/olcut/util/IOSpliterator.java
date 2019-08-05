@@ -8,7 +8,7 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 
 /**
- *
+ * A {@link Spliterator} which doesn't grow it's buffer.
  * @param <T> The type of the contained object.
  */
 public abstract class IOSpliterator<T> implements Spliterator<T> {
