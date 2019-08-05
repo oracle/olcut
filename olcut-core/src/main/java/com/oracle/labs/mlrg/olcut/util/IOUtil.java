@@ -157,7 +157,7 @@ public abstract class IOUtil {
 
 
     /**
-     * Makes a writer wrapped around the string. Either zipped or not.
+     * Makes a writer wrapped around the specified file. Either zipped or not.
      * @param filename The output filename.
      * @param zipped Is the file zipped?
      * @return A PrintWriter wrapped around the appropriate stream.
@@ -356,12 +356,7 @@ public abstract class IOUtil {
     }
 
     public static PrintStream getPrintStream(String path, int bufferSize) {
-        try {
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(path), bufferSize);
-            return new PrintStream(bos, false);
-        } catch (FileNotFoundException fnfe) {
-            throw new RuntimeException(fnfe);
-        }
+        return getPrintStream(new File(path),bufferSize);
     }
 
     public static PrintStream getPrintStream(File file, int bufferSize) {
