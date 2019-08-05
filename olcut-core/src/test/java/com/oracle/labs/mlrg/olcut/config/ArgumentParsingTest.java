@@ -1,6 +1,6 @@
 package com.oracle.labs.mlrg.olcut.config;
 
-
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -16,6 +16,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,8 +24,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
-
 public class ArgumentParsingTest {
+
+    @BeforeAll
+    public static void setup() {
+        Logger logger = Logger.getLogger(PropertySheet.class.getName());
+        logger.setLevel(Level.SEVERE);
+    }
 
     @Test
     public void testStringSplitting() {
