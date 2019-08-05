@@ -55,11 +55,12 @@ public enum FieldType {
     FILE(File.class),
     PATH(Path.class),
     URL(URL.class),
-    RANDOM(Random.class),
     DATE_TIME(OffsetDateTime.class),
     DATE(LocalDate.class),
     TIME(OffsetTime.class),
-    ENUM(Enum.class);
+    ENUM(Enum.class),
+    @Deprecated
+    RANDOM(Random.class);
 
     private static final Class<?> configurableClass = Configurable.class;
     private static final Class<?> configurableArrayClass = Configurable[].class;
