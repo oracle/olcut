@@ -146,7 +146,10 @@ The supported list of annotated field types are:
     * AtomicLong
     * File
     * Path
-    * Random
+    * LocalDate
+    * OffsetTime
+    * OffsetDateTime
+    * Random (deprecated marked for removal in the next major release)
     * Enum
 
 ## Global Properties
@@ -406,6 +409,14 @@ list of fully qualified class names which implement `FileFormatFactory`. For exa
 
 will insert the JsonConfigFactory into the configuration manager before the
 configuration is loaded.
+
+# Provenance
+
+OLCUT provides a system for extracting the state of configurable objects into 
+immutable Provenance objects used to record the state of a computation. It's heavily
+used in Tribuo to record a trainer and dataset configuration. It can optionally include
+non-configurable state. It supports conversion to a marshalled format which can be
+easily serialised and deserialised from JSON.
 
 # Command Interpreter
 
