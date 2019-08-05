@@ -22,7 +22,6 @@ public class NestedConfigurablesTest {
 
     @BeforeAll
     public static void setUpClass() throws Exception {
-        System.out.println("setting up json config factory");
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
 

@@ -5,6 +5,11 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.oracle.labs.mlrg.olcut.config.PropertySheet;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class AllFieldsConfiguredTest {
 
-    File f;
+    private File f;
+
+    @BeforeAll
+    public static void setup() {
+        Logger logger = Logger.getLogger(PropertySheet.class.getName());
+        logger.setLevel(Level.SEVERE);
+    }
 
     @BeforeEach
     public void setUp() throws IOException {

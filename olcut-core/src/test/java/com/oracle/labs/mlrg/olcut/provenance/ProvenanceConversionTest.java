@@ -3,9 +3,12 @@ package com.oracle.labs.mlrg.olcut.provenance;
 import com.oracle.labs.mlrg.olcut.config.AllFieldsConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.PropertySheet;
+import com.oracle.labs.mlrg.olcut.provenance.impl.SkeletalConfiguredObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.IntProvenance;
 import com.oracle.labs.mlrg.olcut.util.Pair;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -16,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SplittableRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,6 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  */
 public class ProvenanceConversionTest {
+    @BeforeAll
+    public static void setup() {
+        Logger logger = Logger.getLogger(PropertySheet.class.getName());
+        logger.setLevel(Level.SEVERE);
+        logger = Logger.getLogger(SkeletalConfiguredObjectProvenance.class.getName());
+        logger.setLevel(Level.OFF);
+    }
 
     @Test
     public void conversionTest() {

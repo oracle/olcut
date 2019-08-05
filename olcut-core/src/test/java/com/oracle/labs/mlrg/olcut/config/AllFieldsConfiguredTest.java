@@ -21,6 +21,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +39,13 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class AllFieldsConfiguredTest {
 
-    File f;
+    private File f;
+
+    @BeforeAll
+    public static void setup() {
+        Logger logger = Logger.getLogger(PropertySheet.class.getName());
+        logger.setLevel(Level.SEVERE);
+    }
 
     @BeforeEach
     public void setUp() throws IOException {
