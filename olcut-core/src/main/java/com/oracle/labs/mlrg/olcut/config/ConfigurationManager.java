@@ -952,6 +952,7 @@ public class ConfigurationManager implements Closeable {
     /**
      * Adds a set of properties at the given URL to the current configuration
      * manager.
+     * @param url The URL of the configuration file to load.
      */
     public void addProperties(URL url) throws ConfigLoaderException {
         configURLs.add(url);
@@ -1157,6 +1158,7 @@ public class ConfigurationManager implements Closeable {
      * necessary.
      *
      * @param instanceName the name of the component that we want.
+     * @param reuseComponent If true creates a fresh instance of the desired component.
      * @return the instantiated component, or <code>null</code> if no such named
      * component exists in this configuration.
      * @throws InternalConfigurationException if there is some error instantiating the
@@ -1254,10 +1256,10 @@ public class ConfigurationManager implements Closeable {
      *
      * @param c the class that we want
      * @param cl a listener for things of this type
+     * @param <T> The type of the Configurable expected.
      * @return a component of the given type, or <code>null</code> if there are
      * no components of the given type.
      */
-
     public <T extends Configurable> T lookup(Class<T> c, ComponentListener<T> cl) {
         List<T> comps = lookupAll(c, cl);
         if(comps.isEmpty()) {
@@ -1267,6 +1269,12 @@ public class ConfigurationManager implements Closeable {
         return comps.get(0);
     }
 
+    /**
+     * Looks up all the components of a given type, returning a list of them.
+     * @param c The class of component to lookup.
+     * @param <T> The type of the component.
+     * @return A list containing all instances of the desired class this configuration manager knows about.
+     */
     @SuppressWarnings("unchecked") // Casts to T are implicitly checked as we use Class<T> to find the names.
     public <T extends Configurable> List<T> lookupAll(Class<T> c) {
         List<T> ret = new ArrayList<>();
@@ -1307,6 +1315,7 @@ public class ConfigurationManager implements Closeable {
      * @param c the class that we want to lookup
      * @param cl a listener that will report when components of the given type
      * are added or removed
+     * @param <T> The type of the component.
      * @return a list of all the components with the given class name as their type.
      */
     public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl) {
@@ -1318,6 +1327,8 @@ public class ConfigurationManager implements Closeable {
      * a given type.  This will not instantiate the components.
      *
      * @param c the class of the components that we want to look up.
+     * @param <T> The type of the component.
+     * @return A list of component names.
      */
     public <T extends Configurable> List<String> listAll(Class<T> c) {
         List<String> ret = new ArrayList<>();
@@ -1462,6 +1473,7 @@ public class ConfigurationManager implements Closeable {
      * Returns a global property.
      *
      * @param propertyName The name of the global property or <code>null</code> if no such property exists
+     * @return The value associated with the named global property.
      */
     public String getGlobalProperty(String propertyName) {
         GlobalProperty globProp = globalProperties.get(propertyName);
@@ -1472,8 +1484,9 @@ public class ConfigurationManager implements Closeable {
     }
 
     /**
-     * Returns the url of the xml-configuration which defined this configuration or <code>null</code>  if it was created
-     * dynamically.
+     * Returns the urls of the configuration which defined this configuration or an empty list
+     * if it was created dynamically.
+     * @return The list of URLs this ConfigurationManager contains.
      */
     public List<URL> getConfigURLs() {
         return configURLs;
@@ -1510,6 +1523,8 @@ public class ConfigurationManager implements Closeable {
     /**
      * Test whether the given configuration manager instance equals this instance in terms of same configuration.
      * This equals implementation does not care about instantiation of components.
+     * @param obj The object to compare to.
+     * @return true if the object contains the same configurations.
      */
     @Override
     public boolean equals(Object obj) {
@@ -1710,6 +1725,7 @@ public class ConfigurationManager implements Closeable {
      * @param configurable the configurable component to import
      * @param name the unique name to use for the component. This name will be
      * used to prefix any embedded components.
+     * @return the name given to the imported configurable.
      */
     public String importConfigurable(Configurable configurable,
                                      String name) throws PropertyException {

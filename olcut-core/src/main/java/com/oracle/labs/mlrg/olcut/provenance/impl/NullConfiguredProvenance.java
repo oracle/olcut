@@ -19,6 +19,11 @@ public final class NullConfiguredProvenance implements ConfiguredObjectProvenanc
 
     private final String className;
 
+    /**
+     * Creates an empty provenance object representing a null
+     * in some host class.
+     * @param className The type of the field that was null.
+     */
     public NullConfiguredProvenance(String className) {
         this.className = className;
     }
