@@ -17,6 +17,13 @@ import java.util.Map;
 public final class ConfiguredObjectProvenanceImpl extends SkeletalConfiguredObjectProvenance {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Constructs a ConfiguredObjectProvenanceImpl from the host object by inspecting it's
+     * fields with reflection.
+     * @param host The object to create Provenance from.
+     * @param hostTypeStringName The type name to use in this provenance's toString.
+     * @param <T> The type of the host object.
+     */
     public <T extends Configurable> ConfiguredObjectProvenanceImpl(T host, String hostTypeStringName) {
         super(host,hostTypeStringName);
     }
@@ -34,6 +41,12 @@ public final class ConfiguredObjectProvenanceImpl extends SkeletalConfiguredObje
         super(extractProvenanceInfo(map));
     }
 
+    /**
+     * Extracts the class name and host short name provenances. Assumes the rest of the
+     * map entries are configured parameters.
+     * @param map The Map of provenance entries.
+     * @return An extracted info object with the class name and host short name parsed out.
+     */
     protected static ExtractedInfo extractProvenanceInfo(Map<String,Provenance> map) {
         String className;
         String hostTypeStringName;

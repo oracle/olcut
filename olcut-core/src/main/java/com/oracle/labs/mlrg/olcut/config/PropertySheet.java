@@ -164,7 +164,8 @@ public class PropertySheet<T extends Configurable> {
     }
 
     /**
-     * Returns true if the owner of this property sheet is already instantiated.
+     * Is this property sheet instantiated?
+     * @return true if the owner of this property sheet is already instantiated.
      */
     public synchronized boolean isInstantiated() {
         return owner != null;
@@ -177,6 +178,7 @@ public class PropertySheet<T extends Configurable> {
     /**
      * Returns the owner of this property sheet. In most cases this will be the
      * configurable instance which was instrumented by this property sheet.
+     * @return the configurable represented by this property sheet.
      */
     public T getOwner() {
         return getOwner(null);
@@ -187,8 +189,9 @@ public class PropertySheet<T extends Configurable> {
      * configurable instance which was instrumented by this property sheet.
      *
      * @param reuseComponent if <code>true</code>, a previously configured
-     * component will be returned, if there is one. If <code>false</code> a
+     * component will be returned, if available. If <code>false</code> a
      * newly instantiated and configured component will be returned.
+     * @return the configurable represented by this property sheet.
      */
     public synchronized T getOwner(boolean reuseComponent) {
         return getOwner(null, reuseComponent);
@@ -197,11 +200,22 @@ public class PropertySheet<T extends Configurable> {
     /**
      * Returns the owner of this property sheet. In most cases this will be the
      * configurable instance which was instrumented by this property sheet.
+     * @param cl The component listener to trigger if this instantiates a configurable.
+     * @return the configurable represented by this property sheet.
      */
     public synchronized T getOwner(ComponentListener<T> cl) {
         return getOwner(cl, true);
     }
 
+    /**
+     * Returns the owner of this property sheet. In most cases this will be the
+     * configurable instance which was instrumented by this property sheet.
+     * @param cl The component listener to trigger if this instantiates a configurable.
+     * @param reuseComponent if <code>true</code>, a previously configured
+     * component will be returned, if available. If <code>false</code> a
+     * newly instantiated and configured component will be returned.
+     * @return the configurable represented by this property sheet.
+     */
     public synchronized T getOwner(ComponentListener<T> cl, boolean reuseComponent) {
         try {
             if (!isInstantiated() || !reuseComponent) {
@@ -247,7 +261,7 @@ public class PropertySheet<T extends Configurable> {
                     logger.info(String.format("Creating %s type %s", instanceName,
                             ownerClass.getName()));
                 }
-                T obj = AccessController.doPrivileged((PrivilegedExceptionAction<T>) () -> {
+                owner = AccessController.doPrivileged((PrivilegedExceptionAction<T>) () -> {
                             T newObj;
                             try {
                                 Constructor<T> constructor = ownerClass.getDeclaredConstructor();
@@ -266,7 +280,6 @@ public class PropertySheet<T extends Configurable> {
                             return newObj;
                         }
                 );
-                owner = obj;
                 try {
                     owner.postConfig();
                 } catch (IOException e) {
@@ -300,6 +313,7 @@ public class PropertySheet<T extends Configurable> {
      *
      * @param o the object we're setting values for
      * @param ps the property sheet with the values that we want to set.
+     * @param <T> The type of the configurable.
      */
     private static <T extends Configurable> void setConfiguredFields(T o, PropertySheet ps) throws PropertyException, IllegalAccessException {
         Class<? extends Configurable> curClass = o.getClass();
@@ -755,6 +769,7 @@ public class PropertySheet<T extends Configurable> {
 
     /**
      * Returns the class of the owner configurable of this property sheet.
+     * @return The class of the configurable represented by this property sheet.
      */
     public Class<T> getConfigurableClass() {
         return ownerClass;
@@ -799,6 +814,7 @@ public class PropertySheet<T extends Configurable> {
     /**
      * Gets the size of the property sheet, that is, the number of properties
      * that it contains.
+     * @return the number of configured fields.
      */
     public int size() {
         return propValues.size();
@@ -806,6 +822,7 @@ public class PropertySheet<T extends Configurable> {
 
     /**
      * Returns the names of registered properties of this PropertySheet object.
+     * @return the names of configured fields in this property sheet.
      */
     public Set<String> getRegisteredProperties() {
         return Collections.unmodifiableSet(registeredProperties.keySet());

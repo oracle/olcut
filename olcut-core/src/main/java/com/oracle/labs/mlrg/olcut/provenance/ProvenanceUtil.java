@@ -171,6 +171,7 @@ public final class ProvenanceUtil {
      * of the values those provenances hold.
      * @param listProvenance The list to unwrap.
      * @param <T> The type of the primitive provenance value.
+     * @param <U> The type of the primitive provenance instance.
      * @return A list of the stored values.
      */
     public static <T, U extends PrimitiveProvenance<T>> List<T> unwrap(ListProvenance<U> listProvenance) {
@@ -178,6 +179,24 @@ public final class ProvenanceUtil {
 
         for (PrimitiveProvenance<T> p : listProvenance) {
             output.add(p.getValue());
+        }
+
+        return output;
+    }
+
+    /**
+     * Unwraps a {@link MapProvenance} of {@link PrimitiveProvenance}s into a map from string
+     * to the values those provenances hold.
+     * @param mapProvenance The map to unwrap.
+     * @param <T> The type of the primitive provenance value.
+     * @param <U> The type of the primitive provenance instance.
+     * @return A map of the stored values.
+     */
+    public static <T, U extends PrimitiveProvenance<T>> Map<String,T> unwrap(MapProvenance<U> mapProvenance) {
+        Map<String,T> output = new HashMap<>();
+
+        for (Map.Entry<String,U> p : mapProvenance.getMap().entrySet()) {
+            output.put(p.getKey(),p.getValue().getValue());
         }
 
         return output;

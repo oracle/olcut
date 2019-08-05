@@ -39,8 +39,10 @@ public class GlobalProperties extends ImmutableGlobalProperties {
     /**
      * Adds a value to this GlobalProperties. Throws PropertyException if the
      * name does not conform to the {@link GlobalProperty#globalSymbolPattern}.
-     * @param propertyName
-     * @param value
+     *
+     * It overwrites values if they already exist.
+     * @param propertyName The name of the new global property.
+     * @param value The value for the new global property.
      * @throws PropertyException If the name is invalid.
      */
     public void setValue(String propertyName, String value) throws PropertyException {
@@ -50,8 +52,10 @@ public class GlobalProperties extends ImmutableGlobalProperties {
     /**
      * Adds a value to this GlobalProperties. Throws PropertyException if the
      * name does not conform to the {@link GlobalProperty#globalSymbolPattern}.
-     * @param propertyName
-     * @param value
+     *
+     * It overwrites values if they already exist.
+     * @param propertyName The name of the new global property.
+     * @param value The value for the new global property.
      * @throws PropertyException If the name is invalid.
      */
     public void setValue(String propertyName, GlobalProperty value) throws PropertyException {
@@ -63,12 +67,21 @@ public class GlobalProperties extends ImmutableGlobalProperties {
         map.put(propertyName, value);
     }
 
+    /**
+     * Adds all the global properties from the other {@link GlobalProperties},
+     * overwriting properties with the same name.
+     * @param otherGP The global properties to add.
+     */
     public void putAll(GlobalProperties otherGP) {
         for (Map.Entry<String,GlobalProperty> p : otherGP) {
             map.put(p.getKey(),p.getValue());
         }
     }
 
+    /**
+     * Removes the specified global property if it exists.
+     * @param key The property name to remove.
+     */
     public void remove(String key) {
         map.remove(key);
     }

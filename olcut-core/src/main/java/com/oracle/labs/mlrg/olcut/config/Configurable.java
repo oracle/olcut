@@ -43,7 +43,7 @@ public interface Configurable {
      * Uses the configured variables, which are set up by the configuration
      * system before this method is called, to do any post variable configuration
      * setup.
-     * @throws PropertyException
+     * @throws PropertyException if the object is misconfigured or violates class invariants.
      * @throws IOException As it may be a remote component, and RemoteException is a subclass of IOException.
      */
     default public void postConfig() throws PropertyException, IOException {
