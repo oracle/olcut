@@ -181,22 +181,43 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
         }
     }
 
+    /**
+     * Is this a reference rather than a primitive type.
+     * @return true if it's a reference to an {@link ObjectMarshalledProvenance}.
+     */
     public boolean isReference() {
         return isReference;
     }
 
+    /**
+     * The field name where this provenance was extracted.
+     * @return The field name.
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * The value of this provenance.
+     * @return the String representation of the value.
+     */
     public String getValue() {
         return value;
     }
 
+    /**
+     * The name of the provenance class.
+     * @return The provenance class name.
+     */
     public String getProvenanceClassName() {
         return provenanceClassName;
     }
 
+    /**
+     * Any additional information necessary beyond the key and value,
+     * e.g. the hash type.
+     * @return Any additional information necessary to encode the provenance.
+     */
     public String getAdditional() {
         return additional;
     }
