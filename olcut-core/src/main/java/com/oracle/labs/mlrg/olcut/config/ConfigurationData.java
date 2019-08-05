@@ -186,6 +186,12 @@ public final class ConfigurationData implements Serializable {
         return Collections.unmodifiableMap(properties);
     }
 
+    /**
+     * Returns the value associated with that property name, or {@link Optional#empty}
+     * if it doesn't exist.
+     * @param propertyName The property name.
+     * @return The {@link Optional#of} the property value or optional empty.
+     */
     public Optional<Property> get(String propertyName) {
         Property value = properties.get(propertyName);
         if (value == null) {
@@ -234,6 +240,11 @@ public final class ConfigurationData implements Serializable {
         return Objects.hash(name, className, properties, serializedForm, exportable, importable, leaseTime, entriesName);
     }
 
+    /**
+     * Writes out the configuration data.
+     * @param configWriter The writer to use.
+     * @throws ConfigWriterException If the writer throws an exception.
+     */
     public void save(ConfigWriter configWriter) throws ConfigWriterException {
         Map<String,String> attributes = new HashMap<>();
 

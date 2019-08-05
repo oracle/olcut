@@ -19,6 +19,10 @@ public final class ListMarshalledProvenance implements FlatMarshalledProvenance,
         this.list = Collections.unmodifiableList(list);
     }
 
+    /**
+     * Gets an unmodifiable view on the marshalled provenance list.
+     * @return The marshalled provenance list.
+     */
     public List<FlatMarshalledProvenance> getList() {
         return list;
     }
