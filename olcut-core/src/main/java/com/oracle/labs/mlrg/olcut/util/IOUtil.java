@@ -3,7 +3,6 @@ package com.oracle.labs.mlrg.olcut.util;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,160 +18,126 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Predicate;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public abstract class IOUtil {
+/**
+ * A collection of IO helper functions, in need of refactoring and sanitization.
+ *
+ * In particular many of these function wrap {@link IOException} in a {@link RuntimeException} and propagate it.
+ */
+public final class IOUtil {
     private static final Logger logger = Logger.getLogger(IOUtil.class.getName());
     public static final int BUFFER_SIZE = 1000000;
+    private static final Pattern linefeedPattern = Pattern.compile("\\R");
+
+    private IOUtil() {}
 
     public static List<String> getLinesFromString(String text) {
-        try (BufferedReader reader = new BufferedReader(new StringReader(text))) {
-            List<String> lines = new ArrayList<>();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-            return lines;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        String[] lines = linefeedPattern.split(text);
+        return new ArrayList<>(Arrays.asList(lines));
     }
 
-    
-    public static List<String> getLines(String path) {
+    public static List<String> getLines(String path) throws IOException {
         return getLines(path, -1);
     }
 
-    public static List<String> getLines(String path, String encoding) {
+    public static List<String> getLines(String path, Charset encoding) throws IOException {
         return getLines(path, -1, encoding);
     }
 
-    public static List<String> getLines(String path, int count) {
-        return getLines(path, count, "UTF-8");
+    public static List<String> getLines(String path, int count) throws IOException {
+        return getLines(path, count, StandardCharsets.UTF_8);
     }
 
-    public static List<String> getLines(String path, int count, String encoding) {
+    public static List<String> getLines(String path, int count, Charset encoding) throws IOException {
         try (BufferedReader reader = getReader(path, encoding)) {
             return getLines(reader,count);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
-    public static List<String> getLines(BufferedReader reader, int count) {
-        try {
-            List<String> lines = new ArrayList<>();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-                if (count > 0 && lines.size() == count) {
-                    return lines;
-                }
+    public static List<String> getLines(BufferedReader reader, int count) throws IOException {
+        List<String> lines = new ArrayList<>();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            lines.add(line);
+            if (count > 0 && lines.size() == count) {
+                return lines;
             }
-            return lines;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
+        return lines;
     }
 
-    public static BufferedReader getReader(String path) {
-        return getReader(path, "UTF-8");
+    public static BufferedReader getReader(String path) throws FileNotFoundException {
+        return getReader(path, StandardCharsets.UTF_8);
     }
 
-    public static BufferedReader getReader(String path, String charSet) {
-        try {
-            return new BufferedReader(new InputStreamReader(getInputStream(path), charSet),BUFFER_SIZE);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static BufferedReader getReader(String path, Charset charSet) throws FileNotFoundException {
+        return new BufferedReader(new InputStreamReader(getInputStream(path),charSet),BUFFER_SIZE);
     }
 
-    public static BufferedReader getReader(URI uri, String charSet) {
-        try {
-            InputStream is = uri.toURL().openStream();
-            return new BufferedReader(new InputStreamReader(is, charSet),BUFFER_SIZE);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static BufferedReader getReader(URI uri, Charset charSet) throws IOException {
+        InputStream is = uri.toURL().openStream();
+        return new BufferedReader(new InputStreamReader(is,charSet),BUFFER_SIZE);
     }
 
-    public static BufferedReader getReader(Path path, String charSet) {
-        try {
-            InputStream is = new FileInputStream(path.toFile());
-            return new BufferedReader(new InputStreamReader(is, charSet),BUFFER_SIZE);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static BufferedReader getReader(Path path, Charset charSet) throws IOException {
+        InputStream is = new FileInputStream(path.toFile());
+        return new BufferedReader(new InputStreamReader(is,charSet),BUFFER_SIZE);
     }
 
     /**
-     * Makes a reader wrapped around the string. Either zipped or not.
+     * Makes a reader wrapped around the string. Figures out if the stream is zipped using the magic bytes.
      * @param filename The input filename.
-     * @param zipped Is the file zipped?
      * @return A BufferedReader wrapped around the appropriate stream.
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
-     * @throws IOException
+     * @throws FileNotFoundException If the file can't be read.
+     * @throws IOException If an error occurred when opening the file.
      */
-    public static BufferedReader getReader(String filename, String charSet, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        return getReader(new File(filename), charSet, zipped);
+    public static BufferedReader getReader(String filename, String charSet) throws FileNotFoundException, IOException {
+        return getReader(new File(filename), charSet);
     }
 
     /**
-     * Makes a reader wrapped around the string. Either zipped or not.
-     * @param zipped Is the file zipped?
+     * Makes a reader wrapped around the string. Figures out if the stream is zipped using the magic bytes.
      * @return A BufferedReader wrapped around the appropriate stream.
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
-     * @throws IOException
+     * @throws FileNotFoundException If the file can't be read.
+     * @throws IOException If an error occurred when opening the file.
      */
-    public static BufferedReader getReader(File file, String charSet, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        BufferedReader fileReader;
-        if (zipped) {
-            fileReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file)), charSet),BUFFER_SIZE);
-        } else {
-            fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charSet),BUFFER_SIZE);
-        }
-        return fileReader;
+    public static BufferedReader getReader(File file, String charSet) throws FileNotFoundException, IOException {
+        InputStream stream = wrapGZIPStream(new FileInputStream(file));
+        return new BufferedReader(new InputStreamReader(stream,charSet));
     }
-
 
     /**
      * Makes a writer wrapped around the specified file. Either zipped or not.
      * @param filename The output filename.
      * @param zipped Is the file zipped?
      * @return A PrintWriter wrapped around the appropriate stream.
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
-     * @throws IOException
+     * @throws FileNotFoundException If the file can't be written.
+     * @throws IOException If an error occurred when opening the file.
      */
-    public static PrintWriter getPrintWriter(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        PrintWriter fileWriter;
-        if (zipped) {
-            fileWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(filename)), StandardCharsets.UTF_8),BUFFER_SIZE));
-        } else {
-            fileWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8),BUFFER_SIZE));
-        }
-        return fileWriter;
+    public static PrintWriter getPrintWriter(String filename, boolean zipped) throws FileNotFoundException, IOException {
+        return new PrintWriter(new OutputStreamWriter(innerGetOutputStream(filename,zipped)));
     }
 
     /**
@@ -180,215 +145,227 @@ public abstract class IOUtil {
      * @param filename The output filename.
      * @param zipped Is the file zipped?
      * @return A PrintWriter wrapped around the appropriate stream.
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
-     * @throws IOException
+     * @throws FileNotFoundException If the file can't be written.
+     * @throws IOException If an error occurred when opening the file for writing.
      */
-    public static ObjectOutputStream getObjectOutputStream(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        ObjectOutputStream objectWriter;
-        if (zipped) {
-            objectWriter = new ObjectOutputStream(new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(filename),BUFFER_SIZE)));
-        } else {
-            objectWriter = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename),BUFFER_SIZE));
-        }
-        return objectWriter;
+    public static ObjectOutputStream getObjectOutputStream(String filename, boolean zipped) throws FileNotFoundException, IOException {
+        return new ObjectOutputStream(innerGetOutputStream(filename,zipped));
     }
 
     /**
-     * Makes a ObjectInputStream wrapped around the string. Either zipped or not.
+     * Makes a {@link BufferedOutputStream}, optionally wrapping it in a {@link GZIPOutputStream}.
+     * @param filename The output filename.
+     * @param zipped Should the file be zipped.
+     * @return A BufferedOutputStream.
+     * @throws FileNotFoundException If the file can't be written.
+     * @throws IOException If an error occurred when opening the file for writing.
+     */
+    private static OutputStream innerGetOutputStream(String filename, boolean zipped) throws FileNotFoundException, IOException {
+        if (zipped) {
+            return new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(filename),BUFFER_SIZE));
+        } else {
+            return new BufferedOutputStream(new FileOutputStream(filename),BUFFER_SIZE);
+        }
+    }
+
+    /**
+     * Makes a ObjectInputStream wrapped around the file. Figures out if the stream is zipped using the magic bytes.
      * @param filename The input filename.
-     * @param zipped Is the file zipped?
      * @return A ObjectInputStream wrapped around the appropriate stream.
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
-     * @throws IOException
+     * @throws FileNotFoundException If the file can't be read.
+     * @throws IOException If an error occurred when opening the file.
      */
-    public static ObjectInputStream getObjectInputStream(String filename, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        return getObjectInputStream(new File(filename),zipped);
+    public static ObjectInputStream getObjectInputStream(String filename) throws FileNotFoundException, IOException {
+        return getObjectInputStream(new File(filename));
     }
 
     /**
-     * Makes a ObjectInputStream wrapped around the string. Either zipped or not.
+     * Makes a ObjectInputStream wrapped around the file. Figures out if the stream is zipped using the magic bytes.
      * @param file The input File.
-     * @param zipped Is the file zipped?
      * @return A ObjectInputStream wrapped around the appropriate stream.
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
-     * @throws IOException
+     * @throws FileNotFoundException If the file can't be read.
+     * @throws IOException If an error occurred when opening the file.
      */
-    public static ObjectInputStream getObjectInputStream(File file, boolean zipped) throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        ObjectInputStream objectReader;
-        if (zipped) {
-            objectReader = new ObjectInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file),BUFFER_SIZE)));
-        } else {
-            objectReader = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file),BUFFER_SIZE));
-        }
-        return objectReader;
+    public static ObjectInputStream getObjectInputStream(File file) throws FileNotFoundException, IOException {
+        InputStream stream = new BufferedInputStream(new FileInputStream(file),BUFFER_SIZE);
+        return new ObjectInputStream(wrapGZIPStream(stream));
     }
 
-    public static InputStream getInputStream(String path) {
-        try {
-            InputStream in = IOUtil.class.getResourceAsStream(path);
-            if (in == null) {
-                File file = new File(path);
-                in = new FileInputStream(file);
-            }
-            return new BufferedInputStream(in, BUFFER_SIZE);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    /**
+     * Checks to see if the path is a classpath resource first, before checking the filesystem.
+     * @param path The path to open.
+     * @return A buffered input stream.
+     * @throws FileNotFoundException If the file isn't found.
+     */
+    public static BufferedInputStream getInputStream(String path) throws FileNotFoundException {
+        InputStream in = IOUtil.class.getResourceAsStream(path);
+        if (in == null) {
+            File file = new File(path);
+            in = new FileInputStream(file);
         }
+        return new BufferedInputStream(in, BUFFER_SIZE);
     }
 
-    public static InputStream getInputStream(File file) {
-        try {
-            InputStream in = new FileInputStream(file);
-            return new BufferedInputStream(in, BUFFER_SIZE);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static BufferedInputStream getInputStream(File file) throws FileNotFoundException {
+        InputStream in = new FileInputStream(file);
+        return new BufferedInputStream(in, BUFFER_SIZE);
     }
 
-    public static String toString(String path) {
-        return toString(path, "UTF-8");
+    public static String toString(String path) throws IOException {
+        return toString(path, StandardCharsets.UTF_8);
     }
 
-    public static String toString(String path, String charSet) {
-        String str = null;
-        try {
-            str = fromResource(path, charSet);
-            if (str != null) {
-                return str;
-            }
-        } catch (Exception e) {
-        }
-
-        str = fromFile(path, charSet);
+    public static String toString(String path, Charset charSet) throws IOException {
+        String str = fromResource(path, charSet);
         if (str != null) {
             return str;
+        } else {
+            str = fromFile(path, charSet);
+            if (str != null) {
+                return str;
+            } else {
+                throw new RuntimeException("Failed to read path " + path);
+            }
         }
-
-        throw new RuntimeException("contents not readable: " + path);
     }
 
-    public static String fromResource(String path, String charSet) {
+    public static String fromResource(String path, Charset charSet) {
         return fromInputStream(IOUtil.class.getResourceAsStream(path), charSet);
     }
 
-    public static String fromPath(Path path) {
-        return fromFile(path.toFile(), "UTF-8");
+    public static String fromPath(Path path) throws FileNotFoundException {
+        return fromFile(path.toFile(), StandardCharsets.UTF_8);
     }
 
-    public static String fromPath(Path path, String charSet) {
+    public static String fromPath(Path path, Charset charSet) throws FileNotFoundException {
         return fromFile(path.toFile(), charSet);
     }
 
-    public static String fromFile(String path, String charSet) {
+    public static String fromFile(String path, Charset charSet) throws FileNotFoundException {
         return fromFile(new File(path), charSet);
     }
 
-    public static String fromFile(File file, String charSet) {
-        try {
-            if (file.length() == 0) {
-                return "";
-            }
-            return fromInputStream(new FileInputStream(file), charSet);
-        } catch (Exception e) {
-            return null;
+    public static String fromFile(File file, Charset charSet) throws FileNotFoundException {
+        if (file.length() == 0) {
+            return "";
         }
+        return fromInputStream(new FileInputStream(file), charSet);
     }
 
-    public static String fromUri(URI uri, String charSet) {
-        try {
-            return fromInputStream(uri.toURL().openStream(), charSet);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static String fromUri(URI uri, Charset charSet) throws IOException {
+        return fromInputStream(uri.toURL().openStream(), charSet);
     }
 
-    private static String fromInputStream(InputStream in, String charSet) {
-        try (Scanner scanner = new Scanner(new BufferedInputStream(in,BUFFER_SIZE),charSet)) {
+    private static String fromInputStream(InputStream in, Charset charSet) {
+        try (Scanner scanner = new Scanner(new BufferedInputStream(in,BUFFER_SIZE),charSet.name())) {
             return scanner.useDelimiter("\\Z").next();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
-    public static <T extends Serializable> void serialize(T object, String path) {
+    public static <T extends Serializable> void serialize(T object, String path) throws FileNotFoundException, IOException {
         serialize(object, path, BUFFER_SIZE);
     }
 
-    public static <T extends Serializable> void serialize(T object, String path, int bufferSize) {
-        try {
-            File file = new File(path);
-            if (file.getParentFile() != null) {
-                file.getParentFile().mkdirs();
-            }
-            ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(path), bufferSize));
+    public static <T extends Serializable> void serialize(T object, String path, int bufferSize) throws FileNotFoundException, IOException {
+        File file = new File(path);
+        if (file.getParentFile() != null) {
+            file.getParentFile().mkdirs();
+        }
+        try (ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(path), bufferSize))) {
             oos.writeObject(object);
-            oos.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
-    public static <T extends Serializable> T deserialize(String path) {
-        return deserialize(getInputStream(path));
-    }
-
-    public static <T extends Serializable> T deserialize(File path) {
-        return deserialize(getInputStream(path));
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends Serializable> T deserialize(InputStream stream) {
-        try {
-            ObjectInputStream ois = new ObjectInputStream(stream);
-            T object = (T) ois.readObject();
-            ois.close();
-            return object;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    /**
+     * Deserializes an object from the supplied path.
+     * Returns {@link Optional#empty} if it failed to cast the type to the required class.
+     * @param path The path to read from.
+     * @param clazz The class to cast to.
+     * @param <T> The type of the serialized object.
+     * @return The deserialized instance.
+     * @throws IOException If the stream could not be read.
+     * @throws ClassNotFoundException If the class isn't available on the classpath.
+     */
+    public static <T extends Serializable> Optional<T> deserialize(String path, Class<T> clazz) throws IOException, ClassNotFoundException {
+        try (InputStream is = getInputStream(path)) {
+            return deserialize(is,clazz);
         }
     }
 
-    public static PrintStream getPrintStream(String path) {
+    /**
+     * Deserializes an object from the supplied stream.
+     * Returns {@link Optional#empty} if it to failed cast the type to the required class.
+     * @param path The file to read from.
+     * @param clazz The class to cast to.
+     * @param <T> The type of the serialized object.
+     * @return The deserialized instance.
+     * @throws IOException If the stream could not be read.
+     * @throws ClassNotFoundException If the class isn't available on the classpath.
+     */
+    public static <T extends Serializable> Optional<T> deserialize(File path, Class<T> clazz) throws IOException, ClassNotFoundException {
+        try (InputStream is = getInputStream(path)) {
+            return deserialize(is,clazz);
+        }
+    }
+
+    /**
+     * Deserializes an object from the supplied stream.
+     * Returns {@link Optional#empty} if it to failed cast the type to the required class.
+     * @param stream The input stream to read from.
+     * @param clazz The class to cast to.
+     * @param <T> The type of the serialized object.
+     * @return The deserialized instance.
+     * @throws IOException If the stream could not be read.
+     * @throws ClassNotFoundException If the class isn't available on the classpath.
+     */
+    public static <T extends Serializable> Optional<T> deserialize(InputStream stream, Class<T> clazz) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream ois = new ObjectInputStream(stream)) {
+            Object obj = ois.readObject();
+            if (clazz.isInstance(obj)) {
+                return Optional.of(clazz.cast(obj));
+            } else {
+                logger.warning("Invalid class found, expected " + clazz.getName() + " found " + obj.getClass().getName());
+                return Optional.empty();
+            }
+        }
+    }
+
+    public static PrintStream getPrintStream(String path) throws FileNotFoundException {
         return getPrintStream(path, BUFFER_SIZE);
     }
 
-    public static PrintStream getPrintStream(String path, int bufferSize) {
+    public static PrintStream getPrintStream(String path, int bufferSize) throws FileNotFoundException {
         return getPrintStream(new File(path),bufferSize);
     }
 
-    public static PrintStream getPrintStream(File file, int bufferSize) {
-        try {
+    public static PrintStream getPrintStream(File file, int bufferSize) throws FileNotFoundException {
+        if (file.getParentFile() != null) {
             file.getParentFile().mkdirs();
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file), bufferSize);
-            return new PrintStream(bos, false);
-        } catch (FileNotFoundException fnfe) {
-            throw new RuntimeException(fnfe);
         }
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file), bufferSize);
+        return new PrintStream(bos, false);
     }
 
-    public static OutputStream getOutputStream(String path) {
+    public static OutputStream getOutputStream(String path) throws FileNotFoundException {
         return getOutputStream(path, BUFFER_SIZE);
     }
 
-    public static OutputStream getOutputStream(String path, int bufferSize) {
-        try {
-            return new BufferedOutputStream(new FileOutputStream(path), bufferSize);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+    public static OutputStream getOutputStream(String path, int bufferSize) throws FileNotFoundException {
+        return new BufferedOutputStream(new FileOutputStream(path), bufferSize);
     }
 
     public static Iterator<Path> getPaths(Path listPath, Path rootPath) {
-        List<String> lines = getLines(listPath.toString());
-        List<Path> paths = new ArrayList<>();
-        for (String line : lines) {
-            Path path = Paths.get(rootPath.toString(), line);
-            paths.add(path);
+        try {
+            List<String> lines = getLines(listPath.toString());
+            List<Path> paths = new ArrayList<>();
+            for (String line : lines) {
+                Path path = Paths.get(rootPath.toString(), line);
+                paths.add(path);
+            }
+            return paths.iterator();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        return paths.iterator();
     }
 
     public static Iterator<Path> getPaths(String path, String suffix) {
@@ -473,34 +450,47 @@ public abstract class IOUtil {
         // If we have an input stream here, check for a magic number at
         // the beginning of the file and wrap it in gzip if we need it.
         if (ret != null) {
-            //
-            // A pushback input stream lets us peek at the first couple bytes
-            // and put them back after checking the magic number.
-            PushbackInputStream pis = new PushbackInputStream(ret, 2);
             try {
-                byte[] magic = new byte[2];
-                int len = pis.read(magic);
-                if (len > 0) {
-                    pis.unread(magic, 0, len);
-                    //
-                    // Check the bytes we read
-                    if (magic[0] == (byte)GZIPInputStream.GZIP_MAGIC && magic[1] == (byte)(GZIPInputStream.GZIP_MAGIC >> 8)) {
-                        //
-                        // This is GZIP. Wrap the pushback input stream. We can't
-                        // use the old "ret" because we've already read a couple
-                        // bytes out of it.
-                        ret = new GZIPInputStream(pis);
-                    } else {
-                        ret = pis;
-                    }
-                }
+                return wrapGZIPStream(ret);
             } catch (IOException e) {
-                logger.log(Level.WARNING, "Error while reading input stream for gzip." +
-                        " Position in stream uncertain.", e);
-                ret = pis;                
+                return null;
             }
+        } else {
+            return ret;
         }
-        return ret;
+    }
+
+    /**
+     * Checks if the stream contains a GZIP input stream, if so wrap it in the appropriate
+     * decoder and return.
+     * @param input An input stream.
+     * @return Either a {@link PushbackInputStream} wrapped round the input, or a {@link GZIPInputStream}
+     *         wrapped round the pushback stream wrapped around the input.
+     * @throws IOException If the stream could not be read.
+     */
+    private static InputStream wrapGZIPStream(InputStream input) throws IOException {
+        //
+        // A pushback input stream lets us peek at the first couple bytes
+        // and put them back after checking the magic number.
+        PushbackInputStream pis = new PushbackInputStream(input, 2);
+        byte[] magic = new byte[2];
+        int len = pis.read(magic);
+        if (len > 0) {
+            pis.unread(magic, 0, len);
+            //
+            // Check the bytes we read
+            if (magic[0] == (byte) GZIPInputStream.GZIP_MAGIC && magic[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8)) {
+                //
+                // This is GZIP. Wrap the pushback input stream. We can't
+                // use the old "ret" because we've already read a couple
+                // bytes out of it.
+                return new GZIPInputStream(pis);
+            } else {
+                return pis;
+            }
+        } else {
+            return pis;
+        }
     }
 
     /**
@@ -555,10 +545,11 @@ public abstract class IOUtil {
 
         @Override
         public Path next() {
-            if(hasNext()) {
+            if (hasNext()) {
                 return Paths.get(parentPath.toString(), fileNames.next());
+            } else {
+                throw new NoSuchElementException();
             }
-            throw new NoSuchElementException();
         }
         
     }
@@ -586,12 +577,8 @@ public abstract class IOUtil {
         }
     }
     
-    public static URI createClasspathURI(String resourcePath) {
-        try {
-            return new URI("classpath:" + resourcePath);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+    public static URI createClasspathURI(String resourcePath) throws URISyntaxException {
+        return new URI("classpath:" + resourcePath);
     }
 
     public static String replaceBackSlashes(String path) {
