@@ -36,6 +36,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -43,8 +44,6 @@ import java.util.zip.GZIPOutputStream;
 
 /**
  * A collection of IO helper functions, in need of refactoring and sanitization.
- *
- * In particular many of these function wrap {@link IOException} in a {@link RuntimeException} and propagate it.
  */
 public final class IOUtil {
     private static final Logger logger = Logger.getLogger(IOUtil.class.getName());
@@ -406,7 +405,7 @@ public final class IOUtil {
     /**
      * Gets an input stream for a given location. We can use the stream
      * to deserialize objects that are part of our configuration.
-     * <P>
+     * <p>
      * We'll try to use the location as a resource, and failing that a URL, and
      * failing that, a file.
      * <p>
@@ -419,45 +418,27 @@ public final class IOUtil {
      * any.
      */
     public static InputStream getInputStreamForLocation(String location) {
-        //
-        // First, see if it's a resource on our classpath.
-        InputStream ret = IOUtil.class.getResourceAsStream(location);
-        if (ret == null) {
+        URL url = getURLForLocation(location);
+        if (url != null) {
             try {
+                InputStream ret = url.openStream();
+
                 //
-                // Nope. See if it's a valid URL and open that.
-                URL sfu = new URL(location);
-                ret = sfu.openStream();
-            } catch (MalformedURLException ex) {
-                try {
-                    //
-                    // Not a valid URL, so try it as a file name.
-                    ret = new FileInputStream(location);
-                } catch (FileNotFoundException ex1) {
-                    //
-                    // Couldn't open the file, we're done.
-                    return null;
+                // If the stream opened check for a magic number at
+                // the beginning of it and wrap the stream in gzip if we need it.
+                if (ret != null) {
+                    try {
+                        return wrapGZIPStream(ret);
+                    } catch (IOException e) {
+                        logger.log(Level.WARNING,"Failed to check stream for GZIP bytes",e);
+                    }
                 }
-            } catch (IOException ex) {
-                //
-                // No joy.
-                logger.warning("Cannot open serialized form " + location);
-                return null;
-            }
-        }
-        
-        //
-        // If we have an input stream here, check for a magic number at
-        // the beginning of the file and wrap it in gzip if we need it.
-        if (ret != null) {
-            try {
-                return wrapGZIPStream(ret);
             } catch (IOException e) {
-                return null;
+                logger.log(Level.FINER,"Failed to open location " + location);
             }
-        } else {
-            return ret;
         }
+        // else we failed, return null;
+        return null;
     }
 
     /**
@@ -495,7 +476,7 @@ public final class IOUtil {
 
     /**
      * Gets a URL for a given location.
-     * <P>
+     * <p>
      * We'll try to use the location as a resource, and failing that a URL, and
      * failing that, a file.
      * @param location the location provided.
