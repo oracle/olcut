@@ -149,6 +149,7 @@ The supported list of annotated field types are:
     * LocalDate
     * OffsetTime
     * OffsetDateTime
+    * URL
     * Random (deprecated marked for removal in the next major release)
     * Enum
 
