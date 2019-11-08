@@ -1681,11 +1681,11 @@ public class ConfigurationManager implements Closeable {
 
         writer.writeStartComponents();
         //
-        // A copy of the raw property data that we can use to keep track of what's
-        // been written.
+        // The names of all the known configurations, so we can keep track of what we've written.
         Set<String> allNames = new HashSet<>(configurationDataMap.keySet());
-        for (PropertySheet ps : configuredComponents.values()) {
-            configurationDataMap.get(ps.getInstanceName()).save(writer);
+        for (PropertySheet<?> ps : configuredComponents.values()) {
+            configurationDataMap.get(ps.getInstanceName()).save(writer,ps.getRedactedFieldNames());
+
             allNames.remove(ps.getInstanceName());
         }
 

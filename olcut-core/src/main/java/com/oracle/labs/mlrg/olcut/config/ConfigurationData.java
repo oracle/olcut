@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Carrier for property data. Principally a {@link Map} from {@link String} to {@link Property}, and
@@ -246,6 +247,16 @@ public final class ConfigurationData implements Serializable {
      * @throws ConfigWriterException If the writer throws an exception.
      */
     public void save(ConfigWriter configWriter) throws ConfigWriterException {
+        save(configWriter,Collections.emptySet());
+    }
+
+    /**
+     * Writes out the configuration data, redacting fields if necessary.
+     * @param configWriter The writer to use.
+     * @param redactedFields The fields to redact.
+     * @throws ConfigWriterException If the writer throws an exception.
+     */
+    public void save(ConfigWriter configWriter, Set<String> redactedFields) {
         Map<String,String> attributes = new HashMap<>();
 
         attributes.put(ConfigLoader.NAME,name);
@@ -262,7 +273,14 @@ public final class ConfigurationData implements Serializable {
             attributes.put(ConfigLoader.ENTRIES,getEntriesName());
         }
 
-        configWriter.writeComponent(attributes,getProperties());
+        Map<String,Property> writtenProperties = new HashMap<>();
+        for (Map.Entry<String,Property> p : properties.entrySet()) {
+            if (!redactedFields.contains(p.getKey())) {
+                writtenProperties.put(p.getKey(),p.getValue());
+            }
+        }
+
+        configWriter.writeComponent(attributes,writtenProperties);
     }
 
 }

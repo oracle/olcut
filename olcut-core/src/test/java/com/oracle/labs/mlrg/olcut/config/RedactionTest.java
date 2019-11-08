@@ -21,7 +21,31 @@ public class RedactionTest {
     }
 
     @Test
-    public void redactOnSave() throws IOException {
+    public void redactLoadedOnSave() throws IOException {
+        ConfigurationManager source = new ConfigurationManager("redactionConfig.xml");
+        RedactedConfigurable a = (RedactedConfigurable) source.lookup("a");
+        Assertions.assertEquals("present-value",a.present);
+        Assertions.assertEquals("unredacted-value",a.redacted);
+        Assertions.assertEquals("unredacted-mandatory-value",a.mandatoryRedacted);
+        source.save(f);
+        try {
+            ConfigurationManager test = new ConfigurationManager(f.toString());
+            RedactedConfigurable red = (RedactedConfigurable) test.lookup("a");
+            Assertions.fail("Should have thrown property exception due to unset mandatory field");
+        } catch (PropertyException e) {
+            //Pass
+        }
+
+        String redactedVal = "<redacted>";
+        ConfigurationManager secondTest = new ConfigurationManager(new String[]{"-c",f.toString(),"--@a.mandatoryRedacted",redactedVal});
+        RedactedConfigurable restored = (RedactedConfigurable) secondTest.lookup("a");
+        Assertions.assertEquals("present-value",restored.present);
+        Assertions.assertNull(restored.redacted);
+        Assertions.assertEquals(redactedVal,restored.mandatoryRedacted);
+    }
+
+    @Test
+    public void redactImportedOnSave() throws IOException {
         RedactedConfigurable a = new RedactedConfigurable("present-value","unredacted-value","unredacted-mandatory-value");
         Assertions.assertEquals("present-value",a.present);
         Assertions.assertEquals("unredacted-value",a.redacted);
