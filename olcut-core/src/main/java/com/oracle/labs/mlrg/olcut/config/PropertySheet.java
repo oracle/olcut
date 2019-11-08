@@ -65,6 +65,11 @@ public class PropertySheet<T extends Configurable> {
      */
     private final Map<String, Property> propValues = new HashMap<>();
 
+    /**
+     * Keeps track of the redacted property names.
+     */
+    private final Set<String> redacted = new HashSet<>();
+
     protected ConfigurationManager cm;
 
     protected T owner = null;
@@ -110,6 +115,7 @@ public class PropertySheet<T extends Configurable> {
         this.instanceName = other.instanceName;
         this.data = other.data;
         this.propValues.putAll(other.propValues);
+        this.redacted.addAll(other.redacted);
     }
 
     public boolean isExportable() {
@@ -122,6 +128,10 @@ public class PropertySheet<T extends Configurable> {
 
     public Set<String> getPropertyNames() {
         return Collections.unmodifiableSet(propValues.keySet());
+    }
+
+    public Set<String> getRedactedFieldNames() {
+        return Collections.unmodifiableSet(redacted);
     }
 
     /**
@@ -901,6 +911,9 @@ public class PropertySheet<T extends Configurable> {
                 //
                 // We have a variable annotated with the Config annotation.
                 propertySheet.registerProperty(field.getName(), configAnnotation);
+                if (configAnnotation.redact()) {
+                    propertySheet.redacted.add(field.getName());
+                }
             } else if (nameAnnotation != null) {
                 if (!field.getType().equals(String.class)) {
                     throw new PropertyException(propertySheet.getInstanceName(),field.getName(),"The component name must be an instance of java.lang.String");
