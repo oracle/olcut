@@ -361,6 +361,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @param cl a listener that will report when components of the given type
      * are added or removed
      * @param entries Used to filter the looked up components.
+     * @param <T> The type of the class to lookup.
      * @return a list of all the components with the given class name as their type.
      */
     public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl, ConfigurationEntry[] entries) {
@@ -383,6 +384,7 @@ public class JiniConfigurationManager extends ConfigurationManager {
      * @param cl a listener that will report when components of the given type
      * are added or removed
      * @param entries Used to filter the looked up components.
+     * @param <T> The type of the class to lookup.
      * @return a list of all the components with the given class name as their type.
      */
     public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl, String[] entries) {

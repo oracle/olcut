@@ -588,6 +588,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
      * return
      * @param cl a listener for the component that is looked up, so that the caller
      * can be notified of service changes.
+     * @param <T> The type of the class to lookup.
      * @return an array containing the matching components
      */
     public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener<T> cl) {
@@ -605,6 +606,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
      * @param cl a listener for the component that is looked up, so that the caller
      * can be notified of service changes.
      * @param entries The ConfigurationEntries to filter on.
+     * @param <T> The type of the class to lookup.
      * @return an array containing the matching components
      */
     public <T extends Configurable> T[] lookup(Class<T> c, int maxMatches, ComponentListener<T> cl, ConfigurationEntry[] entries) {
@@ -676,6 +678,7 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
      * @param cps the property sheet for the component to look up.
      * @param cl a listener for the component to be looked up so that it may
      * be notified of changes to things of the given type.  May be <code>null</code>
+     * @param <T> The type of the class to lookup.
      * @return the named component, or <code>null</code> if no such component
      * can be found.
      */
@@ -877,18 +880,11 @@ public class ComponentRegistry implements Closeable, Configurable, DiscoveryList
      * A main program that will dump the components registered in a component
      * registry.  The group to use for discovery should be defined on the command
      * line using -Dgroup=&lt;groupname&gt;.
+     * @param args Command line arguments.
+     * @throws InterruptedException If the thread.sleep call is interrupted.
      */
-    public static void main(String[] args) throws Exception {
-        //
-        // Use the labs format logging.
-        for(Handler h : Logger.getLogger("").getHandlers()) {
-            h.setLevel(Level.ALL);
-            h.setFormatter(new LabsLogFormatter());
-            try {
-                h.setEncoding("utf-8");
-            } catch(Exception ex) {
-            }
-        }
+    public static void main(String[] args) throws InterruptedException {
+        LabsLogFormatter.setAllLogFormatters(Level.ALL);
         String group = System.getProperty("group");
         if(group == null) {
             System.err.println("System property group must be specified");

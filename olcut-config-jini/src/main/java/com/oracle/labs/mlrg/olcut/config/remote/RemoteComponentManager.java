@@ -41,6 +41,7 @@ public class RemoteComponentManager<T extends Configurable> implements Closeable
     /**
      * Creates a RemoteComponentManager
      * @param cm the configuration manager to use to fetch components
+     * @param c The class this component manager looks after.
      */
     public RemoteComponentManager(ConfigurationManager cm, Class<T> c) {
         this.cm = cm;

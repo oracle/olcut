@@ -34,6 +34,7 @@ import com.oracle.labs.mlrg.olcut.config.Configurable;
 public interface ConfigurableService extends Configurable, Runnable {
     /**
      * Gets the name of the service.
+     * @return The service name.
      */
     public String getServiceName();
 

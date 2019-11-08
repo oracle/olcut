@@ -22,21 +22,8 @@ public class HelloClient {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException {
-
-        //
-        // Set up the Java logging with our log formatter, which is nicer
-        // than the default, IMHO.
-        Logger rl = Logger.getLogger("");
-        for (Handler h : rl.getHandlers()) {
-            h.setLevel(Level.ALL);
-            h.setFormatter(new LabsLogFormatter());
-            try {
-                h.setEncoding("utf-8");
-            } catch (Exception ex) {
-                rl.severe("Error setting output encoding");
-            }
-        }
+    public static void main(String[] args) {
+        LabsLogFormatter.setAllLogFormatters();
 
         //
         // Read the configuration file.
