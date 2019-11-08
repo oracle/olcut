@@ -34,6 +34,7 @@ public class Util {
      * Dumps out memory information
      *
      * @param msg additional text for the dump
+     * @return A String describing the memory usage.
      */
     public static String dumpMemoryInfo(String msg) {
         Runtime rt = Runtime.getRuntime();
@@ -103,6 +104,7 @@ public class Util {
      *
      * @param dataStream the DataInputStream to read from
      * @return a float
+     * @throws IOException If it failed to read from the stream.
      */
     public static float readLittleEndianFloat(DataInputStream dataStream)
             throws IOException {
@@ -115,6 +117,7 @@ public class Util {
      *
      * @param dataStream the DataInputStream to read from
      * @return an integer
+     * @throws IOException If it failed to read from the stream.
      */
     public static int readLittleEndianInt(DataInputStream dataStream)
             throws IOException {
@@ -132,6 +135,7 @@ public class Util {
      * integer is big-endian, it becomes little-endian, and vice-versa.
      *
      * @param integer the integer to swap
+     * @return The byte-swapped integer.
      */
     public static int swapInteger(int integer) {
         return (((0x000000ff & integer) << 24) |
@@ -146,6 +150,7 @@ public class Util {
      * float is big-endian, it becomes little-endian, and vice-versa.
      *
      * @param floatValue the float to swap
+     * @return The byte-swapped float.
      */
     public static float swapFloat(float floatValue) {
         return Float.intBitsToFloat
@@ -159,7 +164,7 @@ public class Util {
      * from com.oracle.labs.mlrg.olcut.command.CommandInterpreter, this method
      * would return CommandInterpreter.
      *
-     * @return
+     * @return The name of the main class in the main thread.
      */
     public static String getMainClassName() {
         if (mainClassName != null) {

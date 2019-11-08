@@ -177,6 +177,7 @@ public class CommandInterpreter extends Thread {
     /**
      * Sets a default command to be used as a prefix for a string that isn't a
      * recognized command.
+     * @param defaultCommand The default command name.
      */
     public void setDefaultCommand(String defaultCommand) {
         this.defaultCommand = defaultCommand;
@@ -1205,6 +1206,7 @@ public class CommandInterpreter extends Thread {
      * Execute the given command.
      *
      * @param args	command args, args[0] contains name of cmd.
+     * @return The output produced by the command.
      */
     public String execute(String[] args) {
         return execute(args, true);
@@ -1214,6 +1216,7 @@ public class CommandInterpreter extends Thread {
      * Execute the given command.
      *
      * @param args	command args, args[0] contains name of cmd.
+     * @return The output produced by the command.
      */
     private String execute(String[] args, boolean first) {
         String response = "";
@@ -1296,7 +1299,7 @@ public class CommandInterpreter extends Thread {
      * Execute the given command string.
      *
      * @param cmdString the command string.
-     *
+     * @return The output produced by the command.
      */
     public String execute(String cmdString) {
         if(trace) {
@@ -1540,7 +1543,6 @@ public class CommandInterpreter extends Thread {
      * Sets the prompt for the interpreter
      *
      * @param prompt the prompt.
-     *
      */
     public void setPrompt(String prompt) {
         if(consoleReader != null) {
@@ -1555,7 +1557,6 @@ public class CommandInterpreter extends Thread {
      * Gets the prompt for the interpreter
      *
      * @return the prompt.
-     *
      */
     public String getPrompt() {
         return prompt;
@@ -1563,7 +1564,7 @@ public class CommandInterpreter extends Thread {
 
     /**
      * manual tester for the command interpreter.
-     *
+     * @param args Command line arguments.
      */
     public static void main(String[] args) {
         CommandInterpreter ci = new CommandInterpreter();

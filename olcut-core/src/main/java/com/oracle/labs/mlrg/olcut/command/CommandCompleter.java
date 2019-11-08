@@ -20,6 +20,8 @@ public class CommandCompleter implements Completer {
      * Create a CommandCompletor given the map that maps command names to their
      * command objects. The live map of commands must be provided if this
      * completor is to reflect commands added after instantiation.
+     * @param cmdMap The commands understood by this completer.
+     * @param interpreters The interpreters used.
      */
     public CommandCompleter(Map<String,CommandInterface> cmdMap, Deque<LayeredCommandInterpreter> interpreters) {
         this.cmdMap = cmdMap;
@@ -29,6 +31,10 @@ public class CommandCompleter implements Completer {
     /**
      * See <a href="http://jline.sourceforge.net/apidocs/jline/Completor.html">
      * Completor</a> in the JLine javadoc.
+     * @param buff The input text buffer.
+     * @param i The index in the buffer to look up to.
+     * @param ret The list of possible completions.
+     * @return -1 if there are no completions, 0 otherwise.
      */
     @Override
     public int complete(String buff, int i, List<CharSequence> ret) {

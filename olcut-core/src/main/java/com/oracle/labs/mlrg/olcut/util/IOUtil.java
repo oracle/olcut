@@ -108,6 +108,7 @@ public final class IOUtil {
     /**
      * Makes a reader wrapped around the string. Figures out if the stream is zipped using the magic bytes.
      * @param filename The input filename.
+     * @param charSet The charset to use.
      * @return A BufferedReader wrapped around the appropriate stream.
      * @throws FileNotFoundException If the file can't be read.
      * @throws IOException If an error occurred when opening the file.
@@ -117,7 +118,9 @@ public final class IOUtil {
     }
 
     /**
-     * Makes a reader wrapped around the string. Figures out if the stream is zipped using the magic bytes.
+     * Makes a reader wrapped around the file. Figures out if the stream is zipped using the magic bytes.
+     * @param file The file to read.
+     * @param charSet The charset to use.
      * @return A BufferedReader wrapped around the appropriate stream.
      * @throws FileNotFoundException If the file can't be read.
      * @throws IOException If an error occurred when opening the file.

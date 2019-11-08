@@ -17,7 +17,6 @@ package com.oracle.labs.mlrg.olcut.command;
  *
  * @see CommandInterpreter
  */
-
 public interface CommandInterface {
 
     /**
@@ -26,7 +25,7 @@ public interface CommandInterface {
      * @param ci	the command interpreter that invoked this command.
      * @param args	command line arguments (just like main).
      * @return		a command result
-     *
+     * @throws Exception Can throw an exception.
      */
     public String execute(CommandInterpreter ci, String[] args) throws Exception;
 
