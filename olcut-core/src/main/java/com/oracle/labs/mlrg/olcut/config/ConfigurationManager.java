@@ -1595,7 +1595,7 @@ public class ConfigurationManager implements Closeable {
     /**
      * Saves the current configuration to the given file.
      *
-     * Only writes out instantiated components.
+     * Only writes out instantiated components, and redacts their fields if required.
      *
      * @param file Place to save the configuration.
      * @throws IOException If an error occurs while writing to the file.
@@ -1606,6 +1606,9 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Saves the current configuration to the given file.
+     * <p>
+     * Instantiated components have their field values redacted, uninstantiated components
+     * write out all their data.
      *
      * @param file Place to save the configuration.
      * @param writeAll If <code>true</code> all components will be written,
@@ -1625,6 +1628,9 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Writes the configuration to the given stream. Does not close the stream.
+     * <p>
+     * Instantiated components have their field values redacted, uninstantiated components
+     * write out all their data.
      *
      * @param writer The writer to write to.
      * @param extension The extension to write out, which selects the ConfigWriter to use.
