@@ -4,7 +4,7 @@
 
     <groupId>com.oracle.labs.mlrg.olcut</groupId>
     <artifactId>olcut</artifactId>
-    <version>5.0.1-SNAPSHOT</version>
+    <version>5.0.1</version>
     <packaging>pom</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,11 +37,6 @@
 
    	<repositories>
 	<repository>
-		<id>artifactory-oraclecorp</id>
-		<name>artifactory-oraclecorp</name>
-		<url>https://artifactory-slc.oraclecorp.com/artifactory/repo1-cache</url>
-	</repository>		
-	<repository>
 		<snapshots>
 			<enabled>false</enabled>
 		</snapshots>
@@ -62,6 +57,11 @@
 		<id>citadel-ext</id>
 		<name>ext-release-local</name>
 		<url>http://citadel.us.oracle.com/artifactory/ext-release-local</url>
+	</repository>
+	<repository>
+		<id>artifactory-oraclecorp</id>
+		<name>artifactory-oraclecorp</name>
+		<url>https://artifactory-slc.oraclecorp.com/artifactory/repo1-cache</url>
 	</repository>
 	<repository>
 		<id>central</id>
