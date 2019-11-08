@@ -4,6 +4,7 @@ import com.oracle.labs.mlrg.olcut.config.Config;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.FieldType;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
+import com.oracle.labs.mlrg.olcut.config.RedactField;
 import com.oracle.labs.mlrg.olcut.provenance.ConfiguredObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ListProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.MapProvenance;
@@ -144,8 +145,8 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
             for (Field f : fields) {
                 boolean accessible = f.isAccessible();
                 f.setAccessible(true);
-                // if configurable
-                if (f.isAnnotationPresent(Config.class)) {
+                // if configurable and not redacted
+                if (f.isAnnotationPresent(Config.class) && !f.isAnnotationPresent(RedactField.class)) {
                     FieldType ft = FieldType.getFieldType(f);
                     switch (ft) {
                         case BOOLEAN:

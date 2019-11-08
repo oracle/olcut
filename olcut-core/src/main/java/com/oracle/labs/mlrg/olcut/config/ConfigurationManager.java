@@ -1751,7 +1751,8 @@ public class ConfigurationManager implements Closeable {
                 boolean accessible = field.isAccessible();
                 field.setAccessible(true);
                 Config configAnnotation = field.getAnnotation(Config.class);
-                if (configAnnotation != null) {
+                RedactField redactAnnotation = field.getAnnotation(RedactField.class);
+                if ((configAnnotation != null) && (redactAnnotation == null)) {
                     propertyName = field.getName();
                     Class<?> fieldClass = field.getType();
                     FieldType ft = FieldType.getFieldType(fieldClass);
@@ -1832,6 +1833,13 @@ public class ConfigurationManager implements Closeable {
                                 fieldClass.toString() + " found when importing " +
                                 name + " of class " + configurable.getClass().toString());
                     }
+                } else if ((configAnnotation != null) && (redactAnnotation != null)) {
+                    Class<?> fieldClass = field.getType();
+                    logger.log(Level.FINER, "Redacting field %s, class=%s, configurable? %s; genericType=%s configurable? %s",
+                            new Object[]{field.getName(),
+                                    fieldClass.getCanonicalName(),
+                                    Configurable.class.isAssignableFrom(fieldClass),
+                            });
                 }
                 field.setAccessible(accessible);
             }
