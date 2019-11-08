@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    Description:
+        A configuration file for testing redaction in configurations.
+-->
+
+<config>
+    
+    <component name="a" type="com.oracle.labs.mlrg.olcut.config.RedactedConfigurable">
+        <property name="present" value="present-value"/>
+        <property name="redacted" value="unredacted-value"/>
+        <property name="mandatoryRedacted" value="unredacted-mandatory-value"/>
+    </component>
+
+</config>
