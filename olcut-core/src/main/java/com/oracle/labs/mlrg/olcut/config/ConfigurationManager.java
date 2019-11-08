@@ -275,6 +275,30 @@ public class ConfigurationManager implements Closeable {
      * @throws ConfigLoaderException Thrown when the configuration file cannot be read.
      */
     public ConfigurationManager(String[] arguments, Options options, String defaultConfigPath, boolean useConfigFiles)  throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
+        this(arguments,Collections.emptyList(),options,defaultConfigPath,useConfigFiles);
+    }
+
+    /**
+     * Creates a new configuration manager.
+     *
+     * This constructor performs a sequence of operations:
+     * - It validates the supplied options struct to make sure it does not have duplicate option names.
+     * - Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.
+     * - Loads in the supplied ConfigurationData objects, overwriting things in the files if necessary.
+     * - Parses any configuration overrides and applies them to the configuration manager.
+     * - Parses out options for the supplied struct and writes them into the struct.
+     * @param arguments An array of command line arguments.
+     * @param configData A list of {@link ConfigurationData} objects.
+     * @param options An object to write the parsed argument values into.
+     * @param defaultConfigPath The default config path. Set to empty or null to disable.
+     * @param useConfigFiles If true, add the config file option. If false ignore the config file option,
+     *                       and invalidate any Options that subclass {@link Configurable}.
+     * @throws UsageException Thrown when the user requested the usage string.
+     * @throws ArgumentException Thrown when an argument fails to parse.
+     * @throws PropertyException Thrown when an invalid property is loaded.
+     * @throws ConfigLoaderException Thrown when the configuration file cannot be read.
+     */
+    public ConfigurationManager(String[] arguments, List<ConfigurationData> configData, Options options, String defaultConfigPath, boolean useConfigFiles)  throws UsageException, ArgumentException, PropertyException, ConfigLoaderException {
         // Validate the supplied Options struct is coherent and generate a usage statement.
         usage = validateOptions(options,defaultConfigPath,useConfigFiles);
 
@@ -314,6 +338,15 @@ public class ConfigurationManager implements Closeable {
             serializedObjects.put(e.getKey(), e.getValue());
         }
         origGlobal = new GlobalProperties(globalProperties);
+
+        for (ConfigurationData cd : configData) {
+            String instanceName = cd.getName();
+            if (symbolTable.containsKey(instanceName)) {
+                logger.fine("Overwriting " + instanceName + " loaded from file.");
+            }
+
+            configurationDataMap.put(instanceName, cd);
+        }
 
         //
         // Parses out and sets arguments which override fields in a config file.
@@ -1751,95 +1784,95 @@ public class ConfigurationManager implements Closeable {
                 boolean accessible = field.isAccessible();
                 field.setAccessible(true);
                 Config configAnnotation = field.getAnnotation(Config.class);
-                RedactField redactAnnotation = field.getAnnotation(RedactField.class);
-                if ((configAnnotation != null) && (redactAnnotation == null)) {
+                if (configAnnotation != null) {
                     propertyName = field.getName();
                     Class<?> fieldClass = field.getType();
-                    FieldType ft = FieldType.getFieldType(fieldClass);
-                    List<Class<?>> genericList = PropertySheet.getGenericClass(field);
-                    Class<?> genericType = Object.class;
-                    if (genericList.size() == 1) {
-                        genericType = genericList.get(0);
-                    } else if (genericList.size() == 2){
-                        genericType = genericList.get(1);
-                    }
+                    if (!configAnnotation.redact()) {
+                        FieldType ft = FieldType.getFieldType(fieldClass);
+                        List<Class<?>> genericList = PropertySheet.getGenericClass(field);
+                        Class<?> genericType = Object.class;
+                        if (genericList.size() == 1) {
+                            genericType = genericList.get(0);
+                        } else if (genericList.size() == 2) {
+                            genericType = genericList.get(1);
+                        }
 
-                    logger.log(Level.FINER, "field %s, class=%s, configurable? %s; genericType=%s configurable? %s",
-                            new Object[]{field.getName(),
-                                    fieldClass.getCanonicalName(),
-                                    Configurable.class.isAssignableFrom(fieldClass),
-                                    genericType.getCanonicalName(),
-                                    Configurable.class.isAssignableFrom(genericType)
-                            });
+                        logger.log(Level.FINER, "field %s, class=%s, configurable? %s; genericType=%s configurable? %s",
+                                new Object[]{field.getName(),
+                                        fieldClass.getCanonicalName(),
+                                        Configurable.class.isAssignableFrom(fieldClass),
+                                        genericType.getCanonicalName(),
+                                        Configurable.class.isAssignableFrom(genericType)
+                                });
 
-                    if (FieldType.simpleTypes.contains(ft)) {
-                        m.put(propertyName, importSimpleField(fieldClass, name, field.getName(), field.get(configurable)));
-                    } else if (FieldType.listTypes.contains(ft)) {
-                        m.put(propertyName, importCollection(genericType, name, propertyName, (Collection) field.get(configurable)));
-                    } else if (FieldType.arrayTypes.contains(ft)) {
-                        Class arrayComponentType = fieldClass.getComponentType();
-                        if (Configurable.class.isAssignableFrom(arrayComponentType)) {
-                            m.put(propertyName, importCollection(Configurable.class, name, propertyName, Arrays.asList((Configurable[]) field.get(configurable))));
-                        } else {
-                            List<String> stringList = new ArrayList<>();
-                            //
-                            // Primitive array
-                            if (byte.class.isAssignableFrom(arrayComponentType)) {
-                                for (byte b : (byte[]) field.get(configurable)) {
-                                    stringList.add("" + b);
-                                }
-                            } else if (char.class.isAssignableFrom(arrayComponentType)) {
-                                for (char c : (char[]) field.get(configurable)) {
-                                    stringList.add("" + c);
-                                }
-                            } else if (short.class.isAssignableFrom(arrayComponentType)) {
-                                for (short s : (short[]) field.get(configurable)) {
-                                    stringList.add("" + s);
-                                }
-                            } else if (int.class.isAssignableFrom(arrayComponentType)) {
-                                for (int i : (int[]) field.get(configurable)) {
-                                    stringList.add("" + i);
-                                }
-                            } else if (long.class.isAssignableFrom(arrayComponentType)) {
-                                for (long l : (long[]) field.get(configurable)) {
-                                    stringList.add("" + l);
-                                }
-                            } else if (float.class.isAssignableFrom(arrayComponentType)) {
-                                for (float f : (float[]) field.get(configurable)) {
-                                    stringList.add("" + f);
-                                }
-                            } else if (double.class.isAssignableFrom(arrayComponentType)) {
-                                for (double d : (double[]) field.get(configurable)) {
-                                    stringList.add("" + d);
-                                }
-                            } else if (String.class.isAssignableFrom(arrayComponentType)) {
-                                stringList.addAll(Arrays.asList((String[]) field.get(configurable)));
+                        if (FieldType.simpleTypes.contains(ft)) {
+                            m.put(propertyName, importSimpleField(fieldClass, name, field.getName(), field.get(configurable)));
+                        } else if (FieldType.listTypes.contains(ft)) {
+                            m.put(propertyName, importCollection(genericType, name, propertyName, (Collection) field.get(configurable)));
+                        } else if (FieldType.arrayTypes.contains(ft)) {
+                            Class arrayComponentType = fieldClass.getComponentType();
+                            if (Configurable.class.isAssignableFrom(arrayComponentType)) {
+                                m.put(propertyName, importCollection(Configurable.class, name, propertyName, Arrays.asList((Configurable[]) field.get(configurable))));
                             } else {
-                                throw new PropertyException(name, "Unsupported array type " + fieldClass.toString());
+                                List<String> stringList = new ArrayList<>();
+                                //
+                                // Primitive array
+                                if (byte.class.isAssignableFrom(arrayComponentType)) {
+                                    for (byte b : (byte[]) field.get(configurable)) {
+                                        stringList.add("" + b);
+                                    }
+                                } else if (char.class.isAssignableFrom(arrayComponentType)) {
+                                    for (char c : (char[]) field.get(configurable)) {
+                                        stringList.add("" + c);
+                                    }
+                                } else if (short.class.isAssignableFrom(arrayComponentType)) {
+                                    for (short s : (short[]) field.get(configurable)) {
+                                        stringList.add("" + s);
+                                    }
+                                } else if (int.class.isAssignableFrom(arrayComponentType)) {
+                                    for (int i : (int[]) field.get(configurable)) {
+                                        stringList.add("" + i);
+                                    }
+                                } else if (long.class.isAssignableFrom(arrayComponentType)) {
+                                    for (long l : (long[]) field.get(configurable)) {
+                                        stringList.add("" + l);
+                                    }
+                                } else if (float.class.isAssignableFrom(arrayComponentType)) {
+                                    for (float f : (float[]) field.get(configurable)) {
+                                        stringList.add("" + f);
+                                    }
+                                } else if (double.class.isAssignableFrom(arrayComponentType)) {
+                                    for (double d : (double[]) field.get(configurable)) {
+                                        stringList.add("" + d);
+                                    }
+                                } else if (String.class.isAssignableFrom(arrayComponentType)) {
+                                    stringList.addAll(Arrays.asList((String[]) field.get(configurable)));
+                                } else {
+                                    throw new PropertyException(name, "Unsupported array type " + fieldClass.toString());
+                                }
+                                m.put(propertyName, ListProperty.createFromStringList(stringList));
                             }
-                            m.put(propertyName, ListProperty.createFromStringList(stringList));
+                        } else if (FieldType.mapTypes.contains(ft)) {
+                            Map fieldMap = (Map) field.get(configurable);
+                            HashMap<String, SimpleProperty> newMap = new HashMap<>();
+                            for (Object e : fieldMap.entrySet()) {
+                                String key = (String) ((Map.Entry) e).getKey();
+                                Object value = ((Map.Entry) e).getValue();
+                                newMap.put(key, importSimpleField(genericType, name + "-" + field.getName(), key, value));
+                            }
+                            m.put(propertyName, new MapProperty(newMap));
+                        } else {
+                            throw new PropertyException(name, "Unknown field type " +
+                                    fieldClass.toString() + " found when importing " +
+                                    name + " of class " + configurable.getClass().toString());
                         }
-                    } else if (FieldType.mapTypes.contains(ft)) {
-                        Map fieldMap = (Map) field.get(configurable);
-                        HashMap<String, SimpleProperty> newMap = new HashMap<>();
-                        for (Object e : fieldMap.entrySet()) {
-                            String key = (String) ((Map.Entry) e).getKey();
-                            Object value = ((Map.Entry) e).getValue();
-                            newMap.put(key, importSimpleField(genericType,name+"-"+field.getName(),key,value));
-                        }
-                        m.put(propertyName, new MapProperty(newMap));
                     } else {
-                        throw new PropertyException(name, "Unknown field type " +
-                                fieldClass.toString() + " found when importing " +
-                                name + " of class " + configurable.getClass().toString());
+                        logger.log(Level.FINER, "Redacting field %s, class=%s, configurable? %s; genericType=%s configurable? %s",
+                                new Object[]{field.getName(),
+                                        fieldClass.getCanonicalName(),
+                                        Configurable.class.isAssignableFrom(fieldClass),
+                                });
                     }
-                } else if ((configAnnotation != null) && (redactAnnotation != null)) {
-                    Class<?> fieldClass = field.getType();
-                    logger.log(Level.FINER, "Redacting field %s, class=%s, configurable? %s; genericType=%s configurable? %s",
-                            new Object[]{field.getName(),
-                                    fieldClass.getCanonicalName(),
-                                    Configurable.class.isAssignableFrom(fieldClass),
-                            });
                 }
                 field.setAccessible(accessible);
             }

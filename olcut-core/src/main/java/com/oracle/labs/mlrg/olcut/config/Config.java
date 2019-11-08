@@ -21,7 +21,7 @@ public @interface Config {
 
     /**
      * By default, configuration variables aren't mandatory.
-     * @return if the field must appear in all configurations of this object.
+     * @return true if the field must appear in all configurations of this object.
      */
     boolean mandatory() default false;
 
@@ -30,5 +30,11 @@ public @interface Config {
      * @return A description of this field.
      */
     String description() default "";
+
+    /**
+     * By default fields aren't redacted from saved configs or provenance.
+     * @return true if the field must be redacted from saved configs or provenance.
+     */
+    boolean redact() default false;
 
 }

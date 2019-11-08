@@ -9,12 +9,10 @@ public class RedactedConfigurable implements Configurable, Provenancable<Configu
     @Config(mandatory=true)
     public String present;
 
-    @RedactField
-    @Config
+    @Config(redact=true)
     public String redacted;
 
-    @RedactField
-    @Config(mandatory=true)
+    @Config(mandatory=true,redact=true)
     public String mandatoryRedacted;
 
     /**
