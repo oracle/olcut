@@ -73,7 +73,9 @@ file to convert them to the desired type and will throw an exception if
 they are not the right type.  It also checks that only parameters defined in
 the object are included in the configuration file.  Properties may be tagged
 as mandatory or not and may have default values (here, numThreads is given a 
-default value of 1 if it is not included in the configuration file)
+default value of 1 if it is not included in the configuration file). Properties
+may also be tagged "redact" which will cause their values not to appear in 
+saved configuration files, or provenance objects.
 
 To instantiate the pipeline in your code, you'd put something like the following
 in your main class.
@@ -168,6 +170,9 @@ Then in your main program you could use the following:
     String pipelineInstance = cm.getGlobalProperty("targetPipeline");
     Pipeline pipeline = (Pipeline)cm.lookup(pipelineInstance);
 
+This specific use is better met by the Options processing system described later,
+but there are other uses of global properties.
+
 ### Expanding Global Property values inside a Configuration
 
 Global properties may also be used internally in a configuration file.  For
@@ -252,7 +257,7 @@ but don't have access to it's source code.
 
     java -cp classpath com.oracle.labs.mlrg.olcut.config.DescribeConfigurable -n fully.qualified.class.name -o -e xml
 
-Produces a description of `fully.qualified.class.name`.
+Produces a description of `fully.qualified.class.name` and an example xml file.
 
 ## Command line arguments
 
@@ -349,7 +354,7 @@ permissions. We have tested this set of permissions which allows the configurati
 provenance systems to work:
 
     // OLCUT permissions
-    grant codeBase "file:/path/to/olcut/olcut-core-5.0.0.jar" {
+    grant codeBase "file:/path/to/olcut/olcut-core.jar" {
             permission java.lang.RuntimePermission "accessDeclaredMembers";
             permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
             permission java.util.logging.LoggingPermission "control";
@@ -387,7 +392,7 @@ It's TBD on what the root cause is or how to fix it.
 
 ## Other config formats
 
-OLCUT 4.1 supports json and edn (a Clojure based format) configuration files
+OLCUT 4.1 and above support json and edn (a Clojure based format) configuration files
 in addition to the standard xml format. To use one of these formats you must
 register it with the ConfigurationManager before instantiation. For example:
 
@@ -418,6 +423,11 @@ immutable Provenance objects used to record the state of a computation. It's hea
 used in Tribuo to record a trainer and dataset configuration. It can optionally include
 non-configurable state. It supports conversion to a marshalled format which can be
 easily serialised and deserialised from JSON.
+
+Provenance objects can be converted back into a list of configurations, which can be 
+used to recreate the config file that generated that provenance. This can be used
+to recover the training configuration of an ML system from a model, and 
+regenerate the model (either on new data, or with tweaked parameters).
 
 # Command Interpreter
 
@@ -603,10 +613,10 @@ use the appropriate formatter, which makes integrating them simpler.
 
 A least recently accessed cache.
 
-## MutableLong
+## Mutable primitives
 
 For counting things in Maps when you don't want to unbox and rebox a 
-long with every update.
+long or a double with every update.
 
 ## Pair
 

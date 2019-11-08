@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 public class DescribeConfigurable {
     private static final Logger logger = Logger.getLogger(DescribeConfigurable.class.getName());
 
-    public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Field Name","Type","Mandatory","Default","Description"));
+    public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Field Name","Type","Mandatory","Redact","Default","Description"));
 
     private static class FieldInfo {
         public enum FieldInfoType {NORMAL, ENUM, LIST, ENUM_LIST, MAP}
@@ -39,6 +39,7 @@ public class DescribeConfigurable {
         public final String className;
         public final Field field;
         public final boolean mandatory;
+        public final boolean redact;
         public final String defaultVal;
         public final String description;
         public final FieldInfoType type;
@@ -50,13 +51,14 @@ public class DescribeConfigurable {
 
         public final ArrayList<String> enumConstants = new ArrayList<>();
 
-        private FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, FieldInfoType type, String genericListClass, String genericMapKeyClass, String genericMapValueClass) {
+        private FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, FieldInfoType type, String genericListClass, String genericMapKeyClass, String genericMapValueClass) {
             this.name = name;
             this.className = className;
             this.field = field;
-            this.mandatory = mandatory;
+            this.mandatory = annotation.mandatory();
+            this.redact = annotation.redact();
             this.defaultVal = defaultVal;
-            this.description = description;
+            this.description = annotation.description();
             this.genericListClass = genericListClass;
             this.genericMapKeyClass = genericMapKeyClass;
             this.genericMapValueClass = genericMapValueClass;
@@ -65,26 +67,26 @@ public class DescribeConfigurable {
             this.classShortName = index > -1 ? className.substring(index+1) : className;
         }
 
-        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description) {
-            this(name,className,field,mandatory,defaultVal,description,FieldInfoType.NORMAL,"","","");
+        public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal) {
+            this(name,className,field,annotation,defaultVal,FieldInfoType.NORMAL,"","","");
         }
 
-        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, List<String> enumConstants) {
-            this(name,className,field,mandatory,defaultVal,description,FieldInfoType.ENUM,"","","");
+        public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, List<String> enumConstants) {
+            this(name,className,field,annotation,defaultVal,FieldInfoType.ENUM,"","","");
             this.enumConstants.addAll(enumConstants);
         }
 
-        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, String genericListClass) {
-            this(name,className,field,mandatory,defaultVal,description,FieldInfoType.LIST,genericListClass,"","");
+        public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, String genericListClass) {
+            this(name,className,field,annotation,defaultVal,FieldInfoType.LIST,genericListClass,"","");
         }
 
-        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, String genericListClass, List<String> enumConstants) {
-            this(name,className,field,mandatory,defaultVal,description,FieldInfoType.ENUM_LIST,genericListClass,"","");
+        public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, String genericListClass, List<String> enumConstants) {
+            this(name,className,field,annotation,defaultVal,FieldInfoType.ENUM_LIST,genericListClass,"","");
             this.enumConstants.addAll(enumConstants);
         }
 
-        public FieldInfo(String name, String className, Field field, boolean mandatory, String defaultVal, String description, String genericKeyClass, String genericValueClass) {
-            this(name,className,field,mandatory,defaultVal,description,FieldInfoType.MAP,"",genericKeyClass,genericValueClass);
+        public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, String genericKeyClass, String genericValueClass) {
+            this(name,className,field,annotation,defaultVal,FieldInfoType.MAP,"",genericKeyClass,genericValueClass);
         }
     }
 
@@ -110,6 +112,8 @@ public class DescribeConfigurable {
             case FILE:
             case PATH:
                 return "/path/to/a/file";
+            case URL:
+                return "file:///path/to/a/file";
             case RANDOM:
                 return "42";
             case ENUM:
@@ -173,9 +177,9 @@ public class DescribeConfigurable {
                                 for (Object o : constants) {
                                     enumConstants.add(((Enum)o).name());
                                 }
-                                fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),defaultVal,configAnnotation.description(),listType.getCanonicalName(),enumConstants);
+                                fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation,defaultVal,listType.getCanonicalName(),enumConstants);
                             } else {
-                                fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),defaultVal,configAnnotation.description(),listType.getCanonicalName());
+                                fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation,defaultVal,listType.getCanonicalName());
                             }
                             map.put(f.getName(),fi);
                         } else {
@@ -186,7 +190,7 @@ public class DescribeConfigurable {
                         // Pull out the generic types from the map.
                         List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                         if (genericList.size() == 2) {
-                            FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation.mandatory(),defaultVal,configAnnotation.description(),genericList.get(0).getCanonicalName(),genericList.get(1).getCanonicalName());
+                            FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation,defaultVal,genericList.get(0).getCanonicalName(),genericList.get(1).getCanonicalName());
                             map.put(f.getName(),fi);
                         } else {
                             logger.warning("This class has an invalid configurable field called " + f.getName() + ", failed to extract the generic type arguments for a map, found: " + genericList.toString());
@@ -200,9 +204,9 @@ public class DescribeConfigurable {
                             for (Object o : constants) {
                                 enumConstants.add(((Enum) o).name());
                             }
-                            fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation.mandatory(), defaultVal, configAnnotation.description(), enumConstants);
+                            fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation, defaultVal, enumConstants);
                         } else {
-                            fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation.mandatory(), defaultVal, configAnnotation.description());
+                            fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation, defaultVal);
                         }
                         map.put(f.getName(),fi);
                     }
@@ -246,6 +250,7 @@ public class DescribeConfigurable {
             fieldString.add(fi.name);
             fieldString.add(type);
             fieldString.add(""+fi.mandatory);
+            fieldString.add(""+fi.redact);
             if (fi.mandatory) {
                 fieldString.add("");
             } else {
@@ -298,10 +303,10 @@ public class DescribeConfigurable {
     }
 
     public static String formatDescription(List<List<String>> descriptions) {
-        int[] maxWidth = new int[5];
+        int[] maxWidth = new int[6];
 
         for (List<String> a : descriptions) {
-            if (a.size() == 5) {
+            if (a.size() == 6) {
                 if (maxWidth[0] < a.get(0).length()) {
                     maxWidth[0] = a.get(0).length();
                 }
@@ -314,15 +319,18 @@ public class DescribeConfigurable {
                 if (maxWidth[3] < a.get(3).length()) {
                     maxWidth[3] = a.get(3).length();
                 }
+                if (maxWidth[4] < a.get(4).length()) {
+                    maxWidth[4] = a.get(4).length();
+                }
             }
         }
 
-        String formatString = "%-"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %-"+maxWidth[3]+"s %s\n";
+        String formatString = "%-"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %-"+maxWidth[3]+"s %-"+maxWidth[4]+"s %s\n";
         StringBuilder builder = new StringBuilder();
 
         for (List<String> a : descriptions) {
-            if (a.size() == 5) {
-                builder.append(String.format(formatString,a.get(0),a.get(1),a.get(2),a.get(3),a.get(4)));
+            if (a.size() == 6) {
+                builder.append(String.format(formatString,a.get(0),a.get(1),a.get(2),a.get(3),a.get(4),a.get(5)));
             }
         }
         return builder.toString();
@@ -343,7 +351,7 @@ public class DescribeConfigurable {
 
         ConfigurationManager cm;
         try {
-            cm = new ConfigurationManager(args,o);
+            cm = new ConfigurationManager(args,o,false);
         } catch (UsageException e) {
             logger.info(e.getMessage());
             return;
