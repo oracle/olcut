@@ -251,7 +251,7 @@ public final class ConfigurationData implements Serializable {
     }
 
     /**
-     * Writes out the configuration data, redacting fields if necessary.
+     * Writes out the configuration data, redacting (i.e.\ ignoring) fields if necessary.
      * @param configWriter The writer to use.
      * @param redactedFields The fields to redact.
      * @throws ConfigWriterException If the writer throws an exception.
