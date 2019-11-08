@@ -13,7 +13,7 @@ public interface HelloService extends Configurable, Remote {
     /**
      * Says hello
      * @return the string "hello"
-     * @throws RemoteException 
+     * @throws RemoteException If an error occurred in the remote JVM.
      */
     public String hello() throws RemoteException;
     
@@ -21,7 +21,7 @@ public interface HelloService extends Configurable, Remote {
      * Echoes the provided string.
      * @param s the string to echo
      * @return the same string
-     * @throws RemoteException 
+     * @throws RemoteException If an error occurred in the remote JVM.
      */
     public String echo(String s) throws RemoteException;
     
@@ -30,6 +30,8 @@ public interface HelloService extends Configurable, Remote {
      * 
      * @param d1 the first double
      * @param d2 the second double
+     * @return d1 + d2
+     * @throws RemoteException If an error occurred in the remote JVM.
      */
     public double add(double d1, double d2) throws RemoteException;
 }

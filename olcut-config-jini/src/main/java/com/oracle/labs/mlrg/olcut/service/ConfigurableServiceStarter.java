@@ -101,7 +101,7 @@ public class ConfigurableServiceStarter implements Configurable {
      * A main program to read the configuration for the service starter and
      * start the service.
      *
-     * @param args
+     * @param args The command line arguments.
      */
     public static void main(String[] args) {
         if (args.length < 2) {
