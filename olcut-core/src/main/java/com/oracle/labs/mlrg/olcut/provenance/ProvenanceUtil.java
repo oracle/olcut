@@ -167,6 +167,18 @@ public final class ProvenanceUtil {
     }
 
     /**
+     * Hashes a byte array using the specified {@link HashType}.
+     * @param hashType The type of hash to perform.
+     * @param input The input array.
+     * @return A hexadecimal string representation of the hash.
+     */
+    public static String hashArray(HashType hashType, byte[] input) {
+        MessageDigest md = hashType.getDigest();
+        md.update(input);
+        return bytesToHexString(md.digest());
+    }
+
+    /**
      * Unwraps a {@link ListProvenance} of {@link PrimitiveProvenance}s into a list
      * of the values those provenances hold.
      * @param listProvenance The list to unwrap.
