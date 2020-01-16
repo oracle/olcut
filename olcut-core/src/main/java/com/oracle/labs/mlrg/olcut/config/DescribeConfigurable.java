@@ -360,6 +360,7 @@ public class DescribeConfigurable {
         if (o.className == null || o.className.isEmpty()) {
             logger.info("Please supply a class name.");
             logger.info(cm.usage());
+            return;
         }
 
         try {
