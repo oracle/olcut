@@ -10,6 +10,7 @@ import com.oracle.labs.mlrg.olcut.provenance.MapProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.PrimitiveProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.Provenancable;
 import com.oracle.labs.mlrg.olcut.provenance.Provenance;
+import com.oracle.labs.mlrg.olcut.provenance.ProvenanceException;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.BooleanProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.ByteProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.CharProvenance;
@@ -126,6 +127,33 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
             this.hostShortName = hostShortName;
             this.configuredParameters = configuredParameters;
             this.instanceValues = instanceValues;
+        }
+    }
+
+    /**
+     * Extracts the specified Provenance from the supplied info's instance values and returns it. Checks that it's the right type,
+     * and casts to it before returning.
+     *
+     * Throws ProvenanceException if it's not found or it's an incorrect type.
+     * @param info The ExtractedInfo to check.
+     * @param key The key to look up.
+     * @param type The type to check the value against.
+     * @param provClassName The name of the requesting class (to ensure the exception has the appropriate error message).
+     * @param <T> The type of the value.
+     * @return The specified provenance object.
+     * @throws ProvenanceException if the key is not found, or the value is not the requested type.
+     */
+    @SuppressWarnings("unchecked") // Guarded by isInstance check
+    protected static <T extends Provenance> T checkAndExtractProvenance(ExtractedInfo info, String key, Class<T> type, String provClassName) throws ProvenanceException {
+        Provenance tmp = info.instanceValues.get(key);
+        if (tmp != null) {
+            if (type.isInstance(tmp)) {
+                return (T) tmp;
+            } else {
+                throw new ProvenanceException("Failed to cast " + key + " when constructing " + provClassName + ", found " + tmp);
+            }
+        } else {
+            throw new ProvenanceException("Failed to find " + key + " when constructing " + provClassName);
         }
     }
 
