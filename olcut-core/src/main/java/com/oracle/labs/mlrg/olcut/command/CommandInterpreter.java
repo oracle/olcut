@@ -1060,7 +1060,7 @@ public class CommandInterpreter extends Thread {
                 }
                 Class<?> currParam = params[i].getType();
                 try {
-                    if (arg.equals("null")) {
+                    if (arg.equals("<null>")) {
                         invokeParams[i] = null;
                     } else if (currParam == String.class) {
                         invokeParams[i] = arg;
