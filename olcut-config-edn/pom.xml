@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.oracle.labs.mlrg.olcut</groupId>
         <artifactId>olcut</artifactId>
-        <version>5.0.2</version>
+        <version>5.0.3-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
