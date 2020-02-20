@@ -325,7 +325,7 @@ public class PropertySheet<T extends Configurable> {
      * @param ps the property sheet with the values that we want to set.
      * @param <T> The type of the configurable.
      */
-    private static <T extends Configurable> void setConfiguredFields(T o, PropertySheet ps) throws PropertyException, IllegalAccessException {
+    private static <T extends Configurable> void setConfiguredFields(T o, PropertySheet<T> ps) throws PropertyException, IllegalAccessException {
         Class<? extends Configurable> curClass = o.getClass();
         Set<Field> fields = getAllFields(curClass);
         for (Field f : fields) {
@@ -412,15 +412,18 @@ public class PropertySheet<T extends Configurable> {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    static Map parseMapField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> genericType, MapProperty input) {
+    static Map<String,Object> parseMapField(ConfigurationManager cm, String instanceName, String fieldName, Class<?> genericType, MapProperty input) {
         FieldType genericft = FieldType.getFieldType(genericType);
-        Map map = new HashMap<>();
-        for (Map.Entry<String, SimpleProperty> e : input.getMap().entrySet()) {
-            String newVal = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, e.getValue().getValue());
-            map.put(e.getKey(), parseSimpleField(cm, instanceName, fieldName, genericType, genericft, newVal));
+        if (genericft != null) {
+            Map<String,Object> map = new HashMap<>();
+            for (Map.Entry<String, SimpleProperty> e : input.getMap().entrySet()) {
+                String newVal = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, e.getValue().getValue());
+                map.put(e.getKey(), parseSimpleField(cm, instanceName, fieldName, genericType, genericft, newVal));
+            }
+            return map;
+        } else {
+            throw new PropertyException(instanceName,fieldName, "Map value type parameter is not a valid OLCUT field type, found " + genericType.getName());
         }
-        return map;
     }
 
     @SuppressWarnings("unchecked")
@@ -578,12 +581,16 @@ public class PropertySheet<T extends Configurable> {
         switch (ft) {
             case ENUM_SET:
                 try {
-                    Class<Enum> enumType = (Class<Enum>) genericClass;
-                    EnumSet s = EnumSet.noneOf(enumType);
-                    for (String v : replaced) {
-                        s.add(Enum.valueOf(enumType, v.toUpperCase()));
+                    if (genericClass.isEnum()) {
+                        Class<Enum> enumType = (Class<Enum>) genericClass;
+                        EnumSet s = EnumSet.noneOf(enumType);
+                        for (String v : replaced) {
+                            s.add(Enum.valueOf(enumType, v.toUpperCase()));
+                        }
+                        output = s;
+                    } else {
+                        throw new PropertyException(instanceName, fieldName, String.format("The supplied type parameter %s is not an Enum type", genericClass.getName()));
                     }
-                    output = s;
                 } catch (ClassCastException ex) {
                     throw new PropertyException(ex, instanceName, fieldName, String.format("The supplied type %s is not an Enum type", genericClass.getName()));
                 } catch (IllegalArgumentException ex) {
@@ -592,35 +599,43 @@ public class PropertySheet<T extends Configurable> {
                 break;
             case LIST:
                 genericft = FieldType.getFieldType(genericClass);
-                List list = new ArrayList(replaced.size());
-                for (String v : replaced) {
-                    list.add(parseSimpleField(cm, instanceName, fieldName, genericClass, genericft, v));
-                }
-                for (Class c : classVals) {
-                    if (genericClass.isAssignableFrom(c)) {
-                        list.addAll(cm.lookupAll(c, null));
-                        removeList.add(c);
-                    } else {
-                        throw new PropertyException(instanceName, fieldName, "Unassignable class " + c.getName() + " to genericType " + genericClass.getName());
+                if (genericft != null) {
+                    List<Object> list = new ArrayList<>(replaced.size());
+                    for (String v : replaced) {
+                        list.add(parseSimpleField(cm, instanceName, fieldName, genericClass, genericft, v));
                     }
+                    for (Class c : classVals) {
+                        if (genericClass.isAssignableFrom(c)) {
+                            list.addAll(cm.lookupAll(c, null));
+                            removeList.add(c);
+                        } else {
+                            throw new PropertyException(instanceName, fieldName, "Unassignable class " + c.getName() + " to genericType " + genericClass.getName());
+                        }
+                    }
+                    output = list;
+                } else {
+                    throw new PropertyException(instanceName,fieldName, "List type parameter is not a valid OLCUT field type, found " + genericClass.getName());
                 }
-                output = list;
                 break;
             case SET:
                 genericft = FieldType.getFieldType(genericClass);
-                Set set = new HashSet(replaced.size());
-                for (String v : replaced) {
-                    set.add(parseSimpleField(cm, instanceName, fieldName, genericClass, genericft, v));
-                }
-                for (Class c : classVals) {
-                    if (genericClass.isAssignableFrom(c)) {
-                        set.addAll(cm.lookupAll(c, null));
-                        removeList.add(c);
-                    } else {
-                        throw new PropertyException(instanceName, fieldName, "Unassignable class " + c.getName() + " to genericClass " + genericClass.getName());
+                if (genericft != null) {
+                    Set<Object> set = new HashSet<>(replaced.size());
+                    for (String v : replaced) {
+                        set.add(parseSimpleField(cm, instanceName, fieldName, genericClass, genericft, v));
                     }
+                    for (Class c : classVals) {
+                        if (genericClass.isAssignableFrom(c)) {
+                            set.addAll(cm.lookupAll(c, null));
+                            removeList.add(c);
+                        } else {
+                            throw new PropertyException(instanceName, fieldName, "Unassignable class " + c.getName() + " to genericClass " + genericClass.getName());
+                        }
+                    }
+                    output = set;
+                } else {
+                    throw new PropertyException(instanceName,fieldName, "List type parameter is not a valid OLCUT field type, found " + genericClass.getName());
                 }
-                output = set;
                 break;
         }
         classVals.removeAll(removeList);
