@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
+import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
@@ -193,9 +194,9 @@ public class SAXLoader implements ConfigLoader {
                     String export = attributes.getValue(ConfigLoader.EXPORT);
                     String entriesName = attributes.getValue(ConfigLoader.ENTRIES);
                     String serializedForm = attributes.getValue(ConfigLoader.SERIALIZED);
-                    boolean exportable = export != null && Boolean.valueOf(export);
+                    boolean exportable = Boolean.parseBoolean(export);
                     String imp = attributes.getValue(ConfigLoader.IMPORT);
-                    boolean importable = imp != null && Boolean.valueOf(imp);
+                    boolean importable = Boolean.parseBoolean(imp);
                     String lt = attributes.getValue(ConfigLoader.LEASETIME);
                     if (export == null && lt != null) {
                         throw new SAXParseException("lease timeout "

@@ -91,4 +91,12 @@ public class GenericConfigTest {
             SetConfig s = (SetConfig) cm.lookup("incorrectSetConfig");
         });
     }
+
+    @Test
+    public void invalidListConfig() {
+        ConfigurationManager cm = new ConfigurationManager("invalidGenericConfig.xml");
+        assertThrows(PropertyException.class, () -> {
+            InvalidListConfigurable l = (InvalidListConfigurable) cm.lookup("test");
+        });
+    }
 }

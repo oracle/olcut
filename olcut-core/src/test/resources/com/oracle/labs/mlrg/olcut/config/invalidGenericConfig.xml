@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+    A configuration file for testing handling of generic properties.
+-->
+
+<config>
+
+    <component name="test" type="com.oracle.labs.mlrg.olcut.config.InvalidListConfigurable">
+        <propertylist name="list">
+            <item>one</item>
+            <item>two</item>
+        </propertylist>
+    </component>
+    <component name="one" type="com.oracle.labs.mlrg.olcut.config.property.SimpleProperty"/>
+    <component name="two" type="com.oracle.labs.mlrg.olcut.config.property.SimpleProperty"/>
+
+</config>
