@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 /**
  * A tag interface which contains fields annotated with {@link Option}, and other
- * fields which subclass {@link Options}.
+ * fields which subclass {@link Options}. See the README for usage.
  *
  * Implement the {@link Options#getOptionsDescription} method to insert a description string
  * into the generated Options usage string.
