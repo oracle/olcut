@@ -4,35 +4,55 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class OptionsTest {
 
-    public static void main(String[] args) throws IOException {
-
-        TestOptions options = new TestOptions();
-
-        ConfigurationManager cm;
-        try {
-            cm = new ConfigurationManager(args,options);
-        } catch (UsageException e) {
-            System.out.println(e.getUsage());
-            return;
-        }
-
+	@Test
+	public void testBasic() throws Exception {
+		String[] args = new String[] {"--deeper-string","How low can you go?",
+				"--deep-string", "double bass",
+				"--enum", "THINGS", 
+				"--output-string", "ringstay putoutay",
+				"--seed", "42",
+				"--baz", "X,Y,Z",
+				"--output-file", "/tmp/output.txt",
+				"--input-file", "/tmp/input.txt",
+				"--pi", "3.1415927"};
+		TestOptions options = new TestOptions();
+        ConfigurationManager cm = new ConfigurationManager(args,options);
+        
+        assertEquals(3.1415927d, options.pi, 0.00001);
+        assertEquals("input.txt", options.foo.inputFile.getName());
+        assertEquals("output.txt", options.foo.outputFile.getFileName().toString());
+        assertEquals(Arrays.asList("X", "Y", "Z"), options.foo.baz);
+        assertEquals(-1_170_105_035, options.bar.rng.nextInt());
+        assertEquals(OptionsEnum.THINGS, options.bar.optEnum);
+        assertEquals("ringstay putoutay", options.bar.outputString);
+        assertEquals("double bass", options.bar.deepOptions.deepString);
+        assertEquals("How low can you go?", options.bar.deepOptions.deeperOptions.deeperString);
+        cm.close();
+        
         String[] unparsedArgs = cm.getUnnamedArguments();
+        assertEquals(0, unparsedArgs.length);
 
-        System.out.println("Unparsed arguments:");
-        for (String s : unparsedArgs) {
-            System.out.println(s);
-        }
-
-        System.out.println(options.toString());
-
-        String arg = "-c /path/to/config.xml,/path/to/otherconfig.xml --trainer trainername --@trainername.epochs 5";
-    }
-
+	}
+	
+	@Test
+	public void testBackSlash() throws Exception {
+		String[] args = new String[] {"--deeper-string","\\s+"};
+		TestOptions options = new TestOptions();
+        ConfigurationManager cm = new ConfigurationManager(args,options);
+//        assertEquals("\\s+", options.bar.deepOptions.deeperOptions.deeperString);
+        cm.close();
+        
+	}
 }
 
 class TestOptions implements Options {
