@@ -1,7 +1,6 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class OptionsTest {
 
 	@Test
-	public void testBasic() throws Exception {
+	public void testBasic() {
 		String[] args = new String[] {"--deeper-string","How low can you go?",
 				"--deep-string", "double bass",
 				"--enum", "THINGS", 
@@ -45,14 +44,32 @@ public class OptionsTest {
 	}
 	
 	@Test
-	public void testBackSlash() throws Exception {
-		String[] args = new String[] {"--deeper-string","\\s+"};
+	public void testBackSlash() {
+		String[] args = new String[] {"--deeper-string","\\\\s+"};
 		TestOptions options = new TestOptions();
         ConfigurationManager cm = new ConfigurationManager(args,options);
-//        assertEquals("\\s+", options.bar.deepOptions.deeperOptions.deeperString);
+        assertEquals("\\s+", options.bar.deepOptions.deeperOptions.deeperString);
         cm.close();
         
 	}
+
+    public static class CommaOptions implements Options {
+        @Option(longName="my-chars",usage="The characters.")
+        public char[] myChars;
+    }
+
+    @Test
+    public void testComma() {
+        String[] args = new String[] {"--my-chars", "a," + ConfigurationManager.CUR_ESCAPE_CHAR + ",,b,c"};
+        CommaOptions options = new CommaOptions();
+        ConfigurationManager cm = new ConfigurationManager(args, options);
+        cm.close();
+        assertEquals(4, options.myChars.length);
+        assertEquals('a', options.myChars[0]);
+        assertEquals(',', options.myChars[1]);
+        assertEquals('b', options.myChars[2]);
+        assertEquals('c', options.myChars[3]);
+    }
 }
 
 class TestOptions implements Options {
