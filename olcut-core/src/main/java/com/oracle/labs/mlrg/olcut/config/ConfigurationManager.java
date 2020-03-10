@@ -100,11 +100,16 @@ public class ConfigurationManager implements Closeable {
 
     public static final char ARG_DELIMITER = ',';
 
-    public static final char ESCAPE_CHAR = '\\';
+    public static final char UNIX_ESCAPE_CHAR = '\\';
 
     public static final char WIN_ESCAPE_CHAR = '^';
 
+    @Deprecated
+    public static final char ESCAPE_CHAR = UNIX_ESCAPE_CHAR;
+
     public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
+
+    public static final char CUR_ESCAPE_CHAR = IS_WINDOWS ? WIN_ESCAPE_CHAR : UNIX_ESCAPE_CHAR;
 
     public static final char CONFIGURABLE_CHAR = '@';
 
@@ -897,13 +902,19 @@ public class ConfigurationManager implements Closeable {
                     escaped = false;
                     break;
                 case WIN_ESCAPE_CHAR:
-                    if (IS_WINDOWS) {
+                    if ((IS_WINDOWS) && (!escaped)) {
                         escaped = true;
+                    } else {
+                        buffer.append(c);
+                        escaped = false;
                     }
                     break;
-                case ESCAPE_CHAR:
-                    if (!IS_WINDOWS) {
+                case UNIX_ESCAPE_CHAR:
+                    if ((!IS_WINDOWS) && (!escaped)) {
                         escaped = true;
+                    } else {
+                        buffer.append(c);
+                        escaped = false;
                     }
                     break;
                 case '\"':
