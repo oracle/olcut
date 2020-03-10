@@ -45,7 +45,8 @@ public class OptionsTest {
 	
 	@Test
 	public void testBackSlash() {
-		String[] args = new String[] {"--deeper-string","\\\\s+"};
+        String deeperStringValue = ConfigurationManager.IS_WINDOWS ? "\\s+" : "\\\\s+";
+		String[] args = new String[] {"--deeper-string", deeperStringValue};
 		TestOptions options = new TestOptions();
         ConfigurationManager cm = new ConfigurationManager(args,options);
         assertEquals("\\s+", options.bar.deepOptions.deeperOptions.deeperString);
