@@ -1,4 +1,7 @@
 /*
+ * Copyright 1999-2002 Carnegie Mellon University.
+ * Portions Copyright 2002 Sun Microsystems, Inc.
+ * Portions Copyright 2002 Mitsubishi Electric Research Laboratories.
  * Copyright (c) 2004-2020, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
@@ -47,7 +50,7 @@ public class TimeSpec {
     private final static Map<String,TimeUnit> tum;
 
     static {
-        tum = new HashMap<String,TimeUnit>();
+        tum = new HashMap<>();
         tum.put("d", TimeUnit.DAYS);
         tum.put("h", TimeUnit.HOURS);
         tum.put("m", TimeUnit.MINUTES);
