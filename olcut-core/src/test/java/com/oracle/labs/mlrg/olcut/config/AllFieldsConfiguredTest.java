@@ -244,6 +244,8 @@ public class AllFieldsConfiguredTest {
         ac.randomField = new Random(1234);
         ac.enumField = AllFieldsConfigurable.Type.F;
 
+        ac.postConfig();
+
         return ac;
     }
 }
