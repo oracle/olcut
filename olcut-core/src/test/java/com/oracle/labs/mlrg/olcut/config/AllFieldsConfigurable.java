@@ -40,6 +40,8 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -202,6 +204,25 @@ public class AllFieldsConfigurable implements Configurable, Provenancable<Config
 
     @Config
     public Type enumField;
+
+    /**
+     * Normalizes the paths.
+     */
+    @Override
+    public void postConfig() {
+        fileField = fileField.getAbsoluteFile();
+        pathField = pathField.toAbsolutePath().normalize();
+        Set<Path> newSet = new HashSet<>();
+        for (Path p : setPathField) {
+            newSet.add(p.toAbsolutePath().normalize());
+        }
+        setPathField = newSet;
+        Map<String,File> newMap = new HashMap<>();
+        for (Map.Entry<String,File> e : mapFileField.entrySet()) {
+            newMap.put(e.getKey(),e.getValue().getAbsoluteFile());
+        }
+        mapFileField = newMap;
+    }
 
     @Override
     public String toString() {
