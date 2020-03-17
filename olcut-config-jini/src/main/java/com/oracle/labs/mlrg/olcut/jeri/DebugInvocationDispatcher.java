@@ -63,10 +63,10 @@ public class DebugInvocationDispatcher extends BasicInvocationDispatcher {
             Class permissionClass,
             ClassLoader loader, Map<String, Integer> reportMap) throws ExportException {
         super(methods, serverCapabilities, serverConstraints, permissionClass, loader);
-        this.reportMap = reportMap != null ? reportMap : new HashMap<String, Integer>();
-        reportW = new HashMap<String, NanoWatch>();
-        networkTime = new HashMap<String, Long>();
-        marshalTime = new HashMap<String, Long>();
+        this.reportMap = reportMap != null ? reportMap : new HashMap<>();
+        reportW = new HashMap<>();
+        networkTime = new HashMap<>();
+        marshalTime = new HashMap<>();
         for(String method : this.reportMap.keySet()) {
             reportW.put(method, new NanoWatch());
             networkTime.put(method, 0L);

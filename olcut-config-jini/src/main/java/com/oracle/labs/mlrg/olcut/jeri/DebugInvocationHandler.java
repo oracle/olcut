@@ -53,8 +53,8 @@ public class DebugInvocationHandler extends BasicInvocationHandler {
 
     public DebugInvocationHandler(ObjectEndpoint oe, MethodConstraints serverConstraints, Map<String, Integer> reportMap) {
         super(oe, serverConstraints);
-        this.reportMap = reportMap != null ? reportMap : new HashMap<String, Integer>();
-        reportW = new HashMap<String, NanoWatch>();
+        this.reportMap = reportMap != null ? reportMap : new HashMap<>();
+        reportW = new HashMap<>();
         for(String method : this.reportMap.keySet()) {
             reportW.put(method, new NanoWatch());
         }
@@ -62,7 +62,7 @@ public class DebugInvocationHandler extends BasicInvocationHandler {
 
     public DebugInvocationHandler(BasicInvocationHandler other, MethodConstraints clientConstraints, Map<String, Integer> reportMap) {
         super(other, clientConstraints);
-        this.reportMap = reportMap != null ? reportMap : new HashMap<String, Integer>();
+        this.reportMap = reportMap != null ? reportMap : new HashMap<>();
     }
 
     @Override

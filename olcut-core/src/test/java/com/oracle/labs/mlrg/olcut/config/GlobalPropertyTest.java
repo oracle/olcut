@@ -81,9 +81,7 @@ public class GlobalPropertyTest {
 
     @Test
     public void invalidGlobalProperty() {
-        assertThrows(ConfigLoaderException.class, () -> {
-            new ConfigurationManager("invalidGlobalPropertyConfig.xml");
-        });
+        assertThrows(ConfigLoaderException.class, () -> new ConfigurationManager("invalidGlobalPropertyConfig.xml"));
     }
 
     @Test

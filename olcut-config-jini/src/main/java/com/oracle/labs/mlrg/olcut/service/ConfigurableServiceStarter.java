@@ -82,7 +82,7 @@ public class ConfigurableServiceStarter implements Configurable {
     public void postConfig() throws PropertyException {
         //
         // Get the names of the components we're to start, then start them.
-        serviceThreads = new ArrayList<Thread>();
+        serviceThreads = new ArrayList<>();
         for (ConfigurableService service : services) {
             service.setStarter(this);
             Thread st = new Thread(service);

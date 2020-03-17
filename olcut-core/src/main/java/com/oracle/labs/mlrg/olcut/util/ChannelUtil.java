@@ -94,8 +94,8 @@ public class ChannelUtil {
             throws java.io.IOException {
 
         if(size == 0) {
-            for(int i = 0; i < b.length; i++) {
-                size += b[i].remaining();
+            for (ByteBuffer byteBuffer : b) {
+                size += byteBuffer.remaining();
             }
         }
 

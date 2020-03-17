@@ -45,12 +45,12 @@ import jline.console.completer.Completer;
  */
 public class EnumCompleter <E extends Enum<E>> implements Completer {
         
-    protected Set<String> vals = new HashSet<String>();
+    protected Set<String> vals = new HashSet<>();
         
     public EnumCompleter(Class<E> enumType) {
         E[] consts = enumType.getEnumConstants();
-        for (int i = 0; i < consts.length; i++) {
-            vals.add(consts[i].name());
+        for (E aConst : consts) {
+            vals.add(aConst.name());
         }
     }
         

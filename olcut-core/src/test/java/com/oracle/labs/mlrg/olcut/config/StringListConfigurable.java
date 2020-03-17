@@ -37,6 +37,6 @@ import java.util.List;
 public class StringListConfigurable implements Configurable {
 
     @Config
-    public List<String> strings = new ArrayList<String>();
+    public List<String> strings = new ArrayList<>();
 
 }

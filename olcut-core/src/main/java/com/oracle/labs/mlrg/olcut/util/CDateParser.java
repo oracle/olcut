@@ -143,8 +143,8 @@ public class CDateParser {
 
     public CDateParser() {
         // Add US formats
-        for(int i = 0; i < USFormatStrings.length; ++i) {
-            dateFormats.add(new SimpleDateFormat(USFormatStrings[i], Locale.US));
+        for (String usFormatString : USFormatStrings) {
+            dateFormats.add(new SimpleDateFormat(usFormatString, Locale.US));
         }
         // Add local formats
         dateFormats.add(DateFormat.getDateTimeInstance(DateFormat.FULL,
@@ -176,12 +176,11 @@ public class CDateParser {
      */
     public Date parse(String date) throws ParseException {
         Date d = null;
-        for(Iterator<DateFormat> i = dateFormats.iterator(); i.hasNext();) {
+        for (DateFormat dateFormat : dateFormats) {
             try {
-                DateFormat df = i.next();
-                d = df.parse(date);
+                d = dateFormat.parse(date);
                 return d;
-            } catch(Exception e) {
+            } catch (Exception e) {
             }
         }
 
