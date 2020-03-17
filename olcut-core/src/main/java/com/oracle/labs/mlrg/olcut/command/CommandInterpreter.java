@@ -104,7 +104,7 @@ public class CommandInterpreter extends Thread {
      * have been layered on top of this one, they will be consulted first for
      * commands.
      */
-    protected Deque<LayeredCommandInterpreter> interpreters = new LinkedList<LayeredCommandInterpreter>();
+    protected Deque<LayeredCommandInterpreter> interpreters = new LinkedList<>();
 
     private int totalCommands = 0;
 
@@ -316,11 +316,11 @@ public class CommandInterpreter extends Thread {
             add("argtest", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
 
                 public String execute(CommandInterpreter ci, String[] args) {
-                    StringBuffer b = new StringBuffer(80);
+                    StringBuilder b = new StringBuilder(80);
 
                     out.println("arg length is " + args.length);
-                    for(int i = 0; i < args.length; i++) {
-                        b.append(args[i]);
+                    for (String arg : args) {
+                        b.append(arg);
                         b.append("\n");
                     }
                     putResponse(b.toString());
@@ -983,7 +983,7 @@ public class CommandInterpreter extends Thread {
     }
     
     private HashSet<Class> supportedMethodParameters =
-            new HashSet<Class>(Arrays.asList(
+            new HashSet<>(Arrays.asList(
                     String.class,
                     String[].class,
                     Integer.class,
@@ -1338,7 +1338,7 @@ public class CommandInterpreter extends Thread {
      */
     protected String[] parseMessage(String message) {
         int tokenType;
-        List<String> words = new ArrayList<String>();
+        List<String> words = new ArrayList<>();
         StreamTokenizer st = new StreamTokenizer(new StringReader(message));
 
         st.resetSyntax();
@@ -1682,9 +1682,9 @@ public class CommandInterpreter extends Thread {
             this.groupName = groupName;
             this.description = description;
             if(keepSorted) {
-                commands = new TreeSet<String>();
+                commands = new TreeSet<>();
             } else {
-                commands = new LinkedHashSet<String>();
+                commands = new LinkedHashSet<>();
             }
         }
 

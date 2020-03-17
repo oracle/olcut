@@ -130,7 +130,7 @@ public class EdnLoader implements ConfigLoader {
         if(o instanceof Boolean) {
             return (boolean) o;
         } else if(o instanceof String) {
-                return Boolean.valueOf((String) o);
+                return Boolean.parseBoolean((String) o);
         } else {
             throw new ConfigLoaderException("Expected boolean or boolean string but found " + o.getClass() + " with value " + o.toString());
         }

@@ -375,7 +375,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                     if (o == null) {
                         lp.add(ConfiguredObjectProvenance.getEmptyProvenance(f.getType().getComponentType().getName()));
                     } else if (o instanceof Provenancable) {
-                        Provenancable p = (Provenancable) o;
+                        Provenancable<?> p = (Provenancable<?>) o;
                         lp.add(p.getProvenance());
                     } else {
                         logger.log(Level.WARNING, "Automatic provenance generated for Configurable class, consider opting into provenance by implementing Provenancable on " + o.getClass().toString());
@@ -385,7 +385,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 return new ListProvenance<>(lp);
             default:
                 logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + f.getName() + "' not recorded.");
-                return new ListProvenance();
+                return new ListProvenance<>();
         }
     }
 

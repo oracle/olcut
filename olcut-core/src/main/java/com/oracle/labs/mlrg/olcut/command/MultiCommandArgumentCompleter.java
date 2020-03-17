@@ -80,7 +80,7 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
         this.reader = reader;
         this.cmdMap = cmdMap;
         this.interpreters = interpreters;
-        compMap = new HashMap<String,Completer[]>();
+        compMap = new HashMap<>();
         setStrict(false);
     }
     

@@ -46,7 +46,7 @@ public class ExceptionGenerator implements RegistryConfigurable, Configurable {
     @Config
     private int incr = 1;
     
-    public List<String> recs = new ArrayList<String>();
+    public List<String> recs = new ArrayList<>();
     
     private int sopCount = 0;
     

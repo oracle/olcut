@@ -90,12 +90,11 @@ public class ComponentListTest {
         assertTrue(l.size() == 5);
         int simp = 0;
         int string = 0;
-        for (int i = 0; i < l.size(); i++) {
-            Configurable c = l.get(i);
+        for (Configurable c : l) {
             assertNotNull(c);
-            if(c.getClass().equals(SimpleConfigurable.class)) {
+            if (c.getClass().equals(SimpleConfigurable.class)) {
                 simp++;
-            } else if(c.getClass().equals(StringConfigurable.class)) {
+            } else if (c.getClass().equals(StringConfigurable.class)) {
                 string++;
             } else {
                 fail("Unknown class: " + c.getClass());
@@ -114,8 +113,7 @@ public class ComponentListTest {
         assertTrue(l.size() == 4);
         int simp = 0;
         int string = 0;
-        for (int i = 0; i < l.size(); i++) {
-            Configurable c = l.get(i);
+        for (Configurable c : l) {
             assertNotNull(c);
             if (c.getClass().equals(SimpleConfigurable.class)) {
                 simp++;

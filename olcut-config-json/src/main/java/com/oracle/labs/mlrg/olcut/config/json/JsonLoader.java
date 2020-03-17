@@ -207,9 +207,9 @@ public class JsonLoader implements ConfigLoader {
         String override = overrideNode != null ? overrideNode.textValue() : null;
 
         JsonNode export = node.get(ConfigLoader.EXPORT);
-        boolean exportable = export != null && Boolean.valueOf(export.textValue());
+        boolean exportable = export != null && Boolean.parseBoolean(export.textValue());
         JsonNode impNode = node.get(ConfigLoader.IMPORT);
-        boolean importable = impNode != null && Boolean.valueOf(impNode.textValue());
+        boolean importable = impNode != null && Boolean.parseBoolean(impNode.textValue());
         JsonNode lt = node.get(ConfigLoader.LEASETIME);
         if (export == null && lt != null) {
             throw new ConfigLoaderException("lease timeout " + lt +
