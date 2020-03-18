@@ -34,10 +34,13 @@ import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 import org.jline.reader.impl.completer.StringsCompleter;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 
 /**
@@ -55,17 +58,25 @@ public class CommandCompleter extends StringsCompleter {
      * @param interpreters The interpreters used.
      */
     public CommandCompleter(Map<String,CommandInterface> cmdMap, Deque<LayeredCommandInterpreter> interpreters) {
+        super(createSupplier(cmdMap,interpreters));
+    }
+
+    private static Supplier<Collection<String>> createSupplier(Map<String,CommandInterface> cmdMap, Deque<LayeredCommandInterpreter> interpreters) {
         Objects.requireNonNull(cmdMap);
         Objects.requireNonNull(interpreters);
-        // Load in commands
-        for (String key : cmdMap.keySet()) {
-            candidates.add(new Candidate(key.toLowerCase()));
-        }
-        // Load in commands from layered interpreters
-        for (LayeredCommandInterpreter lci : interpreters) {
-            for (String command : lci.commands.keySet()) {
-                candidates.add(new Candidate(command.toLowerCase()));
+        return () -> {
+            ArrayList<String> output = new ArrayList<>();
+            // Load in commands
+            for (String key : cmdMap.keySet()) {
+                output.add(key);
             }
-        }
+            // Load in commands from layered interpreters
+            for (LayeredCommandInterpreter lci : interpreters) {
+                for (String command : lci.commands.keySet()) {
+                    output.add(command);
+                }
+            }
+            return output;
+        };
     }
 }
