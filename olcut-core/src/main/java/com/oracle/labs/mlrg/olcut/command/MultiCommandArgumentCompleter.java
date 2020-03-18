@@ -28,16 +28,22 @@
 
 package com.oracle.labs.mlrg.olcut.command;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import jline.console.ConsoleReader;
-import jline.console.completer.ArgumentCompleter;
-import jline.console.completer.Completer;
-import jline.internal.Log;
+import org.jline.reader.Candidate;
+import org.jline.reader.Completer;
+import org.jline.reader.LineReader;
+import org.jline.reader.ParsedLine;
+import org.jline.reader.impl.DefaultParser;
+import org.jline.reader.impl.completer.ArgumentCompleter;
+import org.jline.utils.Log;
 
 /**
  * Mostly re-implements the ArgumentCompletor from jline, but allows for
@@ -48,24 +54,14 @@ import jline.internal.Log;
  */
 class MultiCommandArgumentCompleter extends ArgumentCompleter {
 
+    private static final Logger logger = Logger.getLogger(MultiCommandArgumentCompleter.class.getName());
+
     protected Map<String,CommandInterface> cmdMap;
     
     protected Deque<LayeredCommandInterpreter> interpreters;
     
-    protected Map<String,Completer[]> compMap;
-    
-    /**
-     * ArgumentDelimiter.delim isn't accessible from here, so we'll mask
-     * "delim" in the superclass with this one that is useable.
-     */
-    protected WhitespaceArgumentDelimiter delim =
-            new WhitespaceArgumentDelimiter();
-    /**
-     * We need the reader we're working through to get which command we're
-     * working on
-     */
-    protected ConsoleReader reader;
-    
+    protected Map<String, Completer[]> compMap;
+
     /**
      * Creates completors for all the commands in cmdMap that implement
      * CompletorProvider.
@@ -73,11 +69,9 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
      * @param cmdMap a reference to the shell's internal command map, reused
      *               to check for added commands
      */
-    public MultiCommandArgumentCompleter(ConsoleReader reader,
-                                         Map<String,CommandInterface> cmdMap, 
+    public MultiCommandArgumentCompleter(Map<String,CommandInterface> cmdMap,
                                          Deque<LayeredCommandInterpreter> interpreters) {
-        super((Completer)null);
-        this.reader = reader;
+        super();
         this.cmdMap = cmdMap;
         this.interpreters = interpreters;
         compMap = new HashMap<>();
@@ -113,105 +107,54 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
             }
         }
     }
-    
-    @Override
-    public int complete(final String buffer, final int cursor,
-                        final List<CharSequence> candidates) {
-        Log.debug("\ncomplete invoked with " + buffer);
-        ArgumentList list = delim.delimit(buffer, cursor);
-        int argpos = list.getArgumentPosition();
-        int argIndex = list.getCursorArgumentIndex();
 
-        if (argIndex < 0) {
-            return -1;
+    @Override
+    //public int complete(final String buffer, final int cursor,
+    //                    final List<CharSequence> candidates) {
+    public void complete(LineReader reader, ParsedLine line, final List<Candidate> candidates) {
+        logger.log(Level.FINE,"\ncomplete invoked with " + line.line());
+        logger.log(Level.FINE, "Line(wordCursor='"+line.wordCursor()+"',word='"+line.word()+"',wordIndex='"+line.wordIndex()+"',cursor='"+line.cursor()+"'");
+        Objects.requireNonNull(line);
+        Objects.requireNonNull(candidates);
+
+        if (line.wordIndex() < 0) {
+            return;
         }
 
-        //
-        // Adjust index since delimit leaves off the initial command name
-        argIndex--;
         final Completer comp;
 
         //
         // Update our subcommand completors in case there are new ones
         updateCompletors();
         Completer[] completors;
-        if (list.getCursorArgumentIndex() == 0) {
+        if (line.wordIndex() == 0) {
             comp = new CommandCompleter(cmdMap, interpreters);
             completors = new Completer[] {comp};
         } else {
             //
             // Get out the list of completors we should use based on the current
             // subcommand
-            String wholeBuff = reader.getCursorBuffer().buffer.toString();
+            String wholeBuff = line.line();
             completors = compMap.get(wholeBuff.substring(0, wholeBuff.indexOf(" ")));
             
             if (completors == null) {
                 //
                 // No completions at this point
-                return -1;
+                return;
             }
-            
+
             // if we are beyond the end of the completors, just use the last one
-            if (argIndex >= completors.length) {
+            if (line.wordIndex() >= completors.length) {
                 comp = completors[completors.length - 1];
             } else {
-                comp = completors[argIndex];
+                comp = completors[line.wordIndex()-1];
             }
         }
-        Log.debug("evaluating " + list.getCursorArgument() + " with " + comp.getClass().getSimpleName() + " at " + argIndex);
-        // ensure that all the previous completors are successful before
-        // allowing this completor to pass (only if strict is true).
-        for (int i = 0; isStrict() && (i < argIndex); i++) {
-            Completer sub =
-                completors[(i >= completors.length) ? (completors.length - 1) : i];
-            String[] args = list.getArguments();
-            String arg = ((args == null) || (i >= args.length)) ? "" : args[i];
+        logger.log(Level.FINE,"evaluating " + line.word() + " with " + comp.getClass().getSimpleName() + " at " + line.wordCursor());
 
-            List<CharSequence> subCandidates = new LinkedList<>();
+        comp.complete(reader, line, candidates);
 
-            if (sub.complete(arg, arg.length(), subCandidates) == -1) {
-                return -1;
-            }
-
-            if (subCandidates.size() == 0) {
-                return -1;
-            }
-        }
-
-        int ret = comp.complete(list.getCursorArgument(), argpos, candidates);
-
-        if (ret == -1) {
-            return -1;
-        }
-
-        int pos = ret + (list.getBufferPosition() - argpos);
-
-        /**
-         *  Special case: when completing in the middle of a line, and the
-         *  area under the cursor is a delimiter, then trim any delimiters
-         *  from the candidates, since we do not need to have an extra
-         *  delimiter.
-         *
-         *  E.g., if we have a completion for "foo", and we
-         *  enter "f bar" into the buffer, and move to after the "f"
-         *  and hit TAB, we want "foo bar" instead of "foo  bar".
-         */
-        if ((cursor != buffer.length()) && delim.isDelimiter(buffer, cursor)) {
-            for (int i = 0; i < candidates.size(); i++) {
-                String val = candidates.get(i).toString();
-
-                while ((val.length() > 0)
-                    && delim.isDelimiter(val, val.length() - 1)) {
-                    val = val.substring(0, val.length() - 1);
-                }
-
-                candidates.set(i, val);
-            }
-        }
-
-        Log.debug("Completing " + buffer + "(pos=" + cursor + ") "
-            + "with: " + candidates + ": offset=" + pos);
-
-        return pos;
+        logger.log(Level.FINE,"Completing " + line.line() + "(pos=" + line.wordCursor() + ") "
+            + "with: " + candidates);
     }
 }

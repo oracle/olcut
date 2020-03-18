@@ -44,4 +44,5 @@ import java.lang.annotation.Target;
 public @interface Command {
     String usage();
     String completers() default "";
+    String alias() default "";
 }
