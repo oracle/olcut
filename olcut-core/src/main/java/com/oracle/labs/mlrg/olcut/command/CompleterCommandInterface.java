@@ -28,7 +28,7 @@
 
 package com.oracle.labs.mlrg.olcut.command;
 
-import jline.console.completer.Completer;
+import org.jline.reader.Completer;
 
 /**
  * A CommandInterface for commands that can provide tab-completion for their

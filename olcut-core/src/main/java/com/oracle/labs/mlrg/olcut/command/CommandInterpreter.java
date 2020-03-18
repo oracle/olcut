@@ -63,13 +63,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.oracle.labs.mlrg.olcut.OLCUT;
 import com.oracle.labs.mlrg.olcut.util.Util;
-import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import jline.console.completer.FileNameCompleter;
-import jline.console.completer.NullCompleter;
-import jline.console.history.FileHistory;
-import jline.console.history.History;
+import org.jline.builtins.Completers;
+import org.jline.reader.Completer;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.DefaultParser;
+import org.jline.reader.impl.completer.NullCompleter;
+import org.jline.reader.impl.history.DefaultHistory;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 
 
 /**
@@ -106,7 +111,7 @@ public class CommandInterpreter extends Thread {
      */
     protected Deque<LayeredCommandInterpreter> interpreters = new LinkedList<>();
 
-    private int totalCommands = 0;
+    int totalCommands = 0;
 
     private boolean parseQuotes = true;
 
@@ -114,11 +119,11 @@ public class CommandInterpreter extends Thread {
 
     private String rawArguments;
 
-    private boolean done = false;
+    boolean done = false;
 
     private boolean trace = false;
 
-    private CommandHistory history = new CommandHistory();
+    CommandHistory history = new CommandHistory();
 
     private BufferedReader in;
 
@@ -128,7 +133,7 @@ public class CommandInterpreter extends Thread {
 
     private String defaultCommand;
 
-    private ConsoleReader consoleReader = null;
+    private LineReader consoleReader = null;
 
     private Pattern layeredCommandPattern = Pattern.compile("(.*)\\.([^.]*)");
 
@@ -155,28 +160,39 @@ public class CommandInterpreter extends Thread {
 
     protected void setupJLine() {
         try {
-            consoleReader = new ConsoleReader();
-            consoleReader.setBellEnabled(false);
+            TerminalBuilder builder = TerminalBuilder.builder();
+            builder.system(true);
+            Terminal terminal = builder.build();
+            DefaultParser parser = new DefaultParser();
+            parser.setEofOnUnclosedBracket(DefaultParser.Bracket.CURLY, DefaultParser.Bracket.ROUND, DefaultParser.Bracket.SQUARE);
+            parser.setEofOnUnclosedQuote(true);
+            LineReaderBuilder lineBuilder = LineReaderBuilder.builder();
+            logger.log(Level.FINER,"jline-3!");
             String histFile = System.getProperty("user.home")
                     + File.separator
-                    + ".olcut_history";
+                    + ".olcut_history_5";
             String main = Util.getMainClassName();
             if(!main.isEmpty()) {
                 histFile += "_" + main;
+                lineBuilder.appName(main);
             }
-            History history
-                    = new FileHistory(new File(histFile));
-            
-            consoleReader.setHistory(history);
-            //consoleReader.setDebug(new PrintWriter(System.out));
-            consoleReader.addCompleter(new MultiCommandArgumentCompleter(consoleReader, commands, interpreters));
+            lineBuilder.terminal(terminal);
+            lineBuilder.parser(parser);
+            lineBuilder.completer(new MultiCommandArgumentCompleter(commands,interpreters));
+            lineBuilder.option(LineReader.Option.EMPTY_WORD_OPTIONS, true);
+            lineBuilder.option(LineReader.Option.COMPLETE_IN_WORD, true);
+            lineBuilder.option(LineReader.Option.DISABLE_EVENT_EXPANSION, true);
+            lineBuilder.option(LineReader.Option.HISTORY_BEEP,false);
+            lineBuilder.variable(LineReader.HISTORY_FILE,histFile);
+            lineBuilder.history(new DefaultHistory());
+            consoleReader = lineBuilder.build();
         } catch(IOException e) {
             logger.info("Failed to load JLine, falling back to System.in");
             in = new BufferedReader(new InputStreamReader(System.in));
         }
     }
 
-    public ConsoleReader getConsoleReader() {
+    public LineReader getConsoleReader() {
         return consoleReader;
     }
 
@@ -207,524 +223,9 @@ public class CommandInterpreter extends Thread {
      *
      */
     private void addStandardCommands() {
-
-        addGroup(STANDARD_COMMANDS_GROUP_NAME, "Standard commands");
+        StandardCommands stdCommands = new StandardCommands();
+        add(stdCommands);
         addGroup(UNGROUPED_COMMANDS_GROUP_NAME, "Commands not in other groups");
-
-        add("help", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                dumpCommands();
-                return "";
-            }
-
-            public String getHelp() {
-                return "lists available commands";
-            }
-        });
-
-        add("history", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                history.dump();
-                return "";
-            }
-
-            public String getHelp() {
-                return "shows command history";
-            }
-        });
-
-        add("status", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                putResponse("Total number of commands: " + totalCommands);
-                return "";
-            }
-
-            public String getHelp() {
-                return "shows command status";
-            }
-        });
-
-        add("echo", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                StringBuilder b = new StringBuilder(80);
-
-                for(int i = 1; i < args.length; i++) {
-                    b.append(args[i]);
-                    b.append(" ");
-                }
-                putResponse(b.toString());
-                return "";
-            }
-
-            public String getHelp() {
-                return "display a line of text";
-            }
-        });
-
-        add("pargs", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            @Override
-            public String execute(CommandInterpreter ci, String[] args) throws Exception {
-                putResponse(String.format("args: %s", Arrays.toString(args)));
-                return "";
-            }
-
-            @Override
-            public String getHelp() {
-                return "Print the args";
-            }
-        });
-
-        add("menu", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                if(args.length < 2) {
-                    return "usage: menu command-number [args]";
-                } else {
-                    try {
-                        int which = Integer.parseInt(args[1]);
-                        String cmd = getCommandByNumber(which);
-                        if(cmd == null) {
-                            return "can't find that command";
-                        } else {
-                            String[] subargs = new String[args.length - 1];
-                            if(args.length > 2) {
-                                System.arraycopy(args, 2, subargs,
-                                        1, subargs.length - 1);
-                            }
-                            subargs[0] = cmd;
-                            return CommandInterpreter.this.execute(subargs);
-                        }
-                    } catch(NumberFormatException e) {
-                        return "bad number format";
-                    }
-                }
-            }
-
-            public String getHelp() {
-                return "execute a command by number";
-            }
-        });
-
-        addAlias("menu", "m");
-
-        if(false) {
-            add("argtest", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-                public String execute(CommandInterpreter ci, String[] args) {
-                    StringBuilder b = new StringBuilder(80);
-
-                    out.println("arg length is " + args.length);
-                    for (String arg : args) {
-                        b.append(arg);
-                        b.append("\n");
-                    }
-                    putResponse(b.toString());
-                    return "";
-                }
-
-                public String getHelp() {
-                    return "argument test";
-                }
-            });
-        }
-
-        add("quit", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                done = true;
-                return "";
-            }
-
-            public String getHelp() {
-                return "exit the shell";
-            }
-        });
-
-        add("exit", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                done = true;
-                return "";
-            }
-
-            public String getHelp() {
-                return "exit the shell";
-            }
-        });
-
-        add("on_exit", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                return "";
-            }
-
-            public String getHelp() {
-                return "command executed upon exit";
-            }
-        });
-
-        add("version", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                putResponse("Command Interpreter - Version 1.1 ");
-                return "";
-            }
-
-            public String getHelp() {
-                return "displays version information";
-            }
-        });
-
-        add("gc", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                Runtime.getRuntime().gc();
-                return "";
-            }
-
-            public String getHelp() {
-                return "performs garbage collection";
-            }
-        });
-
-        add("memory", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                long totalMem = Runtime.getRuntime().totalMemory();
-                long freeMem = Runtime.getRuntime().freeMemory();
-
-                putResponse("Free Memory  : " + freeMem / (1024.0 * 1024) + " mbytes");
-                putResponse("Total Memory : " + totalMem / (1024.0 * 1024) + " mbytes");
-                return "";
-            }
-
-            public String getHelp() {
-                return "shows memory statistics";
-            }
-        });
-
-        add("delay", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                if(args.length == 2) {
-                    try {
-                        float seconds = Float.parseFloat(args[1]);
-                        Thread.sleep((long) (seconds * 1000));
-                    } catch(NumberFormatException nfe) {
-                        putResponse("Usage: delay time-in-seconds");
-                    } catch(InterruptedException ie) {
-                    }
-                } else {
-                    putResponse("Usage: delay time-in-seconds");
-                }
-                return "";
-            }
-
-            public String getHelp() {
-                return "pauses for a given number of seconds";
-            }
-        });
-
-        add("alias", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                if(args.length == 3) {
-                    String alias = args[1];
-                    String cmd = args[2];
-                    CommandInterpreter.this.addAlias(cmd, alias);
-                } else {
-                    putResponse("Usage: alias name def");
-                }
-                return "";
-            }
-
-            public String getHelp() {
-                return "adds a pseudonym or shorthand term for a command";
-            }
-
-            @Override
-            public Completer[] getCompleters() {
-                return new Completer[]{
-                    new NullCompleter(),
-                    new CommandCompleter(commands, interpreters),
-                    new NullCompleter()
-                };
-            }
-        });
-
-        add("repeat", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                if(args.length >= 3) {
-                    try {
-                        int count = Integer.parseInt(args[1]);
-                        String[] subargs = new String[args.length - 2];
-                        System.arraycopy(args, 2, subargs, 0, subargs.length);
-
-                        for(int i = 0; i < count; i++) {
-                            putResponse(
-                                    CommandInterpreter.this.execute(subargs));
-                        }
-                    } catch(NumberFormatException nfe) {
-                        putResponse("Usage: repeat count command args");
-                    }
-                } else {
-                    putResponse("Usage: repeat count command args");
-                }
-                return "";
-            }
-
-            public String getHelp() {
-                return "repeatedly execute a command";
-            }
-
-            @Override
-            public Completer[] getCompleters() {
-                return new Completer[]{
-                    new NullCompleter(),
-                    new CommandCompleter(commands, interpreters),
-                    new NullCompleter()
-                };
-            }
-        });
-
-        add("redirect", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                if(args.length >= 3) {
-                    try {
-                        String[] subargs = new String[args.length - 2];
-                        System.arraycopy(args, 2, subargs, 0, subargs.length);
-                        PrintStream oldOut = out;
-                        out = new PrintStream(args[1], "utf-8");
-                        putResponse(CommandInterpreter.this.execute(subargs));
-                        out.close();
-                        out = oldOut;
-                    } catch(IOException ioe) {
-                        System.err.println("Can't write to " + args[1] + " " + ioe);
-                    }
-                } else {
-                    putResponse("Usage: redirect file command [args ...]");
-                }
-                return "";
-            }
-
-            public String getHelp() {
-                return "redirect command output to a file";
-            }
-
-            @Override
-            public Completer[] getCompleters() {
-                return new Completer[]{
-                    new FileNameCompleter(),
-                    new CommandCompleter(commands, interpreters),
-                    new NullCompleter()
-                };
-            }
-        });
-
-        add("load", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                if(args.length == 2) {
-                    if(!load(args[1])) {
-                        putResponse("load: trouble loading " + args[1]);
-                    }
-                } else {
-                    putResponse("Usage: load filename");
-                }
-                return "";
-            }
-
-            public String getHelp() {
-                return "load and execute commands from a file";
-            }
-
-            @Override
-            public Completer[] getCompleters() {
-                return new Completer[]{
-                    new FileNameCompleter(),
-                    new NullCompleter()
-                };
-            }
-        });
-
-        add("pload", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                if(args.length == 3) {
-                    if(!pload(args[1], Integer.parseInt(args[2]))) {
-                        putResponse("pload: trouble loading " + args[1]);
-                    }
-                } else {
-                    putResponse("Usage: pload <filename> <numThreads>");
-                }
-                return "";
-            }
-
-            public String getHelp() {
-                return "load and execute commands from a file in parallel";
-            }
-
-            @Override
-            public Completer[] getCompleters() {
-                return new Completer[]{
-                    new FileNameCompleter(),
-                    new NullCompleter()
-                };
-            }
-        });
-
-        add("chain", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                if(args.length > 1) {
-                    String[] subargs = new String[args.length - 1];
-                    List<String[]> commands = new ArrayList<>(5);
-                    int count = 0;
-                    for(int i = 1; i < args.length; i++) {
-                        if(args[i].equals(";")) {
-                            if(count > 0) {
-                                String[] trimmedArgs = new String[count];
-                                System.arraycopy(subargs, 0, trimmedArgs,
-                                        0, trimmedArgs.length);
-                                commands.add(trimmedArgs);
-                                count = 0;
-                            }
-                        } else {
-                            subargs[count++] = args[i];
-                        }
-                    }
-
-                    if(count > 0) {
-                        String[] trimmedArgs = new String[count];
-                        System.arraycopy(subargs, 0, trimmedArgs,
-                                0, trimmedArgs.length);
-                        commands.add(trimmedArgs);
-                        count = 0;
-                    }
-
-                    for(String[] i : commands) {
-                        putResponse(CommandInterpreter.this.execute(i));
-                    }
-                } else {
-                    putResponse("Usage: chain cmd1 ; cmd2 ; cmd3 ");
-                }
-                return "";
-            }
-
-            public String getHelp() {
-                return "execute multiple commands on a single line";
-            }
-        });
-
-        add("time", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                if(args.length > 1) {
-                    String[] subargs = new String[args.length - 1];
-                    System.arraycopy(args, 1, subargs, 0, subargs.length);
-                    long startTime = System.currentTimeMillis();
-                    long endTime;
-
-                    putResponse(CommandInterpreter.this.execute(subargs));
-                    endTime = System.currentTimeMillis();
-
-                    putResponse("Time: " + ((endTime - startTime) / 1000.0) + " seconds");
-
-                } else {
-                    putResponse("Usage: time cmd [args]");
-                }
-                return "";
-            }
-
-            public String getHelp() {
-                return "report the time it takes to run a command";
-            }
-
-            @Override
-            public Completer[] getCompleters() {
-                return new Completer[]{
-                    new CommandCompleter(commands, interpreters),
-                    new NullCompleter()
-                };
-            }
-        });
-
-        add("mstime", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
-
-            public String execute(CommandInterpreter ci, String[] args) {
-                if(args.length > 1) {
-                    String[] subargs = new String[args.length - 1];
-                    System.arraycopy(args, 1, subargs, 0, subargs.length);
-                    long startTime = System.nanoTime();
-                    putResponse(CommandInterpreter.this.execute(subargs));
-                    putResponse(String.format("Time: %.3f ms", (System.nanoTime() - startTime) / 1000000.0));
-                } else {
-                    putResponse("Usage: time cmd [args]");
-                }
-                return "";
-            }
-
-            public String getHelp() {
-                return "report the time it takes to run a command";
-            }
-
-            @Override
-            public Completer[] getCompleters() {
-                return new Completer[]{
-                    new CommandCompleter(commands, interpreters),
-                    new NullCompleter()
-                };
-            }
-        });
-
-        add("redir", STANDARD_COMMANDS_GROUP_NAME, new CompleterCommandInterface() {
-
-            @Override
-            public String execute(CommandInterpreter ci, String[] args) throws Exception {
-                if(args.length != 2) {
-                    return "redir <output file>";
-                }
-                out = new PrintStream(args[1], "utf-8");
-                return "";
-            }
-
-            @Override
-            public String getHelp() {
-                return "redirects the output stream to the given file";
-            }
-
-            @Override
-            public Completer[] getCompleters() {
-                return new Completer[]{
-                    new FileNameCompleter(),
-                    new NullCompleter()
-                };
-            }
-        });
-
-        add("unredir", STANDARD_COMMANDS_GROUP_NAME, new CommandInterface() {
-
-            @Override
-            public String execute(CommandInterpreter ci, String[] args) throws Exception {
-                if(out != System.out) {
-                    out.close();
-                }
-                out = System.out;
-                return "";
-            }
-
-            @Override
-            public String getHelp() {
-                return "resets the output to be System.out";
-            }
-        });
     }
 
     /**
@@ -754,13 +255,14 @@ public class CommandInterpreter extends Thread {
         return count;
     }
 
-    private String getCommandByNumber(int which) {
+    String getCommandByNumber(int which) {
         int count = 0;
         CommandGroupInternal scg = commandGroups.get(STANDARD_COMMANDS_GROUP_NAME);
         for(String cmdName : scg) {
             if(count == which) {
                 return cmdName;
             }
+            count++;
         }
 
         for(CommandGroupInternal cg : commandGroups.values()) {
@@ -921,6 +423,9 @@ public class CommandInterpreter extends Thread {
             // Get a completor for this method and add it in to our shell
             CommandInterface ci = methodToCommand(m, cmd.usage(), group, completorMtd);
             add(m.getName(), group.getName(), ci);
+            if (!cmd.alias().isEmpty()) {
+                addAlias(m.getName(), cmd.alias());
+            }
         }
     }
     
@@ -982,7 +487,7 @@ public class CommandInterpreter extends Thread {
         
     }
     
-    private HashSet<Class> supportedMethodParameters =
+    private HashSet<Class<?>> supportedMethodParameters =
             new HashSet<>(Arrays.asList(
                     String.class,
                     String[].class,
@@ -1042,6 +547,14 @@ public class CommandInterpreter extends Thread {
                         minParams++;
                     }
                 }
+
+                //
+                // Do not require the last argument if it's String[].
+                Parameter p = params[params.length-1];
+                if (p.getType() == String[].class) {
+                    minParams--;
+                }
+
                 //
                 // Adjust minParams to skip the CommandInterpreter in the count
                 minParams--;
@@ -1073,7 +586,11 @@ public class CommandInterpreter extends Thread {
                 String arg;
                 if (args.length - 1 < i) {
                     Optional opt = params[i].getAnnotation(Optional.class);
-                    arg = opt.val();
+                    if (opt != null) {
+                        arg = opt.val();
+                    } else {
+                        arg = "";
+                    }
                 } else {
                     arg = args[i];
                 }
@@ -1084,9 +601,15 @@ public class CommandInterpreter extends Thread {
                     } else if (currParam == String.class) {
                         invokeParams[i] = arg;
                     } else if (currParam == String[].class) {
-                        //
-                        // An array of string pulls the rest of the arguments.
-                        invokeParams[i] = Arrays.copyOfRange(args, i, args.length);
+                        if (numArgs > args.length) {
+                            //
+                            // Insert empty string array.
+                            invokeParams[i] = new String[0];
+                        } else {
+                            //
+                            // An array of string pulls the rest of the arguments.
+                            invokeParams[i] = Arrays.copyOfRange(args, i, args.length);
+                        }
                         break;
                     } else if (currParam == Integer.class || currParam == int.class) {
                         invokeParams[i] = Integer.parseInt(arg);
@@ -1378,7 +901,7 @@ public class CommandInterpreter extends Thread {
     public void run() {
         while(!done) {
             try {
-                printPrompt();
+                //printPrompt();
                 String message = getInputLine();
                 if(message == null) {
                     break;
@@ -1394,6 +917,9 @@ public class CommandInterpreter extends Thread {
                 }
             } catch(IOException e) {
                 out.println("Exception: CommandInterpreter.run()");
+                break;
+            } catch (EndOfFileException e) {
+                // User terminated the session.
                 break;
             }
         }
@@ -1418,7 +944,9 @@ public class CommandInterpreter extends Thread {
      */
     private String getInputLine() throws IOException {
         if(consoleReader != null) {
-            String message = consoleReader.readLine();
+            logger.log(Level.FINER,"In the right place");
+            String message = consoleReader.readLine(prompt);
+            logger.log(Level.FINER, "Read line");
             //
             // To support the shell's history list, show this cmd in it
             history.add(message);
@@ -1493,8 +1021,7 @@ public class CommandInterpreter extends Thread {
 
     public void close() {
         try {
-            ((FileHistory)consoleReader.getHistory()).flush();
-            consoleReader.close();
+            (consoleReader.getHistory()).save();
         } catch (IOException e) {
             logger.log(Level.WARNING,"Failed to write history",e);
         }
@@ -1511,7 +1038,11 @@ public class CommandInterpreter extends Thread {
     }
 
     public boolean load(String filename) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))){
+        return load(new File(filename));
+    }
+
+    public boolean load(File file) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))){
             String inputLine;
 
             while((inputLine = br.readLine()) != null) {
@@ -1531,8 +1062,12 @@ public class CommandInterpreter extends Thread {
     }
 
     public boolean pload(String filename, int numThreads) {
+        return pload(new File(filename),numThreads);
+    }
+
+    public boolean pload(File file, int numThreads) {
         ExecutorService exec = Executors.newFixedThreadPool(numThreads);
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))){
+        try (BufferedReader br = new BufferedReader(new FileReader(file))){
             String inputLine;
 
             while((inputLine = br.readLine()) != null) {
@@ -1564,12 +1099,7 @@ public class CommandInterpreter extends Thread {
      * @param prompt the prompt.
      */
     public void setPrompt(String prompt) {
-        if(consoleReader != null) {
-            consoleReader.setPrompt(prompt);
-            this.prompt = "";
-        } else {
-            this.prompt = prompt;
-        }
+        this.prompt = prompt;
     }
 
     /**
@@ -1711,6 +1241,268 @@ public class CommandInterpreter extends Thread {
         @Override
         public Iterator<String> iterator() {
             return commands.iterator();
+        }
+    }
+
+    /**
+     * Default commands added to all command shells.
+     */
+    class StandardCommands implements CommandGroup {
+
+        @Command(usage = "lists available commands")
+        public String help(CommandInterpreter ci) {
+            ci.dumpCommands();
+            return "";
+        }
+
+        @Command(usage = "shows command history")
+        public String history(CommandInterpreter ci) {
+            ci.history.dump();
+            return "";
+        }
+
+        @Command(usage = "shows command status")
+        public String status(CommandInterpreter ci) {
+            ci.putResponse("Total number of commands: " + ci.totalCommands);
+            return "";
+        }
+
+        @Command(usage = "Echos the input back after the line processing")
+        public String echo(CommandInterpreter ci, String[] args) {
+            StringBuilder b = new StringBuilder(80);
+
+            for (int i = 1; i < args.length; i++) {
+                b.append(args[i]);
+                b.append(" ");
+            }
+            ci.putResponse(b.toString());
+            return "";
+        }
+
+        @Command(usage = "Print the args")
+        public String pargs(CommandInterpreter ci, String[] args) throws Exception {
+            ci.putResponse(String.format("args: %s", Arrays.toString(args)));
+            return "";
+        }
+
+        @Command(usage = "Execute a command by number", alias = "m")
+        public String menu(CommandInterpreter ci, int which, String[] args) {
+            String cmd = ci.getCommandByNumber(which);
+            if (cmd == null) {
+                return "can't find that command";
+            } else {
+                String[] newArgs = new String[1+args.length];
+                newArgs[0] = cmd;
+                System.arraycopy(args,0,newArgs,1,args.length);
+                return ci.execute(newArgs);
+            }
+        }
+
+        @Command(usage = "exit the shell", alias = "exit")
+        public String quit(CommandInterpreter ci) {
+            ci.done = true;
+            return "";
+        }
+
+        @Command(usage = "displays OLCUT version information")
+        public String version(CommandInterpreter ci) {
+            ci.putResponse("Command Interpreter - OLCUT Version " + OLCUT.VERSION);
+            return "";
+        }
+
+        @Command(usage = "Suggests to the runtime it should perform garbage colletion")
+        public String gc(CommandInterpreter ci) {
+            Runtime.getRuntime().gc();
+            return "";
+        }
+
+        @Command(usage = "shows memory statistics")
+        public String memory(CommandInterpreter ci) {
+            long totalMem = Runtime.getRuntime().totalMemory();
+            long freeMem = Runtime.getRuntime().freeMemory();
+
+            ci.putResponse("Free Memory  : " + freeMem / (1024.0 * 1024) + " mbytes");
+            ci.putResponse("Total Memory : " + totalMem / (1024.0 * 1024) + " mbytes");
+            return "";
+        }
+
+        @Command(usage = "pauses for a given number of seconds, delay <time>")
+        public String delay(CommandInterpreter ci, float time) {
+            try {
+                sleep((long) (time * 1000));
+            } catch (InterruptedException ie) {
+            }
+            return "";
+        }
+
+        @Command(usage = "adds a pseudonym of shorthand term for a command", completers = "aliasCompleters")
+        public String alias(CommandInterpreter ci, String alias, String cmd) {
+            ci.addAlias(cmd, alias);
+            return "";
+        }
+
+        public Completer commandCompleter = new CommandCompleter(commands, interpreters);
+
+        public Completer[] aliasCompleters() {
+            return new Completer[]{
+                    new NullCompleter(),
+                    commandCompleter
+            };
+        }
+
+        @Command(usage = "repeatedly execute a command, repeat <int> <command> <args>")
+        public String repeat(CommandInterpreter ci, int count, String[] args) {
+            if (args.length >= 1) {
+                for (int i = 0; i < count; i++) {
+                    ci.putResponse(ci.execute(args));
+                }
+            } else {
+                ci.putResponse("Usage: repeat count command args");
+            }
+            return "";
+        }
+
+        public Completer[] repeatCompleters() {
+            return new Completer[]{
+                    new NullCompleter(),
+                    commandCompleter
+            };
+        }
+
+        @Command(usage = "Redirect a single command to a file, redirect <file-name> <command> <args>")
+        public String redirect(CommandInterpreter ci, File outputFile, String[] args) {
+            try {
+                PrintStream oldOut = ci.out;
+                ci.out = new PrintStream(outputFile, "utf-8");
+                ci.putResponse(ci.execute(args));
+                ci.out.close();
+                ci.out = oldOut;
+            } catch (IOException ioe) {
+                System.err.println("Can't write to " + args[1] + " " + ioe);
+            }
+            return "";
+        }
+
+        public Completer[] redirectCompleters() {
+            return new Completer[] {
+                    new Completers.FileNameCompleter(),
+                    commandCompleter
+            };
+        }
+
+        @Command(usage="Load and execute commands from a file", completers="filenameCompleters")
+        public String load(CommandInterpreter ci, File file) {
+            if(!ci.load(file)) {
+                ci.putResponse("load: trouble loading " + file.toString());
+            }
+            return "";
+        }
+
+        @Command(usage="load and execute commands from a file in parallel, pload <file> <numThreads>",completers="filenameCompleters")
+        public String pload(CommandInterpreter ci, File file, int numThreads) {
+        if (numThreads < 1) {
+            ci.putResponse("pload: supply a positive number of threads, recieved " + numThreads);
+        }
+            if(!ci.pload(file, numThreads)) {
+                ci.putResponse("pload: trouble loading " + file.toString());
+            }
+            return "";
+        }
+
+        @Command(usage="execute multiple commands on a single line, each command separated by ';'")
+        public String chain(CommandInterpreter ci, String... args) {
+            if(args.length > 1) {
+                String[] subargs = new String[args.length - 1];
+                List<String[]> commands = new ArrayList<>(5);
+                int count = 0;
+                for(int i = 1; i < args.length; i++) {
+                    if(args[i].equals(";")) {
+                        if(count > 0) {
+                            String[] trimmedArgs = new String[count];
+                            System.arraycopy(subargs, 0, trimmedArgs,
+                                    0, trimmedArgs.length);
+                            commands.add(trimmedArgs);
+                            count = 0;
+                        }
+                    } else {
+                        subargs[count++] = args[i];
+                    }
+                }
+
+                if(count > 0) {
+                    String[] trimmedArgs = new String[count];
+                    System.arraycopy(subargs, 0, trimmedArgs,
+                            0, trimmedArgs.length);
+                    commands.add(trimmedArgs);
+                    count = 0;
+                }
+
+                for(String[] i : commands) {
+                    ci.putResponse(ci.execute(i));
+                }
+            } else {
+                ci.putResponse("Usage: chain cmd1 ; cmd2 ; cmd3 ");
+            }
+            return "";
+        }
+
+        public Completer[] timeCompleters() {
+            return new Completer[]{commandCompleter};
+        }
+
+        @Command(usage="report the time it takes to run a commmand",completers="timeCompleters")
+        public String time(CommandInterpreter ci, String[] args) {
+            long startTime = System.currentTimeMillis();
+            long endTime;
+
+            ci.putResponse(ci.execute(args));
+            endTime = System.currentTimeMillis();
+
+            ci.putResponse("Time: " + ((endTime - startTime) / 1000.0) + " seconds");
+            return "";
+        }
+
+        @Command(usage="report the time it takes to run a command in milliseconds",completers="timeCompleters")
+        public String mstime(CommandInterpreter ci, String[] args) {
+            if(args.length > 1) {
+                long startTime = System.nanoTime();
+                ci.putResponse(ci.execute(args));
+                ci.putResponse(String.format("Time: %.3f ms", (System.nanoTime() - startTime) / 1000000.0));
+            } else {
+                ci.putResponse("Usage: mstime cmd [args]");
+            }
+            return "";
+        }
+
+        @Command(usage="Redirects all subsequent commands to the given file.",completers="filenameCompleters")
+        public String setoutput(CommandInterpreter ci, File outputFile) throws Exception {
+            ci.out = new PrintStream(outputFile, "utf-8");
+            return "";
+        }
+
+        public Completer[] filenameCompleters() {
+            return new Completer[]{
+                    new Completers.FileNameCompleter()
+            };
+        }
+
+        @Command(usage="resets the output to be System.out")
+        public String unredir(CommandInterpreter ci) {
+            if(ci.out != System.out) {
+                ci.out.close();
+            }
+            ci.out = System.out;
+            return "";
+        }
+
+        @Override
+        public String getName() {
+            return STANDARD_COMMANDS_GROUP_NAME;
+        }
+
+        @Override
+        public String getDescription() {
+            return "Standard commands";
         }
     }
 }

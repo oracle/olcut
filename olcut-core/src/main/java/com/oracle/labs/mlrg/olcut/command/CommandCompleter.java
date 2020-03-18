@@ -28,22 +28,25 @@
 
 package com.oracle.labs.mlrg.olcut.command;
 
+import org.jline.reader.Candidate;
+import org.jline.reader.Completer;
+import org.jline.reader.LineReader;
+import org.jline.reader.ParsedLine;
+import org.jline.reader.impl.completer.StringsCompleter;
+
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import jline.console.completer.Completer;
 
 /**
  * A <a href="http://jline.sourceforge.net">JLine</a>-style Completor that will
  * complete partial text based on all commands currently defined in the
  * {@link CommandInterpreter}
  */
-public class CommandCompleter implements Completer {
+public class CommandCompleter extends StringsCompleter {
 
-    Map<String,CommandInterface> cmdMap;
-    
-    Deque<LayeredCommandInterpreter> interpreters;
     /**
      * Create a CommandCompletor given the map that maps command names to their
      * command objects. The live map of commands must be provided if this
@@ -52,39 +55,17 @@ public class CommandCompleter implements Completer {
      * @param interpreters The interpreters used.
      */
     public CommandCompleter(Map<String,CommandInterface> cmdMap, Deque<LayeredCommandInterpreter> interpreters) {
-        this.cmdMap = cmdMap;
-        this.interpreters = interpreters;
-    }
-
-    /**
-     * See <a href="http://jline.sourceforge.net/apidocs/jline/Completor.html">
-     * Completor</a> in the JLine javadoc.
-     * @param buff The input text buffer.
-     * @param i The index in the buffer to look up to.
-     * @param ret The list of possible completions.
-     * @return -1 if there are no completions, 0 otherwise.
-     */
-    @Override
-    public int complete(String buff, int i, List<CharSequence> ret) {
-        String prefix = "";
-        if (buff != null) {
-            prefix = buff.substring(0, i);
+        Objects.requireNonNull(cmdMap);
+        Objects.requireNonNull(interpreters);
+        // Load in commands
+        for (String key : cmdMap.keySet()) {
+            candidates.add(new Candidate(key.toLowerCase()));
         }
-        for (String command : cmdMap.keySet()) {
-            if (command.toLowerCase().startsWith(prefix.toLowerCase())) {
-                ret.add(command);
+        // Load in commands from layered interpreters
+        for (LayeredCommandInterpreter lci : interpreters) {
+            for (String command : lci.commands.keySet()) {
+                candidates.add(new Candidate(command.toLowerCase()));
             }
         }
-        for(LayeredCommandInterpreter lci : interpreters) {
-            for(String command : lci.commands.keySet()) {
-                if (command.toLowerCase().startsWith(prefix.toLowerCase())) {
-                    ret.add(command + "." + lci.getLayerTag());
-                }
-            }
-        }
-        if (ret.size() == 1) {
-            ret.set(0, ret.get(0) + " ");
-        }
-        return (ret.isEmpty() ? -1 : 0);
     }
 }
