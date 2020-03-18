@@ -56,11 +56,13 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
 
     private static final Logger logger = Logger.getLogger(MultiCommandArgumentCompleter.class.getName());
 
-    protected Map<String,CommandInterface> cmdMap;
+    protected final Map<String,CommandInterface> cmdMap;
     
-    protected Deque<LayeredCommandInterpreter> interpreters;
+    protected final Deque<LayeredCommandInterpreter> interpreters;
     
-    protected Map<String, Completer[]> compMap;
+    protected final Map<String, Completer[]> compMap;
+
+    protected final CommandCompleter commandCompleter;
 
     /**
      * Creates completors for all the commands in cmdMap that implement
@@ -74,6 +76,7 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
         super();
         this.cmdMap = cmdMap;
         this.interpreters = interpreters;
+        this.commandCompleter = new CommandCompleter(cmdMap, interpreters);
         compMap = new HashMap<>();
         setStrict(false);
     }
@@ -128,7 +131,7 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
         updateCompletors();
         Completer[] completors;
         if (line.wordIndex() == 0) {
-            comp = new CommandCompleter(cmdMap, interpreters);
+            comp = commandCompleter;
             completors = new Completer[] {comp};
         } else {
             //
