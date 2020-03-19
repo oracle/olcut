@@ -295,9 +295,13 @@ public final class ProvenanceUtil {
     /**
      * Extracts a list of ConfigurationData which can be used to reconstruct the objects
      * recorded in this provenance.
-     *
+     * <p>
      * The configurations are given machine generated names, and it makes a best effort
      * attempt to flatten cycles without duplicating objects.
+     * <p>
+     * This method uses computeName to make the names of the returned ConfigurationData objects.  The
+     * component name of the object corresponding to the provenance that is passed in can be retrieved
+     * with returnValues.get(0).getName()
      * @param provenance The provenance to extract configuration from.
      * @return A list of configurations.
      */
@@ -641,9 +645,6 @@ public final class ProvenanceUtil {
 	public static void writeObject(Provenancable<? extends ConfiguredObjectProvenance> provenancable,
 			ObjectOutputStream outputStream) throws IOException {
 		ObjectProvenance provenance = provenancable.getProvenance();
-		List<ConfigurationData> configurationData = ProvenanceUtil.extractConfiguration(provenance);
-		String componentName = configurationData.get(0).getName();
-		outputStream.writeObject(componentName);
 		outputStream.writeObject(provenance);
 	}
 
@@ -660,15 +661,20 @@ public final class ProvenanceUtil {
 	 */
 	public static Provenancable<? extends ConfiguredObjectProvenance> readObject(ObjectInputStream inputStream)
 			throws ClassNotFoundException, IOException {
-		String componentName = (String) inputStream.readObject();
 		ConfiguredObjectProvenance provenance = (ConfiguredObjectProvenance) inputStream.readObject();
 		List<ConfigurationData> configurationData = ProvenanceUtil.extractConfiguration(provenance);
+		for(ConfigurationData datum : configurationData) {
+			System.out.println(datum.getName());
+		}
+		String componentName = configurationData.get(0).getName();
+		System.out.println("componentName: "+componentName);
 		ConfigurationManager cm = new ConfigurationManager();
 		cm.addConfiguration(configurationData);
 		@SuppressWarnings("unchecked")
 		Provenancable<ConfiguredObjectProvenance> provenancable = (Provenancable<ConfiguredObjectProvenance>) cm
 				.lookup(componentName);
 		cm.close();
+		System.out.println(provenancable.getClass().getName());
 		return provenancable;
 	}
 
