@@ -74,6 +74,9 @@ import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.util.IOUtil;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 /**
  * A property sheet which defines a collection of properties for a single
  * component in the system.
@@ -326,6 +329,21 @@ public class PropertySheet<T extends Configurable> {
                     throw e;
                 } catch (RuntimeException e) {
                     throw new PropertyException(e, instanceName, null, "RuntimeException thrown by postConfig");
+                }
+                if (owner instanceof ConfigurableMXBean) {
+                    MBeanServer mbs = cm.getMBeanServer();
+                    String on = String.format("%s:type=%s,name=%s",
+                            ownerClass.getPackage().getName(),
+                            ownerClass.getSimpleName(),
+                            instanceName);
+                    try {
+                        ObjectName oname = new ObjectName(on);
+                        if (mbs != null) {
+                            mbs.registerMBean(owner, oname);
+                        }
+                    } catch (Exception e) {
+                        throw new PropertyException(e, instanceName, null, null);
+                    }
                 }
             }
         } catch (PrivilegedActionException e) {
