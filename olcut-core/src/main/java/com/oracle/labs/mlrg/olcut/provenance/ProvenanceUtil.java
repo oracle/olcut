@@ -647,8 +647,7 @@ public final class ProvenanceUtil {
 	 * @param outputStream
 	 * @throws IOException
 	 */
-	public static void writeObject(Provenancable<? extends ConfiguredObjectProvenance> provenancable,
-			ObjectOutputStream outputStream) throws IOException {
+	public static void writeObject(Provenancable<? extends ConfiguredObjectProvenance> provenancable,  ObjectOutputStream outputStream) throws IOException {
 		ObjectProvenance provenance = provenancable.getProvenance();
 		outputStream.writeObject(provenance);
 	}
@@ -664,22 +663,15 @@ public final class ProvenanceUtil {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	public static Provenancable<? extends ConfiguredObjectProvenance> readObject(ObjectInputStream inputStream)
-			throws ClassNotFoundException, IOException {
+	public static Provenancable<? extends ConfiguredObjectProvenance> readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
 		ConfiguredObjectProvenance provenance = (ConfiguredObjectProvenance) inputStream.readObject();
 		List<ConfigurationData> configurationData = ProvenanceUtil.extractConfiguration(provenance);
-		for(ConfigurationData datum : configurationData) {
-			System.out.println(datum.getName());
-		}
 		String componentName = configurationData.get(0).getName();
-		System.out.println("componentName: "+componentName);
 		ConfigurationManager cm = new ConfigurationManager();
 		cm.addConfiguration(configurationData);
 		@SuppressWarnings("unchecked")
-		Provenancable<ConfiguredObjectProvenance> provenancable = (Provenancable<ConfiguredObjectProvenance>) cm
-				.lookup(componentName);
+		Provenancable<ConfiguredObjectProvenance> provenancable = (Provenancable<ConfiguredObjectProvenance>) cm.lookup(componentName);
 		cm.close();
-		System.out.println(provenancable.getClass().getName());
 		return provenancable;
 	}
 
