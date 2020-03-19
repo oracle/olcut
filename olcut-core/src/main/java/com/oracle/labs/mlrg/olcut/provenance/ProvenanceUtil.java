@@ -307,6 +307,7 @@ public final class ProvenanceUtil {
      */
     public static List<ConfigurationData> extractConfiguration(ObjectProvenance provenance) {
         Map<ConfiguredObjectProvenance,Integer> provenanceTracker = new IdentityHashMap<>(30);
+        List<ConfiguredObjectProvenance> traversalOrder = new ArrayList<>();
 
         int counter = 0;
 
@@ -316,16 +317,20 @@ public final class ProvenanceUtil {
         while (!processingQueue.isEmpty()) {
             ObjectProvenance curProv = processingQueue.poll();
             if (curProv instanceof ConfiguredObjectProvenance) {
-                provenanceTracker.put((ConfiguredObjectProvenance)curProv,counter);
-                counter++;
+                if (!provenanceTracker.containsKey((ConfiguredObjectProvenance)curProv)) {
+                    provenanceTracker.put((ConfiguredObjectProvenance) curProv, counter);
+                    traversalOrder.add((ConfiguredObjectProvenance) curProv);
+                    counter++;
+                }
             }
             extractProvenanceToQueue(processingQueue, curProv);
         }
 
         List<ConfigurationData> output = new ArrayList<>();
 
-        for (Map.Entry<ConfiguredObjectProvenance,Integer> e : provenanceTracker.entrySet()) {
-            output.add(extractSingleConfiguration(e.getKey(),computeName(e.getKey(),e.getValue()),provenanceTracker));
+        for (int i = 0; i < traversalOrder.size(); i++) {
+            ConfiguredObjectProvenance curProv = traversalOrder.get(i);
+            output.add(extractSingleConfiguration(curProv,computeName(curProv,i),provenanceTracker));
         }
 
         return output;

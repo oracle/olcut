@@ -43,11 +43,13 @@ import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
+import javax.management.MBeanServer;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -181,6 +183,8 @@ public class ConfigurationManager implements Closeable {
     private String[] unnamedArguments = new String[0];
 
     private String usage;
+
+    private MBeanServer mbs;
 
     /**
      * Creates a new empty configuration manager. This constructor is only of use in cases when a system configuration
@@ -1958,6 +1962,18 @@ public class ConfigurationManager implements Closeable {
             i++;
         }
         return new ListProperty(propList);
+    }
+
+    /**
+     * Gets the current MBean server, creating one if necessary.
+     * @return the current MBean server, or <code>null</code> if there isn't
+     * one available.
+     */
+    protected MBeanServer getMBeanServer() {
+        if(mbs == null) {
+            mbs = ManagementFactory.getPlatformMBeanServer();
+        }
+        return mbs;
     }
 
     /**
