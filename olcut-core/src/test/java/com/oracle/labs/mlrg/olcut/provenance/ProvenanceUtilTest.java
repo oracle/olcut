@@ -1,5 +1,8 @@
 package com.oracle.labs.mlrg.olcut.provenance;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -9,8 +12,6 @@ import java.util.logging.Logger;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.oracle.labs.mlrg.olcut.config.AllFieldsConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
@@ -27,15 +28,16 @@ public class ProvenanceUtilTest {
 
 	@Test
 	void testSerialize() throws Exception {
-        ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
+        File tempFile = File.createTempFile("serialized-provenancable", ".ser", new File("target"));
+        tempFile.deleteOnExit();
+
+		ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
         AllFieldsConfigurable afc = (AllFieldsConfigurable) cm.lookup("all-config");
         cm.close();
         MyProvenancableClass mpc = new MyProvenancableClass(afc);
-        IOUtil.serialize(mpc, "target/my-provenancable-class-test.ser");
-        mpc = IOUtil.deserialize("target/my-provenancable-class-test.ser", MyProvenancableClass.class).get();
-        afc = mpc.afc;
-        assertTrue(afc.boolField);
-        assertEquals(123456789, afc.longField);
+        IOUtil.serialize(mpc, tempFile.getPath());
+        mpc = IOUtil.deserialize(tempFile.getPath(), MyProvenancableClass.class).get();
+        assertEquals(afc, mpc.afc);
 	}
 	
 	public static class MyProvenancableClass implements Serializable {
