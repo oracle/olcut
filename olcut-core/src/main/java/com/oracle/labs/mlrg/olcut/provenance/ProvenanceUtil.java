@@ -29,6 +29,7 @@
 package com.oracle.labs.mlrg.olcut.provenance;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
 import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
@@ -47,6 +48,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.JarURLConnection;
@@ -292,14 +295,19 @@ public final class ProvenanceUtil {
     /**
      * Extracts a list of ConfigurationData which can be used to reconstruct the objects
      * recorded in this provenance.
-     *
+     * <p>
      * The configurations are given machine generated names, and it makes a best effort
      * attempt to flatten cycles without duplicating objects.
+     * <p>
+     * This method uses computeName to make the names of the returned ConfigurationData objects.  The
+     * component name of the object corresponding to the provenance that is passed in can be retrieved
+     * with returnValues.get(0).getName()
      * @param provenance The provenance to extract configuration from.
      * @return A list of configurations.
      */
     public static List<ConfigurationData> extractConfiguration(ObjectProvenance provenance) {
         Map<ConfiguredObjectProvenance,Integer> provenanceTracker = new IdentityHashMap<>(30);
+        List<ConfiguredObjectProvenance> traversalOrder = new ArrayList<>();
 
         int counter = 0;
 
@@ -309,16 +317,20 @@ public final class ProvenanceUtil {
         while (!processingQueue.isEmpty()) {
             ObjectProvenance curProv = processingQueue.poll();
             if (curProv instanceof ConfiguredObjectProvenance) {
-                provenanceTracker.put((ConfiguredObjectProvenance)curProv,counter);
-                counter++;
+                if (!provenanceTracker.containsKey((ConfiguredObjectProvenance)curProv)) {
+                    provenanceTracker.put((ConfiguredObjectProvenance) curProv, counter);
+                    traversalOrder.add((ConfiguredObjectProvenance) curProv);
+                    counter++;
+                }
             }
             extractProvenanceToQueue(processingQueue, curProv);
         }
 
         List<ConfigurationData> output = new ArrayList<>();
 
-        for (Map.Entry<ConfiguredObjectProvenance,Integer> e : provenanceTracker.entrySet()) {
-            output.add(extractSingleConfiguration(e.getKey(),computeName(e.getKey(),e.getValue()),provenanceTracker));
+        for (int i = 0; i < traversalOrder.size(); i++) {
+            ConfiguredObjectProvenance curProv = traversalOrder.get(i);
+            output.add(extractSingleConfiguration(curProv,computeName(curProv,i),provenanceTracker));
         }
 
         return output;
@@ -619,4 +631,48 @@ public final class ProvenanceUtil {
             throw new ProvenanceException("Unexpected FlatMarshalledProvenance subclass, found " + fmp.getClass().getName());
         }
     }
+    
+	/**
+	 * This method can be used for custom implementations of the writeObject method
+	 * used for customized object serialization to facilitate the serialization of
+	 * member variables whose type is Provenancable. You should exercise extreme
+	 * caution when using this method as you are wandering into specialized usage of
+	 * java serialization which is problematic in its own right. Just because your
+	 * member satisfies the type of the first parameter does not mean it will
+	 * serialize and deserialize correctly now or in the future. Therefore, you are
+	 * advised to <b>avoid using this method</b> but if you do use it, then you
+	 * should extensively unit test code that depends on this method.
+	 * 
+	 * @param provenancable
+	 * @param outputStream
+	 * @throws IOException
+	 */
+	public static void writeObject(Provenancable<? extends ConfiguredObjectProvenance> provenancable,  ObjectOutputStream outputStream) throws IOException {
+		ObjectProvenance provenance = provenancable.getProvenance();
+		outputStream.writeObject(provenance);
+	}
+
+	/**
+	 * This method can be used for custom implementations of the readObject method
+	 * used for customized object serialization. Please see the javadoc note for
+	 * {@link #writeObject(Provenancable, ObjectOutputStream)} for why you should
+	 * take extra care when deliberating whether or not to use this method.
+	 * 
+	 * @param inputStream
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
+	public static Provenancable<? extends ConfiguredObjectProvenance> readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
+		ConfiguredObjectProvenance provenance = (ConfiguredObjectProvenance) inputStream.readObject();
+		List<ConfigurationData> configurationData = ProvenanceUtil.extractConfiguration(provenance);
+		String componentName = configurationData.get(0).getName();
+		ConfigurationManager cm = new ConfigurationManager();
+		cm.addConfiguration(configurationData);
+		@SuppressWarnings("unchecked")
+		Provenancable<ConfiguredObjectProvenance> provenancable = (Provenancable<ConfiguredObjectProvenance>) cm.lookup(componentName);
+		cm.close();
+		return provenancable;
+	}
+
 }
