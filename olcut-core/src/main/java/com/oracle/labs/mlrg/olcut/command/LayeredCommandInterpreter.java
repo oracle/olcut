@@ -36,9 +36,9 @@ import java.util.Map;
  */
 public class LayeredCommandInterpreter extends CommandInterpreter {
 
-    private String layerTag;
+    private final String layerTag;
     
-    private String layerName;
+    private final String layerName;
     
     public LayeredCommandInterpreter(String layerTag, String layerName) {
         this.layerTag = layerTag;

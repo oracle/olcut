@@ -28,6 +28,6 @@
 
 /**
  * Provides an extensible interactive shell environment for
- * creating CLIs.
+ * creating CLIs, based on jline.
  */
 package com.oracle.labs.mlrg.olcut.command;

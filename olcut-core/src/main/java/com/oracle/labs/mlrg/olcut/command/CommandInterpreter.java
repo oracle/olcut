@@ -70,6 +70,7 @@ import org.jline.reader.Completer;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.reader.impl.history.DefaultHistory;
@@ -160,22 +161,25 @@ public class CommandInterpreter extends Thread {
 
     protected void setupJLine() {
         try {
-            TerminalBuilder builder = TerminalBuilder.builder();
-            builder.system(true);
-            Terminal terminal = builder.build();
-            DefaultParser parser = new DefaultParser();
-            parser.setEofOnUnclosedBracket(DefaultParser.Bracket.CURLY, DefaultParser.Bracket.ROUND, DefaultParser.Bracket.SQUARE);
-            parser.setEofOnUnclosedQuote(true);
-            LineReaderBuilder lineBuilder = LineReaderBuilder.builder();
-            logger.log(Level.FINER,"jline-3!");
             String histFile = System.getProperty("user.home")
                     + File.separator
                     + ".olcut_history_5";
             String main = Util.getMainClassName();
-            if(!main.isEmpty()) {
+            DefaultParser parser = new DefaultParser();
+            parser.setEofOnUnclosedBracket(DefaultParser.Bracket.CURLY, DefaultParser.Bracket.ROUND, DefaultParser.Bracket.SQUARE);
+            parser.setEofOnUnclosedQuote(true);
+
+            TerminalBuilder terminalBuilder = TerminalBuilder.builder();
+            LineReaderBuilder lineBuilder = LineReaderBuilder.builder();
+            if (!main.isEmpty()) {
                 histFile += "_" + main;
                 lineBuilder.appName(main);
+                terminalBuilder.name(main);
             }
+
+            terminalBuilder.system(true);
+            Terminal terminal = terminalBuilder.build();
+
             lineBuilder.terminal(terminal);
             lineBuilder.parser(parser);
             lineBuilder.completer(new MultiCommandArgumentCompleter(commands,interpreters));
@@ -511,13 +515,13 @@ public class CommandInterpreter extends Thread {
      * through if the argument after the CommandIntereter is String[].
      * This method only supports specific types.  If you add a type here,
      * please add it to the list of supported types above.
-     * @param m
-     * @param usage
-     * @param group
-     * @param ci
-     * @param args
-     * @return
-     * @throws Exception 
+     * @param m Method to invoke
+     * @param usage The usage to supply if the arguments are not found.
+     * @param group The command group this method resides in.
+     * @param ci The command interpreter we are running in.
+     * @param args The arguments to the method.
+     * @return The output of the method.
+     * @throws Exception Any exception can be thrown by the invoked method.
      */
     private String invokeMethod(Method m,
                                 String usage,
@@ -786,7 +790,7 @@ public class CommandInterpreter extends Thread {
                     String layerTag = m.group(2);
                     //
                     // Find the layered interpreter with this tag name.
-                    for(LayeredCommandInterpreter lci : interpreters) {
+                    for (LayeredCommandInterpreter lci : interpreters) {
                         if(lci.getLayerTag().equals(layerTag)) {
                             String[] newArgs = Arrays.copyOf(args, args.length);
                             newArgs[0] = layeredName;
@@ -801,7 +805,7 @@ public class CommandInterpreter extends Thread {
 
                 //
                 // Check our layered interpreters first.
-                for(LayeredCommandInterpreter lci : interpreters) {
+                for (LayeredCommandInterpreter lci : interpreters) {
                     ci = lci.commands.get(command);
                     if(ci != null) {
                         break;
@@ -898,6 +902,7 @@ public class CommandInterpreter extends Thread {
     }
 
     // inherited from thread.
+    @Override
     public void run() {
         while(!done) {
             try {
@@ -918,6 +923,9 @@ public class CommandInterpreter extends Thread {
             } catch(IOException e) {
                 out.println("Exception: CommandInterpreter.run()");
                 break;
+            } catch (UserInterruptException e) {
+                // User pressed Ctrl+C
+                out.println();
             } catch (EndOfFileException e) {
                 // User terminated the session.
                 break;
@@ -1280,7 +1288,7 @@ public class CommandInterpreter extends Thread {
         }
 
         @Command(usage = "Print the args")
-        public String pargs(CommandInterpreter ci, String[] args) throws Exception {
+        public String pargs(CommandInterpreter ci, String[] args) {
             ci.putResponse(String.format("args: %s", Arrays.toString(args)));
             return "";
         }
@@ -1429,15 +1437,14 @@ public class CommandInterpreter extends Thread {
                     }
                 }
 
-                if(count > 0) {
+                if (count > 0) {
                     String[] trimmedArgs = new String[count];
                     System.arraycopy(subargs, 0, trimmedArgs,
                             0, trimmedArgs.length);
                     commands.add(trimmedArgs);
-                    count = 0;
                 }
 
-                for(String[] i : commands) {
+                for (String[] i : commands) {
                     ci.putResponse(ci.execute(i));
                 }
             } else {

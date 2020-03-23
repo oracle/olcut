@@ -28,7 +28,6 @@
 
 package com.oracle.labs.mlrg.olcut.command;
 
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -41,9 +40,6 @@ import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-import org.jline.reader.impl.DefaultParser;
-import org.jline.reader.impl.completer.ArgumentCompleter;
-import org.jline.utils.Log;
 
 /**
  * Mostly re-implements the ArgumentCompletor from jline, but allows for
@@ -52,7 +48,7 @@ import org.jline.utils.Log;
  * of Completors to use for its arguments.  It should not be used directly
  * by anything else.
  */
-class MultiCommandArgumentCompleter extends ArgumentCompleter {
+class MultiCommandArgumentCompleter implements Completer {
 
     private static final Logger logger = Logger.getLogger(MultiCommandArgumentCompleter.class.getName());
 
@@ -73,12 +69,10 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
      */
     public MultiCommandArgumentCompleter(Map<String,CommandInterface> cmdMap,
                                          Deque<LayeredCommandInterpreter> interpreters) {
-        super();
         this.cmdMap = cmdMap;
         this.interpreters = interpreters;
         this.commandCompleter = new CommandCompleter(cmdMap, interpreters);
-        compMap = new HashMap<>();
-        setStrict(false);
+        this.compMap = new HashMap<>();
     }
     
     /**
@@ -112,8 +106,6 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
     }
 
     @Override
-    //public int complete(final String buffer, final int cursor,
-    //                    final List<CharSequence> candidates) {
     public void complete(LineReader reader, ParsedLine line, final List<Candidate> candidates) {
         logger.log(Level.FINE,"\ncomplete invoked with " + line.line());
         logger.log(Level.FINE, "Line(wordCursor='"+line.wordCursor()+"',word='"+line.word()+"',wordIndex='"+line.wordIndex()+"',cursor='"+line.cursor()+"'");
@@ -129,16 +121,14 @@ class MultiCommandArgumentCompleter extends ArgumentCompleter {
         //
         // Update our subcommand completors in case there are new ones
         updateCompletors();
-        Completer[] completors;
         if (line.wordIndex() == 0) {
             comp = commandCompleter;
-            completors = new Completer[] {comp};
         } else {
             //
             // Get out the list of completors we should use based on the current
             // subcommand
             String wholeBuff = line.line();
-            completors = compMap.get(wholeBuff.substring(0, wholeBuff.indexOf(" ")));
+            Completer[] completors = compMap.get(wholeBuff.substring(0, wholeBuff.indexOf(" ")));
             
             if (completors == null) {
                 //
