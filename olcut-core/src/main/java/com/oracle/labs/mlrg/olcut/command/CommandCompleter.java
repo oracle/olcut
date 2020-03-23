@@ -28,10 +28,6 @@
 
 package com.oracle.labs.mlrg.olcut.command;
 
-import org.jline.reader.Candidate;
-import org.jline.reader.Completer;
-import org.jline.reader.LineReader;
-import org.jline.reader.ParsedLine;
 import org.jline.reader.impl.completer.StringsCompleter;
 
 import java.util.ArrayList;
@@ -65,16 +61,12 @@ public class CommandCompleter extends StringsCompleter {
         Objects.requireNonNull(cmdMap);
         Objects.requireNonNull(interpreters);
         return () -> {
-            ArrayList<String> output = new ArrayList<>();
+            List<String> output = new ArrayList<>();
             // Load in commands
-            for (String key : cmdMap.keySet()) {
-                output.add(key);
-            }
+            output.addAll(cmdMap.keySet());
             // Load in commands from layered interpreters
             for (LayeredCommandInterpreter lci : interpreters) {
-                for (String command : lci.commands.keySet()) {
-                    output.add(command);
-                }
+                output.addAll(lci.commands.keySet());
             }
             return output;
         };

@@ -41,7 +41,6 @@ import org.jline.reader.Completer;
  * in the array returned from {@link #getCompleters} matches the arguments
  * provided to this command.  The last Completor in the array will be used
  * for any arguments that extend beyond the length of the array.
- * 
  */
 public interface CompleterCommandInterface extends CommandInterface {
     /**
