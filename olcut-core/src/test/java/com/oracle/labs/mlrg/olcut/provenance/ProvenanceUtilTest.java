@@ -26,35 +26,35 @@ public class ProvenanceUtilTest {
         logger.setLevel(Level.SEVERE);
     }
 
-	@Test
-	void testSerialize() throws Exception {
+    @Test
+    void testSerialize() throws Exception {
         File tempFile = File.createTempFile("serialized-provenancable", ".ser", new File("target"));
         tempFile.deleteOnExit();
 
-		ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
         AllFieldsConfigurable afc = (AllFieldsConfigurable) cm.lookup("all-config");
         cm.close();
         MyProvenancableClass mpc = new MyProvenancableClass(afc);
         IOUtil.serialize(mpc, tempFile.getPath());
         mpc = IOUtil.deserialize(tempFile.getPath(), MyProvenancableClass.class).get();
         assertEquals(afc, mpc.afc);
-	}
-	
-	public static class MyProvenancableClass implements Serializable {
-		private static final long serialVersionUID = 1L;
-		public AllFieldsConfigurable afc;
+    }
 
-		public MyProvenancableClass(AllFieldsConfigurable afc) {
-			super();
-			this.afc = afc;
-		}
+    public static class MyProvenancableClass implements Serializable {
+        private static final long serialVersionUID = 1L;
+        public AllFieldsConfigurable afc;
 
-		private void readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
-			this.afc = (AllFieldsConfigurable) ProvenanceUtil.readObject(inputStream);
-		}
+        public MyProvenancableClass(AllFieldsConfigurable afc) {
+            super();
+            this.afc = afc;
+        }
 
-		private void writeObject(ObjectOutputStream outputStream) throws IOException {
-			ProvenanceUtil.writeObject(this.afc, outputStream);
-		}
-	}
+        private void readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
+            this.afc = (AllFieldsConfigurable) ProvenanceUtil.readObject(inputStream);
+        }
+
+        private void writeObject(ObjectOutputStream outputStream) throws IOException {
+            ProvenanceUtil.writeObject(this.afc, outputStream);
+        }
+    }
 }
