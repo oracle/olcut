@@ -57,7 +57,7 @@ The Pipeline class that correspond to the component would look as follow:
         @Config
         private int numThreads = 1;
     
-        @Config
+        @Config(mandatory=true)
         private List<PipelineStage> stages;
         
         private Pipeline() {}
@@ -84,9 +84,9 @@ in your main class.
     ConfigurationManager cm = new ConfigurationManager(configFile.toURI().toURL());
     Pipeline myPipeline = (Pipeline)cm.lookup("myPipeline");
 
-The call to cm.lookup will chain-instantiate all the components and automatically
-invoke the newProperties method on each, passing in the PropertySheet that is
-used to get the defined property values from the configuration file.
+The call to cm.lookup will chain-instantiate all the components, inserting the
+property values into the appropriate fields, then invoke postConfig on each
+component before returning the requested component.
 
 Using this basic infrastructure, you can see how it is easy to supply multiple
 configurations for a piece of software without having to recompile.  Simply
