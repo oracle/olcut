@@ -310,9 +310,12 @@ which has the usage statement as the message.
     try {
         cm = new ConfigurationManager(usageArgs,o);
     } catch (UsageException e) {
-        System.out.println(e.getMsg());
+        System.out.println(e.getMessage());
         return;
     }
+
+It is possible to turn off the insertion of the "-c" and "--config-file-formats" options by
+supplying a flag to the ConfigurationManager on construction.
 
 ### Options objects
 
