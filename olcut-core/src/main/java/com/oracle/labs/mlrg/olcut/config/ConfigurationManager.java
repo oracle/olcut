@@ -1294,7 +1294,7 @@ public class ConfigurationManager implements Closeable {
         // Get the property sheet for this component.
         PropertySheet<? extends Configurable> ps = getPropertySheet(instanceName);
 
-        logger.log(Level.FINER,"lookup: %s", instanceName);
+        logger.log(Level.FINER,String.format("lookup: %s", instanceName));
         if(ps == null) {
             throw new PropertyException(instanceName,"Failed to find component.");
         }
@@ -1857,9 +1857,9 @@ public class ConfigurationManager implements Closeable {
                         if (FieldType.simpleTypes.contains(ft)) {
                             m.put(propertyName, importSimpleField(fieldClass, name, field.getName(), field.get(configurable)));
                         } else if (FieldType.listTypes.contains(ft)) {
-                            m.put(propertyName, importCollection(genericType, name, propertyName, (Collection) field.get(configurable)));
+                            m.put(propertyName, importCollection(genericType, name, propertyName, (Collection<?>) field.get(configurable)));
                         } else if (FieldType.arrayTypes.contains(ft)) {
-                            Class arrayComponentType = fieldClass.getComponentType();
+                            Class<?> arrayComponentType = fieldClass.getComponentType();
                             if (Configurable.class.isAssignableFrom(arrayComponentType)) {
                                 m.put(propertyName, importCollection(Configurable.class, name, propertyName, Arrays.asList((Configurable[]) field.get(configurable))));
                             } else {
@@ -1902,11 +1902,12 @@ public class ConfigurationManager implements Closeable {
                                 m.put(propertyName, ListProperty.createFromStringList(stringList));
                             }
                         } else if (FieldType.mapTypes.contains(ft)) {
-                            Map fieldMap = (Map) field.get(configurable);
+                            Map<String,?> fieldMap = (Map<String,?>) field.get(configurable);
                             HashMap<String, SimpleProperty> newMap = new HashMap<>();
-                            for (Object e : fieldMap.entrySet()) {
-                                String key = (String) ((Map.Entry) e).getKey();
-                                Object value = ((Map.Entry) e).getValue();
+                            for (Map.Entry<String,?> e : fieldMap.entrySet()) {
+                                String key = e.getKey();
+                                Object value = e.getValue();
+                                // Note this map only accepts simple fields.
                                 newMap.put(key, importSimpleField(genericType, name + "-" + field.getName(), key, value));
                             }
                             m.put(propertyName, new MapProperty(newMap));
@@ -1941,7 +1942,7 @@ public class ConfigurationManager implements Closeable {
         }
     }
 
-    private SimpleProperty importSimpleField(Class type, String prefix, String fieldName, Object input) {
+    private SimpleProperty importSimpleField(Class<?> type, String prefix, String fieldName, Object input) {
         if (Configurable.class.isAssignableFrom(type)) {
             String newName = prefix + "-" + fieldName;
             return new SimpleProperty(importConfigurable((Configurable) input, newName));
@@ -1952,7 +1953,7 @@ public class ConfigurationManager implements Closeable {
         }
     }
 
-    private ListProperty importCollection(Class innerType, String prefix, String fieldName, Collection input) {
+    private ListProperty importCollection(Class<?> innerType, String prefix, String fieldName, Collection<?> input) {
         List<SimpleProperty> propList = new ArrayList<>();
         int i = 0;
         for (Object o : input) {
