@@ -41,6 +41,7 @@ import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
@@ -161,20 +162,20 @@ public class CommandInterpreter extends Thread {
 
     protected void setupJLine() {
         try {
-            String histFile = System.getProperty("user.home")
-                    + File.separator
-                    + ".olcut_history_5";
             String main = Util.getMainClassName();
             DefaultParser parser = new DefaultParser();
             parser.setEofOnUnclosedBracket(DefaultParser.Bracket.CURLY, DefaultParser.Bracket.ROUND, DefaultParser.Bracket.SQUARE);
             parser.setEofOnUnclosedQuote(true);
 
+            Path histFile = Util.getOlcutRoot().resolve("repl");
             TerminalBuilder terminalBuilder = TerminalBuilder.builder();
             LineReaderBuilder lineBuilder = LineReaderBuilder.builder();
             if (!main.isEmpty()) {
-                histFile += "_" + main;
+                histFile = histFile.resolve(main + ".history");
                 lineBuilder.appName(main);
                 terminalBuilder.name(main);
+            } else {
+                histFile = histFile.resolve("repl.history");
             }
 
             terminalBuilder.system(true);
@@ -187,7 +188,7 @@ public class CommandInterpreter extends Thread {
             lineBuilder.option(LineReader.Option.COMPLETE_IN_WORD, true);
             lineBuilder.option(LineReader.Option.DISABLE_EVENT_EXPANSION, true);
             lineBuilder.option(LineReader.Option.HISTORY_BEEP,false);
-            lineBuilder.variable(LineReader.HISTORY_FILE,histFile);
+            lineBuilder.variable(LineReader.HISTORY_FILE,histFile.toAbsolutePath().toString());
             lineBuilder.history(new DefaultHistory());
             consoleReader = lineBuilder.build();
         } catch(IOException e) {
