@@ -21,7 +21,7 @@ _java_completions()
         if [ -z $class ]; then # no main-method filled
             COMPREPLY=($(compgen -W "$classes" -- "$cur"))
         elif [ -n $class ]; then
-            local suggestions=($(awk -v cur=$cur -v class=$class 'BEGIN {FS="\x1F"; class_reg="\x1E" class; cur_reg="^" cur} $0 ~ class_reg {if($2 != "\x00" && $2 ~ cur_reg) {printf("%s  %s\x1F%s\n", $2, $3, $4)} else if($3 ~ cur_reg) {printf("%s\x1F%s\n", $3, $4)}}' $completion_file | column -t -s $'\x1F'))
+            local suggestions=($(awk -v cur=$cur -v class=$class 'BEGIN {FS="\x1F"; class_reg="\x1E" class; cur_reg="^" cur} $0 ~ class_reg {if($2 != " " && $2 ~ cur_reg) {printf("%s  %s\x1F%s\n", $2, $3, $4)} else if($3 ~ cur_reg) {printf("%s\x1F%s\n", $3, $4)}}' $completion_file | column -t -s $'\x1F'))
 
             if [ "${#suggestions[@]}" == "1" ]; then
                 local command="${suggestions[0]/%\ */}"
