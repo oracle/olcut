@@ -24,6 +24,6 @@ public class OptionCompletion {
     }
 
     public String completionString(String writtenClassName) {
-        return String.format("%c%s%c%s%c%s%c%s", 30, writtenClassName, 31,  shortName.map(c -> "-" + c).orElse("" + ((char) 0)), 31, "--" + longName, 31, "\"" + usage + "\"");
+        return String.format("%c%s%c%s%c%s%c%s", 30, writtenClassName, 31,  shortName.map(c -> "-" + c).orElse(" "), 31, "--" + longName, 31, "\"" + usage + "\"");
     }
 }
