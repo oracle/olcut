@@ -381,7 +381,7 @@ public class SAXLoader implements ConfigLoader {
                     if ((attributes.getLength() != 3) || (name == null) || (type == null) || (location == null)) {
                         throw new SAXParseException("serialized element must only have 'name', 'type' and 'location' elements", locator);
                     }
-                    serializedObjects.put(name, new SerializedObject(name, location, type));
+                    serializedObjects.put(name, new SerializedObject<>(name, location, type));
                     break;
                 }
                 default:
