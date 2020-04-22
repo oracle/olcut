@@ -28,6 +28,8 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.util.Pair;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -37,9 +39,12 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -47,12 +52,16 @@ import java.util.logging.Logger;
 /**
  * A tag interface which contains fields annotated with {@link Option}, and other
  * fields which subclass {@link Options}. See the README for usage.
- *
+ * <p>
  * Implement the {@link Options#getOptionsDescription} method to insert a description string
  * into the generated Options usage string.
- *
+ * <p>
  * Any other fields or methods are ignored by the
  * command line arguments processing system.
+ * <p>
+ * Options implementations should form a tree, with no duplication of classes.
+ * Implementions which are not a tree or have duplicate classes will fail
+ * the validation checks in {@link ConfigurationManager#validateOptions}.
  */
 public interface Options {
     public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Char","Long Name","Type","Default","Usage"));
@@ -303,39 +312,52 @@ public interface Options {
     public static Set<Class<? extends Options>> getAllOptions(Class<? extends Options> options) {
         return AccessController.doPrivileged((PrivilegedAction<Set<Class<? extends Options>>>)
                 () -> {
-                    Set<Class<? extends Options>> ret = new LinkedHashSet<>();
-                    Set<Class<? extends Options>> tempSet = new HashSet<>();
-                    ret.add(options);
-                    Queue<Class> cq = new ArrayDeque<>();
+                    // The Pair is (classname,fieldname)
+                    Map<Class<? extends Options>,Pair<String,String>> ret = new LinkedHashMap<>();
+                    Map<Pair<String,String>,Class<? extends Options>> tempSet = new HashMap<>();
+                    ret.put(options,new Pair<>("root","root"));
+                    Queue<Class<?>> cq = new ArrayDeque<>();
                     cq.add(options);
                     while (!cq.isEmpty()) {
-                        Class curr = cq.remove();
+                        Class<?> curr = cq.remove();
+                        String currName = curr.getName();
                         for (Field f : curr.getDeclaredFields()) {
                             if (Options.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
                                 Class<? extends Options> nextOptions = (Class<? extends Options>) f.getType();
-                                ret.add(nextOptions);
-                                // Add to the processing queue, via a set to make sure we don't double count fields.
-                                tempSet.add(nextOptions);
+                                // Add to the processing queue, via a map to make sure we don't double count fields.
+                                tempSet.put(new Pair<>(currName,f.getName()),nextOptions);
                             }
                         }
                         for (Field f : curr.getFields()) {
                             if (Options.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
                                 Class<? extends Options> nextOptions = (Class<? extends Options>) f.getType();
-                                ret.add(nextOptions);
-                                // Add to the processing queue, via a set to make sure we don't double count fields.
-                                tempSet.add(nextOptions);
+                                // Add to the processing queue, via a map to make sure we don't double count fields.
+                                tempSet.put(new Pair<>(currName,f.getName()),nextOptions);
                             }
                         }
-                        Class sc = curr.getSuperclass();
+                        Class<?> sc = curr.getSuperclass();
                         if (sc != null) {
                             cq.add(sc);
                         }
                         cq.addAll(Arrays.asList(curr.getInterfaces()));
-                        cq.addAll(tempSet);
+
+                        // Append the processing queue to the returned set, validating that each one is unique.
+                        for (Map.Entry<Pair<String,String>,Class<? extends Options>> e : tempSet.entrySet()) {
+                            if (ret.containsKey(e.getValue())) {
+                                Pair<String,String> otherOccurrence = ret.get(e.getValue());
+                                String firstOccurrence = otherOccurrence.getA()+"."+otherOccurrence.getB();
+                                String thisOccurrence = e.getKey().getA() + "." + e.getKey().getB();
+                                throw new ArgumentException(firstOccurrence,thisOccurrence,"There are two instances of " + e.getValue().getName() + " in this Options tree.");
+                            } else {
+                                ret.put(e.getValue(),e.getKey());
+                                cq.add(e.getValue());
+                            }
+                        }
+
                         // Flush the temporary set.
                         tempSet.clear();
                     }
-                    return ret;
+                    return new LinkedHashSet<>(ret.keySet());
                 }
         );
     }
