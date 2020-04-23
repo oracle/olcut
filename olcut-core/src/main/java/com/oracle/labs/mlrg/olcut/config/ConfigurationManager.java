@@ -1234,7 +1234,7 @@ public class ConfigurationManager implements Closeable {
      * necessary.
      *
      * @param instanceName the name of the component that we want.
-     * @param reuseComponent If true creates a fresh instance of the desired component.
+     * @param reuseComponent If false creates a fresh instance of the desired component.
      * @return the instantiated component, or <code>null</code> if no such named
      * component exists in this configuration.
      * @throws InternalConfigurationException if there is some error instantiating the
