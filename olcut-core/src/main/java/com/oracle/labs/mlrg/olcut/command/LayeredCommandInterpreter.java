@@ -41,6 +41,7 @@ public class LayeredCommandInterpreter extends CommandInterpreter {
     private final String layerName;
     
     public LayeredCommandInterpreter(String layerTag, String layerName) {
+        super(false);
         this.layerTag = layerTag;
         this.layerName = layerName;
     }

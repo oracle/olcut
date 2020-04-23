@@ -138,6 +138,23 @@ public class CommandInterpreter extends Thread {
 
     private Pattern layeredCommandPattern = Pattern.compile("(.*)\\.([^.]*)");
 
+
+    /**
+     * Creates a command interpreter that won't read a command file
+     *
+     */
+    public CommandInterpreter() {
+        this(true);
+    }
+
+    public CommandInterpreter(boolean createNewShellEnvironment) {
+        if (createNewShellEnvironment) {
+            addStandardCommands();
+            setupJLine();
+        }
+        out = System.out;
+    }
+
     public CommandInterpreter(String inputFile) throws java.io.IOException {
         addStandardCommands();
         if(inputFile == null) {
@@ -146,16 +163,6 @@ public class CommandInterpreter extends Thread {
             in = new BufferedReader(new FileReader(inputFile));
             inputIsFile = true;
         }
-        out = System.out;
-    }
-
-    /**
-     * Creates a command interpreter that won't read a stream.
-     *
-     */
-    public CommandInterpreter() {
-        addStandardCommands();
-        setupJLine();
         out = System.out;
     }
 
@@ -443,7 +450,7 @@ public class CommandInterpreter extends Thread {
             // that yet.
             if (cm.getReturnType() != Completer[].class) {
                 logger.warning(group.getClass().getName() + "#" + cm.getName() +
-                        " has wrong return type.  Expected Completor[]");
+                        " has wrong return type.  Expected Completer[]");
             }
             //
             // Make a CompletorCommand instead of a regular one
@@ -736,7 +743,9 @@ public class CommandInterpreter extends Thread {
         for(LayeredCommandInterpreter lci : interpreters) {
             CommandInterface ci = lci.commands.get("on_exit");
             try {
-                ci.execute(this, new String[]{"on_exit"});
+                if (ci != null) {
+                    ci.execute(this, new String[]{"on_exit"});
+                }
             } catch(Exception ex) {
                 logger.log(Level.SEVERE, String.format("Error on close for %s", lci.getLayerName()), ex);
             }
@@ -1277,13 +1286,7 @@ public class CommandInterpreter extends Thread {
 
         @Command(usage = "Echos the input back after the line processing")
         public String echo(CommandInterpreter ci, String[] args) {
-            StringBuilder b = new StringBuilder(80);
-
-            for (int i = 1; i < args.length; i++) {
-                b.append(args[i]);
-                b.append(" ");
-            }
-            ci.putResponse(b.toString());
+            ci.putResponse(String.join(" ", args));
             return "";
         }
 
