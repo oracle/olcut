@@ -332,6 +332,10 @@ if the object cannot be found. It has an optional method `String getOptionsDescr
 which can be used to insert a description of the options contained in the class for use in
 the usage statement.
 
+A valid Options object must form a tree of Options, where no option has the same character
+or long name as any other. The option long name must not include whitespace, or start with '-'
+or '@', and the character must be printable and not be '-' or whitespace.
+
 ### Overriding configurable fields
 
 Overriding configurable fields and global properties has a specific syntax. Each 
