@@ -139,6 +139,23 @@ public class CommandInterpreter extends Thread {
 
     private Pattern layeredCommandPattern = Pattern.compile("(.*)\\.([^.]*)");
 
+
+    /**
+     * Creates a command interpreter that won't read a command file
+     *
+     */
+    public CommandInterpreter() {
+        this(true);
+    }
+
+    public CommandInterpreter(boolean createNewShellEnvironment) {
+        if (createNewShellEnvironment) {
+            addStandardCommands();
+            setupJLine();
+        }
+        out = System.out;
+    }
+
     public CommandInterpreter(String inputFile) throws java.io.IOException {
         addStandardCommands();
         if(inputFile == null) {
@@ -147,16 +164,6 @@ public class CommandInterpreter extends Thread {
             in = new BufferedReader(new FileReader(inputFile));
             inputIsFile = true;
         }
-        out = System.out;
-    }
-
-    /**
-     * Creates a command interpreter that won't read a stream.
-     *
-     */
-    public CommandInterpreter() {
-        addStandardCommands();
-        setupJLine();
         out = System.out;
     }
 
@@ -402,31 +409,31 @@ public class CommandInterpreter extends Thread {
             // Now let's see if there's a method to get the completers for
             // this method.  First, check for an explicit one in the
             // annotation itself.
-            Method completorMtd = null;
+            Method completerMtd = null;
             if (!cmd.completers().isEmpty()) {
                 try {
-                    completorMtd = group.getClass().getMethod(cmd.completers(), (Class<?>[])null);
+                    completerMtd = group.getClass().getMethod(cmd.completers(), (Class<?>[])null);
                 } catch (NoSuchMethodException e) {
                     logger.warning(methodName +
-                            " references a non-existant completor method: "
+                            " references a non-existant completer method: "
                             + cmd.completers());
                 }
             }
             
             //
-            // If we didn't get a completor that way, try to see if there's
+            // If we didn't get a completer that way, try to see if there's
             // a method with a name that conforms to the convention.
             try {
-                completorMtd = group.getClass().getMethod(m.getName() + "Completors", (Class<?>[])null);
+                completerMtd = group.getClass().getMethod(m.getName() + "Completers", (Class<?>[])null);
             } catch (NoSuchMethodException e) {
                 //
-                // This is okay, probably they just didn't want a completor.
-                logger.finer(methodName + " has no completors");
+                // This is okay, probably they just didn't want a completer.
+                logger.finer(methodName + " has no completers");
             }
             
             //
-            // Get a completor for this method and add it in to our shell
-            CommandInterface ci = methodToCommand(m, cmd.usage(), group, completorMtd);
+            // Get a completer for this method and add it in to our shell
+            CommandInterface ci = methodToCommand(m, cmd.usage(), group, completerMtd);
             add(m.getName(), group.getName(), ci);
             if (!cmd.alias().isEmpty()) {
                 addAlias(m.getName(), cmd.alias());
@@ -444,7 +451,7 @@ public class CommandInterpreter extends Thread {
             // that yet.
             if (cm.getReturnType() != Completer[].class) {
                 logger.warning(group.getClass().getName() + "#" + cm.getName() +
-                        " has wrong return type.  Expected Completor[]");
+                        " has wrong return type.  Expected Completer[]");
             }
             //
             // Make a CompletorCommand instead of a regular one
@@ -737,7 +744,9 @@ public class CommandInterpreter extends Thread {
         for(LayeredCommandInterpreter lci : interpreters) {
             CommandInterface ci = lci.commands.get("on_exit");
             try {
-                ci.execute(this, new String[]{"on_exit"});
+                if (ci != null) {
+                    ci.execute(this, new String[]{"on_exit"});
+                }
             } catch(Exception ex) {
                 logger.log(Level.SEVERE, String.format("Error on close for %s", lci.getLayerName()), ex);
             }
@@ -1278,13 +1287,7 @@ public class CommandInterpreter extends Thread {
 
         @Command(usage = "Echos the input back after the line processing")
         public String echo(CommandInterpreter ci, String[] args) {
-            StringBuilder b = new StringBuilder(80);
-
-            for (int i = 1; i < args.length; i++) {
-                b.append(args[i]);
-                b.append(" ");
-            }
-            ci.putResponse(b.toString());
+            ci.putResponse(String.join(" ", args));
             return "";
         }
 
