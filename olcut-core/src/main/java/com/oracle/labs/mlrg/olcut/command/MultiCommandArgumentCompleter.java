@@ -39,10 +39,10 @@ import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
 /**
- * Mostly re-implements the ArgumentCompletor from jline, but allows for
- * command-specific argument completors. This is used internally by the
+ * Mostly re-implements the ArgumentCompleter from jline, but allows for
+ * command-specific argument completers. This is used internally by the
  * command interpreter to allow each CommandInterface to provide a list
- * of Completors to use for its arguments.  It should not be used directly
+ * of Completers to use for its arguments.  It should not be used directly
  * by anything else.
  */
 class MultiCommandArgumentCompleter implements Completer {
@@ -58,8 +58,8 @@ class MultiCommandArgumentCompleter implements Completer {
     protected final CommandCompleter commandCompleter;
 
     /**
-     * Creates completors for all the commands in cmdMap that implement
-     * CompletorProvider.
+     * Creates completers for all the commands in cmdMap that implement
+     * CompleterProvider.
      * 
      * @param cmdMap a reference to the shell's internal command map, reused
      *               to check for added commands
@@ -73,8 +73,8 @@ class MultiCommandArgumentCompleter implements Completer {
     }
     
     /**
-     * Scan through the commands in the cmdMap and add completors for any
-     * command we don't already have a completor for.
+     * Scan through the commands in the cmdMap and add completers for any
+     * command we don't already have a completer for.
      */
     protected void updateCompleters() {
         logger.log(Level.FINER, "Updating all completers starting at base layer");

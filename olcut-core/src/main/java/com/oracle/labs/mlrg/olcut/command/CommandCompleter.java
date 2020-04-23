@@ -41,16 +41,16 @@ import java.util.stream.Collectors;
 
 
 /**
- * A <a href="http://jline.sourceforge.net">JLine</a>-style Completor that will
+ * A <a href="https://github.com/jline/jline3">JLine</a>-style Completer that will
  * complete partial text based on all commands currently defined in the
  * {@link CommandInterpreter}
  */
 public class CommandCompleter extends StringsCompleter {
 
     /**
-     * Create a CommandCompletor given the map that maps command names to their
+     * Create a CommandCompleter given the map that maps command names to their
      * command objects. The live map of commands must be provided if this
-     * completor is to reflect commands added after instantiation.
+     * completer is to reflect commands added after instantiation.
      * @param cmdMap The commands understood by this completer.
      * @param interpreters The interpreters used.
      */
