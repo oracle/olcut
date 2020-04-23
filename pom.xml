@@ -48,6 +48,7 @@
         <module>olcut-config-json</module>
         <module>olcut-config-edn</module>
         <module>olcut-config-jini</module>
+        <module>olcut-extras</module>
     </modules>
 
     <distributionManagement>

@@ -58,7 +58,7 @@
         <dependency>
             <groupId>us.bpsm</groupId>
             <artifactId>edn-java</artifactId>
-            <version>0.5.0</version>
+            <version>0.6.0</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

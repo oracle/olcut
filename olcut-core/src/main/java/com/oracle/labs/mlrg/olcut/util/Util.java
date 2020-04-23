@@ -31,8 +31,11 @@ package com.oracle.labs.mlrg.olcut.util;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Other utility functions.
@@ -43,6 +46,8 @@ public class Util {
     private static String mainClassName = null;
 
     private static long maxMemoryUsed = 0L;
+
+    private static final String OLCUT_DIR = "OLCUT_HOME";
 
     /**
      * utility method for tracking object counts
@@ -228,5 +233,17 @@ public class Util {
         } catch (UnknownHostException e) {
             return "localhost";
         }
+    }
+
+    /**
+     * Return the dotfolder that olcut uses to store data. Uses environment variable
+     * OLCUT_DIR if specified, `~/.olcut/` otherwise.
+     * @return the path to the dotfolder
+     */
+    public static Path getOlcutRoot() {
+        return Optional.ofNullable(System.getenv(OLCUT_DIR))
+                .map(Paths::get)
+                .orElse(Paths.get(System.getProperty("user.home"))
+                        .resolve(".olcut"));
     }
 }
