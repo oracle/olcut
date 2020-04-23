@@ -37,19 +37,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 
 /**
- * A <a href="http://jline.sourceforge.net">JLine</a>-style Completor that will
+ * A <a href="https://github.com/jline/jline3">JLine</a>-style Completer that will
  * complete partial text based on all commands currently defined in the
  * {@link CommandInterpreter}
  */
 public class CommandCompleter extends StringsCompleter {
 
     /**
-     * Create a CommandCompletor given the map that maps command names to their
+     * Create a CommandCompleter given the map that maps command names to their
      * command objects. The live map of commands must be provided if this
-     * completor is to reflect commands added after instantiation.
+     * completer is to reflect commands added after instantiation.
      * @param cmdMap The commands understood by this completer.
      * @param interpreters The interpreters used.
      */
@@ -64,9 +65,26 @@ public class CommandCompleter extends StringsCompleter {
             List<String> output = new ArrayList<>();
             // Load in commands
             output.addAll(cmdMap.keySet());
-            // Load in commands from layered interpreters
+            //
+            // Load in commands from layered interpreters, producing qualified names for each
             for (LayeredCommandInterpreter lci : interpreters) {
-                output.addAll(lci.commands.keySet());
+                output.addAll(lci.commands.keySet().stream().map(c -> c + "." + lci.getLayerTag()).collect(Collectors.toList()));
+            }
+            //
+            // For each layered name, check if there would be name conflicts. If no conflicts exist, add the
+            // non-qualified name as well. A conflict would be the same name command, or more than one command that has
+            // the same basename and a ".<tag>" on it. (More than one because it will always match itself.)
+            for (LayeredCommandInterpreter lci : interpreters) {
+                for (String command : lci.commands.keySet()) {
+                    if (!output.contains(command) &&
+                            output.stream().filter(c -> c.startsWith(command + ".")).count() == 1) {
+                        //
+                        // Command and command.tag are not found, so go ahead and add it as a non-qualified command
+                        output.add(command);
+                        // Also remove the qualified name 'cause who needs it?
+                        output.remove(command + "." + lci.getLayerTag());
+                    }
+                }
             }
             return output;
         };
