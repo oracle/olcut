@@ -111,8 +111,8 @@ public class ConfigurationManagerUtils {
     static void importSystemProperties(GlobalProperties global) {
         Properties props = System.getProperties();
         for (Map.Entry<Object,Object> e : props.entrySet()) {
-            String param = (String) e.getKey();
-            String value = (String) e.getValue();
+            String param = e.getKey().toString();
+            String value = e.getValue() == null ? "null" : e.getValue().toString();
             global.setValue(param, value);
         }
     }
