@@ -80,6 +80,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
 
@@ -92,6 +93,8 @@ import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
  */
 public class ConfigurationManager implements Closeable {
     private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
+
+    private static final Pattern WHITESPACE = Pattern.compile("\\s");
 
     public static final Option configFileOption = new Option() {
         public String longName() { return "config-file"; }
@@ -468,10 +471,45 @@ public class ConfigurationManager implements Closeable {
         return formatFactoryMap.get(extension);
     }
 
+    /**
+     * Validates the options, returning the formatted usage String.
+     * <p>
+     * A valid options implementation forms a tree of Options implementations,
+     * where no two nodes are the same class, and no two {@link Option} instances
+     * share the same charName or longName. All {@link Option} instances
+     * must be of a configurable type (i.e. be present in {@link FieldType}), and
+     * if they reference a configuration file, configuration files must be enabled.
+     * {@link Option} charNames must not be '-' or ' ', longNames must not start
+     * with '-' or '@', and must not include whitespace.
+     * <p>
+     * If the options are invalid they throw ArgumentException.
+     * @param options The options to validate.
+     * @param useConfigFiles If true insert the configuration file related options and check for conflicts with those arguments.
+     * @return The usage string.
+     * @throws ArgumentException If the options are invalid.
+     */
     public static String validateOptions(Options options, boolean useConfigFiles) throws ArgumentException {
         return validateOptions(options, "", useConfigFiles);
     }
 
+    /**
+     * Validates the options, returning the formatted usage String.
+     * <p>
+     * A valid options implementation forms a tree of Options implementations,
+     * where no two nodes are the same class, and no two {@link Option} instances
+     * share the same charName or longName. All {@link Option} instances
+     * must be of a configurable type (i.e. be present in {@link FieldType}), and
+     * if they reference a configuration file, configuration files must be enabled.
+     * {@link Option} charNames must not be '-' or ' ', longNames must not start
+     * with '-' or '@', and must not include whitespace.
+     * <p>
+     * If the options are invalid they throw ArgumentException.
+     * @param options The options to validate.
+     * @param defaultConfigPath The default configuration path to display in the usage String.
+     * @param useConfigFiles If true insert the configuration file related options and check for conflicts with those arguments.
+     * @return The usage string.
+     * @throws ArgumentException If the options are invalid.
+     */
     public static String validateOptions(Options options, String defaultConfigPath, boolean useConfigFiles) throws ArgumentException {
         Set<Field> optionFields = new HashSet<>();
         Set<Class<? extends Options>> allOptions = Options.getAllOptions(options.getClass());
@@ -512,13 +550,15 @@ public class ConfigurationManager implements Closeable {
         for (Field f : optionFields) {
             Option annotation = f.getAnnotation(Option.class);
             FieldType ft = FieldType.getFieldType(f);
+            char charName = annotation.charName();
+            String longName = annotation.longName();
             if (ft == null) {
-                throw new ArgumentException(annotation.longName(),
+                throw new ArgumentException(longName,
                         "Argument has an unsupported type " + f.getType().getName());
             }
             if (!useConfigFiles) {
                 if (FieldType.configurableTypes.contains(ft)) {
-                    throw new ArgumentException(annotation.longName(),"Argument has a Configurable type, which requires using a config file.");
+                    throw new ArgumentException(longName,"Argument has a Configurable type, which requires using a config file.");
                 } else if (FieldType.listTypes.contains(ft)) {
                     // Now check the generic type of the list.
                     List<Class<?>> list = PropertySheet.getGenericClass(f);
@@ -526,35 +566,40 @@ public class ConfigurationManager implements Closeable {
                         Class<?> genericClazz = list.get(0);
                         FieldType genericFieldType = FieldType.getFieldType(genericClazz);
                         if (FieldType.configurableTypes.contains(genericFieldType)) {
-                            throw new ArgumentException(annotation.longName(),"Argument has a Configurable type, which requires using a config file.");
+                            throw new ArgumentException(longName,"Argument has a Configurable type, which requires using a config file.");
                         }
                     } else {
-                        throw new ArgumentException(annotation.longName(),"Failed to parse the type parameters of the argument.");
+                        throw new ArgumentException(longName,"Failed to parse the type parameters of the argument.");
                     }
                 }
             }
-            if (annotation.charName() == '-' || annotation.charName() == Option.SPACE_CHAR) {
-                throw new ArgumentException(annotation.longName(),"'-' and ' ' are reserved characters.");
+            if (charName == '-' || charName == Option.SPACE_CHAR) {
+                throw new ArgumentException(longName,"'-' and ' ' are reserved characters.");
             }
-            if (annotation.longName().startsWith("@")) {
-                throw new ArgumentException(annotation.longName(),
-                        "Arguments starting '--@' are reserved for the configuration system.");
+            if (longName.startsWith("@")) {
+                throw new ArgumentException(longName, "Arguments starting '--@' are reserved for the configuration system.");
             }
-            if ((annotation.charName() != Option.EMPTY_CHAR) && charNameMap.containsKey(annotation.charName())) {
-                if ((annotation.charName() == configFileOption.charName()) && useConfigFiles) {
-                    throw new ArgumentException("config-file",annotation.longName(),
+            if (longName.startsWith("-")) {
+                throw new ArgumentException(longName, "Arguments must not start with '-'");
+            }
+            if (WHITESPACE.matcher(longName).matches()) {
+                throw new ArgumentException("'"+longName+"'", "Arguments must not contain whitespace.");
+            }
+            if ((charName != Option.EMPTY_CHAR) && charNameMap.containsKey(charName)) {
+                if ((charName == configFileOption.charName()) && useConfigFiles) {
+                    throw new ArgumentException("config-file", longName,
                             "The -"+configFileOption.charName()+" argument is reserved for the configuration system");
                 } else {
-                    throw new ArgumentException(charNameMap.get(annotation.charName())
-                            .longName(), annotation.longName(), "Two arguments have the same character");
+                    throw new ArgumentException(charNameMap.get(charName).longName(),
+                            longName, "Two arguments have the same character");
                 }
             }
-            if (longNameMap.containsKey(annotation.longName())) {
-                throw new ArgumentException(longNameMap.get(annotation.longName())
-                        .longName(),annotation.longName(),"Two arguments have the same long name");
+            if (longNameMap.containsKey(longName)) {
+                throw new ArgumentException(longNameMap.get(longName).longName(),
+                        longName,"Two arguments have the same long name");
             }
-            charNameMap.put(annotation.charName(),annotation);
-            longNameMap.put(annotation.longName(),annotation);
+            charNameMap.put(charName,annotation);
+            longNameMap.put(longName,annotation);
         }
 
         return builder.toString();

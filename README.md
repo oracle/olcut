@@ -14,12 +14,12 @@ Each component may be used independently of the others.
 
 # Configuration and Options
 
-The OLCUT Configuration System uses runtime dependency-injection to instantiate
-configurable components on the fly based on the contents of your configuration
-file.  It allows you to both specify the parameters ("properties") that should
-be given to the components at initialization time as well as which types of
-objects should actually be instantiated for each component.  It uses an XML
-file to describe the configuration. OLCUT uses Java Annotations extensively
+The OLCUT [Configuration System](README-Configuration.md) uses runtime
+dependency-injection to instantiate configurable components on the fly based on 
+the contents of your configuration file.  It allows you to both specify the parameters
+("properties") that should be given to the components at initialization time as well
+as which types of objects should actually be instantiated for each component.  It
+uses an XML file to describe the configuration. OLCUT uses Java Annotations extensively
 to facilitate code integration.
 
     <config>
@@ -171,7 +171,7 @@ to recover the training configuration of an ML system from a model, and
 regenerate the model (either on new data, or with tweaked parameters).
 
 
-# Odds & Ends
+# Odds & Ends (still needs work)
 
 ## Date parser
 

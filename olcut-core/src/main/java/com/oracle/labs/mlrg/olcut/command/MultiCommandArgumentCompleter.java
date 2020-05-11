@@ -28,7 +28,11 @@
 
 package com.oracle.labs.mlrg.olcut.command;
 
-import java.util.*;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -79,7 +83,7 @@ class MultiCommandArgumentCompleter implements Completer {
     protected void updateCompleters() {
         logger.log(Level.FINER, "Updating all completers starting at base layer");
         updateCompleters(null, cmdMap);
-        for(LayeredCommandInterpreter lci : interpreters) {
+        for (LayeredCommandInterpreter lci : interpreters) {
             logger.log(Level.FINER, "Updating compls for " + lci.getLayerName());
             updateCompleters(lci.getLayerTag(), lci.getCommands());
         }
@@ -182,7 +186,7 @@ class MultiCommandArgumentCompleter implements Completer {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Completing " + line.line() + "(pos=" + line.wordCursor() + ") "
-                    + "with: " + candidates.stream().map(s -> s.value()).collect(Collectors.joining(", ", "[", "]")));
+                    + "with: " + candidates.stream().map(Candidate::value).collect(Collectors.joining(", ", "[", "]")));
         }
 
     }
