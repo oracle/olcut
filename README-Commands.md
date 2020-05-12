@@ -22,7 +22,10 @@ be put together in the same group.
 
 Defining a command looks like this
 
+```java
     public class Processor implements CommandGroup {
+        protected int numProcessed = 0;
+        
         public String getName() {
             return "Process";
         }
@@ -34,17 +37,27 @@ Defining a command looks like this
         @Command(usage="<fileName> - filter the given file")
         public String filter(CommandInterpreter ci, File file) {
             pipeline.filter(file);
+            ci.out.println("Processing " + file.getName());
+            numProcessed++; 
             return "";
         }
+        
+        @Command(usage="Prints stats for this processor")
+        public String printStats(CommandInterpreter ci) {
+            return "numProcessed: " + numProcessed;
+        }
     }
+```
 
 Then you can create and start a shell with that command in your main program,
 perhaps after having loaded any relevant configuration.
 
+```java
     Processor p = new Processor(pipelineInstance);
     CommandInterpreter shell = new CommandInterpreter();
     shell.add(p);
     shell.run();
+```
 
 Your main thread will block in a read/eval/print loop at this point.
 CommandInterpreter may also be run as a separate thread by invoking `start()`.
@@ -69,6 +82,10 @@ Note that there is a one-to-one correspondence between method names and
 Commands.  No distinctions are made for method signatures with different
 parameters.  No guarantee is made for the behavior of a shell with multiple
 methods that have the same name (See Layered Command Interpreter below).
+The CommandInterpreter instance that is passed in will be the currently
+running shell. It is a best practice to use the shell's output (`ci.out`) for writing
+output so that output can be easily redirected to any output stream the
+shell may be embedded in.
 
 ## Optional parameters
 
@@ -81,6 +98,7 @@ parameters are tagged with the `@Optional` annotation.  The above filter method
 could take an optional parameter to specify where the output of the pipeline
 should go:
 
+```java
         @Command(usage="<inFile> [<outFile>] - run this filter on a file")
         public String filter(CommandInterpreter ci,
                              File inFile, 
@@ -88,6 +106,7 @@ should go:
             pipeline.filter(inFile, outFile);
             return "";
         }
+```
 
 ## Tab Completion
 
@@ -99,12 +118,14 @@ in the `@Command` annotation (described below), or can follow a naming conventio
 to be paired with the method they provide completers for. The following example
 method would be used to find completers for the `filter` command:
 
+```java
         public Completer[] filterCompleters() {
             return new Completer[]{
                 new FileNameCompleter(),
                 new FileNameCompleter()
             };
         }
+```
 
 In this example, an array of completers is returned, one per argument.  This
 could actually be simplified because the behavior of the completers is to
@@ -129,18 +150,22 @@ to use instead of relying on the xxxCompleters convention.  For example,
 if multiple commands take a single File parameter, you might make a method such
 as this one:
 
+```java
         public Completers[] fileCompleter() {
             return new Completer[]{
                 new FileNameCompleter(),
                 new NullCompleter()
             }
         }
+```
 
 Then when annotating a method that takes a File as its parameter, you would
 specify:
 
+```java
         @Command(usage="Processes a single file",
                  completers="fileCompleter")
+```
 
 Multiple annotated commands may share the same completer method in this way.
 
@@ -160,10 +185,12 @@ Sometimes when building a large shell, you may have multiple CommandGroups that
 provide commands with the same name. To avoid namespace collisions, you can add
 your commands to a layer, then add the layer to the top-level shell.
 
+```java
     CommandInterpreter shell = new CommandInterpreter();
     LayeredCommandInterpreter lci = new LayeredCommandInterpreter("pipe", "Pipeline Commands");
     lci.add(processor);
     shell.add(lci);
+```
 
 To avoid ambiguity, all commands defined in `processor` can now be referred to
 with a ".pipe" extension (e.g. `filter.pipe`), but may also be used without any
