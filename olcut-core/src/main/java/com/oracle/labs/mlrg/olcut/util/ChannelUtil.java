@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 
 public class ChannelUtil {
 
-    private static Logger logger = Logger.getLogger(ChannelUtil.class.getName());
+    private static final Logger logger = Logger.getLogger(ChannelUtil.class.getName());
 
     /**
      * The block size in which buffers will be written.

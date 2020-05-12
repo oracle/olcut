@@ -31,7 +31,7 @@ package com.oracle.labs.mlrg.olcut.util;
 /**
  * A mutable version of java.lang.Double.
  */
-public class MutableDouble extends MutableNumber {
+public final class MutableDouble extends MutableNumber {
     private static final long serialVersionUID = 1L;
 
     private double value;
