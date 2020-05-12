@@ -36,7 +36,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation that specifies a command for use in a command shell
+ * An annotation that specifies a command for use in a command shell.
+ * This annotation should only be applied to methods whose first argument
+ * is a CommandInterpreter and whose return type is String.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

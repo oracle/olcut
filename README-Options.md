@@ -7,6 +7,7 @@ to a supplied struct-style Java class.
 To get started, instantiate a ConfigurationManager with a reference to an options struct
 and the String array of arguments.
 
+```java
     public static class CLOptions implements Options {
         @Override
         public String getOptionsDescription() {
@@ -22,10 +23,13 @@ and the String array of arguments.
         
         public Options otherOptions;
     }
+```
 
+```java
     Options o = new CLOptions();
     ConfigurationManager cm = new ConfigurationManager(args,o);
     String[] unparsedArguments = cm.getUnnamedArguments();
+```
 
 Then the manager will validate that the options object doesn't have conflicting names, and
 parse the arguments into the object. Any references to Configurable classes will be instantiated
@@ -43,6 +47,7 @@ The usage statement is generated from the supplied Options object.
 If the user supplies "--usage" or "--help" the ConfigurationManager throws UsageException
 which has the usage statement as the message.
 
+```java
     String[] usageArgs = new String[]{"--usage"};
     String[] helpArgs = new String[]{"--help"};
     
@@ -52,6 +57,7 @@ which has the usage statement as the message.
         System.out.println(e.getMessage());
         return;
     }
+```
 
 It is possible to turn off the insertion of the "-c" and "--config-file-formats" options by
 supplying a flag to the ConfigurationManager on construction.
@@ -83,11 +89,13 @@ overwrites the appropriate field in a component, throwing ArgumentException if t
 isn't found. For a global property it writes directly to the global property map, even if
 that property was not defined in the configuration file.
 
+```java
     String[] args = new String[]{"-c","/path/to/config/file.xml",
                                  "--input","/path/to/input",
                                  "--trainer","trainername",
                                  "--output","/path/to/output"
                                  "--@trainername.epochs","5"};
-                                 
+```
+
 If the above arguments are supplied then the trainer object will be instantiated with
 the epochs field set to the value 5.

@@ -28,6 +28,13 @@
 
 /**
  * Provides an extensible interactive shell environment for
- * creating CLIs, based on jline.
+ * creating CLIs, based on jline. The primary interface to this
+ * package is the CommandInterpreter. See OLCUT's README-Commands.md
+ * for documentation. The quick version is to instantiate a
+ * CommandInterpreter, then add objects that implement CommandGroup to
+ * it. Your CommandGroup should have some methods that have been
+ * annotated with @Command to expose those methods to the shell.
+ * Commands must take CommandInterpreter as their first argument (this
+ * will be an instance of the current shell), and must return String.
  */
 package com.oracle.labs.mlrg.olcut.command;

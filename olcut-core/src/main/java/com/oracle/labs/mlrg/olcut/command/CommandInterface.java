@@ -29,7 +29,11 @@ package com.oracle.labs.mlrg.olcut.command;
 
 /**
  * An interface implemented by command functions typically
- * added to a command interpreter
+ * added to a command interpreter. You should generally not use this
+ * directly. Rather, tag any method that takes a CommandInterpreter as its
+ * first argument and returns a String with the @Command annotation. Put those
+ * methods in a class that implements CommandGroup and add them to a
+ * CommandInterpreter to expose them to the shell.
  *
  * @see CommandInterpreter
  */
