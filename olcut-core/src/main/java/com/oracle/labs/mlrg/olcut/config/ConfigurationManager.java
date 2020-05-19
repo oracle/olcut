@@ -66,6 +66,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -172,6 +173,8 @@ public class ConfigurationManager implements Closeable {
             new LinkedHashMap<>();
 
     protected final Map<String, ConfigurationData> configurationDataMap;
+
+    protected final IdentityHashMap<Configurable, String> configurationNameMap;
 
     protected final GlobalProperties globalProperties;
     
@@ -371,6 +374,7 @@ public class ConfigurationManager implements Closeable {
         URLLoader loader = new URLLoader(configURLs,formatFactoryMap);
         loader.load();
         configurationDataMap = loader.getPropertyMap();
+        configurationNameMap = new IdentityHashMap<>();
         globalProperties = loader.getGlobalProperties();
         serializedObjects = new HashMap<>();
         for(Map.Entry<String,SerializedObject> e : loader.getSerializedObjects().entrySet()) {
@@ -429,6 +433,7 @@ public class ConfigurationManager implements Closeable {
 
     private ConfigurationManager(Map<String, ConfigurationData> newrpm, GlobalProperties newgp, Map<String, PropertySheet<? extends Configurable>> newSymbolTable, Map<String, SerializedObject> newSerializedObjects, GlobalProperties newOrigGlobal) {
         this.configurationDataMap = newrpm;
+        this.configurationNameMap = new IdentityHashMap<>();
         this.globalProperties = newgp;
         this.symbolTable = newSymbolTable;
         this.serializedObjects = newSerializedObjects;
@@ -1180,6 +1185,22 @@ public class ConfigurationManager implements Closeable {
     }
 
     /**
+     * If the given argument was instantiated by this ConfigurationManager, returns the name of the instance used
+     * to generate it.
+     *
+     * @param conf the configurable instance whose name we want
+     * @return The name from the original config file, or {@link Optional#empty} if conf was not instantiated by
+     * this configuration manager.
+     */
+    public Optional<String> getConfiguredName(Configurable conf) {
+        if(configurationNameMap.containsKey(conf)) {
+            return Optional.of(configurationNameMap.get(conf));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Returns the property sheet for the given object instance
      *
      * @param instanceName the instance name of the object
@@ -1345,6 +1366,10 @@ public class ConfigurationManager implements Closeable {
         }
 
         Configurable ret = ps.getOwner(reuseComponent);
+
+        if(!configurationNameMap.containsKey(ret)) {
+            configurationNameMap.put(ret, instanceName);
+        }
 
         if (ret instanceof Startable) {
             Startable stret = (Startable) ret;
