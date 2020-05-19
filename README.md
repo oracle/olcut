@@ -17,7 +17,7 @@ the needs of a varied user-base.
 # Quick Start
 
 ## Maven Coordinates
-Coming soon.
+Please check back soon as we are working out the logistics for publishing to Maven Central.
 
 ## Configuration System
 
@@ -175,6 +175,9 @@ The Command Interpreter provides help based on your usage statements, supports c
 tab completion, many primitive types as arguments, history, readline-style editing,
 optional parameters, and more.
 
+The Command Interpreter is built around [JLine3](https://github.com/jline/jline3) and
+supports the native platforms that JLine3 supports: Solaris, Linux, OS X, FreeBSD, and Windows.
+
 Read more about the [Command Interpreter](README-Commands.md).
 
 ## Provenance
@@ -210,3 +213,7 @@ Pair | It's a pair class. The fields are final and it has equals and hash code s
 Timers | `StopWatch` and `NanoWatch` provide handy timers, at millisecond or nanosecond granularity.
 Sort Utilities | `SortUtil` rovides a sort function which returns the indices that the input elements should be rearranged. Very useful for finding the original position of a sorted object without zipping it yourself.
 Stream Utilities | In Java 8 the stream API can run inside a Fork-Join Pool to bound the parallelism, but it does not bound the computation of the chunk size correctly. `StreamUtil` provides a bounded stream which knows how many threads are allocated, and so calculates the correct work chunk size. It also has methods for zipping two streams, and a special spliterator (`IOSpliterator`) which chunks work appropriately for reading from a IO system like a DB or a file.
+
+## Contributing
+
+We welcome your contributions! Have an idea? Read more about [Contributing to OLCUT](CONTRIBUTING.md).

@@ -114,42 +114,42 @@ the pipeline instances themselves need be duplicated.
 The supported list of annotated field types are:
 
 * Primitives
-    * boolean, Boolean
-    * byte, Byte
-    * short, Short
-    * int, Integer
-    * long, Long
-    * float, Float
-    * double, Double
-    * String
+    * `boolean`, `Boolean`
+    * `byte`, `Byte`
+    * `short`, `Short`
+    * `int`, `Integer`
+    * `long`, `Long`
+    * `float`, `Float`
+    * `double`, `Double`
+    * `String`
 * Primitive array types
-    * byte[]
-    * short[]
-    * int[]
-    * long[]
-    * float[]
-    * double[]
+    * `byte[]`
+    * `short[]`
+    * `int[]`
+    * `long[]`
+    * `float[]`
+    * `double[]`
 * Configurable classes
-    * Configurable
+    * `Configurable`
 * Object array types
-    * String[]
-    * Configurable[]
+    * `String[]`
+    * `Configurable[]`
 * Generic types - the generic type must be a supported non-generic non-array type.
-    * List
-    * EnumSet
-    * Set
-    * Map //Map<String,T>
+    * `List`
+    * `EnumSet`
+    * `Set`
+    * `Map` //Map<String,T>
 * Misc types
-    * AtomicInteger
-    * AtomicLong
-    * File
-    * Path
-    * LocalDate
-    * OffsetTime
-    * OffsetDateTime
-    * URL
-    * Random (deprecated marked for removal in the next major release)
-    * Enum
+    * `AtomicInteger`
+    * `AtomicLong`
+    * `File`
+    * `Path`
+    * `LocalDate`
+    * `OffsetTime`
+    * `OffsetDateTime`
+    * `URL`
+    * `Random` (deprecated marked for removal in the next major release)
+    * `Enum`
 
 ## Global Properties
 
@@ -274,10 +274,10 @@ the standard configuration file from within the jar file.
 
 ## Inspecting a Configurable class
 
-OLCUT 4.1.8 added a DescribeConfigurable main class which can describe a Configurable
+OLCUT 4.1.8 added a `DescribeConfigurable` main class which can describe a `Configurable`
 class showing each configurable field along with it's type, default value, if it's
 mandatory and a description of the field. It also can produce an example config
-file using any loaded ConfigWriter. This is useful if you need to configure a class
+file using any loaded `ConfigWriter`. This is useful if you need to configure a class
 but don't have access to it's source code.
 
 ```shell script
@@ -317,7 +317,7 @@ we haven't completely captured.
 
 ## Remote Components
 
-The configuration system can make use of Jini and RMI to help instantiate a
+The configuration system can make use of Jini (a.k.a. Apache River) and RMI to help instantiate a
 distributed system.  Through extensions to the component definition in the
 configuration file, components can be registered as services in Jini.  When
 a component lists another component as a property, that component need not
