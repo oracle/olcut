@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
+ * Utilities for operating on streams.
  */
 public final class StreamUtil {
 
@@ -57,10 +58,10 @@ public final class StreamUtil {
     /**
      * Takes a stream and returns a stream which bounds the parallelism available
      * based on the size of the {@link ForkJoinPool} it is executing in.
-     *
-     * This is a workaround until the fix lands in Java 10, which will make all
-     * {@link Stream}s have this property.
-     *
+     * <p>
+     * This is a workaround for code running on Java 8 and 9, as it's fixed in Java 10 which
+     * makes all {@link Stream}s have this property.
+     * <p>
      * @param inputStream A Stream of T.
      * @param <T> The type of the Stream.
      * @return A Stream which bounds the parallelism to the size of the FJP.
@@ -72,8 +73,6 @@ public final class StreamUtil {
     }
     
     /**
-     * Borrowed from JDK8 b93.
-     *
      * Creates a lazy and sequential combined {@link Stream} whose elements are
      * the result of combining the elements of two streams.  The resulting
      * stream is ordered if both of the input streams are ordered.  The size of
@@ -156,15 +155,16 @@ public final class StreamUtil {
     }
 
     /**
-     * Borrowed from JDK8 b93. The same as {@link StreamUtil#zip} but generates an {@link IOSpliterator}.
-     *
+     * The same as {@link StreamUtil#zip} but generates an {@link IOSpliterator} in the
+     * stream.
+     * <p>
      * Creates a lazy and sequential combined {@link Stream} whose elements are
      * the result of combining the elements of two streams.  The resulting
      * stream is ordered if both of the input streams are ordered.  The size of
      * the resulting stream will be the smaller of the sizes of the two input
      * streams; any elements remaining in the larger of the two streams will not
      * be consumed.
-     *
+     * <p>
      * @param <A> the type of elements of the first {@code Stream}
      * @param <B> the type of elements of the second {@code Stream}
      * @param <C> the type of elements of the zipped {@code Stream}
@@ -239,6 +239,11 @@ public final class StreamUtil {
         }
     }
 
+    /**
+     * A spliterator with bounded parallelism, it calculates the target size
+     * based upon the number of threads available in the ForkJoinPool it executes in.
+     * @param <T> The element type of the spliterator.
+     */
     private static class BoundedSpliterator<T> implements Spliterator<T> {
         private static final Logger logger = Logger.getLogger(BoundedSpliterator.class.getName());
 

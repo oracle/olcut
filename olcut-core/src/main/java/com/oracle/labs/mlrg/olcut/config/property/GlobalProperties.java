@@ -58,8 +58,10 @@ public class GlobalProperties extends ImmutableGlobalProperties {
     public final void importSystemProperties() {
         Properties props = AccessController.doPrivileged((PrivilegedAction<Properties>) System::getProperties);
         for (Map.Entry<Object,Object> e : props.entrySet()) {
-            String param = (String) e.getKey();
-            String value = (String) e.getValue();
+            // These two calls use .toString rather than a cast
+            // because sometimes Fusion inserts Integers into the system properties.
+            String param = e.getKey().toString();
+            String value = e.getValue() == null ? "null" : e.getValue().toString();
             setValue(param, value);
         }
     }

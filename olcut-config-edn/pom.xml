@@ -34,7 +34,7 @@
     <parent>
         <groupId>com.oracle.labs.mlrg.olcut</groupId>
         <artifactId>olcut</artifactId>
-        <version>5.1.1</version>
+        <version>${revision}</version>
         <relativePath>..</relativePath>
     </parent>
 

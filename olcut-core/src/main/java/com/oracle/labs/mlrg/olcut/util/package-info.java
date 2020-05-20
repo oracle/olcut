@@ -26,42 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.util;
-
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * The base class for the mutable primitive boxes in OLCUT.
+ * Small utility classes.
  */
-public abstract class MutableNumber extends Number {
-
-    /**
-     * Returns a copy of the MutableNumber.
-     * @return A copy
-     */
-    public abstract MutableNumber copy();
-
-    /**
-     * Copies a map which contains mutable number values.
-     * <p>
-     * Used to duplicate maps which count things ensuring that they don't
-     * double count values. The keys are *not* copied.
-     * @param input The map to copy.
-     * @param <T> The key type.
-     * @param <U> The value type.
-     * @return A copy of the map with copied values.
-     */
-    public static <T,U extends MutableNumber> Map<T,U> copyMap(Map<T,U> input) {
-        HashMap<T,U> output = new HashMap<>();
-
-        for (Map.Entry<T,U> e : input.entrySet()) {
-            @SuppressWarnings("unchecked") //copy returns the same type.
-            U copy = (U) e.getValue().copy();
-            output.put(e.getKey(), copy);
-        }
-
-        return output;
-    }
-
-}
+package com.oracle.labs.mlrg.olcut.util;

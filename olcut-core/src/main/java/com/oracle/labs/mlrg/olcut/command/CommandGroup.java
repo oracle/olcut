@@ -29,8 +29,9 @@
 package com.oracle.labs.mlrg.olcut.command;
 
 /**
- * A marker interface for any class that provides @Command commands for a
- * command interpreter.  Also provides a little meta-data.
+ * Essentially a marker interface for any class that provides
+ * @Command commands for a command interpreter.  Also provides a
+ * little helpful meta-data.
  */
 public interface CommandGroup {
     /**
