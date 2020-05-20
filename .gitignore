@@ -1,9 +1,9 @@
-# Ant files
-/nbproject/private/
+# Build files
 /build/
 /dist/
 /target/
 manifest.mf
+.flattened-pom.xml
 
 # Backup files
 *~
