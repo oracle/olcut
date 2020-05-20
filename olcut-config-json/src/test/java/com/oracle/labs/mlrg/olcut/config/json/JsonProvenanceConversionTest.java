@@ -45,12 +45,14 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.SplittableRandom;
 
 import static com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.constructProvenance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -82,9 +84,18 @@ public class JsonProvenanceConversionTest {
 
         String jsonResult = mapper.writeValueAsString(marshalledProvenances);
 
-        List<ObjectMarshalledProvenance> jsonProvenances = mapper.readValue(jsonResult, new TypeReference<List<MarshalledProvenance>>(){});
+        List<MarshalledProvenance> jsonProvenances = mapper.readValue(jsonResult, new TypeReference<List<MarshalledProvenance>>(){});
 
-        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jsonProvenances);
+        List<ObjectMarshalledProvenance> jps = new ArrayList<>();
+        for (MarshalledProvenance mp : jsonProvenances) {
+            if (mp instanceof ObjectMarshalledProvenance) {
+                jps.add((ObjectMarshalledProvenance) mp);
+            } else {
+                fail("Unexpected provenance deserialized.");
+            }
+        }
+
+        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jps);
 
         assertEquals(provenance,unmarshalledProvenance);
     }
@@ -103,9 +114,18 @@ public class JsonProvenanceConversionTest {
 
         String jsonResult = mapper.writeValueAsString(marshalledProvenance);
 
-        List<ObjectMarshalledProvenance> jsonProvenances = mapper.readValue(jsonResult, new TypeReference<List<MarshalledProvenance>>(){});
+        List<MarshalledProvenance> jsonProvenances = mapper.readValue(jsonResult, new TypeReference<List<MarshalledProvenance>>(){});
 
-        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jsonProvenances);
+        List<ObjectMarshalledProvenance> jps = new ArrayList<>();
+        for (MarshalledProvenance mp : jsonProvenances) {
+            if (mp instanceof ObjectMarshalledProvenance) {
+                jps.add((ObjectMarshalledProvenance) mp);
+            } else {
+                fail("Unexpected provenance deserialized.");
+            }
+        }
+
+        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jps);
 
         assertEquals(objProv,unmarshalledProvenance);
     }

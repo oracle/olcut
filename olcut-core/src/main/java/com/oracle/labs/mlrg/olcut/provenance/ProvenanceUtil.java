@@ -520,7 +520,7 @@ public final class ProvenanceUtil {
     }
 
     /**
-     * Assumes a closed world (so the names the {@link MarshalledProvenance} objects don't collide).
+     * Assumes a closed world (so the names in the {@link MarshalledProvenance} objects don't collide).
      * The first element of the list must be the root of the DAG, and it must only have a single root.
      *
      * This method throws {@link ProvenanceException} when the <code>marshalledProvenance</code> list

@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.oracle.labs.mlrg.olcut.provenance.io.MarshalledProvenance;
 
 /**
- *
+ * The {@link MarshalledProvenance} serialization module.
  */
 public class JsonProvenanceModule extends SimpleModule {
     static final String MARSHALLED_CLASS = "marshalled-class";

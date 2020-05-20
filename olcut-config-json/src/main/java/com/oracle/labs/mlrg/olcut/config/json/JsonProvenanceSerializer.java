@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- *
+ * Serialization class to convert {@link MarshalledProvenance} into JSON.
  */
 public class JsonProvenanceSerializer extends StdSerializer<MarshalledProvenance> {
 
