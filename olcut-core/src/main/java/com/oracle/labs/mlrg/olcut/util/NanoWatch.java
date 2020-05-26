@@ -30,11 +30,14 @@
 package com.oracle.labs.mlrg.olcut.util;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A nanosecond stop watch.
  */
 public class NanoWatch extends StopWatch implements Serializable {
+    public static final DecimalFormat nanoPartFormat = new DecimalFormat("#,###");
 
     /**
      * Starts the timer.
@@ -54,27 +57,86 @@ public class NanoWatch extends StopWatch implements Serializable {
         time += lastTime;
     }
 
+    /**
+     * Get the total completed time in this NanoWatch in nanoseconds
+     *
+     * @return the total time in nanos
+     */
     public long getTimeNanos() {
         return time;
     }
 
+    /**
+     * Get the most recent completed time in nanoseconds
+     *
+     * @return the most recent time in nanos
+     */
     public long getLastTimeNanos() {
         return lastTime;
     }
 
     /**
-     * Gets the time for this nano stop watch in milliseconds.
-     * @return the accumulated time for this stop watch in milliseconds.
+     * Gets the time that this NanoWatch last started in nanoseconds since the Epoch
+     *
+     * @return the last start time in nanoseconds since the Epoch
      */
-    public double getTimeMillis() {
-        return getTime() / 1000000.0;
+    public long getLastStartNanos() {
+        return lastStart;
     }
 
-    public double getLastTimeMillis() {
-        return lastTime / 1000000.0;
+    /**
+     * Gets the average length of time per start/stop cycle of this NanoWatch in nanoseconds
+     *
+     * @return the average time per click of this NanoWatch in nanos
+     */
+    public double getAvgTimeNanos() {
+        return getTimeNanos() / (double)clicks;
     }
 
-    public double getAvgTimeMillis() {
-        return getTimeMillis() / (double) clicks;
+    /**
+     * Returns a string version of the total accumulated time of this StopWatch, scaled
+     * appropriately depending on the amount of time. The full time to the nanosecond is
+     * always shown, but the format varies depending on how much time is represented.
+     * Times less than a second returns the number of nanoseconds. Times between
+     * a second and a day return hh:mm:ss and nanos. Times greater than a day add a
+     * number of days preceding the previous format.
+     *
+     * @return a string representing the time
+     */
+    @Override
+    public String toString() {
+        return formatNanosecondTime(time);
+    }
+
+    public static final String formatNanosecondTime(long nanos) {
+        //
+        // Are we less than a second?
+        if (nanos < TimeUnit.SECONDS.toNanos(1)) {
+            return String.format("%s nanos", nanoPartFormat.format(nanos));
+        }
+
+        //
+        // More than a second but less than a day?
+        if (nanos < TimeUnit.DAYS.toNanos(1)) {
+            return String.format("%02d:%02d:%02d and %s nanos",
+                    TimeUnit.NANOSECONDS.toHours(nanos),
+                    TimeUnit.NANOSECONDS.toMinutes(nanos) % TimeUnit.HOURS.toMinutes(1),
+                    TimeUnit.NANOSECONDS.toSeconds(nanos) % TimeUnit.MINUTES.toSeconds(1),
+                    nanoPartFormat.format(nanos % TimeUnit.SECONDS.toNanos(1)));
+        }
+
+        //
+        // More than a day
+        return String.format("%d days %02d:%02d:%02d and %s nanos",
+                TimeUnit.NANOSECONDS.toDays(nanos),
+                TimeUnit.NANOSECONDS.toHours(nanos) % TimeUnit.DAYS.toHours(1),
+                TimeUnit.NANOSECONDS.toMinutes(nanos) % TimeUnit.HOURS.toMinutes(1),
+                TimeUnit.NANOSECONDS.toSeconds(nanos) % TimeUnit.MINUTES.toSeconds(1),
+                nanoPartFormat.format(nanos % TimeUnit.SECONDS.toNanos(1)));
+    }
+
+    @Override
+    public TimeUnit getUnit() {
+        return TimeUnit.NANOSECONDS;
     }
 }

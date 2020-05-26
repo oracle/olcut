@@ -89,22 +89,75 @@ public class StopWatch implements Serializable {
 
     /**
      * Gets the number of milliseconds on the timer.
+     * @deprecated Ambiguous units, use unit-specific get methods instead. Behavior of this method is undefined in subclasses.
      * @return The number of milliseconds on the timer.
      */
     public long getTime() {
         return time;
     }
 
+    /**
+     * Gets the total completed number of milliseconds counted in the StopWatch in milliseconds.
+     *
+     * @return the total counted time in milliseconds
+     */
+    public long getTimeMillis() {
+        return getUnit().toMillis(time);
+    }
+
+    /**
+     * Gets the last time recorded in milliseconds.
+     * @deprecated Ambiguous units, use unit-specific get methods instead. Behavior of this method is undefined in subclasses.
+     *
+     * @return most recent start/stop time in milliseconds
+     */
     public long getLastTime() {
         return lastTime;
     }
 
+    /**
+     * Gets the most recent complete time recorded in milliseconds.
+     *
+     * @return the most recent time in milliseconds
+     */
+    public long getLastTimeMillis() {
+        return getUnit().toMillis(lastTime);
+    }
+
+    /**
+     * Gets the last time the StopWatch was started
+     * @deprecated Ambiguous units, use unit-specific get methods instead. Behavior of this method is undefined in subclasses.
+     * @return the last start time
+     */
     public long getLastStart() {
         return lastStart;
     }
 
+    /**
+     * Gets the last time the StopWatch was started in milliseconds since the Epoch
+     *
+     * @return the last start time in milliseconds
+     */
+    public long getLastStartMillis() {
+        return getUnit().toMillis(lastStart);
+    }
+
+    /**
+     * Gets the average time per click (start/stop)
+     * @deprecated Ambiguous units, use unit-specific get methods instead. Behavior of this method is undefined in subclasses.
+     * @return
+     */
     public double getAvgTime() {
         return getTime() / (double) clicks;
+    }
+
+    /**
+     * Gets the average length of time per click (start/stop cycle) in millliseconds
+     *
+     * @return the average time per click in milliseconds
+     */
+    public double getAvgTimeMillis() {
+        return getTimeMillis() / (double) clicks;
     }
 
     /**
@@ -121,7 +174,7 @@ public class StopWatch implements Serializable {
         if(sw == null) {
             return;
         }
-        time += sw.time;
+        time += getUnit().convert(sw.time, sw.getUnit());
         clicks += sw.clicks;
     }
 
@@ -133,46 +186,60 @@ public class StopWatch implements Serializable {
      * a minute and a day return hh:MM:ss.mmm. Times greater than a day return a more
      * verbose string with each of days, hours, minute, seconds(.mmm) labeled.
      *
-     * @return a string representing teh time
+     * @return a string representing the time
      */
+    @Override
     public String toString() {
-        if(time < 1000) {
-            return String.format("0.%03ds", time);
+        return formatMillisecondTime(time);
+    }
+
+    /**
+     * Returns a human-readable version of the provided time in milliseconds, scaled
+     * appropriately depending on the amount of time. The full time to the millisecond is
+     * always shown, but the format varies depending on how much time is represented.
+     * Times less than a minute return millisecond-precision seconds (s.mmm). Times between
+     * a minute and a day return hh:MM:ss.mmm. Times greater than a day return a more
+     * verbose string with each of days, hours, minute, seconds(.mmm) labeled.
+     * @param millis the time to format in milliseconds
+     *
+     * @return a human-readable format of the time
+     */
+    public static String formatMillisecondTime(long millis) {
+        //
+        // Less than a second?
+        if(millis < 1000) {
+            return String.format("0.%03ds", millis);
         }
 
-        long secs = TimeUnit.MILLISECONDS.toSeconds(time);
+        long secs = TimeUnit.MILLISECONDS.toSeconds(millis);
 
+        //
+        // Less than a minute?
         if(secs < 60) {
-            return String.format("%d.%03ds", secs,
-                                             time % TimeUnit.SECONDS.toMillis(1));
+            return String.format("%d.%03ds",
+                    secs,
+                    millis % TimeUnit.SECONDS.toMillis(1));
         }
 
-        long min = TimeUnit.MILLISECONDS.toMinutes(time);
-
-        if(min < 60) {
-            return String.format("00:%02d:%02d.%03d", min,
-                                                     TimeUnit.MILLISECONDS.toSeconds(time) % TimeUnit.MINUTES.toSeconds(1),
-                                                     time % TimeUnit.SECONDS.toMillis(1));
-        }
-
-        long h = TimeUnit.MILLISECONDS.toHours(time);
-
+        //
+        // Less than a day?
+        long h = TimeUnit.MILLISECONDS.toHours(millis);
         if (h < 24) {
-            return String.format("%02d:%02d:%02d.%03d", h,
-                    TimeUnit.MILLISECONDS.toMinutes(time) % TimeUnit.HOURS.toMinutes(1),
-                    TimeUnit.MILLISECONDS.toSeconds(time) % TimeUnit.MINUTES.toSeconds(1),
-                    time % TimeUnit.SECONDS.toMillis(1));
+            return String.format("%02d:%02d:%02d.%03d",
+                    h,
+                    TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
+                    TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1),
+                    TimeUnit.MILLISECONDS.toMillis(millis) % TimeUnit.SECONDS.toMillis(1));
         }
 
-        long d = TimeUnit.MILLISECONDS.toDays(time);
+        long d = TimeUnit.MILLISECONDS.toDays(millis);
 
         return String.format("%d days %d hours %d mins %d.%03d seconds",
                 d,
-                TimeUnit.MILLISECONDS.toHours(time) % TimeUnit.DAYS.toHours(1),
-                TimeUnit.MILLISECONDS.toMinutes(time) % TimeUnit.HOURS.toMinutes(1),
-                TimeUnit.MILLISECONDS.toSeconds(time) % TimeUnit.MINUTES.toSeconds(1),
-                time % TimeUnit.SECONDS.toMillis(1));
-    }
+                TimeUnit.MILLISECONDS.toHours(millis) % TimeUnit.DAYS.toHours(1),
+                TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
+                TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1),
+                TimeUnit.MILLISECONDS.toMillis(millis) % TimeUnit.SECONDS.toMillis(1));    }
 
     /**
      * Creates a string representation to the nearest largest appropriate time unit.
@@ -201,5 +268,9 @@ public class StopWatch implements Serializable {
         double h = min / 60;
 
         return String.format("%.2fh", h);
+    }
+
+    public TimeUnit getUnit() {
+        return TimeUnit.MILLISECONDS;
     }
 } // StopWatch
