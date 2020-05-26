@@ -49,7 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- *
+ * Deserialization class to convert JSON into {@link MarshalledProvenance}.
  */
 public class JsonProvenanceDeserializer extends StdDeserializer<MarshalledProvenance> {
 
