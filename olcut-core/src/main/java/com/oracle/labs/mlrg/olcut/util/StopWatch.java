@@ -30,6 +30,7 @@
 package com.oracle.labs.mlrg.olcut.util;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A class implementing a simple stop watch that can be used for timing.
@@ -124,6 +125,62 @@ public class StopWatch implements Serializable {
         clicks += sw.clicks;
     }
 
+    /**
+     * Returns a string version of the total accumulated time of this StopWatch, scaled
+     * appropriately depending on the amount of time. The full time to the millisecond is
+     * always shown, but the format varies depending on how much time is represented.
+     * Times less than a minute return millisecond-precision seconds (s.mmm). Times between
+     * a minute and a day return hh:MM:ss.mmm. Times greater than a day return a more
+     * verbose string with each of days, hours, minute, seconds(.mmm) labeled.
+     *
+     * @return a string representing teh time
+     */
+    public String toString() {
+        if(time < 1000) {
+            return String.format("0.%03ds", time);
+        }
+
+        long secs = TimeUnit.MILLISECONDS.toSeconds(time);
+
+        if(secs < 60) {
+            return String.format("%d.%03ds", secs,
+                                             time % TimeUnit.SECONDS.toMillis(1));
+        }
+
+        long min = TimeUnit.MILLISECONDS.toMinutes(time);
+
+        if(min < 60) {
+            return String.format("00:%02d:%02d.%03d", min,
+                                                     TimeUnit.MILLISECONDS.toSeconds(time) % TimeUnit.MINUTES.toSeconds(1),
+                                                     time % TimeUnit.SECONDS.toMillis(1));
+        }
+
+        long h = TimeUnit.MILLISECONDS.toHours(time);
+
+        if (h < 24) {
+            return String.format("%02d:%02d:%02d.%03d", h,
+                    TimeUnit.MILLISECONDS.toMinutes(time) % TimeUnit.HOURS.toMinutes(1),
+                    TimeUnit.MILLISECONDS.toSeconds(time) % TimeUnit.MINUTES.toSeconds(1),
+                    time % TimeUnit.SECONDS.toMillis(1));
+        }
+
+        long d = TimeUnit.MILLISECONDS.toDays(time);
+
+        return String.format("%d days %d hours %d mins %d.%03d seconds",
+                d,
+                TimeUnit.MILLISECONDS.toHours(time) % TimeUnit.DAYS.toHours(1),
+                TimeUnit.MILLISECONDS.toMinutes(time) % TimeUnit.HOURS.toMinutes(1),
+                TimeUnit.MILLISECONDS.toSeconds(time) % TimeUnit.MINUTES.toSeconds(1),
+                time % TimeUnit.SECONDS.toMillis(1));
+    }
+
+    /**
+     * Creates a string representation to the nearest largest appropriate time unit.
+     * @deprecated Use toString() instead which gives a more accurate, but still scoped appropriately time string
+     * @param millis
+     * @return
+     */
+    @Deprecated
     public static String toTimeString(double millis) {
         if(millis < 1000) {
             return String.format("%.2fms", millis);
