@@ -1,0 +1,77 @@
+{
+  "config" : {
+    "global-properties" : { },
+    "components" : [ {
+      "name" : "a",
+      "type" : "com.oracle.labs.mlrg.olcut.config.ArrayConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "floatArray" : [ {
+          "item" : "1.1f"
+        }, {
+          "item" : "2.3"
+        }, {
+          "item" : "3.5"
+        } ],
+        "doubleArray" : [ {
+          "item" : "1e-16"
+        }, {
+          "item" : "2e-16"
+        }, {
+          "item" : "3.16"
+        } ],
+        "longArray" : [ {
+          "item" : "9223372036854775807"
+        }, {
+          "item" : "9223372036854775806"
+        }, {
+          "item" : "5"
+        } ],
+        "byteArray" : [ {
+          "item" : "1"
+        }, {
+          "item" : "2"
+        }, {
+          "item" : "3"
+        } ],
+        "shortArray" : [ {
+          "item" : "1"
+        }, {
+          "item" : "2"
+        }, {
+          "item" : "3"
+        } ],
+        "intArray" : [ {
+          "item" : "1"
+        }, {
+          "item" : "2"
+        }, {
+            "item": "3"
+        } ],
+        "charArray" : [ {
+          "item" : "a"
+        }, {
+          "item" : "b"
+        }, {
+          "item" : "c"
+        } ]
+      }
+    }, {
+      "name" : "invalid-char",
+      "type" : "com.oracle.labs.mlrg.olcut.config.ArrayConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "inherit" : "a",
+      "properties" : {
+        "charArray" : [ {
+          "item" : "a"
+        }, {
+          "item" : "b"
+        }, {
+          "item" : "C-3PO"
+        } ]
+      }
+    } ]
+  }
+}

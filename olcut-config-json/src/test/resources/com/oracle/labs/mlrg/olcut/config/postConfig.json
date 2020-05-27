@@ -1,0 +1,15 @@
+{
+  "config" : {
+    "global-properties" : { },
+    "components" : [ {
+      "name" : "post",
+      "type" : "com.oracle.labs.mlrg.olcut.config.PostConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "one" : "Monkeys",
+        "two" : "AlsoMonkeys"
+      }
+    } ]
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "config": {
+    "global-properties": { },
+    "components": [
+      {
+        "name": "a",
+        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "properties": {
+          "one": "a",
+          "two": "b",
+          "three": "c"
+        }
+      },
+      {
+        "name" : "b",
+        "inherit" : "a",
+        "properties": {
+          "three" : "d"
+        }
+      },
+      {
+        "name" : "bsub",
+        "inherit" : "b",
+        "properties": {
+          "three" : "e"
+        }
+      },
+      {
+        "name" : "c1",
+        "type" : "com.oracle.labs.mlrg.olcut.config.StringleConfigurable",
+        "inherit" : "a",
+        "properties": {
+          "four" : "e"
+        }
+      },
+      {
+        "name" : "c2",
+        "type" : "com.oracle.labs.mlrg.olcut.config.StringleConfigurable",
+        "inherit" : "a",
+        "properties": {
+          "three" : "d",
+          "four" : "e"
+        }
+      },
+      {
+        "name" : "d",
+        "type" : "com.oracle.labs.mlrg.olcut.config.ListConfigurable",
+        "inherit" : "a",
+        "properties": {
+          "three" : "d",
+          "four" : "e"
+        }
+      }
+    ]
+  }
+}

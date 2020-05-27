@@ -1,14 +1,26 @@
-build/
-dist/
-target/
-src/META-INF/*
-nbproject/private/
+# Build files
+/build/
+/dist/
+/target/
+manifest.mf
+.flattened-pom.xml
+
+# Backup files
+*~
+.*.swp
+
+# Intellij files
+.idea/
+*.iml
+/.classpath
+/.project
 .classpath
 .project
+.settings
 
-# Editor temporary files
-.*.swp
-*~
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+# Subproject files
+olcut-core/target
+olcut-config-jini/target
+olcut-config-json/target
+olcut-config-edn/target
+olcut-extras/target

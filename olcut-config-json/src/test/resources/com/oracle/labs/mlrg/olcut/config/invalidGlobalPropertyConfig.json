@@ -1,0 +1,8 @@
+{
+  "config": {
+    "global-properties": {
+      "a": "alpha",
+      "a#5~?!": "beta"
+    }
+  }
+}

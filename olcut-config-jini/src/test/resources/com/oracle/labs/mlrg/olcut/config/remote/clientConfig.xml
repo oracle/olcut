@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+  ~ Copyright (c) 2004-2020, Oracle and/or its affiliates.
+  ~
+  ~ Licensed under the 2-clause BSD license.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~
+  ~ 1. Redistributions of source code must retain the above copyright notice,
+  ~    this list of conditions and the following disclaimer.
+  ~
+  ~ 2. Redistributions in binary form must reproduce the above copyright notice,
+  ~    this list of conditions and the following disclaimer in the documentation
+  ~    and/or other materials provided with the distribution.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  ~ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  ~ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ~ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+  ~ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  ~ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  ~ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  ~ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  ~ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ~ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  ~ POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<!--
+    Document   : clientConfig.xml
+    Created on : December 17, 2007, 4:16 PM
+    Author     : stgreen
+    Description:
+        A configuration for the client-side components.
+-->
+
+<config>
+    <property name="showCreations" value="false"/>
+
+    <!-- A registry that won't serve any classes -->
+    <component name="registry" type="com.oracle.labs.mlrg.olcut.config.remote.ComponentRegistry">
+        <propertylist name="groupList">
+            <item>olcut-test</item>
+        </propertylist>
+        <property name="securityPolicy" value="src/test/resources/jsk-all.policy"/>
+        <property name="lookupTries" value="5"/>
+        <property name="lookupWait" value="50"/>
+        <!--<property name="registryPort" value="4012"/>-->
+    </component>
+    
+    <component name="failtest" type="com.oracle.labs.mlrg.olcut.config.remote.ClientConfigurable">
+        <property name="value" value="bar"/>
+        <property name="count" value="30"/>
+        <property name="comp" value="servercomp"/>
+    </component>
+    
+    <!-- This component has no properties, which means that we're going to want to 
+    load it from the lookup service.  We could have also specified importable="true" 
+    in the component tag to get this behavior. -->
+    <component name="servercomp" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable"/>
+    
+    <!-- This component has no properties, which means that we're going to want to 
+    load it from the lookup service.  We could have also specified importable="true" 
+    in the component tag to get this behavior. We'll use the server entries for matching-->
+    <component name="servercompWithEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable" entries="serverEntries"/>
+    
+    <!-- This component has no properties, which means that we're going to want to 
+    load it from the lookup service.  We could have also specified importable="true" 
+    in the component tag to get this behavior. We'll use the server entries for matching, 
+    but they won't actually match -->
+    <component name="servercompWithNonMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable" entries="serverNonMatchingEntries"/>
+    
+    <component name="servercompWithPartialMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.RegistryConfigurable" entries="serverPartialMatchingEntries"/>
+    
+    <!-- Configuration entries to use for successful matching -->
+    <component name="serverEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">
+        <propertylist name="entries">
+            <item>firstEntry</item>
+            <item>secondEntry</item>
+        </propertylist>
+    </component>
+
+    <!-- Configuration entries to use for unsuccessful matching -->
+    <component name="serverNonMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">
+        <propertylist name="entries">
+            <item>firstEntry</item>
+            <item>thirdEntry</item>
+        </propertylist>
+    </component>
+    
+    <!-- Configuration entries to use for partial matching -->
+    <component name="serverPartialMatchingEntries" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntries">
+        <propertylist name="entries">
+            <item>firstEntry</item>
+        </propertylist>
+    </component>
+
+    <component name="firstEntry" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntry">
+        <property name="data" value="data1"/>
+    </component>
+
+    <component name="secondEntry" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntry">
+        <property name="data" value="data2"/>
+    </component>
+
+    <component name="thirdEntry" type="com.oracle.labs.mlrg.olcut.config.remote.ConfigurationEntry">
+        <property name="data" value="data3"/>
+    </component>
+
+</config>

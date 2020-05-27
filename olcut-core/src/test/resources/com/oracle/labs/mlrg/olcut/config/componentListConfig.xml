@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+  ~ Copyright (c) 2004-2020, Oracle and/or its affiliates.
+  ~
+  ~ Licensed under the 2-clause BSD license.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~
+  ~ 1. Redistributions of source code must retain the above copyright notice,
+  ~    this list of conditions and the following disclaimer.
+  ~
+  ~ 2. Redistributions in binary form must reproduce the above copyright notice,
+  ~    this list of conditions and the following disclaimer in the documentation
+  ~    and/or other materials provided with the distribution.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  ~ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  ~ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ~ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+  ~ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  ~ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  ~ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  ~ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  ~ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ~ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  ~ POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<!--
+    Document   : componentListConfig.xml
+    Created on : December 11, 2007, 7:58 AM
+    Author     : stgreen
+    Description:
+        A configuration file to test component lists.
+-->
+
+<config>
+    <component name="simple" type="com.oracle.labs.mlrg.olcut.config.ListConfigurable">
+        <propertylist name="list">
+            <item>simp</item>
+            <item>strings</item>
+        </propertylist>
+    </component>
+    
+    <component name="bad" type="com.oracle.labs.mlrg.olcut.config.ListConfigurable">
+        <propertylist name="list">
+            <item>non_existent</item>
+            <item>strings</item>
+        </propertylist>
+    </component>
+    
+    <component name="typed" type="com.oracle.labs.mlrg.olcut.config.ListConfigurable">
+        <propertylist name="list">
+            <type>com.oracle.labs.mlrg.olcut.config.StringConfigurable</type>
+        </propertylist>
+    </component>
+    
+    <component name="dualtyped" type="com.oracle.labs.mlrg.olcut.config.ListConfigurable">
+        <propertylist name="list">
+            <type>com.oracle.labs.mlrg.olcut.config.StringConfigurable</type>
+            <type>com.oracle.labs.mlrg.olcut.config.SimpleConfigurable</type>
+        </propertylist>
+    </component>
+
+    <component name="combotyped" type="com.oracle.labs.mlrg.olcut.config.ListConfigurable">
+        <propertylist name="list">
+            <item>simp</item>
+            <type>com.oracle.labs.mlrg.olcut.config.StringConfigurable</type>
+        </propertylist>
+    </component>
+
+    <component name="stringconfigurablearray" type="com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable">
+        <propertylist name="stringArray">
+            <item>strings</item>
+            <item>strings2</item>
+            <item>strings3</item>
+        </propertylist>
+    </component>
+
+    <component name="stringconfigurablearraybroken" type="com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable">
+        <propertylist name="stringArray">
+            <item>strings</item>
+            <item>monkeys</item>
+            <item>gibbons</item>
+        </propertylist>
+    </component>
+    
+    <component name="simp" type="com.oracle.labs.mlrg.olcut.config.SimpleConfigurable">
+        <property name="simple" value="10"/>
+    </component>
+    
+    <component name="simp2" type="com.oracle.labs.mlrg.olcut.config.SimpleConfigurable">
+        <property name="simple" value="20"/>
+    </component>
+    
+    <component name="strings" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+        <property name="one" value="alpha"/>
+        <property name="two" value="beta"/>
+        <property name="three" value="charlie"/>
+    </component>
+
+    <component name="strings2" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+        <property name="one" value="one"/>
+        <property name="two" value="two"/>
+        <property name="three" value="three"/>
+    </component>
+
+    <component name="strings3" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+        <property name="one" value="un"/>
+        <property name="two" value="deux"/>
+        <property name="three" value="trois"/>
+    </component>
+</config>

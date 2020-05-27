@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+<!--
+  ~ Copyright (c) 2004-2020, Oracle and/or its affiliates.
+  ~
+  ~ Licensed under the 2-clause BSD license.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~
+  ~ 1. Redistributions of source code must retain the above copyright notice,
+  ~    this list of conditions and the following disclaimer.
+  ~
+  ~ 2. Redistributions in binary form must reproduce the above copyright notice,
+  ~    this list of conditions and the following disclaimer in the documentation
+  ~    and/or other materials provided with the distribution.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  ~ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  ~ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ~ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+  ~ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  ~ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  ~ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  ~ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  ~ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ~ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  ~ POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<!--
+    A configuration file for testing handling of generic properties.
+-->
+
+<config>
+
+    <property name="pi" value="3.14"/>
+    <property name="bar" value="quux"/>
+
+    <component name="mapTest" type="com.oracle.labs.mlrg.olcut.config.MapConfigurable">
+        <propertymap name="map">
+            <entry key="things" value="stuff"/>
+            <entry key="foo" value="${bar}"/>
+        </propertymap>
+    </component>
+
+    <component name="correctListConfig" type="com.oracle.labs.mlrg.olcut.config.ListConfig">
+        <propertylist name="doubleList">
+            <item>5.5</item>
+            <item>3.14</item>
+            <item>3.14</item>
+            <item>2.79</item>
+        </propertylist>
+        <propertylist name="stringList">
+            <item>5.5</item>
+            <item>${pi}</item>
+            <item>${pi}</item>
+            <item>2.79</item>
+        </propertylist>
+        <propertylist name="stringConfigurableList">
+            <item>draconic</item>
+            <item>starwars</item>
+        </propertylist>
+    </component>
+
+    <component name="incorrectListConfig" type="com.oracle.labs.mlrg.olcut.config.ListConfig">
+        <propertylist name="doubleList">
+            <item>things</item>
+            <item>wings</item>
+            <item>bings</item>
+        </propertylist>
+        <propertylist name="stringList">
+            <item>5.5</item>
+            <item>3.14</item>
+            <item>2.79</item>
+        </propertylist>
+        <propertylist name="stringConfigurableList">
+            <item>monkeys</item>
+            <item>sheep</item>
+        </propertylist>
+    </component>
+
+    <component name="correctSetConfig" type="com.oracle.labs.mlrg.olcut.config.SetConfig">
+        <propertylist name="doubleSet">
+            <item>5.5</item>
+            <item>3.14</item>
+            <item>3.14</item>
+            <item>2.79</item>
+        </propertylist>
+        <propertylist name="stringSet">
+            <item>5.5</item>
+            <item>${pi}</item>
+            <item>${pi}</item>
+            <item>2.79</item>
+        </propertylist>
+        <propertylist name="stringConfigurableSet">
+            <item>draconic</item>
+            <item>starwars</item>
+        </propertylist>
+    </component>
+
+    <component name="incorrectSetConfig" type="com.oracle.labs.mlrg.olcut.config.SetConfig">
+        <propertylist name="doubleSet">
+            <item>things</item>
+            <item>wings</item>
+            <item>bings</item>
+        </propertylist>
+        <propertylist name="stringSet">
+            <item>5.5</item>
+            <item>3.14</item>
+            <item>2.79</item>
+        </propertylist>
+        <propertylist name="stringConfigurableSet">
+            <item>monkeys</item>
+            <item>sheep</item>
+        </propertylist>
+    </component>
+
+    <component name="draconic" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+        <property name="one" value="dragons"/>
+        <property name="two" value="wyverns"/>
+        <property name="three" value="wyrms"/>
+    </component>
+
+    <component name="starwars" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+        <property name="one" value="jedi"/>
+        <property name="two" value="sith"/>
+        <property name="three" value="scoundrels"/>
+    </component>
+
+    <component name="startrek" type="com.oracle.labs.mlrg.olcut.config.StringleConfigurable">
+        <property name="one" value="federation"/>
+        <property name="two" value="federation"/>
+        <property name="three" value="federation"/>
+        <property name="four" value="federation"/>
+        <property name="five" value="federation"/>
+    </component>
+
+    <component name="monkey-one" type="com.oracle.labs.mlrg.olcut.config.test.Gorilla"/>
+    <component name="monkey-two" type="com.oracle.labs.mlrg.olcut.config.test.Chimp"/>
+    <component name="monkey-three" type="com.oracle.labs.mlrg.olcut.config.test.Orangutan"/>
+    <component name="monkey-four" type="com.oracle.labs.mlrg.olcut.config.test.Rhesus"/>
+    <component name="monkey-five" type="com.oracle.labs.mlrg.olcut.config.test.Barbary"/>
+
+</config>

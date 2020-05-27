@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2004-2020, Oracle and/or its affiliates.
+  ~
+  ~ Licensed under the 2-clause BSD license.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~
+  ~ 1. Redistributions of source code must retain the above copyright notice,
+  ~    this list of conditions and the following disclaimer.
+  ~
+  ~ 2. Redistributions in binary form must reproduce the above copyright notice,
+  ~    this list of conditions and the following disclaimer in the documentation
+  ~    and/or other materials provided with the distribution.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  ~ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  ~ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ~ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+  ~ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  ~ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  ~ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  ~ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  ~ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ~ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  ~ POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<!--
+A configuration file for the hello service.
+-->
+
+<config>
+    
+    <!--
+    A global property for the string that our service will return.  This can
+    be overridden by a system property with the same name provided on the 
+    command line.
+    -->
+    <property name="globalMyString" value="Also hello"/>
+    
+    <!--
+    A global property for the Jini group to use when searching for a service
+    registry. This can be overridden by a system property with the same name
+    provided on the command line.
+    -->
+    <property name="helloGroup" value="hello"/>
+    
+    <!--
+    A global property for the security policy that the component registry 
+    should use. By default, we have a very open security policy.
+    This can be overridden by a system property with the same name
+    provided on the command line.
+    -->
+    <property name="securityPolicy" value="/jini/jsk-all.policy"/>
+
+    
+    <!-- 
+    A component registry that will be used to lookup and register components.
+    The registry (or registries) will be found via multicast. You can explicity 
+    specify a registry host if you know one, but you should always try multicast
+    first!
+    -->
+    <component name="registry" type="com.oracle.labs.mlrg.olcut.config.remote.ComponentRegistry">
+        <propertylist name="groupList">
+            <item>${helloGroup}</item>
+        </propertylist>
+        <property name="securityPolicy" value="${securityPolicy}"/>
+        <property name="csDirs" value="${helloDistDir}:${helloDistDir}/lib"/>
+        <property name="csPort" value="${csPort}"/>
+        <propertylist name="codebaseJars">
+            <item>slcut.jar</item>
+        </propertylist>
+    </component>
+    
+    <!-- 
+    A component for the actual service implementation, which will be 
+    exported to the service registry 
+    -->
+    <component name="hello" type="com.oracle.labs.mlrg.olcut.service.sample.HelloServiceImpl" export="true">
+        <property name="myString" value="${globalMyString}"/>
+    </component>
+    
+    <!-- 
+    A service starter for the hello service, which will take care of 
+    starting the service in a thread and waiting for the service to shut down.
+    -->
+    <component name="helloStarter" type="com.oracle.labs.mlrg.olcut.service.ConfigurableServiceStarter">
+        <propertylist name="serviceComponents">
+            <item>hello</item>
+        </propertylist>
+    </component>
+
+</config>

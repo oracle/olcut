@@ -1,0 +1,364 @@
+/*
+ * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ *
+ * Licensed under the 2-clause BSD license.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package com.oracle.labs.mlrg.olcut.config;
+
+import com.oracle.labs.mlrg.olcut.util.Pair;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.logging.Logger;
+
+/**
+ * A tag interface which contains fields annotated with {@link Option}, and other
+ * fields which subclass {@link Options}. See the README for usage.
+ * <p>
+ * Implement the {@link Options#getOptionsDescription} method to insert a description string
+ * into the generated Options usage string.
+ * <p>
+ * Any other fields or methods are ignored by the
+ * command line arguments processing system.
+ * <p>
+ * Options implementations should form a tree, with no duplication of classes.
+ * Implementions which are not a tree or have duplicate classes will fail
+ * the validation checks in {@link ConfigurationManager#validateOptions}.
+ */
+public interface Options {
+    public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Char","Long Name","Type","Default","Usage"));
+
+    /**
+     * Gets a possibly multi line description of this Options subclass.
+     *
+     * Default implementation returns the empty string.
+     * @return A description string.
+     */
+    default public String getOptionsDescription() {
+        return "";
+    }
+
+    public static String formatUsage(List<List<String>> usageList) {
+        int[] maxWidth = new int[5];
+
+        for (List<String> a : usageList) {
+            if (a.size() == 5) {
+                if (maxWidth[0] < a.get(0).length()) {
+                    maxWidth[0] = a.get(0).length();
+                }
+                if (maxWidth[1] < a.get(1).length()) {
+                    maxWidth[1] = a.get(1).length();
+                }
+                if (maxWidth[2] < a.get(2).length()) {
+                    maxWidth[2] = a.get(2).length();
+                }
+                if (maxWidth[3] < a.get(3).length()) {
+                    maxWidth[3] = a.get(3).length();
+                }
+            }
+        }
+
+        String formatString = "%"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %-"+maxWidth[3]+"s %s\n";
+        StringBuilder builder = new StringBuilder();
+
+        for (List<String> a : usageList) {
+            if (a.size() == 5) {
+                builder.append(String.format(formatString, a.get(0), a.get(1), a.get(2), a.get(3), a.get(4)));
+            } else if (a.size() == 2) {
+                builder.append(a.get(0));
+                builder.append(a.get(1));
+                builder.append("\n");
+            } else {
+                // Must be Option class name
+                builder.append("\n");
+                builder.append(a.get(0));
+                builder.append("\n\n");
+            }
+        }
+
+        return builder.toString();
+    }
+
+    public static List<List<String>> getUsage(Class<? extends Options> options) {
+        ArrayList<List<String>> list = new ArrayList<>();
+        ArrayList<List<String>> optionsList = new ArrayList<>();
+        Set<Field> fields = getOptionFields(options);
+        if (fields.size() == 0) {
+            return list;
+        } else {
+            list.add(new ArrayList<>(Collections.singletonList(options.getSimpleName())));
+
+            try {
+                Options opt = options.getDeclaredConstructor().newInstance();
+                String optUsage = opt.getOptionsDescription();
+                if (!optUsage.isEmpty()) {
+                    list.add(Arrays.asList("Description: ", optUsage));
+                }
+                list.add(header);
+                for (Field f : fields) {
+                    Option option = f.getAnnotation(Option.class);
+                    optionsList.add(Options.getOptionUsage(option,f,opt));
+                }
+
+                optionsList.sort((List<String> a, List<String> b) -> {
+                    if (a.get(0).charAt(0) == b.get(0).charAt(0)) {
+                        return a.get(1).compareTo(b.get(1));
+                    } else {
+                        if (a.get(0).charAt(0) == Option.SPACE_CHAR) {
+                            return +1;
+                        } else if (b.get(0).charAt(0) == Option.SPACE_CHAR) {
+                            return -1;
+                        } else {
+                            return a.get(0).compareTo(b.get(0));
+                        }
+                    }
+                });
+                list.addAll(optionsList);
+
+                return list;
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+                throw new ArgumentException(e,"Could not instantiate Options class " + options.getName() +", it has no default constructor.");
+            }
+
+        }
+    }
+
+    public static String generateTypeDescription(Field f) {
+        Class<?> clazz = f.getType();
+        if (clazz.isEnum()) {
+            Object[] constants = clazz.getEnumConstants();
+            StringBuilder sb = new StringBuilder();
+            sb.append("enum - {");
+            for (Object o : constants) {
+                sb.append(((Enum)o).name());
+                sb.append(", ");
+            }
+            sb.replace(sb.length()-2,sb.length(),"}");
+            return sb.toString();
+        } else {
+            return f.getGenericType().getTypeName();
+        }
+    }
+
+    public static ArrayList<String> getOptionUsage(Option option, Field f, Options obj) {
+        String typeString = generateTypeDescription(f);
+        return getOptionUsage(option,f,obj,typeString);
+    }
+
+    public static ArrayList<String> getOptionUsage(Option option, String type) {
+        ArrayList<String> output = new ArrayList<>();
+        if (option.charName() != Option.EMPTY_CHAR) {
+            output.add(""+option.charName());
+        } else {
+            output.add(""+Option.SPACE_CHAR);
+        }
+        output.add(option.longName());
+        output.add(type);
+        output.add("");
+        output.add(option.usage());
+        return output;
+    }
+
+    public static ArrayList<String> getOptionUsage(Option option, Field f, Options obj, String type) {
+        ArrayList<String> output = new ArrayList<>();
+        if (option.charName() != Option.EMPTY_CHAR) {
+            output.add(""+option.charName());
+        } else {
+            output.add(""+Option.SPACE_CHAR);
+        }
+        output.add(option.longName());
+        output.add(type);
+        Object extractedField = AccessController.doPrivileged((PrivilegedAction<Object>)
+                () -> {
+                    try {
+                        boolean accessible = f.isAccessible();
+                        f.setAccessible(true);
+                        Object fieldVal = f.get(obj);
+                        f.setAccessible(accessible);
+                        return fieldVal;
+                    } catch (IllegalAccessException e) {
+                        Logger.getLogger(Options.class.getName()).fine("Failed to read default value from field " + option.longName());
+                        return null;
+                    }
+                });
+        String defaultVal = extractedField == null ? "" : extractedField.toString();
+        output.add(defaultVal);
+        output.add(option.usage());
+        return output;
+    }
+
+    /**
+     * Gets all of the fields annotated with {@link Option} associated with a
+     * class by walking up the class tree. Handles super classes, as well
+     * as interfaces.
+     *
+     * @param options the class who's fields we wish to walk.
+     * @return all of the fields annotated with {@link Option}.
+     */
+    public static Set<Field> getOptionFields(Class<? extends Options> options) {
+        return AccessController.doPrivileged((PrivilegedAction<Set<Field>>)
+                () -> {
+                    Set<Field> ret = new HashSet<>();
+                    Queue<Class> cq = new ArrayDeque<>();
+                    cq.add(options);
+                    while (!cq.isEmpty()) {
+                        Class curr = cq.remove();
+                        for (Field f : curr.getDeclaredFields()) {
+                            if (f.getAnnotation(Option.class) != null) {
+                                ret.add(f);
+                            }
+                        }
+                        for (Field f : curr.getFields()) {
+                            if (f.getAnnotation(Option.class) != null) {
+                                ret.add(f);
+                            }
+                        }
+                        Class sc = curr.getSuperclass();
+                        if (sc != null) {
+                            cq.add(sc);
+                        }
+                        cq.addAll(Arrays.asList(curr.getInterfaces()));
+                    }
+                    ret.removeIf(f -> Modifier.isStatic(f.getModifiers()));
+                    return ret;
+                }
+        );
+    }
+
+    /**
+     * Gets all of the fields which subclass {@link Options} from a class by
+     * walking up the class tree. Handles super classes, as well
+     * as interfaces.
+     *
+     * @param options the class who's fields we wish to walk.
+     * @return all of the fields which subclass {@link Options}.
+     */
+    public static Set<Field> getOptions(Class<? extends Options> options) {
+        return AccessController.doPrivileged((PrivilegedAction<Set<Field>>)
+                () -> {
+                    Set<Field> ret = new HashSet<>();
+                    Queue<Class> cq = new ArrayDeque<>();
+                    cq.add(options);
+                    while (!cq.isEmpty()) {
+                        Class curr = cq.remove();
+                        for (Field f : curr.getDeclaredFields()) {
+                            if (Options.class.isAssignableFrom(f.getType())) {
+                                ret.add(f);
+                            }
+                        }
+                        for (Field f : curr.getFields()) {
+                            if (Options.class.isAssignableFrom(f.getType())) {
+                                ret.add(f);
+                            }
+                        }
+                        Class sc = curr.getSuperclass();
+                        if (sc != null) {
+                            cq.add(sc);
+                        }
+                        cq.addAll(Arrays.asList(curr.getInterfaces()));
+                    }
+                    ret.removeIf(f -> Modifier.isStatic(f.getModifiers()));
+                    return ret;
+                }
+        );
+    }
+
+    /**
+     * Gets all of the fields which subclass {@link Options} by walking up the
+     * class tree. Handles super classes, as well as interfaces.
+     *
+     * @param options the class who's fields we wish to walk.
+     * @return all of the fields which subclass Options.
+     */
+    @SuppressWarnings("unchecked")
+    public static Set<Class<? extends Options>> getAllOptions(Class<? extends Options> options) {
+        return AccessController.doPrivileged((PrivilegedAction<Set<Class<? extends Options>>>)
+                () -> {
+                    // The Pair is (classname,fieldname)
+                    Map<Class<? extends Options>,Pair<String,String>> ret = new LinkedHashMap<>();
+                    Map<Pair<String,String>,Class<? extends Options>> tempSet = new HashMap<>();
+                    ret.put(options,new Pair<>("root","root"));
+                    Queue<Class<?>> cq = new ArrayDeque<>();
+                    cq.add(options);
+                    while (!cq.isEmpty()) {
+                        Class<?> curr = cq.remove();
+                        String currName = curr.getName();
+                        for (Field f : curr.getDeclaredFields()) {
+                            if (Options.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
+                                Class<? extends Options> nextOptions = (Class<? extends Options>) f.getType();
+                                // Add to the processing queue, via a map to make sure we don't double count fields.
+                                tempSet.put(new Pair<>(currName,f.getName()),nextOptions);
+                            }
+                        }
+                        for (Field f : curr.getFields()) {
+                            if (Options.class.isAssignableFrom(f.getType()) && !Modifier.isStatic(f.getModifiers())) {
+                                Class<? extends Options> nextOptions = (Class<? extends Options>) f.getType();
+                                // Add to the processing queue, via a map to make sure we don't double count fields.
+                                tempSet.put(new Pair<>(currName,f.getName()),nextOptions);
+                            }
+                        }
+                        Class<?> sc = curr.getSuperclass();
+                        if (sc != null) {
+                            cq.add(sc);
+                        }
+                        cq.addAll(Arrays.asList(curr.getInterfaces()));
+
+                        // Append the processing queue to the returned set, validating that each one is unique.
+                        for (Map.Entry<Pair<String,String>,Class<? extends Options>> e : tempSet.entrySet()) {
+                            if (ret.containsKey(e.getValue())) {
+                                Pair<String,String> otherOccurrence = ret.get(e.getValue());
+                                String firstOccurrence = otherOccurrence.getA()+"."+otherOccurrence.getB();
+                                String thisOccurrence = e.getKey().getA() + "." + e.getKey().getB();
+                                throw new ArgumentException(firstOccurrence,thisOccurrence,"There are two instances of " + e.getValue().getName() + " in this Options tree.");
+                            } else {
+                                ret.put(e.getValue(),e.getKey());
+                                cq.add(e.getValue());
+                            }
+                        }
+
+                        // Flush the temporary set.
+                        tempSet.clear();
+                    }
+                    return new LinkedHashSet<>(ret.keySet());
+                }
+        );
+    }
+}

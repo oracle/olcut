@@ -1,0 +1,5 @@
+(config
+	(property bar "quux")
+	(component mapTest [mlrg olcut config MapConfigurable]
+		{:import "false" :export "false"}
+		:map {:foo "${bar}" "things" "stuff"}))
