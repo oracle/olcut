@@ -1,4 +1,3 @@
-
 # The Oracle Labs Configuration and Utilities Toolkit
 
 The OLCUT is a group of utilities that facilitate making pluggable software
@@ -18,6 +17,8 @@ the needs of a varied user-base.
 
 ## Maven Coordinates
 Please check back soon as we are working out the logistics for publishing to Maven Central.
+
+[![wercker status](https://app.wercker.com/status/1615cf1d81ce750e730d50cec2309458/s/master "wercker status")](https://app.wercker.com/project/byKey/1615cf1d81ce750e730d50cec2309458)
 
 ## Configuration System
 

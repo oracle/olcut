@@ -1282,7 +1282,8 @@ public class ConfigurationManager implements Closeable {
     }
     /**
      * Looks up a configurable component by its name, instantiating it if
-     * necessary.
+     * necessary. If the component was previously created, the same instance
+     * will be returned.
      *
      * @param instanceName the name of the component that we want.
      * @return the instantiated component, or <code>null</code> if no such named
@@ -1314,7 +1315,8 @@ public class ConfigurationManager implements Closeable {
     /**
      * Looks up a configurable component by name. If a component registry exists in the 
      * current configuration manager, it will be checked for the given component name.
-     * If the component does not exist, it will be created.
+     * If the component does not exist, it will be created, otherwise the existing
+     * instance will be returned.
      *
      * @param instanceName the name of the component
      * @param cl a listener for this component that is notified when components
