@@ -1974,6 +1974,7 @@ public class ConfigurationManager implements Closeable {
                                 m.put(propertyName, ListProperty.createFromStringList(stringList));
                             }
                         } else if (FieldType.mapTypes.contains(ft)) {
+                            @SuppressWarnings("unchecked")
                             Map<String,?> fieldMap = (Map<String,?>) field.get(configurable);
                             HashMap<String, SimpleProperty> newMap = new HashMap<>();
                             for (Map.Entry<String,?> e : fieldMap.entrySet()) {
