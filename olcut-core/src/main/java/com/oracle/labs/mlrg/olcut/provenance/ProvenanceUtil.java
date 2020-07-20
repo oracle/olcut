@@ -65,6 +65,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
@@ -84,6 +85,9 @@ public final class ProvenanceUtil {
 
     private static final Logger logger = Logger.getLogger(ProvenanceUtil.class.getName());
 
+    /**
+     * The hash types supported for hashing resources.
+     */
     public enum HashType {
         SHA1("SHA1"), SHA256("SHA-256"), SHA512("SHA-512"), MD5("MD5");
 
@@ -92,6 +96,10 @@ public final class ProvenanceUtil {
             this.name = name;
         }
 
+        /**
+         * Returns a new instance of the appropriate MessageDigest implementation.
+         * @return The message digest implementation for this hash type.
+         */
         public MessageDigest getDigest() {
             try {
                 return MessageDigest.getInstance(name);
@@ -110,9 +118,9 @@ public final class ProvenanceUtil {
 
     /**
      * Converts a byte array into a hexadecimal encoded String.
-     *
+     * <p>
      * Used to convert message digests into Strings.
-     *
+     * <p>
      * The java.xml.bind.DataTypeConverter class was removed in Java 11, so this is a cross version replacement.
      * @param bytes The byte array to convert
      * @return A hexadecimal representation of the byte array.
@@ -293,6 +301,166 @@ public final class ProvenanceUtil {
     }
 
     /**
+     * Formats a provenance object with tabs indenting each child object.
+     * @param prov Tne provenance to format as a String.
+     * @return A formatted String view of the provenance.
+     */
+    public static String formattedProvenanceString(ObjectProvenance prov) {
+        return formattedProvenanceString(prov,0);
+    }
+
+    /**
+     * Formats a provenance object with tabs indenting the child objects.
+     * Starts at the supplied depth.
+     * @param prov The provenance to format.
+     * @param depth The depth.
+     * @return A formatted String view of the provenance, tabbed to the right depth.
+     */
+    private static String formattedProvenanceString(ObjectProvenance prov, int depth) {
+        // Get short class name
+        String className = prov.getClassName();
+        String shortClassName = className.substring(className.lastIndexOf(".") + 1);
+
+        StringBuilder builder = new StringBuilder();
+        // Make indent
+        for (int i = 0; i < depth; i++) {
+            builder.append('\t');
+            builder.append('\t');
+        }
+        String tabs = builder.toString();
+        builder.setLength(0);
+
+        //builder.append(tabs);
+        builder.append(shortClassName);
+        builder.append("(\n");
+        for (Pair<String,Provenance> p : prov) {
+            builder.append(tabs);
+            builder.append('\t');
+            builder.append(p.getA());
+            builder.append(" = ");
+            Provenance innerProv = p.getB();
+            formatProvenance(innerProv,builder,tabs,depth);
+            builder.append('\n');
+        }
+        builder.append(tabs);
+        builder.append(')');
+
+        return builder.toString();
+    }
+
+    /**
+     * Formats a single provenance, writing to the supplied builder.
+     * @param innerProv The provenance to format.
+     * @param builder The builder to write to.
+     * @param tabs The current tab String.
+     * @param depth The current object depth.
+     */
+    private static void formatProvenance(Provenance innerProv, StringBuilder builder, String tabs, int depth) {
+        if (innerProv instanceof PrimitiveProvenance) {
+            builder.append(((PrimitiveProvenance<?>)innerProv).getValue().toString());
+        } else if (innerProv instanceof ListProvenance) {
+            ListProvenance<?> listProv = (ListProvenance<?>) innerProv;
+            if (listProv.getList().isEmpty()) {
+                builder.append("List[]");
+            } else {
+                builder.append("List[\n");
+                for (Provenance provElem : listProv) {
+                    builder.append(tabs);
+                    builder.append('\t');
+                    formatProvenance(provElem,builder,tabs,depth+1);
+                    builder.append('\n');
+                }
+                builder.append(tabs);
+                builder.append("\t]");
+            }
+        } else if (innerProv instanceof MapProvenance) {
+            MapProvenance<?> mapProv = (MapProvenance<?>) innerProv;
+            if (mapProv.getMap().isEmpty()) {
+                builder.append("Map{}");
+            } else {
+                builder.append("Map{\n");
+                for (Pair<String,? extends Provenance> provElem : mapProv) {
+                    builder.append(tabs);
+                    builder.append('\t');
+                    builder.append(provElem.getA());
+                    builder.append('=');
+                    formatProvenance(provElem.getB(),builder,tabs,depth+1);
+                    builder.append('\n');
+                }
+                builder.append(tabs);
+                builder.append("\t}");
+            }
+        } else if (innerProv instanceof ObjectProvenance) {
+            String innerProvString = formattedProvenanceString((ObjectProvenance)innerProv,depth+1);
+            builder.append(innerProvString);
+        } else {
+            throw new IllegalStateException("Unrecognised provenance base type " + innerProv.getClass());
+        }
+    }
+
+    /**
+     * The values in this map are either String, List or Map.
+     * The maps are the same type as the output map, and the Lists contain
+     * either Strings, Lists or Maps.
+     * <p>
+     * It's a weakly typed version of the provenance structures.
+     * @param prov The provenance to convert.
+     * @return A (possibly nested) map representing the provenance.
+     */
+    public static Map<String, Object> convertToMap(ObjectProvenance prov) {
+        Map<String,Object> output = new HashMap<>();
+
+        for (Pair<String,Provenance> p : prov) {
+            String key = p.getA();
+            Provenance innerProv = p.getB();
+            Object value = innerConvertToMap(innerProv);
+            output.put(key,value);
+        }
+
+        return Collections.unmodifiableMap(output);
+    }
+
+    /**
+     * Converts a provenance into an immutable set of Strings, Lists and Maps.
+     * The object graph only contains those three types.
+     * @param prov The provenance to convert.
+     * @return A structure suitable for display or conversion into JSON.
+     */
+    private static Object innerConvertToMap(Provenance prov) {
+        if (prov instanceof PrimitiveProvenance) {
+            return ((PrimitiveProvenance<?>)prov).getValue().toString();
+        } else if (prov instanceof ListProvenance) {
+            ListProvenance<?> listProv = (ListProvenance<?>) prov;
+            if (listProv.getList().isEmpty()) {
+                return Collections.emptyList();
+            } else {
+                List<Object> list = new ArrayList<>();
+                for (Provenance provElem : listProv) {
+                    list.add(innerConvertToMap(provElem));
+                }
+                return Collections.unmodifiableList(list);
+            }
+        } else if (prov instanceof MapProvenance) {
+            MapProvenance<?> mapProv = (MapProvenance<?>) prov;
+            if (mapProv.getMap().isEmpty()) {
+                return Collections.emptyMap();
+            } else {
+                Map<String,Object> map = new HashMap<>();
+                for (Pair<String,? extends Provenance> provElem : mapProv) {
+                    String newKey = provElem.getA();
+                    Object newValue = innerConvertToMap(provElem.getB());
+                    map.put(newKey,newValue);
+                }
+                return Collections.unmodifiableMap(map);
+            }
+        } else if (prov instanceof ObjectProvenance) {
+            return convertToMap((ObjectProvenance)prov);
+        } else {
+            throw new IllegalStateException("Unrecognised provenance base type " + prov.getClass());
+        }
+    }
+
+    /**
      * Extracts a list of ConfigurationData which can be used to reconstruct the objects
      * recorded in this provenance.
      * <p>
@@ -402,7 +570,7 @@ public final class ProvenanceUtil {
 
     /**
      * Marshals the provenance into a list of flattened objects.
-     *
+     * <p>
      * Similar to the configuration extraction, but preserves all the information.
      * @param provenance The provenance to marshal.
      * @return A list of marshalled objects.
@@ -522,7 +690,7 @@ public final class ProvenanceUtil {
     /**
      * Assumes a closed world (so the names in the {@link MarshalledProvenance} objects don't collide).
      * The first element of the list must be the root of the DAG, and it must only have a single root.
-     *
+     * <p>
      * This method throws {@link ProvenanceException} when the <code>marshalledProvenance</code> list
      * contains malformed objects, the classes are missing, or the appropriate constructors are not available.
      * @param marshalledProvenance The marshalled provenances to unmarshall.
@@ -583,7 +751,7 @@ public final class ProvenanceUtil {
      * Converts a FlatMarshalledProvenance into a Provenance, either by recursively calling {@link ProvenanceUtil#unmarshalFlat} on
      * the elements of a list or map, by recursively calling {@link ProvenanceUtil#unmarshalProvenance} on an ObjectMarshalledProvenance
      * or calling {@link SimpleMarshalledProvenance#unmarshallPrimitive()} on a primitive.
-     *
+     * <p>
      * Throws provenance exception if there is a cycle or an unexpected class was found.
      * @param hostProvName The host provenance name, used for error messages.
      * @param fmp The marshalled provenance to unmarshal.
@@ -643,9 +811,9 @@ public final class ProvenanceUtil {
 	 * advised to <b>avoid using this method</b> but if you do use it, then you
 	 * should extensively unit test code that depends on this method.
 	 * 
-	 * @param provenancable
-	 * @param outputStream
-	 * @throws IOException
+	 * @param provenancable The provenancable object to serialize.
+	 * @param outputStream The output stream to write to.
+	 * @throws IOException If the stream couldn't be written to.
 	 */
 	public static void writeObject(Provenancable<? extends ConfiguredObjectProvenance> provenancable,  ObjectOutputStream outputStream) throws IOException {
 		ObjectProvenance provenance = provenancable.getProvenance();
@@ -658,10 +826,10 @@ public final class ProvenanceUtil {
 	 * {@link #writeObject(Provenancable, ObjectOutputStream)} for why you should
 	 * take extra care when deliberating whether or not to use this method.
 	 * 
-	 * @param inputStream
-	 * @return
-	 * @throws ClassNotFoundException
-	 * @throws IOException
+	 * @param inputStream The stream to read from.
+	 * @return The object reconstructed from it's provenance.
+	 * @throws ClassNotFoundException If the class isn't available.
+	 * @throws IOException If the stream couldn't be read.
 	 */
 	public static Provenancable<? extends ConfiguredObjectProvenance> readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
 		ConfiguredObjectProvenance provenance = (ConfiguredObjectProvenance) inputStream.readObject();
