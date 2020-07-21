@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -915,6 +916,11 @@ public class PropertySheet<T extends Configurable> {
 
         PropertySheet ps = (PropertySheet) obj;
         return propValues.equals(ps.propValues);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(propValues);
     }
 
     public PropertySheet<T> copy() {

@@ -117,6 +117,11 @@ public class ServablePropertySheet<T extends Configurable> extends PropertySheet
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
     public synchronized T getOwner(ComponentListener<T> cl, boolean reuseComponent) {
         if (!isInstantiated() || !reuseComponent) {
 

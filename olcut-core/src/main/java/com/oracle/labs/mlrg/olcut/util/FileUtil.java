@@ -33,6 +33,7 @@ package com.oracle.labs.mlrg.olcut.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -60,11 +61,15 @@ public class FileUtil {
                 if (f.isDirectory()) {
                     deleteDirectory(f);
                 } else {
-                    f.delete();
+                    if (!f.delete()) {
+                        logger.log(Level.INFO,"Failed to delete file: " + f.getName());
+                    }
                 }
             }
         }
-        dir.delete();
+        if (!dir.delete()) {
+            logger.log(Level.INFO, "Failed to delete directory: " + dir.getName());
+        }
     }
 
     public static void dirCopier(File source, File target) throws IOException {
