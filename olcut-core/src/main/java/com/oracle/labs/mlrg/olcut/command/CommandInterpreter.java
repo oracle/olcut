@@ -32,6 +32,7 @@ package com.oracle.labs.mlrg.olcut.command;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -41,6 +42,7 @@ import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -161,7 +163,7 @@ public class CommandInterpreter extends Thread {
         if(inputFile == null) {
             setupJLine();
         } else {
-            in = new BufferedReader(new FileReader(inputFile));
+            in = new BufferedReader(new InputStreamReader(new FileInputStream(inputFile), StandardCharsets.UTF_8));
             inputIsFile = true;
         }
         out = System.out;
@@ -200,7 +202,7 @@ public class CommandInterpreter extends Thread {
             consoleReader = lineBuilder.build();
         } catch(IOException e) {
             logger.info("Failed to load JLine, falling back to System.in");
-            in = new BufferedReader(new InputStreamReader(System.in));
+            in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         }
     }
 
@@ -1060,7 +1062,7 @@ public class CommandInterpreter extends Thread {
     }
 
     public boolean load(File file) {
-        try (BufferedReader br = new BufferedReader(new FileReader(file))){
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))){
             String inputLine;
 
             while((inputLine = br.readLine()) != null) {
@@ -1085,7 +1087,7 @@ public class CommandInterpreter extends Thread {
 
     public boolean pload(File file, int numThreads) {
         ExecutorService exec = Executors.newFixedThreadPool(numThreads);
-        try (BufferedReader br = new BufferedReader(new FileReader(file))){
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))){
             String inputLine;
 
             while((inputLine = br.readLine()) != null) {

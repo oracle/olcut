@@ -47,6 +47,7 @@ import java.io.PrintWriter;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -167,7 +168,7 @@ public final class IOUtil {
      * @throws IOException If an error occurred when opening the file.
      */
     public static PrintWriter getPrintWriter(String filename, boolean zipped) throws FileNotFoundException, IOException {
-        return new PrintWriter(new OutputStreamWriter(innerGetOutputStream(filename,zipped)));
+        return new PrintWriter(new OutputStreamWriter(innerGetOutputStream(filename,zipped),StandardCharsets.UTF_8));
     }
 
     /**
@@ -373,7 +374,11 @@ public final class IOUtil {
             file.getParentFile().mkdirs();
         }
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file), bufferSize);
-        return new PrintStream(bos, false);
+        try {
+            return new PrintStream(bos, false, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UTF-8 isn't supported. Not sure what's wrong with the world.",e);
+        }
     }
 
     public static OutputStream getOutputStream(String path) throws FileNotFoundException {
