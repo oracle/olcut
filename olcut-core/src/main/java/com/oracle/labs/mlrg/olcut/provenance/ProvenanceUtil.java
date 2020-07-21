@@ -366,7 +366,7 @@ public final class ProvenanceUtil {
                 builder.append("List[\n");
                 for (Provenance provElem : listProv) {
                     builder.append(tabs);
-                    builder.append('\t');
+                    builder.append("\t\t");
                     formatProvenance(provElem,builder,tabs,depth+1);
                     builder.append('\n');
                 }
@@ -381,7 +381,7 @@ public final class ProvenanceUtil {
                 builder.append("Map{\n");
                 for (Pair<String,? extends Provenance> provElem : mapProv) {
                     builder.append(tabs);
-                    builder.append('\t');
+                    builder.append("\t\t");
                     builder.append(provElem.getA());
                     builder.append('=');
                     formatProvenance(provElem.getB(),builder,tabs,depth+1);
