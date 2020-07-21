@@ -1148,12 +1148,12 @@ public class ConfigurationManager implements Closeable {
     public synchronized void close() { }
 
     /**
-     * Get any unnamed arguments that weren't parsed into an {@link Options}
+     * Get a copy of any unnamed arguments that weren't parsed into an {@link Options}
      * instance, or used to override a {@link Configurable} field.
      * @return A string array of command line arguments.
      */
     public String[] getUnnamedArguments() {
-        return unnamedArguments;
+        return Arrays.copyOf(unnamedArguments,unnamedArguments.length);
     }
 
     /**
