@@ -56,7 +56,7 @@ public class GenCompletion {
                     if (vAnno.desc.equals(OptionCompletion.OPTION_CLASS)) {
                         if(vAnno.values.get(0).equals("charName")) { // charName is optional and may not be present
                             optionsClass.addCompletion(
-                                    new OptionCompletion((char) vAnno.values.get(1), (String) vAnno.values.get(3), (String) vAnno.values.get(5)));
+                                    new OptionCompletion((Character) vAnno.values.get(1), (String) vAnno.values.get(3), (String) vAnno.values.get(5)));
                         } else {
                             optionsClass.addCompletion(
                                     new OptionCompletion((String) vAnno.values.get(1), (String) vAnno.values.get(3)));
