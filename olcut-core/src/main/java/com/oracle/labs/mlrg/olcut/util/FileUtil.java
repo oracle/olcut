@@ -55,11 +55,13 @@ public class FileUtil {
             return;
         }
         File[] fs = dir.listFiles();
-        for(File f : fs) {
-            if(f.isDirectory()) {
-                deleteDirectory(f);
-            } else {
-                f.delete();
+        if (fs != null) {
+            for (File f : fs) {
+                if (f.isDirectory()) {
+                    deleteDirectory(f);
+                } else {
+                    f.delete();
+                }
             }
         }
         dir.delete();
@@ -82,15 +84,17 @@ public class FileUtil {
     
     private static void copyDir(File sd, File td) throws java.io.IOException {
         File[] files = sd.listFiles();
-        for(File f : files) {
-            File nt = new File(td, f.getName());
-            if(f.isDirectory()) {
-                if(!nt.mkdir()) {
-                    throw new IOException("Failed to make dir " + nt.getName());
+        if (files != null) {
+            for (File f : files) {
+                File nt = new File(td, f.getName());
+                if (f.isDirectory()) {
+                    if (!nt.mkdir()) {
+                        throw new IOException("Failed to make dir " + nt.getName());
+                    }
+                    copyDir(f, nt);
+                } else {
+                    copyFile(f, nt);
                 }
-                copyDir(f, nt);
-            } else {
-                copyFile(f, nt);
             }
         }
     }

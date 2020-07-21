@@ -51,4 +51,8 @@ public class LazyGlobalProperty extends GlobalProperty {
         return getValue();
     }
 
+    @Override
+    public boolean equals(Object other) {
+        return super.equals(other);
+    }
 }

@@ -83,7 +83,7 @@ public class GlobalProperty {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof GlobalProperty)) return false;
 
         GlobalProperty that = (GlobalProperty) o;
         String tmpValue = getValue();

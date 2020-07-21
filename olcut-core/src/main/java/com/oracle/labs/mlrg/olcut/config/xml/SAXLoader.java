@@ -409,9 +409,6 @@ public class SAXLoader implements ConfigLoader {
                     rpd = null;
                     overriding = false;
                     break;
-                case PROPERTY:
-                    // nothing to do
-                    break;
                 case PROPERTYLIST:
                     if (rpd.contains(itemListName) && !overriding) {
                         throw new SAXParseException("Duplicate property: "
@@ -443,6 +440,9 @@ public class SAXLoader implements ConfigLoader {
                         rpd.add(mapName, new MapProperty(entryMap));
                         entryMap = null;
                     }
+                    break;
+                default:
+                    // Nothing to do
                     break;
             }
         }
