@@ -32,18 +32,18 @@ import java.io.Serializable;
 
 /**
  * A supertype for Provenance objects.
- *
+ * <p>
  * One day it will be sealed, currently it is only
  * extended by {@link ListProvenance}, {@link MapProvenance},
  * {@link ObjectProvenance} and {@link PrimitiveProvenance}.
- *
+ * <p>
  * Directly subclassing this will cause the serialisation mechanisms
  * for this package to throw ProvenanceException.
- *
+ * <p>
  * Provenance implementations must override {@link Object#equals},
  * {@link Object#hashCode} and {@link Object#toString} to ensure
  * correct operation.
- *
+ * <p>
  * Provenance implementations should be immutable.
  */
 public interface Provenance extends Serializable { }
