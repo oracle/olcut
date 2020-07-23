@@ -35,6 +35,8 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -94,7 +96,7 @@ public enum FieldType {
     private static final Class<?> configurableArrayClass = Configurable[].class;
     private static final Class<?> enumClass = Enum.class;
 
-    private final Class<?>[] types;
+    private final List<Class<?>> types;
     
     private final static Map<Class<?>,FieldType> m = new HashMap<>();
     
@@ -115,7 +117,7 @@ public enum FieldType {
     public final static EnumSet<FieldType> configurableTypes = EnumSet.of(CONFIGURABLE,CONFIGURABLE_ARRAY);
 
     FieldType(Class<?>... types) {
-        this.types = types;
+        this.types = Collections.unmodifiableList(Arrays.asList(types));
     }
 
     static {
@@ -143,7 +145,7 @@ public enum FieldType {
         return getFieldType(fieldClass);
     }
 
-    public Class<?>[] getTypes() {
+    public List<Class<?>> getTypes() {
         return types;
     }
 

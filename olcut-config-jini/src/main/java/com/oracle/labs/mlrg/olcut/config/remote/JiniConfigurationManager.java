@@ -472,6 +472,11 @@ public class JiniConfigurationManager extends ConfigurationManager {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
     protected <T extends Configurable> ServablePropertySheet<T> createPropertySheet(T conf, ConfigurationManager cm, ConfigurationData rpd) {
         return new ServablePropertySheet<>(conf,(JiniConfigurationManager)cm,rpd);
     }

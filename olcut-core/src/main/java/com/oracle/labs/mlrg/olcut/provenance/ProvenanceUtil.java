@@ -137,7 +137,7 @@ public final class ProvenanceUtil {
     public static String hashList(HashType hashType, List<String> list) {
         MessageDigest md = hashType.getDigest();
         for (String curString : list) {
-            md.digest(curString.getBytes(StandardCharsets.UTF_8));
+            md.update(curString.getBytes(StandardCharsets.UTF_8));
         }
         return bytesToHexString(md.digest());
     }
