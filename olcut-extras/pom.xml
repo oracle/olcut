@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>olcut</artifactId>
-        <groupId>com.oracle.labs.mlrg.olcut</groupId>
+        <groupId>com.oracle.labs.olcut</groupId>
         <version>${revision}</version>
         <relativePath>..</relativePath>
     </parent>

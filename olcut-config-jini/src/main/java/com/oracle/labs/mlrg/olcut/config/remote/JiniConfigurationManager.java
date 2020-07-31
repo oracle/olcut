@@ -55,6 +55,7 @@ import java.util.logging.Logger;
  *
  * @see Configurable
  */
+@Deprecated
 public class JiniConfigurationManager extends ConfigurationManager {
     private static final Logger logger = Logger.getLogger(JiniConfigurationManager.class.getName());
 

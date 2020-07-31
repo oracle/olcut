@@ -45,6 +45,7 @@ import net.jini.jeri.ServerCapabilities;
 /**
  * An invocation dispatcher that will keep track of debugging information.
  */
+@Deprecated
 public class DebugInvocationDispatcher extends BasicInvocationDispatcher {
 
     Map<String, Integer> reportMap;

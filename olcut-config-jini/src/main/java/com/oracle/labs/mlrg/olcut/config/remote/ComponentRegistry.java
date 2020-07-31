@@ -91,6 +91,7 @@ import net.jini.lookup.ServiceDiscoveryManager;
  * A configurable container that can be used to register object proxies with a Jini
  * registry.
  */
+@Deprecated
 public class ComponentRegistry implements Closeable, Configurable, DiscoveryListener,
         ServiceDiscoveryListener, LeaseListener {
     private static final Logger logger = Logger.getLogger(ComponentRegistry.class.getName());

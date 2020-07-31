@@ -43,6 +43,7 @@ import net.jini.jeri.ObjectEndpoint;
 /**
  *
  */
+@Deprecated
 public class DebugInvocationHandler extends BasicInvocationHandler {
 
     private static final Logger logger = Logger.getLogger(DebugInvocationHandler.class.getName());

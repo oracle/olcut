@@ -30,7 +30,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.oracle.labs.mlrg.olcut</groupId>
+    <groupId>com.oracle.labs.olcut</groupId>
     <artifactId>olcut</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
@@ -64,6 +64,48 @@
             </snapshots>
         </repository>
     </repositories>
+
+    <name>OLCUT</name>
+    <description>The Oracle Labs Configuration and Utility Toolkit.</description>
+    <url>https://github.com/oracle/olcut</url>
+
+    <licenses>
+        <license>
+            <name>BSD 2-clause License</name>
+            <url>https://github.com/oracle/olcut/blob/main/LICENSE.txt</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Stephen Green</name>
+            <email>stephen.x.green@oracle.com</email>
+            <organization>Oracle Labs</organization>
+            <organizationUrl>https://labs.oracle.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Jeffrey Alexander</name>
+            <email>jeffrey.alexander@oracle.com</email>
+            <organization>Oracle Labs</organization>
+            <organizationUrl>https://labs.oracle.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Adam Pocock</name>
+            <email>adam.pocock@oracle.com</email>
+            <organization>Oracle Labs</organization>
+            <organizationUrl>https://labs.oracle.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Jack Sullivan</name>
+            <email>jack.t.sullivan@oracle.com</email>
+            <organization>Oracle Labs</organization>
+            <organizationUrl>https://labs.oracle.com</organizationUrl>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git://github.com/oracle/olcut.git</connection>
+        <developerConnection>scm:git:ssh://github.com:oracle/olcut.git</developerConnection>
+        <url>http://github.com/oracle/olcut</url>
+    </scm>
 
     <dependencyManagement>
         <dependencies>

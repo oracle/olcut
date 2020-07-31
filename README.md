@@ -16,7 +16,27 @@ the needs of a varied user-base.
 # Quick Start
 
 ## Maven Coordinates
-Please check back soon as we are working out the logistics for publishing to Maven Central.
+OLCUT's main components (i.e. `olcut-core`, `olcut-config-json` and `olcut-config-edn`) are available on Maven Central.
+
+Maven:
+```xml
+<dependency>
+    <groupId>com.oracle.labs.olcut</groupId>
+    <artifactId>olcut-core</artifactId>
+    <version>5.1.4</version>
+</dependency>
+```
+or from Gradle:
+```groovy
+api 'com.oracle.labs.olcut:olcut-core:5.1.4'
+```
+
+The Jini-based remote configuration system in `olcut-config-jini' is deprecated as aspects of Jini are deprecated by 
+[JEP 385](https://openjdk.java.net/jeps/385). At the moment we don't have
+a replacement approach which will function after the rmid tool is removed.
+
+The `olcut-extras` artifact is designed as a small tool for developers, as such you should compile the appropriate 
+version based on your needs.
 
 [![wercker status](https://app.wercker.com/status/1615cf1d81ce750e730d50cec2309458/s/master "wercker status")](https://app.wercker.com/project/byKey/1615cf1d81ce750e730d50cec2309458)
 

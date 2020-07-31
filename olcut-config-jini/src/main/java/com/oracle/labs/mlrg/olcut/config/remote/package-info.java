@@ -29,5 +29,11 @@
 /**
  * Provides a configuration system which can lookup objects remotely
  * using Jini and RMI. Full of magic.
+ * <p>
+ * This package is currently deprecated as the integration of JEP 385
+ * into Java 15 deprecated some RMI features we rely upon. We're
+ * considering how to achieve similar functionality using different
+ * technologies.
  */
+@Deprecated
 package com.oracle.labs.mlrg.olcut.config.remote;
