@@ -28,10 +28,10 @@ Maven:
 ```
 or from Gradle:
 ```groovy
-api 'com.oracle.labs.olcut:olcut-core:5.1.4'
+implementation 'com.oracle.labs.olcut:olcut-core:5.1.4'
 ```
 
-The Jini-based remote configuration system in `olcut-config-jini' is deprecated as aspects of Jini are deprecated by 
+The Jini-based remote configuration system in `olcut-config-jini` is deprecated as aspects of Jini are deprecated by 
 [JEP 385](https://openjdk.java.net/jeps/385). At the moment we don't have
 a replacement approach which will function after the rmid tool is removed.
 
@@ -228,7 +228,7 @@ Channel, File, & IO Utils | `ChannelUtil` has helpers for interacting with `java
 Log Formatter | There are two `java.util.logging log formatters` (`LabsLogFormatter` and `SimpleLabsLogFormatter` that have a nice single line logging output. They also have a static method that sets all the loggers to use the appropriate formatter, which makes integrating them simpler.
 LRA Cache | An extennsion of a LinkedHashMap that acts as a least recently accessed cache.
 Date Parser | The CDateParser can parse dates in almost 90 different formats that we've seen, returning a Java Date object without complaining.
-Getopt | Getopt is now deprecated. Use [Options Processing](README-Options.md) instead. This is still here if you need something small and stupid simple.
+Getopt | Getopt is now deprecated. Use [Options Processing](README-Options.md) instead. This is still here if you need something small and simple.
 Mutable Primitive Objects | Mutable types for Double, Long, and Number for use in, for example, Maps when you don't want to unbox and rebox the true primitives with every update.
 Pair | It's a pair class. The fields are final and it has equals and hash code so you can use it as a key in a map or store it in a set. Having Pair here greatly reduces the number of other places you have a Pair class defined. 
 Timers | `StopWatch` and `NanoWatch` provide handy timers, at millisecond or nanosecond granularity.
