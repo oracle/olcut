@@ -41,7 +41,7 @@ The configuration file defines an instance of a Pipeline that has two stages
 in it - a LowPassFilter and an EchoCanceller.  Each of the stages has their own
 parameters specified as properties.
 
-The Pipeline class that correspond to the component would look as follow:
+The Pipeline class that corresponds to the component would look as follow:
 
 ```java
     public class Pipeline implements Configurable {
@@ -329,9 +329,15 @@ Documentation about how to start a class server, run a registry, specify an
 object as remote, provide `ConfigurationEntries`, deal with `RemoteComponentManager`
 and `RemoteMultiComponentManager`, etc will eventually be added here.
 
-OLCUT in general works fine with Java 9, but we have experienced some weird class 
+Remote loading in general works fine with Java 9+, but we have experienced some weird class 
 loader issues when using serialization in RMI calls with Jini in another project. 
 It's TBD on what the root cause is or how to fix it.
+
+Note: remote components are currently deprecated as they depend on features
+deprecated by the integration of [JEP 385](https://openjdk.java.net/jeps/385)
+in Java 15. We are considering alternative approaches which will keep this 
+functionality, though it will likely be structured differently to the current
+implementation.
 
 ## Other config formats
 
