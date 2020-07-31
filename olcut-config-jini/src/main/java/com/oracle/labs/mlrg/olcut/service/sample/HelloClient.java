@@ -30,14 +30,9 @@ package com.oracle.labs.mlrg.olcut.service.sample;
 
 import com.oracle.labs.mlrg.olcut.util.LabsLogFormatter;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.service.ConfigurableServiceStarter;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.List;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
