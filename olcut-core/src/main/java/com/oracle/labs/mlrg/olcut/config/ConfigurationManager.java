@@ -41,6 +41,7 @@ import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
+import com.oracle.labs.mlrg.olcut.util.IOUtil;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
 import javax.management.MBeanServer;
@@ -641,6 +642,9 @@ public class ConfigurationManager implements Closeable {
                                 throw new ArgumentException(argumentName, "Can't find config file: " + input);
                             }
                         }
+                    }
+                    if (IOUtil.isDisallowedProtocol(url)) {
+                        throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
                     }
                     return url;
                 }

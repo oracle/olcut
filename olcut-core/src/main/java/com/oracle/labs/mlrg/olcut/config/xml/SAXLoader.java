@@ -47,7 +47,6 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
-import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
@@ -59,6 +58,7 @@ import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
+import com.oracle.labs.mlrg.olcut.util.IOUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -111,13 +111,15 @@ public class SAXLoader implements ConfigLoader {
     public final void load(URL url) throws ConfigLoaderException {
         AccessController.doPrivileged((PrivilegedAction<Void>)
                 () -> {
+                    if (url.getProtocol().equals("file")) {
+                        String workingDir = new File(url.getFile()).getParent();
+                        handler.setCurWorkingDir(workingDir);
+                    } else if (IOUtil.isDisallowedProtocol(url)) {
+                        throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
+                    } else {
+                        handler.setCurWorkingDir("");
+                    }
                     try (InputStream is = url.openStream()) {
-                        if (url.getProtocol().equals("file")) {
-                            String workingDir = new File(url.getFile()).getParent();
-                            handler.setCurWorkingDir(workingDir);
-                        } else {
-                            handler.setCurWorkingDir("");
-                        }
                         innerLoad(is, url.toString());
                     } catch (IOException e) {
                         throw new ConfigLoaderException(e, e.getMessage());
