@@ -186,12 +186,18 @@ public final class ProvenanceUtil {
     /**
      * Hashes a resource stream by reading the bytes and passing them through the
      * appropriate {@link MessageDigest}.
+     * <p>
+     * If the URL is remote then it logs an error and returns the hash of the URL itself.
      * @param hashType The type of hash to perform.
      * @param file The URL for the stream.
      * @return A hexadecimal string representation of the hash.
      */
     public static String hashResource(HashType hashType, URL file) {
         MessageDigest md = hashType.getDigest();
+        if (IOUtil.isDisallowedProtocol(file)) {
+            logger.severe("Tried to read disallowed URL protocol: '" + file.toString() + "'");
+            return bytesToHexString(md.digest(file.toString().getBytes(StandardCharsets.UTF_8)));
+        }
         byte[] buffer = new byte[16384];
         int count;
         try (InputStream bis = new BufferedInputStream(file.openStream())) {

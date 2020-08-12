@@ -39,6 +39,7 @@ import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
+import com.oracle.labs.mlrg.olcut.util.IOUtil;
 import us.bpsm.edn.EdnException;
 import us.bpsm.edn.Keyword;
 import us.bpsm.edn.Symbol;
@@ -174,6 +175,8 @@ public class EdnLoader implements ConfigLoader {
                 () -> {
                     if (url.getProtocol().equals("file")) {
                         workingDir = new File(url.getFile()).getParent();
+                    } else if (IOUtil.isDisallowedProtocol(url)) {
+                        throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
                     } else {
                         workingDir = "";
                     }
