@@ -33,6 +33,7 @@ package com.oracle.labs.mlrg.olcut.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -55,14 +56,20 @@ public class FileUtil {
             return;
         }
         File[] fs = dir.listFiles();
-        for(File f : fs) {
-            if(f.isDirectory()) {
-                deleteDirectory(f);
-            } else {
-                f.delete();
+        if (fs != null) {
+            for (File f : fs) {
+                if (f.isDirectory()) {
+                    deleteDirectory(f);
+                } else {
+                    if (!f.delete()) {
+                        logger.log(Level.INFO,"Failed to delete file: " + f.getName());
+                    }
+                }
             }
         }
-        dir.delete();
+        if (!dir.delete()) {
+            logger.log(Level.INFO, "Failed to delete directory: " + dir.getName());
+        }
     }
 
     public static void dirCopier(File source, File target) throws IOException {
@@ -82,15 +89,17 @@ public class FileUtil {
     
     private static void copyDir(File sd, File td) throws java.io.IOException {
         File[] files = sd.listFiles();
-        for(File f : files) {
-            File nt = new File(td, f.getName());
-            if(f.isDirectory()) {
-                if(!nt.mkdir()) {
-                    throw new IOException("Failed to make dir " + nt.getName());
+        if (files != null) {
+            for (File f : files) {
+                File nt = new File(td, f.getName());
+                if (f.isDirectory()) {
+                    if (!nt.mkdir()) {
+                        throw new IOException("Failed to make dir " + nt.getName());
+                    }
+                    copyDir(f, nt);
+                } else {
+                    copyFile(f, nt);
                 }
-                copyDir(f, nt);
-            } else {
-                copyFile(f, nt);
             }
         }
     }

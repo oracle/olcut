@@ -55,6 +55,7 @@ import java.util.logging.Logger;
  *
  * @see Configurable
  */
+@Deprecated
 public class JiniConfigurationManager extends ConfigurationManager {
     private static final Logger logger = Logger.getLogger(JiniConfigurationManager.class.getName());
 
@@ -469,6 +470,11 @@ public class JiniConfigurationManager extends ConfigurationManager {
 
         // make sure that both configuration managers have the same set of global properties
         return cm.getImmutableGlobalProperties().equals(getImmutableGlobalProperties());
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override

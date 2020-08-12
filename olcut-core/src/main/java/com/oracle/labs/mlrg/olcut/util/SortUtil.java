@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.DoublePredicate;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
@@ -164,6 +165,19 @@ public final class SortUtil {
                 return Integer.compare(o.value, value);
             }
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SortIntegerTuple that = (SortIntegerTuple) o;
+            return value == that.value;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value);
+        }
     }
 
     /**
@@ -229,6 +243,19 @@ public final class SortUtil {
             } else {
                 return Double.compare(o.value, value);
             }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SortDoubleTuple that = (SortDoubleTuple) o;
+            return Double.compare(that.value, value) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value);
         }
     }
 
@@ -343,6 +370,19 @@ public final class SortUtil {
             } else {
                 return o.value.compareTo(value);
             }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SortTuple<?> sortTuple = (SortTuple<?>) o;
+            return value.equals(sortTuple.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value);
         }
     }
 }

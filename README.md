@@ -16,9 +16,27 @@ the needs of a varied user-base.
 # Quick Start
 
 ## Maven Coordinates
-Please check back soon as we are working out the logistics for publishing to Maven Central.
+OLCUT's main components (i.e. `olcut-core`, `olcut-config-json` and `olcut-config-edn`) are available on Maven Central.
 
-[![wercker status](https://app.wercker.com/status/1615cf1d81ce750e730d50cec2309458/s/master "wercker status")](https://app.wercker.com/project/byKey/1615cf1d81ce750e730d50cec2309458)
+Maven:
+```xml
+<dependency>
+    <groupId>com.oracle.labs.olcut</groupId>
+    <artifactId>olcut-core</artifactId>
+    <version>5.1.4</version>
+</dependency>
+```
+or from Gradle:
+```groovy
+implementation 'com.oracle.labs.olcut:olcut-core:5.1.4'
+```
+
+The Jini-based remote configuration system in `olcut-config-jini` is deprecated as aspects of Jini are deprecated by 
+[JEP 385](https://openjdk.java.net/jeps/385). At the moment we don't have
+a replacement approach which will function after the rmid tool is removed.
+
+The `olcut-extras` artifact is designed as a small tool for developers, as such you should compile the appropriate 
+version based on your needs.
 
 ## Configuration System
 
@@ -208,7 +226,7 @@ Channel, File, & IO Utils | `ChannelUtil` has helpers for interacting with `java
 Log Formatter | There are two `java.util.logging log formatters` (`LabsLogFormatter` and `SimpleLabsLogFormatter` that have a nice single line logging output. They also have a static method that sets all the loggers to use the appropriate formatter, which makes integrating them simpler.
 LRA Cache | An extennsion of a LinkedHashMap that acts as a least recently accessed cache.
 Date Parser | The CDateParser can parse dates in almost 90 different formats that we've seen, returning a Java Date object without complaining.
-Getopt | Getopt is now deprecated. Use [Options Processing](README-Options.md) instead. This is still here if you need something small and stupid simple.
+Getopt | Getopt is now deprecated. Use [Options Processing](README-Options.md) instead. This is still here if you need something small and simple.
 Mutable Primitive Objects | Mutable types for Double, Long, and Number for use in, for example, Maps when you don't want to unbox and rebox the true primitives with every update.
 Pair | It's a pair class. The fields are final and it has equals and hash code so you can use it as a key in a map or store it in a set. Having Pair here greatly reduces the number of other places you have a Pair class defined. 
 Timers | `StopWatch` and `NanoWatch` provide handy timers, at millisecond or nanosecond granularity.

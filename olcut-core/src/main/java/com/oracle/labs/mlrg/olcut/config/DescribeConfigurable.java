@@ -309,9 +309,11 @@ public class DescribeConfigurable {
             FieldInfo fi = e.getValue();
             switch (fi.type) {
                 case NORMAL:
+                case ENUM:
                     properties.put(e.getKey(),new SimpleProperty(generateDefaultValue(fi)));
                     break;
                 case LIST:
+                case ENUM_LIST:
                     properties.put(e.getKey(),new ListProperty(Collections.singletonList(new SimpleProperty(fi.className + "-instance"))));
                     break;
                 case MAP:

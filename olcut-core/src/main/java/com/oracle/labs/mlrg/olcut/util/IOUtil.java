@@ -47,6 +47,7 @@ import java.io.PrintWriter;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -115,47 +116,94 @@ public final class IOUtil {
         return lines;
     }
 
+    /**
+     * Loads the string as a classpath resource or a path, using UTF-8.
+     * @param path The path to load.
+     * @return A buffered reader.
+     * @throws FileNotFoundException If the path wasn't found.
+     */
     public static BufferedReader getReader(String path) throws FileNotFoundException {
         return getReader(path, StandardCharsets.UTF_8);
     }
 
-    public static BufferedReader getReader(String path, Charset charSet) throws FileNotFoundException {
-        return new BufferedReader(new InputStreamReader(getInputStream(path),charSet),BUFFER_SIZE);
+    /**
+     * Loads the string as a classpath resource or a path, using the specified charset.
+     * @param path The path to load.
+     * @param charset The charset to use.
+     * @return A buffered reader.
+     * @throws FileNotFoundException If the path wasn't found.
+     */
+    public static BufferedReader getReader(String path, Charset charset) throws FileNotFoundException {
+        return new BufferedReader(new InputStreamReader(getInputStream(path),charset),BUFFER_SIZE);
     }
 
-    public static BufferedReader getReader(URI uri, Charset charSet) throws IOException {
-        InputStream is = uri.toURL().openStream();
-        return new BufferedReader(new InputStreamReader(is,charSet),BUFFER_SIZE);
+    /**
+     * This method converts the URI into a URL, and applies the
+     * protocol check to see if it's http or https. If it is then an exception is thrown, otherwise
+     * the stream is opened. Figures out if the stream is zipped using the magic bytes.
+     * @param uri The URI to load.
+     * @param charset The charset to use.
+     * @return A buffered reader from the input stream.
+     * @throws IOException If the URI failed to open.
+     */
+    public static BufferedReader getReader(URI uri, Charset charset) throws IOException {
+        return getReader(uri.toURL(),charset);
     }
 
-    public static BufferedReader getReader(Path path, Charset charSet) throws IOException {
-        InputStream is = new FileInputStream(path.toFile());
-        return new BufferedReader(new InputStreamReader(is,charSet),BUFFER_SIZE);
+    /**
+     * This method applies the
+     * protocol check to see if the URL is http or https. If it is then an exception is thrown, otherwise
+     * the stream is opened. Figures out if the stream is zipped using the magic bytes.
+     * @param url The URL to load.
+     * @param charset The charset to use.
+     * @return A buffered reader from the input stream.
+     * @throws IOException If the URI failed to open.
+     */
+    public static BufferedReader getReader(URL url, Charset charset) throws IOException {
+        if (isDisallowedProtocol(url)) {
+            throw new IllegalArgumentException("Tried to read disallowed URL protocol: '" + url.toString() + "'");
+        }
+        return getReader(url.openStream(),charset);
+    }
+
+    /**
+     * Opens a buffered reader on the specified path with the specified charset. Figures out if the stream is zipped using the magic bytes.
+     * @param path The path to read.
+     * @param charset The charset to use.
+     * @return A buffered reader.
+     * @throws IOException If the path failed to open.
+     */
+    public static BufferedReader getReader(Path path, Charset charset) throws IOException {
+        return getReader(new FileInputStream(path.toFile()),charset);
     }
 
     /**
      * Makes a reader wrapped around the string. Figures out if the stream is zipped using the magic bytes.
      * @param filename The input filename.
-     * @param charSet The charset to use.
+     * @param charset The charset to use.
      * @return A BufferedReader wrapped around the appropriate stream.
      * @throws FileNotFoundException If the file can't be read.
      * @throws IOException If an error occurred when opening the file.
      */
-    public static BufferedReader getReader(String filename, String charSet) throws FileNotFoundException, IOException {
-        return getReader(new File(filename), charSet);
+    public static BufferedReader getReader(String filename, String charset) throws FileNotFoundException, IOException {
+        return getReader(new File(filename), charset);
     }
 
     /**
      * Makes a reader wrapped around the file. Figures out if the stream is zipped using the magic bytes.
      * @param file The file to read.
-     * @param charSet The charset to use.
+     * @param charset The charset to use.
      * @return A BufferedReader wrapped around the appropriate stream.
      * @throws FileNotFoundException If the file can't be read.
      * @throws IOException If an error occurred when opening the file.
      */
-    public static BufferedReader getReader(File file, String charSet) throws FileNotFoundException, IOException {
-        InputStream stream = wrapGZIPStream(new FileInputStream(file));
-        return new BufferedReader(new InputStreamReader(stream,charSet));
+    public static BufferedReader getReader(File file, String charset) throws FileNotFoundException, IOException {
+        return getReader(new FileInputStream(file),Charset.forName(charset));
+    }
+
+    private static BufferedReader getReader(InputStream stream, Charset charset) throws IOException {
+        InputStream wrappedStream = wrapGZIPStream(stream);
+        return new BufferedReader(new InputStreamReader(wrappedStream,charset),BUFFER_SIZE);
     }
 
     /**
@@ -167,7 +215,7 @@ public final class IOUtil {
      * @throws IOException If an error occurred when opening the file.
      */
     public static PrintWriter getPrintWriter(String filename, boolean zipped) throws FileNotFoundException, IOException {
-        return new PrintWriter(new OutputStreamWriter(innerGetOutputStream(filename,zipped)));
+        return new PrintWriter(new OutputStreamWriter(innerGetOutputStream(filename,zipped),StandardCharsets.UTF_8));
     }
 
     /**
@@ -245,12 +293,12 @@ public final class IOUtil {
         return toString(path, StandardCharsets.UTF_8);
     }
 
-    public static String toString(String path, Charset charSet) throws IOException {
-        String str = fromResource(path, charSet);
+    public static String toString(String path, Charset charset) throws IOException {
+        String str = fromResource(path, charset);
         if (str != null) {
             return str;
         } else {
-            str = fromFile(path, charSet);
+            str = fromFile(path, charset);
             if (str != null) {
                 return str;
             } else {
@@ -259,35 +307,58 @@ public final class IOUtil {
         }
     }
 
-    public static String fromResource(String path, Charset charSet) {
-        return fromInputStream(IOUtil.class.getResourceAsStream(path), charSet);
+    public static String fromResource(String path, Charset charset) {
+        return fromInputStream(IOUtil.class.getResourceAsStream(path), charset);
     }
 
     public static String fromPath(Path path) throws FileNotFoundException {
         return fromFile(path.toFile(), StandardCharsets.UTF_8);
     }
 
-    public static String fromPath(Path path, Charset charSet) throws FileNotFoundException {
-        return fromFile(path.toFile(), charSet);
+    public static String fromPath(Path path, Charset charset) throws FileNotFoundException {
+        return fromFile(path.toFile(), charset);
     }
 
-    public static String fromFile(String path, Charset charSet) throws FileNotFoundException {
-        return fromFile(new File(path), charSet);
+    public static String fromFile(String path, Charset charset) throws FileNotFoundException {
+        return fromFile(new File(path), charset);
     }
 
-    public static String fromFile(File file, Charset charSet) throws FileNotFoundException {
+    public static String fromFile(File file, Charset charset) throws FileNotFoundException {
         if (file.length() == 0) {
             return "";
         }
-        return fromInputStream(new FileInputStream(file), charSet);
+        return fromInputStream(new FileInputStream(file), charset);
     }
 
-    public static String fromUri(URI uri, Charset charSet) throws IOException {
-        return fromInputStream(uri.toURL().openStream(), charSet);
+    /**
+     * Reads the location specified by a URI into a String. Checks to see if the URI is
+     * remote first, and throws IllegalArgumentException if it is.
+     * @param uri The URI to read.
+     * @param charset The charset to use.
+     * @return The String contents of the URI.
+     * @throws IOException If the URI failed to load or if it wasn't convertible to a URL.
+     */
+    public static String fromUri(URI uri, Charset charset) throws IOException {
+        return fromUrl(uri.toURL(),charset);
     }
 
-    private static String fromInputStream(InputStream in, Charset charSet) {
-        try (Scanner scanner = new Scanner(new BufferedInputStream(in,BUFFER_SIZE),charSet.name())) {
+    /**
+     * Reads the location specified by a URL into a String. Checks to see if the URL is
+     * remote first, and throws IllegalArgumentException if it is.
+     * @param url The URL to read.
+     * @param charset The charset to use.
+     * @return The String contents of the URL.
+     * @throws IOException If the URL failed to load.
+     */
+    public static String fromUrl(URL url, Charset charset) throws IOException {
+        if (isDisallowedProtocol(url)) {
+            throw new IllegalArgumentException("Tried to read disallowed URL protocol: '" + url.toString() + "'");
+        }
+        return fromInputStream(url.openStream(),charset);
+    }
+
+    private static String fromInputStream(InputStream in, Charset charset) {
+        try (Scanner scanner = new Scanner(new BufferedInputStream(in,BUFFER_SIZE),charset.name())) {
             return scanner.useDelimiter("\\Z").next();
         }
     }
@@ -373,7 +444,11 @@ public final class IOUtil {
             file.getParentFile().mkdirs();
         }
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file), bufferSize);
-        return new PrintStream(bos, false);
+        try {
+            return new PrintStream(bos, false, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UTF-8 isn't supported. Not sure what's wrong with the world.",e);
+        }
     }
 
     public static OutputStream getOutputStream(String path) throws FileNotFoundException {
@@ -451,6 +526,10 @@ public final class IOUtil {
     public static InputStream getInputStreamForLocation(String location) {
         URL url = getURLForLocation(location);
         if (url != null) {
+            if (isDisallowedProtocol(url)) {
+                logger.severe("Tried to open a disallowed URL protocol: " + url.toString());
+                return null;
+            }
             try {
                 InputStream ret = url.openStream();
 
@@ -537,6 +616,31 @@ public final class IOUtil {
             }
         }
         return ret;
+    }
+
+    /**
+     * Checks the url to see if the protocol is disallowed.
+     * Disallowed protocols are http, https, ftp. Null
+     * URLs are also disallowed.
+     * @param url The URL to check.
+     * @return True if the protocol is disallowed, the URL is null, or the protocol is null.
+     */
+    public static boolean isDisallowedProtocol(URL url) {
+        if (url == null) {
+            return true;
+        }
+        String protocol = url.getProtocol();
+        if (protocol == null) {
+            return true;
+        }
+        switch (protocol) {
+            case "http":
+            case "https":
+            case "ftp":
+                return true;
+            default:
+                return false;
+        }
     }
 
     public static class NamesPathIterator implements Iterator<Path>{

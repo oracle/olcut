@@ -41,6 +41,7 @@ import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.xml.XMLConfigFactory;
+import com.oracle.labs.mlrg.olcut.util.IOUtil;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
 import javax.management.MBeanServer;
@@ -642,6 +643,9 @@ public class ConfigurationManager implements Closeable {
                             }
                         }
                     }
+                    if (IOUtil.isDisallowedProtocol(url)) {
+                        throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
+                    }
                     return url;
                 }
         );
@@ -1148,12 +1152,12 @@ public class ConfigurationManager implements Closeable {
     public synchronized void close() { }
 
     /**
-     * Get any unnamed arguments that weren't parsed into an {@link Options}
+     * Get a copy of any unnamed arguments that weren't parsed into an {@link Options}
      * instance, or used to override a {@link Configurable} field.
      * @return A string array of command line arguments.
      */
     public String[] getUnnamedArguments() {
-        return unnamedArguments;
+        return Arrays.copyOf(unnamedArguments,unnamedArguments.length);
     }
 
     /**

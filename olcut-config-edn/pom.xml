@@ -32,7 +32,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.oracle.labs.mlrg.olcut</groupId>
+        <groupId>com.oracle.labs.olcut</groupId>
         <artifactId>olcut</artifactId>
         <version>${revision}</version>
         <relativePath>..</relativePath>
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>us.bpsm</groupId>
             <artifactId>edn-java</artifactId>
-            <version>0.6.0</version>
+            <version>0.7.1</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -270,8 +271,7 @@ public class PropertySheet<T extends Configurable> {
                                 if (serStream != null) {
                                     try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
                                         Object deser = ois.readObject();
-                                        owner = ownerClass.cast(deser);
-                                        return owner;
+                                        return ownerClass.cast(deser);
                                     } catch (IOException ex) {
                                         throw new PropertyException(ex, instanceName, null,
                                                 "Error reading serialized form from " + actualLocation);
@@ -285,6 +285,7 @@ public class PropertySheet<T extends Configurable> {
                             }
                     );
                     if (obj != null) {
+                        owner = obj;
                         return obj;
                     }
                 }
@@ -899,7 +900,7 @@ public class PropertySheet<T extends Configurable> {
         return Collections.unmodifiableSet(registeredProperties.keySet());
     }
 
-    public void setCM(ConfigurationManager cm) {
+    public synchronized void setCM(ConfigurationManager cm) {
         this.cm = cm;
     }
 
@@ -915,6 +916,11 @@ public class PropertySheet<T extends Configurable> {
 
         PropertySheet ps = (PropertySheet) obj;
         return propValues.equals(ps.propValues);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(propValues);
     }
 
     public PropertySheet<T> copy() {

@@ -44,6 +44,7 @@ import net.jini.jeri.ServerCapabilities;
  *
  * @author stgreen
  */
+@Deprecated
 public class DebugILFactory extends BasicILFactory {
     
     private static final Logger logger = Logger.getLogger(DebugILFactory.class.getName());

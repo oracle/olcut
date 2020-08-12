@@ -45,6 +45,7 @@ import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
+import com.oracle.labs.mlrg.olcut.util.IOUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -101,6 +102,8 @@ public class JsonLoader implements ConfigLoader {
                 () -> {
                     if (url.getProtocol().equals("file")) {
                         workingDir = new File(url.getFile()).getParent();
+                    } else if (IOUtil.isDisallowedProtocol(url)) {
+                        throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
                     } else {
                         workingDir = "";
                     }
