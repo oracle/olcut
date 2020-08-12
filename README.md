@@ -38,8 +38,6 @@ a replacement approach which will function after the rmid tool is removed.
 The `olcut-extras` artifact is designed as a small tool for developers, as such you should compile the appropriate 
 version based on your needs.
 
-[![wercker status](https://app.wercker.com/status/1615cf1d81ce750e730d50cec2309458/s/master "wercker status")](https://app.wercker.com/project/byKey/1615cf1d81ce750e730d50cec2309458)
-
 ## Configuration System
 
 The OLCUT [Configuration System](README-Configuration.md) uses runtime
