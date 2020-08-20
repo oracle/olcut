@@ -145,7 +145,7 @@ public class StopWatch implements Serializable {
     /**
      * Gets the average time per click (start/stop)
      * @deprecated Ambiguous units, use unit-specific get methods instead. Behavior of this method is undefined in subclasses.
-     * @return
+     * @return The average time.
      */
     public double getAvgTime() {
         return getTime() / (double) clicks;
@@ -239,13 +239,14 @@ public class StopWatch implements Serializable {
                 TimeUnit.MILLISECONDS.toHours(millis) % TimeUnit.DAYS.toHours(1),
                 TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
                 TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1),
-                TimeUnit.MILLISECONDS.toMillis(millis) % TimeUnit.SECONDS.toMillis(1));    }
+                TimeUnit.MILLISECONDS.toMillis(millis) % TimeUnit.SECONDS.toMillis(1));
+    }
 
     /**
      * Creates a string representation to the nearest largest appropriate time unit.
      * @deprecated Use toString() instead which gives a more accurate, but still scoped appropriately time string
-     * @param millis
-     * @return
+     * @param millis The time to convert to String.
+     * @return A String representation.
      */
     @Deprecated
     public static String toTimeString(double millis) {
