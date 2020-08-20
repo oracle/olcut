@@ -74,6 +74,9 @@ public interface ConfigurableMXBean {
 
     /**
      * Sets the values in a property list.
+     * @param property the property whose value we want to set
+     * @param values the value that the property should be set to.
+     * @return True if the values were set correctly.
      */
     public boolean setValues(String property, String[] values);
 
