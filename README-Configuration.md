@@ -17,7 +17,7 @@ are performing.  Your Pipeline and its stages are represented as components
 in the configuration file.
 
 ```xml
-    <?xml version="1.0" encoding="UTF-8"?\>
+    <?xml version="1.0" encoding="UTF-8"?>
     <config>
         <component name="myPipeline" type="com.oracle.labs.sound.Pipeline">
             <property name="numThreads" value="2"/>
