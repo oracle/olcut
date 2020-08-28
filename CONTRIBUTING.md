@@ -3,8 +3,7 @@
 We welcome your contributions! There are several directions that OLCUT could
 be extended in. New config file formats could be added, more classes can be
 added for the `@Config` annotation,  more classes can be supported by the
-`CommandInterpreter`'s `@Command` methods. The remote component discovery based on
-Jini / Apache River could stand to be modernized. Have an idea? Talk to us and
+`CommandInterpreter`'s `@Command` methods.  Have an idea? Talk to us and
 let's make it happen. Just file an Issue to get in touch.
 
 ## Questions, Bugs, and Features
