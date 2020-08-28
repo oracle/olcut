@@ -45,7 +45,7 @@ import java.util.Set;
 
 /**
  * Carrier for property data. Principally a {@link Map} from {@link String} to {@link Property}, and
- * a class name. Also includes configuration for loading an object over RMI via Jini.
+ * a class name.
  */
 public final class ConfigurationData implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -172,6 +172,7 @@ public final class ConfigurationData implements Serializable {
      * Should this configuration import a remote object via Jini.
      * @return Should the configuration import a remote object.
      */
+    @Deprecated
     public boolean isImportable() {
         return importable;
     }
@@ -180,6 +181,7 @@ public final class ConfigurationData implements Serializable {
      * Returns the Jini lease time. Defaults to -1, Leases.ANY.
      * @return The Jini lease time.
      */
+    @Deprecated
     public long getLeaseTime() {
         return leaseTime;
     }
@@ -188,6 +190,7 @@ public final class ConfigurationData implements Serializable {
      * Should this configuration export it's object via Jini.
      * @return Should the configuration export a remote object.
      */
+    @Deprecated
     public boolean isExportable() {
         return exportable;
     }
@@ -196,6 +199,7 @@ public final class ConfigurationData implements Serializable {
      * Returns the entries which control Jini lookup.
      * @return The Jini control entries.
      */
+    @Deprecated
     public String getEntriesName() {
         return entriesName;
     }

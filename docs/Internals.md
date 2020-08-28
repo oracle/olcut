@@ -58,7 +58,7 @@ it goes out of scope.
 
 ## Lifetime of a ConfigurationManager processing Options
 
-This summerises the steps executed by a `ConfigurationManager` on construction
+This summarises the steps executed by a `ConfigurationManager` on construction
 when parsing options.
 
 1. A class implementing Options, with fields marked @Option for values that can be read in from the command line is constructed.

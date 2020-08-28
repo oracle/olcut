@@ -39,7 +39,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jsk.version>2.2.3</jsk.version>
         <jackson.version>2.11.2</jackson.version>
         <jline.version>3.15.0</jline.version>
         <junit.version>5.6.0</junit.version>
@@ -48,7 +47,6 @@
         <module>olcut-core</module>
         <module>olcut-config-json</module>
         <module>olcut-config-edn</module>
-        <module>olcut-config-jini</module>
         <module>olcut-extras</module>
     </modules>
 
@@ -134,51 +132,6 @@
                 <groupId>org.jline</groupId>
                 <artifactId>jline-terminal-jansi</artifactId>
                 <version>${jline.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.jini</groupId>
-                <artifactId>jsk-platform</artifactId>
-                <version>${jsk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.jini</groupId>
-                <artifactId>jsk-dl</artifactId>
-                <version>${jsk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.jini</groupId>
-                <artifactId>jsk-lib</artifactId>
-                <version>${jsk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.jini</groupId>
-                <artifactId>jsk-resources</artifactId>
-                <version>${jsk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.jini</groupId>
-                <artifactId>jsk-policy</artifactId>
-                <version>${jsk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.river</groupId>
-                <artifactId>reggie</artifactId>
-                <version>${jsk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.river</groupId>
-                <artifactId>reggie-dl</artifactId>
-                <version>${jsk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.river</groupId>
-                <artifactId>start</artifactId>
-                <version>${jsk.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.river</groupId>
-                <artifactId>tools</artifactId>
-                <version>${jsk.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>

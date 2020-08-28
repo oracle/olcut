@@ -66,7 +66,7 @@ they are not the right type.  It also checks that only parameters defined in
 the object are included in the configuration file.  Properties may be tagged
 as mandatory or not and may have default values (here, numThreads is given a 
 default value of 1 if it is not included in the configuration file). Properties
-may also be tagged "redact" which will cause their values not to appear in 
+may also be tagged `redact` which will cause their values not to appear in 
 saved configuration files, or provenance objects.
 
 To instantiate the pipeline in your code, you'd put something like the following
@@ -311,33 +311,6 @@ serialised objects. The one here provides access to the complete filesystem, as
 the necessary read locations are program specific. If you need to save an OLCUT
 configuration out then you will also need to add write permissions for the save
 location. 
-
-The remote component loading system requires a further set of permissions which
-we haven't completely captured.
-
-## Remote Components
-
-The configuration system can make use of Jini (a.k.a. Apache River) and RMI to help instantiate a
-distributed system.  Through extensions to the component definition in the
-configuration file, components can be registered as services in Jini.  When
-a component lists another component as a property, that component need not
-be on the same machine.  If it is remote, the configuration system will
-automatically query Jini to find the service and it will return an RMI proxy
-for the object.
-
-Documentation about how to start a class server, run a registry, specify an
-object as remote, provide `ConfigurationEntries`, deal with `RemoteComponentManager`
-and `RemoteMultiComponentManager`, etc will eventually be added here.
-
-Remote loading in general works fine with Java 9+, but we have experienced some weird class 
-loader issues when using serialization in RMI calls with Jini in another project. 
-It's TBD on what the root cause is or how to fix it.
-
-Note: remote components are currently deprecated as they depend on features
-deprecated by the integration of [JEP 385](https://openjdk.java.net/jeps/385)
-in Java 15. We are considering alternative approaches which will keep this 
-functionality, though it will likely be structured differently to the current
-implementation.
 
 ## Other config formats
 

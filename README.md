@@ -5,7 +5,7 @@ components with standard and interoperable command line interfaces. It has its r
 the Sphinx 4 speech recognizer but has been significantly extended. These pieces can
 be used in concert or independently:
 
-* The Configuration System provides runtime configuration management (even over RMI) without recompiles
+* The Configuration System provides runtime configuration management without recompiles
 * The Options Processor cleanly processes command-line arguments, including configuration changes
 * The Command Interpreter provides an Annotation-based interactive shell with tab completion
 * Additional Odds & Ends provide helpful utility classes
@@ -30,10 +30,6 @@ or from Gradle:
 ```groovy
 implementation 'com.oracle.labs.olcut:olcut-core:5.1.4'
 ```
-
-The Jini-based remote configuration system in `olcut-config-jini` is deprecated as aspects of Jini are deprecated by 
-[JEP 385](https://openjdk.java.net/jeps/385). At the moment we don't have
-a replacement approach which will function after the rmid tool is removed.
 
 The `olcut-extras` artifact is designed as a small tool for developers, as such you should compile the appropriate 
 version based on your needs.
@@ -94,8 +90,7 @@ the appropriate fields.
 
 This is just a small sample of what the Configuration system can do. It
 supports **inheritance**, many configurable types, **command line overrides**, self-description,
-a multiple file formats including **JSON**, and even remote implementation of
-components over RMI via Apache River (formerly Jini).
+and multiple file formats including **JSON**.
 
 Read all about the [Configuration System](README-Configuration.md).
 
