@@ -838,7 +838,7 @@ public class CommandInterpreter extends Thread {
                     ex.printStackTrace(out);
                 }
             } else {
-                if(first && defaultCommand != null) {
+                if(first && defaultCommand != null && !command.equals("on_exit")) {
                     String[] newArgs = new String[args.length + 1];
                     newArgs[0] = defaultCommand;
                     System.arraycopy(args, 0, newArgs, 1,
