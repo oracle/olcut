@@ -67,7 +67,7 @@ public class SerializeTest {
     @AfterEach
     public void tearDown() throws IOException {
         try {
-        	Files.delete(serPath);
+            Files.delete(serPath);
         }catch(Exception e) {}
     }
 

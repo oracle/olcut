@@ -120,10 +120,10 @@ public final class StringUtil {
     }
 
     public static String normalize(String text) {
-    	text = Normalizer.normalize(text, Normalizer.Form.NFD);
-    	text = text.replaceAll("\\p{M}", ""); //assumes unicode data
-//    	text = text.replaceAll("[^\\p{ASCII}]", "");
-    	return text;
+        text = Normalizer.normalize(text, Normalizer.Form.NFD);
+        text = text.replaceAll("\\p{M}", ""); //assumes unicode data
+//        text = text.replaceAll("[^\\p{ASCII}]", "");
+        return text;
     }
 
 }
