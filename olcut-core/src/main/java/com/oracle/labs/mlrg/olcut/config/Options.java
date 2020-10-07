@@ -30,6 +30,7 @@ package com.oracle.labs.mlrg.olcut.config;
 
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -154,8 +155,21 @@ public interface Options {
                 list.addAll(optionsList);
 
                 return list;
-            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-                throw new ArgumentException(e,"Could not instantiate Options class " + options.getName() +", it has no default constructor.");
+            } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+                throw new ArgumentException(e,"Could not instantiate Options class " + options.getName() + ", it has no default constructor.");
+            } catch (IllegalAccessException e) {
+                if (!Modifier.isPublic(options.getModifiers())) {
+                    throw new ArgumentException(e,"Could not instantiate Options class " + options.getName() + ", it must be public.");
+                }
+                try {
+                    Constructor constructor = options.getDeclaredConstructor();
+                    if (!Modifier.isPublic(constructor.getModifiers())) {
+                        throw new ArgumentException(e,"Could not instantiate Options class " + options.getName() + ", its default constructor must be public.");
+                    }
+                } catch (NoSuchMethodException nsme) {
+                    throw new ArgumentException(e,"Could not instantiate Options class " + options.getName() + ", it has no default constructor.");
+                }
+                throw new ArgumentException(e,"Could not instantiate Options class " + options.getName());
             }
 
         }
