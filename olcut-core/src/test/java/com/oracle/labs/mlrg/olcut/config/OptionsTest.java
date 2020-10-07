@@ -36,23 +36,24 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OptionsTest {
 
-	@Test
-	public void testBasic() {
-		String[] args = new String[] {"--deeper-string","How low can you go?",
-				"--deep-string", "double bass",
-				"--enum", "THINGS", 
-				"--output-string", "ringstay putoutay",
-				"--seed", "42",
-				"--baz", "X,Y,Z",
-				"--output-file", "/tmp/output.txt",
-				"--input-file", "/tmp/input.txt",
-				"--pi", "3.1415927"};
-		TestOptions options = new TestOptions();
+@Test
+    public void testBasic() {
+        String[] args = new String[] {"--deeper-string","How low can you go?",
+                "--deep-string", "double bass",
+                "--enum", "THINGS", 
+                "--output-string", "ringstay putoutay",
+                "--seed", "42",
+                "--baz", "X,Y,Z",
+                "--output-file", "/tmp/output.txt",
+                "--input-file", "/tmp/input.txt",
+                "--pi", "3.1415927"};
+        TestOptions options = new TestOptions();
         ConfigurationManager cm = new ConfigurationManager(args,options);
         
         assertEquals(3.1415927d, options.pi, 0.00001);
@@ -69,18 +70,18 @@ public class OptionsTest {
         String[] unparsedArgs = cm.getUnnamedArguments();
         assertEquals(0, unparsedArgs.length);
 
-	}
-	
-	@Test
-	public void testBackSlash() {
+    }
+    
+    @Test
+    public void testBackSlash() {
         String deeperStringValue = ConfigurationManager.IS_WINDOWS ? "\\s+" : "\\\\s+";
-		String[] args = new String[] {"--deeper-string", deeperStringValue};
-		TestOptions options = new TestOptions();
+        String[] args = new String[] {"--deeper-string", deeperStringValue};
+        TestOptions options = new TestOptions();
         ConfigurationManager cm = new ConfigurationManager(args,options);
         assertEquals("\\s+", options.bar.deepOptions.deeperOptions.deeperString);
         cm.close();
         
-	}
+    }
 
     public static class CommaOptions implements Options {
         @Option(longName="my-chars",usage="The characters.")
@@ -98,6 +99,58 @@ public class OptionsTest {
         assertEquals(',', options.myChars[1]);
         assertEquals('b', options.myChars[2]);
         assertEquals('c', options.myChars[3]);
+    }
+
+    private static class PrivateClassOptions implements Options {
+        @Option(charName='s',longName="something",usage="Provide something")
+        public String s;
+    }
+
+    public static class PrivateConstructorOptions implements Options {
+        private PrivateConstructorOptions() {
+        }
+
+        @Option(charName='s',longName="something",usage="Provide something")
+        public String s;
+    }
+
+    public static class NoDefaultConstructorOptions implements Options {
+        public NoDefaultConstructorOptions(String aValue) {
+        }
+
+        @Option(charName='s',longName="something",usage="Provide something")
+        public String s;
+    }
+
+    @Test
+    public void testAccess() {
+        PrivateClassOptions one = new PrivateClassOptions();
+        Exception e = assertThrows(ArgumentException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                ConfigurationManager cm = new ConfigurationManager(new String[]{"-s", "donkey"}, one);
+            }
+        });
+        assertTrue(e.getMessage().contains("must be public"));
+
+        PrivateConstructorOptions two = new PrivateConstructorOptions();
+        e = assertThrows(ArgumentException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                ConfigurationManager cm = new ConfigurationManager(new String[]{"-s", "donkey"}, two);
+            }
+        });
+        assertTrue(e.getMessage().contains("default constructor must be public"));
+
+        NoDefaultConstructorOptions three = new NoDefaultConstructorOptions("donkey");
+        e = assertThrows(ArgumentException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                ConfigurationManager cm = new ConfigurationManager(new String[]{"-s", "donkey"}, three);
+            }
+        });
+        assertTrue(e.getMessage().contains("no default constructor"));
+
     }
 }
 
