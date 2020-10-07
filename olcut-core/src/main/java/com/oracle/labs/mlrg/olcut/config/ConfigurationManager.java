@@ -208,7 +208,7 @@ public class ConfigurationManager implements Closeable {
      * @throws ConfigLoaderException if an error occurs while loading configuration from the location
      */
     public ConfigurationManager(String path) throws PropertyException, ConfigLoaderException {
-    	this(new String[]{"-"+configFileOption.charName(),path},EMPTY_OPTIONS);
+        this(new String[]{"-"+configFileOption.charName(),path},EMPTY_OPTIONS);
     }
 
 

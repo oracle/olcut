@@ -806,47 +806,47 @@ public final class ProvenanceUtil {
         }
     }
     
-	/**
-	 * This method can be used for custom implementations of the writeObject method
-	 * used for customized object serialization to facilitate the serialization of
-	 * member variables whose type is Provenancable. You should exercise extreme
-	 * caution when using this method as you are wandering into specialized usage of
-	 * java serialization which is problematic in its own right. Just because your
-	 * member satisfies the type of the first parameter does not mean it will
-	 * serialize and deserialize correctly now or in the future. Therefore, you are
-	 * advised to <b>avoid using this method</b> but if you do use it, then you
-	 * should extensively unit test code that depends on this method.
-	 * 
-	 * @param provenancable The provenancable object to serialize.
-	 * @param outputStream The output stream to write to.
-	 * @throws IOException If the stream couldn't be written to.
-	 */
-	public static void writeObject(Provenancable<? extends ConfiguredObjectProvenance> provenancable,  ObjectOutputStream outputStream) throws IOException {
-		ObjectProvenance provenance = provenancable.getProvenance();
-		outputStream.writeObject(provenance);
-	}
+    /**
+     * This method can be used for custom implementations of the writeObject method
+     * used for customized object serialization to facilitate the serialization of
+     * member variables whose type is Provenancable. You should exercise extreme
+     * caution when using this method as you are wandering into specialized usage of
+     * java serialization which is problematic in its own right. Just because your
+     * member satisfies the type of the first parameter does not mean it will
+     * serialize and deserialize correctly now or in the future. Therefore, you are
+     * advised to <b>avoid using this method</b> but if you do use it, then you
+     * should extensively unit test code that depends on this method.
+     * 
+     * @param provenancable The provenancable object to serialize.
+     * @param outputStream The output stream to write to.
+     * @throws IOException If the stream couldn't be written to.
+     */
+    public static void writeObject(Provenancable<? extends ConfiguredObjectProvenance> provenancable,  ObjectOutputStream outputStream) throws IOException {
+        ObjectProvenance provenance = provenancable.getProvenance();
+        outputStream.writeObject(provenance);
+    }
 
-	/**
-	 * This method can be used for custom implementations of the readObject method
-	 * used for customized object serialization. Please see the javadoc note for
-	 * {@link #writeObject(Provenancable, ObjectOutputStream)} for why you should
-	 * take extra care when deliberating whether or not to use this method.
-	 * 
-	 * @param inputStream The stream to read from.
-	 * @return The object reconstructed from it's provenance.
-	 * @throws ClassNotFoundException If the class isn't available.
-	 * @throws IOException If the stream couldn't be read.
-	 */
-	public static Provenancable<? extends ConfiguredObjectProvenance> readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
-		ConfiguredObjectProvenance provenance = (ConfiguredObjectProvenance) inputStream.readObject();
-		List<ConfigurationData> configurationData = ProvenanceUtil.extractConfiguration(provenance);
-		String componentName = configurationData.get(0).getName();
-		ConfigurationManager cm = new ConfigurationManager();
-		cm.addConfiguration(configurationData);
-		@SuppressWarnings("unchecked")
-		Provenancable<ConfiguredObjectProvenance> provenancable = (Provenancable<ConfiguredObjectProvenance>) cm.lookup(componentName);
-		cm.close();
-		return provenancable;
-	}
+    /**
+     * This method can be used for custom implementations of the readObject method
+     * used for customized object serialization. Please see the javadoc note for
+     * {@link #writeObject(Provenancable, ObjectOutputStream)} for why you should
+     * take extra care when deliberating whether or not to use this method.
+     * 
+     * @param inputStream The stream to read from.
+     * @return The object reconstructed from it's provenance.
+     * @throws ClassNotFoundException If the class isn't available.
+     * @throws IOException If the stream couldn't be read.
+     */
+    public static Provenancable<? extends ConfiguredObjectProvenance> readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
+        ConfiguredObjectProvenance provenance = (ConfiguredObjectProvenance) inputStream.readObject();
+        List<ConfigurationData> configurationData = ProvenanceUtil.extractConfiguration(provenance);
+        String componentName = configurationData.get(0).getName();
+        ConfigurationManager cm = new ConfigurationManager();
+        cm.addConfiguration(configurationData);
+        @SuppressWarnings("unchecked")
+        Provenancable<ConfiguredObjectProvenance> provenancable = (Provenancable<ConfiguredObjectProvenance>) cm.lookup(componentName);
+        cm.close();
+        return provenancable;
+    }
 
 }

@@ -46,7 +46,7 @@ import java.util.Locale;
  */
 public class CDateParser {
 
-    static long _32_bit_seconds = 0x7fffffffL * 1000L;	// largest date that fits in 32 bits
+    static long _32_bit_seconds = 0x7fffffffL * 1000L;  // largest date that fits in 32 bits
 
     LinkedList<DateFormat> dateFormats = new LinkedList<>();
 
