@@ -698,6 +698,6 @@ public final class IOUtil {
     }
 
     public static String replaceBackSlashes(String path) {
-    	return path.replaceAll("\\\\", "/");
+        return path.replaceAll("\\\\", "/");
     }
 }

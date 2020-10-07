@@ -820,13 +820,13 @@ public class PropertySheet<T extends Configurable> {
         if (genericType instanceof ParameterizedType) {
             ParameterizedType pt = (ParameterizedType) genericType;
             for (Type t : pt.getActualTypeArguments()) {
-            	//update the type to the raw type if appropriate
-            	if(t instanceof ParameterizedType) {
-                	t = ((ParameterizedType) t).getRawType();
+                //update the type to the raw type if appropriate
+                if(t instanceof ParameterizedType) {
+                    t = ((ParameterizedType) t).getRawType();
                 } 
-            	//not an else here.  t has been updated if the previous
-            	//condition holds.  
-            	if (t instanceof Class) {
+                //not an else here.  t has been updated if the previous
+                //condition holds.  
+                if (t instanceof Class) {
                     list.add((Class<?>)t);
                 } 
             }

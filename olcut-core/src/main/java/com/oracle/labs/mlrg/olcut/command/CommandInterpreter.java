@@ -322,8 +322,8 @@ public class CommandInterpreter extends Thread {
     /**
      * Adds the given command to the command list.
      *
-     * @param name	the name of the command.
-     * @param command	the command to be executed.
+     * @param name     the name of the command.
+     * @param command  the command to be executed.
      *
      */
     public void add(String name, CommandInterface command) {
@@ -667,8 +667,8 @@ public class CommandInterpreter extends Thread {
     /**
      * Adds an alias to the command
      *
-     * @param command	the name of the command.
-     * @param alias	the new alias
+     * @param command  the name of the command.
+     * @param alias    the new alias
      *
      */
     public void addAlias(String command, String alias) {
@@ -763,7 +763,7 @@ public class CommandInterpreter extends Thread {
     /**
      * Execute the given command.
      *
-     * @param args	command args, args[0] contains name of cmd.
+     * @param args  command args, args[0] contains name of cmd.
      * @return The output produced by the command.
      */
     public String execute(String[] args) {
@@ -773,7 +773,7 @@ public class CommandInterpreter extends Thread {
     /**
      * Execute the given command.
      *
-     * @param args	command args, args[0] contains name of cmd.
+     * @param args  command args, args[0] contains name of cmd.
      * @return The output produced by the command.
      */
     private String execute(String[] args, boolean first) {
