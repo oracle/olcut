@@ -114,6 +114,14 @@ public class OptionsTest {
         public String s;
     }
 
+    public static class NoDefaultConstructorOptions implements Options {
+	    public NoDefaultConstructorOptions(String aValue) {
+        }
+
+        @Option(charName='s',longName="something",usage="Provide something")
+        public String s;
+    }
+
     @Test
     public void testAccess() {
         PrivateClassOptions one = new PrivateClassOptions();
@@ -126,13 +134,22 @@ public class OptionsTest {
 	    assertTrue(e.getMessage().contains("must be public"));
 
 	    PrivateConstructorOptions two = new PrivateConstructorOptions();
-	    Exception ex = assertThrows(ArgumentException.class, new Executable() {
+	    e = assertThrows(ArgumentException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
                 ConfigurationManager cm = new ConfigurationManager(new String[]{"-s", "donkey"}, two);
             }
         });
-        assertTrue(ex.getMessage().contains("default constructor must be public"));
+        assertTrue(e.getMessage().contains("default constructor must be public"));
+
+        NoDefaultConstructorOptions three = new NoDefaultConstructorOptions("donkey");
+        e = assertThrows(ArgumentException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                ConfigurationManager cm = new ConfigurationManager(new String[]{"-s", "donkey"}, three);
+            }
+        });
+        assertTrue(e.getMessage().contains("no default constructor"));
 
     }
 }
