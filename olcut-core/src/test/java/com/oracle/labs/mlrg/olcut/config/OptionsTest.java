@@ -36,8 +36,9 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OptionsTest {
 
@@ -98,6 +99,41 @@ public class OptionsTest {
         assertEquals(',', options.myChars[1]);
         assertEquals('b', options.myChars[2]);
         assertEquals('c', options.myChars[3]);
+    }
+
+    private static class PrivateClassOptions implements Options {
+        @Option(charName='s',longName="something",usage="Provide something")
+        public String s;
+    }
+
+    public static class PrivateConstructorOptions implements Options {
+        private PrivateConstructorOptions() {
+        }
+
+        @Option(charName='s',longName="something",usage="Provide something")
+        public String s;
+    }
+
+    @Test
+    public void testAccess() {
+        PrivateClassOptions one = new PrivateClassOptions();
+	    Exception e = assertThrows(ArgumentException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                ConfigurationManager cm = new ConfigurationManager(new String[]{"-s", "donkey"}, one);
+            }
+        });
+	    assertTrue(e.getMessage().contains("must be public"));
+
+	    PrivateConstructorOptions two = new PrivateConstructorOptions();
+	    Exception ex = assertThrows(ArgumentException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                ConfigurationManager cm = new ConfigurationManager(new String[]{"-s", "donkey"}, two);
+            }
+        });
+        assertTrue(ex.getMessage().contains("default constructor must be public"));
+
     }
 }
 
