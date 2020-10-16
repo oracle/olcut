@@ -56,6 +56,10 @@ public final class NullConfiguredProvenance implements ConfiguredObjectProvenanc
         this.className = className;
     }
 
+    /**
+     * Used to unmarshal a null provenance.
+     * @param map The set of fields. Must only contain the class name the provenance came from.
+     */
     public NullConfiguredProvenance(Map<String,Provenance> map) {
         if (map.containsKey(ObjectProvenance.CLASS_NAME)) {
             this.className = map.get(ObjectProvenance.CLASS_NAME).toString();
