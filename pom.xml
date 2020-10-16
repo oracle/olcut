@@ -39,9 +39,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jackson.version>2.11.2</jackson.version>
-        <jline.version>3.15.0</jline.version>
-        <junit.version>5.6.0</junit.version>
+        <edn.version>0.7.1</edn.version>
+        <jackson.version>2.11.3</jackson.version>
+        <jline.version>3.16.0</jline.version>
+        <junit.version>5.7.0</junit.version>
     </properties>
     <modules>
         <module>olcut-core</module>
@@ -142,6 +143,11 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>us.bpsm</groupId>
+                <artifactId>edn-java</artifactId>
+                <version>${edn.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
