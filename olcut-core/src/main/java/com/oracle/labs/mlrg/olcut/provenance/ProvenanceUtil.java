@@ -33,6 +33,7 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
 import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.provenance.impl.NullConfiguredProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.FlatMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ListMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.MapMarshalledProvenance;
@@ -490,14 +491,17 @@ public final class ProvenanceUtil {
         processingQueue.add(provenance);
         while (!processingQueue.isEmpty()) {
             ObjectProvenance curProv = processingQueue.poll();
-            if (curProv instanceof ConfiguredObjectProvenance) {
-                if (!provenanceTracker.containsKey((ConfiguredObjectProvenance)curProv)) {
-                    provenanceTracker.put((ConfiguredObjectProvenance) curProv, counter);
-                    traversalOrder.add((ConfiguredObjectProvenance) curProv);
-                    counter++;
+            // skip null provenances
+            if (!(curProv instanceof NullConfiguredProvenance)) {
+                if (curProv instanceof ConfiguredObjectProvenance) {
+                    if (!provenanceTracker.containsKey((ConfiguredObjectProvenance) curProv)) {
+                        provenanceTracker.put((ConfiguredObjectProvenance) curProv, counter);
+                        traversalOrder.add((ConfiguredObjectProvenance) curProv);
+                        counter++;
+                    }
                 }
+                extractProvenanceToQueue(processingQueue, curProv);
             }
-            extractProvenanceToQueue(processingQueue, curProv);
         }
 
         List<ConfigurationData> output = new ArrayList<>();
@@ -528,7 +532,10 @@ public final class ProvenanceUtil {
 
                 for (Provenance p : (ListProvenance<?>)prov) {
                    if (p instanceof ConfiguredObjectProvenance) {
-                        list.add(new SimpleProperty(computeName((ConfiguredObjectProvenance)p,map.get(p))));
+                       // skip nulls
+                       if (!(p instanceof NullConfiguredProvenance)) {
+                           list.add(new SimpleProperty(computeName((ConfiguredObjectProvenance) p, map.get(p))));
+                       }
                     } else {
                         list.add(new SimpleProperty(p.toString()));
                     }
@@ -536,20 +543,26 @@ public final class ProvenanceUtil {
 
                 data.add(e.getKey(),new ListProperty(list));
             } else if (prov instanceof MapProvenance) {
-                Map<String,SimpleProperty> propMap = new HashMap<>();
+                Map<String, SimpleProperty> propMap = new HashMap<>();
 
-                for (Pair<String,? extends Provenance> pair : (MapProvenance<?>)prov) {
+                for (Pair<String, ? extends Provenance> pair : (MapProvenance<?>) prov) {
                     Provenance valueProv = pair.getB();
                     if (valueProv instanceof ConfiguredObjectProvenance) {
-                        propMap.put(pair.getA(),new SimpleProperty(computeName((ConfiguredObjectProvenance)valueProv,map.get(valueProv))));
+                        // skip nulls
+                        if (!(valueProv instanceof NullConfiguredProvenance)) {
+                            propMap.put(pair.getA(), new SimpleProperty(computeName((ConfiguredObjectProvenance) valueProv, map.get(valueProv))));
+                        }
                     } else {
-                        propMap.put(pair.getA(),new SimpleProperty(valueProv.toString()));
+                        propMap.put(pair.getA(), new SimpleProperty(valueProv.toString()));
                     }
                 }
 
-                data.add(e.getKey(),new MapProperty(propMap));
+                data.add(e.getKey(), new MapProperty(propMap));
             } else if (prov instanceof ConfiguredObjectProvenance) {
-                data.add(e.getKey(),new SimpleProperty(computeName((ConfiguredObjectProvenance)prov,map.get(prov))));
+                // Skip nulls;
+                if (!(prov instanceof NullConfiguredProvenance)) {
+                    data.add(e.getKey(), new SimpleProperty(computeName((ConfiguredObjectProvenance) prov, map.get(prov))));
+                }
             } else {
                 data.add(e.getKey(),new SimpleProperty(prov.toString()));
             }
