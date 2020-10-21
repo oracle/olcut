@@ -1,4 +1,4 @@
-jline 3.15.0
+jline 3.16.0
 
 Copyright (c) 2002-2018, the original author or authors.
 All rights reserved.
@@ -35,7 +35,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 OF THE POSSIBILITY OF SUCH DAMAGE.
 
-jackson-core, jackson-databind 2.11.2
+jackson-core, jackson-databind 2.11.3
 
 
                                  Apache License
@@ -240,7 +240,7 @@ jackson-core, jackson-databind 2.11.2
    See the License for the specific language governing permissions and
    limitations under the License.
 
-junit 5.6.0
+junit 5.7.0
 
 Copyright 2015-2020 the original author or authors.
 

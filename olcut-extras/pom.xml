@@ -11,7 +11,7 @@
     </parent>
 
     <properties>
-        <asm.version>8.0.1</asm.version>
+        <asm.version>9.0</asm.version>
     </properties>
 
     <artifactId>olcut-extras</artifactId>
@@ -35,14 +35,16 @@
                 <directory>${project.basedir}/..</directory>
                 <includes>
                     <include>LICENSE.txt</include>
+                    <include>THIRD_PARTY_LICENSES.txt</include>
                 </includes>
                 <targetPath>META-INF</targetPath>
             </resource>
-        </resources>        <plugins>
+        </resources>
+        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>3.2.0</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
