@@ -28,19 +28,69 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.test.Ape;
+import com.oracle.labs.mlrg.olcut.config.test.Barbary;
+import com.oracle.labs.mlrg.olcut.config.test.Chimp;
+import com.oracle.labs.mlrg.olcut.config.test.Gorilla;
+import com.oracle.labs.mlrg.olcut.config.test.Monkey;
+import com.oracle.labs.mlrg.olcut.config.test.Orangutan;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
  */
 public class ConfigurationManagerTest {
+    private static ConfigurationManager singletonCM;
 
+    @BeforeAll
+    public static void setup() {
+        singletonCM = new ConfigurationManager("/com/oracle/labs/mlrg/olcut/config/singletonConfig.xml");
+    }
+
+    @Test
+    public void testSingletonTrue() {
+        Chimp c = singletonCM.lookupSingleton(Chimp.class, false);
+        assertNotNull(c, "Failed to find actual singleton");
+        c = singletonCM.lookupSingleton(Chimp.class, true);
+        assertNotNull(c, "Failed to find actual singleton");
+    }
+
+    @Test
+    public void testSingletonTrueSubclass() {
+        Orangutan o = singletonCM.lookupSingleton(Orangutan.class, true);
+        assertNotNull(o, "Failed to find Bornean as subclass");
+        o = singletonCM.lookupSingleton(Orangutan.class, false);
+        assertNull(o, "Should not have found an Orangutan ");
+    }
+
+
+    @Test
+    public void testSingletonMultipleClasses() {
+        assertThrows(PropertyException.class, () -> {singletonCM.lookupSingleton(Gorilla.class, false);},
+                "Config has multiple Gorillas but no exception was thrown");
+        assertThrows(PropertyException.class, () -> {singletonCM.lookupSingleton(Gorilla.class, true);},
+                "Config has multiple Gorillas but no exception was thrown");
+    }
+
+    @Test
+    public void testSingletonMultipleInterfaces() {
+        assertThrows(PropertyException.class, () -> {singletonCM.lookupSingleton(Monkey.class, true);},
+                "Config has multiple Gorillas but no exception was thrown");
+        Monkey m = singletonCM.lookupSingleton(Monkey.class, false);
+        assertNull(m, "Looked up interface without allowAssignable but didn't get null");
+    }
+
+    @Test
+    public void testSingletonNoImport() {
+        assertNull(singletonCM.lookupSingleton(Barbary.class, false), "Should ignore imports");
+        assertNull(singletonCM.lookupSingleton(Barbary.class, true), "Should ignore imports");
+    }
 
     @Test
     public void testMultipleLoading() {

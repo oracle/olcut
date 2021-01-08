@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+
+
+<config>
+
+    <component name="chimp" type="com.oracle.labs.mlrg.olcut.config.test.Chimp">
+    </component>
+
+    <component name="kingKong" type="com.oracle.labs.mlrg.olcut.config.test.Gorilla">
+    </component>
+
+    <component name="grodd" type="com.oracle.labs.mlrg.olcut.config.test.Gorilla">
+    </component>
+
+    <component name="harlow" type="com.oracle.labs.mlrg.olcut.config.test.Rhesus">
+    </component>
+
+    <component name="bornie" type="com.oracle.labs.mlrg.olcut.config.test.Bornean">
+    </component>
+
+    <component name="barbie" type="com.oracle.labs.mlrg.olcut.config.test.Barbary" import="true">
+    </component>
+
+</config>
