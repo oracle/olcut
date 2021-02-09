@@ -1486,7 +1486,7 @@ public class ConfigurationManager implements Closeable {
      * @param c The Class of component to lookup.
      * @param allowAssignable allow types that are assignable to the given class to match
      * @param <T> The type of the component.
-     * @return the once instance of the desired class this configuration manager knows about or null if
+     * @return the one instance of the desired class this configuration manager knows about or null if
      *         no such instance is present
      * @throws PropertyException if there is more than one instance
      */
