@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -83,6 +83,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
 
@@ -1473,6 +1474,66 @@ public class ConfigurationManager implements Closeable {
     public <T extends Configurable> List<T> lookupAll(Class<T> c, ComponentListener<T> cl) {
         return lookupAll(c);
     }
+
+    /**
+     * Looks for a single instance of a specified Configurable in the configuration. If there is
+     * no such instance, this method returns null. If there is more than one instance, an
+     * exception is thrown. lookupSingleton can optionally include any class that may be
+     * assignable (a subclass or implementation) to the provided type. Note that this
+     * could potentially allow a user to load their own class. If the security of the
+     * class you're looking up is important, declare it final to prevent code insertion.
+     *
+     * @param c The Class of component to lookup.
+     * @param allowAssignable allow types that are assignable to the given class to match
+     * @param <T> The type of the component.
+     * @return the one instance of the desired class this configuration manager knows about or null if
+     *         no such instance is present
+     * @throws PropertyException if there is more than one instance
+     */
+    @SuppressWarnings("unchecked") // Casts to T are implicitly checked as we use Class<T> to find the names.
+    public <T extends Configurable> T lookupSingleton(Class<T> c, boolean allowAssignable) throws PropertyException {
+
+        List<String> instanceNames = new ArrayList<>();
+        for(Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
+            ConfigurationData rpd = e.getValue();
+            try {
+                Class pclass = Class.forName(rpd.getClassName());
+                if (!rpd.isImportable() &&
+                        ((allowAssignable && c.isAssignableFrom(pclass)) ||
+                         (!allowAssignable && rpd.getClassName().equals(c.getName())))) {
+                    instanceNames.add(e.getKey());
+                }
+            } catch(ClassNotFoundException ex) {
+                logger.warning(String.format("No class %s found in ConfigurationManager",
+                        rpd.getClassName()));
+            }
+        }
+
+        //
+        // Check that we got only one instance and that it is not an interface.
+        if (instanceNames.isEmpty()) {
+            return null;
+        }
+        if (instanceNames.size() > 1) {
+            String names = instanceNames.stream().collect(Collectors.joining(", "));
+            throw new PropertyException("", "Multiple instances of " + c.getName() + " found in configuration: " + names);
+        }
+
+        String matchedName = instanceNames.get(0);
+        ConfigurationData cd = configurationDataMap.get(matchedName);
+        try {
+            Class matchedClass = Class.forName(cd.getClassName());
+            if (!matchedClass.isInterface()) {
+                return (T)lookup(matchedName);
+            } else {
+                throw new PropertyException("matchedName", "Cannot instantiate component with type "
+                        + matchedClass + " since it is an interface");
+            }
+        } catch (ClassNotFoundException e) {
+            throw new PropertyException(e,matchedName,"Class not found for component " + matchedName);
+        }
+    }
+
 
     /**
      * Gets a list of all of the component names of the components that have 
