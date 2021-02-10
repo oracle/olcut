@@ -1423,6 +1423,50 @@ public class ConfigurationManager implements Closeable {
     }
 
     /**
+     * Looks up all the components of a given type, returning a map of them.
+     * <p>
+     * If the class is an interface, it returns all the configurables which implement that interface,
+     * if it's a concrete class then it returns only those configurables which are exactly that class.
+     * @param c The class of component to lookup.
+     * @param <T> The type of the component.
+     * @return A map containing all instances of the desired class this configuration manager knows about.
+     */
+    @SuppressWarnings("unchecked") // Casts to T are implicitly checked as we use Class<T> to find the names.
+    public <T extends Configurable> Map<String, T> lookupAllMap(Class<T> c) {
+        Map<String, T> ret = new HashMap<>();
+
+        //
+        // If the class isn't an interface, then lookup each of the names
+        // in the raw property data with the given class
+        // name, ignoring those things marked as importable.
+        if(!c.isInterface()) {
+            String className = c.getName();
+            for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
+                if (e.getValue().getClassName().equals(className) &&
+                        !e.getValue().isImportable()) {
+                    ret.put(e.getKey(),(T)lookup(e.getKey()));
+                }
+            }
+        } else {
+            //
+            // If we have an interface and no registry, lookup all the
+            // implementing classes and return them.
+            for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
+                try {
+                    Class clazz = Class.forName(e.getValue().getClassName());
+                    if (!e.getValue().isImportable() && c.isAssignableFrom(clazz) && !clazz.isInterface()) {
+                        ret.put(e.getKey(),(T)innerLookup(e.getKey(),null,true));
+                    }
+                } catch (ClassNotFoundException ex) {
+                    throw new PropertyException(ex,e.getKey(),"Class not found for component " + e.getKey());
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    /**
      * Looks up all the components of a given type, returning a list of them.
      * @param c The class of component to lookup.
      * @param <T> The type of the component.
