@@ -203,7 +203,7 @@ public class DescribeConfigurable {
                                 Object[] constants = listType.getEnumConstants();
                                 List<String> enumConstants = new ArrayList<>();
                                 for (Object o : constants) {
-                                    enumConstants.add(((Enum)o).name());
+                                    enumConstants.add(((Enum<?>)o).name());
                                 }
                                 fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation,defaultVal,listType.getCanonicalName(),enumConstants);
                             } else {
