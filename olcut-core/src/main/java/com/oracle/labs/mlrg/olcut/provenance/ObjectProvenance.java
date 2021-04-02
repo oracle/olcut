@@ -32,6 +32,7 @@ import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil.HashType;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A provenance object which records object fields.
@@ -83,7 +84,7 @@ public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Prove
     /**
      * Removes the specified Provenance from the supplied map and returns it. Checks that it's the right type,
      * and casts to it before returning.
-     *
+     * <p>
      * Throws ProvenanceException if it's not found or it's an incorrect type.
      * @param map The map to check.
      * @param key The key to look up.
@@ -95,15 +96,40 @@ public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Prove
      */
     @SuppressWarnings("unchecked") // Guarded by isInstance check
     public static <T extends Provenance> T checkAndExtractProvenance(Map<String,Provenance> map, String key, Class<T> type, String provClassName) throws ProvenanceException {
+        Optional<T> prov = maybeExtractProvenance(map,key,type,provClassName);
+        if (prov.isPresent()) {
+            return prov.get();
+        } else {
+            throw new ProvenanceException("Failed to find " + key + " when constructing " + provClassName);
+        }
+    }
+
+    /**
+     * Removes the specified Provenance from the supplied map and returns it. Checks that it's the right type,
+     * and casts to it before returning. Unlike {@link #checkAndExtractProvenance(Map, String, Class, String)} it doesn't
+     * throw if it fails to find the key, only if the value is of the wrong type.
+     * <p>
+     * This is used when evolving provenance classes by adding new fields to ensure that old serialized
+     * forms remain compatible.
+     * @param map The map to inspect.
+     * @param key The key to find.
+     * @param type The class of the value.
+     * @param provClassName The name of the requesting class (to ensure the exception has the appropriate error message).
+     * @param <T> The type of the value.
+     * @return An optional containing the value if present.
+     * @throws ProvenanceException If the value is the wrong type.
+     */
+    @SuppressWarnings("unchecked") // Guarded by isInstance check
+    public static <T extends Provenance> Optional<T> maybeExtractProvenance(Map<String,Provenance> map, String key, Class<T> type, String provClassName) throws ProvenanceException {
         Provenance tmp = map.remove(key);
         if (tmp != null) {
             if (type.isInstance(tmp)) {
-                return (T) tmp;
+                return Optional.of((T) tmp);
             } else {
                 throw new ProvenanceException("Failed to cast " + key + " when constructing " + provClassName + ", found " + tmp);
             }
         } else {
-            throw new ProvenanceException("Failed to find " + key + " when constructing " + provClassName);
+            return Optional.empty();
         }
     }
 }
