@@ -31,6 +31,7 @@ package com.oracle.labs.mlrg.olcut.config.property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.util.Util;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,24 +41,37 @@ import java.util.regex.Matcher;
 
 /**
  * A collection of GlobalProperties which can't be mutated.
+ * <p>
+ * In addition to the set properties, it also includes
+ * preset properties. This set currently includes {@link #HOSTNAME}
+ * which lazily resolves to the system hostname.
  */
 public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,GlobalProperty>> {
+
+    public static final String HOSTNAME = "gp.hostName";
 
     /**
      * A set of distinguished properties that we would like to have.
      */
-    private static Map<String, GlobalProperty> distinguished = new HashMap<>();
+    private static final Map<String, GlobalProperty> distinguished = new HashMap<>();
 
     protected final HashMap<String, GlobalProperty> map;
 
     static {
-        distinguished.put("gp.hostName", new LazyGlobalProperty(Util::getHostName));
+        distinguished.put(HOSTNAME, new LazyGlobalProperty(Util::getHostName));
     }
 
+    /**
+     * Creates an ImmutableGlobalProperties.
+     */
     public ImmutableGlobalProperties() {
         this.map = new HashMap<>();
     }
 
+    /**
+     * Creates an ImmutableGlobalProperties copy of the other properties.
+     * @param globalProperties The properties to copy.
+     */
     public ImmutableGlobalProperties(GlobalProperties globalProperties) {
         this.map = new HashMap<>();
         for(String key : globalProperties.map.keySet()) {
@@ -65,10 +79,20 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
         }
     }
 
+    /**
+     * Creates an ImmutableGlobalProperties view of this map.
+     * @param map The map to wrap.
+     */
     private ImmutableGlobalProperties(HashMap<String, GlobalProperty> map) {
         this.map = map;
     }
 
+    /**
+     * Returns the GlobalProperty associated with the name, or
+     * null if there is no such property.
+     * @param propertyName The property name.
+     * @return The GlobalProperty if found, or null.
+     */
     public GlobalProperty get(String propertyName) {
         GlobalProperty gp = map.get(propertyName);
         if(gp == null) {
@@ -127,10 +151,20 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
         }
     }
 
+    /**
+     * Returns a view over the property names.
+     * @return The set of property names.
+     */
     public Set<String> keySet() {
-        return map.keySet();
+        return Collections.unmodifiableSet(map.keySet());
     }
 
+    /**
+     * Returns an unmodifiable view of this GlobalProperties.
+     * <p>
+     * Changes in the underlying properties are reflected in this view.
+     * @return An unmodifiable view of the properties.
+     */
     public ImmutableGlobalProperties getImmutableProperties() {
         return new ImmutableGlobalProperties(map);
     }

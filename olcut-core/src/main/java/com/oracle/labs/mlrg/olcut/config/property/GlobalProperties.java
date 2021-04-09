@@ -44,32 +44,56 @@ import java.util.regex.Matcher;
  */
 public class GlobalProperties extends ImmutableGlobalProperties {
 
+    /**
+     * Creates a GlobalProperties which only contains the built in properties.
+     */
     public GlobalProperties() {
         super();
     }
 
+    /**
+     * Copies the supplied GlobalProperties.
+     * @param globalProperties The properties to copy.
+     */
     public GlobalProperties(GlobalProperties globalProperties) {
         super(globalProperties);
     }
 
     /**
-     * Imports the system properties into GlobalProperties.
+     * Imports the system properties into this GlobalProperties.
      */
     public final void importSystemProperties() {
         Properties props = AccessController.doPrivileged((PrivilegedAction<Properties>) System::getProperties);
+        importProperties(props);
+    }
+
+    /**
+     * Imports the supplied properties.
+     *
+     * @param props The properties to import.
+     */
+    // Exposed for unit testing
+    void importProperties(Properties props) {
         for (Map.Entry<Object,Object> e : props.entrySet()) {
             // These two calls use .toString rather than a cast
-            // because sometimes Fusion inserts Integers into the system properties.
+            // because sometimes people insert Integers into the system properties.
             String param = e.getKey().toString();
             String value = e.getValue() == null ? "null" : e.getValue().toString();
-            setValue(param, value);
+            // Checks to see if the system property could be a valid global property,
+            // only insert it if it is.
+            // Bypasses setValue as that throws an exception if the key isn't well formed.
+            String testValue = "${" + param + "}";
+            Matcher m = GlobalProperty.globalSymbolPattern.matcher(testValue);
+            if (m.matches()) {
+                map.put(param, new GlobalProperty(value));
+            }
         }
     }
 
     /**
      * Adds a value to this GlobalProperties. Throws PropertyException if the
      * name does not conform to the {@link GlobalProperty#globalSymbolPattern}.
-     *
+     * <p>
      * It overwrites values if they already exist.
      * @param propertyName The name of the new global property.
      * @param value The value for the new global property.
@@ -82,7 +106,7 @@ public class GlobalProperties extends ImmutableGlobalProperties {
     /**
      * Adds a value to this GlobalProperties. Throws PropertyException if the
      * name does not conform to the {@link GlobalProperty#globalSymbolPattern}.
-     *
+     * <p>
      * It overwrites values if they already exist.
      * @param propertyName The name of the new global property.
      * @param value The value for the new global property.
