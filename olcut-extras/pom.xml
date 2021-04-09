@@ -7,11 +7,11 @@
         <artifactId>olcut</artifactId>
         <groupId>com.oracle.labs.olcut</groupId>
         <version>${revision}</version>
-        <relativePath>..</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <properties>
-        <asm.version>9.0</asm.version>
+        <asm.version>9.1</asm.version>
     </properties>
 
     <artifactId>olcut-extras</artifactId>

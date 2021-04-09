@@ -33,7 +33,7 @@
         <groupId>com.oracle.labs.olcut</groupId>
         <artifactId>olcut</artifactId>
         <version>${revision}</version>
-        <relativePath>..</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <name>olcut-config-json</name>
     <artifactId>olcut-config-json</artifactId>

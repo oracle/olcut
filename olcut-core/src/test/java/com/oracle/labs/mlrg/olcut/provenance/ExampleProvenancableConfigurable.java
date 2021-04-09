@@ -41,6 +41,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test class for the provenance system.
@@ -122,17 +125,20 @@ public final class ExampleProvenancableConfigurable implements Configurable, Pro
 
         @SuppressWarnings("unchecked")
         public ExampleProvenance(Map<String,Provenance> provenances) {
+            this.className = ObjectProvenance.checkAndExtractProvenance(provenances,ObjectProvenance.CLASS_NAME,StringProvenance.class,ExampleProvenance.class.getName()).getValue();
+            this.map = ObjectProvenance.checkAndExtractProvenance(provenances,MAP,MapProvenance.class,ExampleProvenance.class.getName());
+            Optional<DoubleProvenance> opt = ObjectProvenance.maybeExtractProvenance(provenances,DOUBLE_FIELD,DoubleProvenance.class,ExampleProvenance.class.getName());
+            if (opt.isPresent()) {
+                this.doubleField = opt.get();
+            } else {
+                throw new ProvenanceException("Failed to find " + DOUBLE_FIELD + " when constructing ExampleProvenance");
+            }
+            Optional<DoubleProvenance> notPresentOpt = ObjectProvenance.maybeExtractProvenance(provenances,"DEFINITELY-NOT-HERE",DoubleProvenance.class,ExampleProvenance.class.getName());
+            if (notPresentOpt.isPresent()) {
+                fail("Found a provenance which wasn't there");
+            }
+
             try {
-                if (provenances.containsKey(ObjectProvenance.CLASS_NAME)) {
-                    this.className = provenances.get(ObjectProvenance.CLASS_NAME).toString();
-                } else {
-                    throw new ProvenanceException("Failed to find class name when constructing ExampleProvenance");
-                }
-                if (provenances.containsKey(DOUBLE_FIELD)) {
-                    this.doubleField = (DoubleProvenance) provenances.get(DOUBLE_FIELD);
-                } else {
-                    throw new ProvenanceException("Failed to find " + DOUBLE_FIELD + " when constructing ExampleProvenance");
-                }
                 if (provenances.containsKey(INT_ARRAY_FIELD)) {
                     this.intArrayField = (ListProvenance<IntProvenance>) provenances.get(INT_ARRAY_FIELD);
                 } else {
@@ -142,11 +148,6 @@ public final class ExampleProvenancableConfigurable implements Configurable, Pro
                     this.examples = (ListProvenance<ExampleProvenance>) provenances.get(EXAMPLES);
                 } else {
                     throw new ProvenanceException("Failed to find " + EXAMPLES + " when constructing ExampleProvenance");
-                }
-                if (provenances.containsKey(MAP)) {
-                    this.map = (MapProvenance<StringProvenance>) provenances.get(MAP);
-                } else {
-                    throw new ProvenanceException("Failed to find " + MAP + " when constructing ExampleProvenance");
                 }
             } catch (ClassCastException e) {
                 throw new ProvenanceException("Incorrect type found in provenance, did not match the field type.",e);

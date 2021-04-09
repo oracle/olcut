@@ -34,12 +34,15 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -77,6 +80,11 @@ public interface Options {
         return "";
     }
 
+    /**
+     * Constructs a formatted usage string from a table of fields.
+     * @param usageList The fields.
+     * @return A usage string.
+     */
     public static String formatUsage(List<List<String>> usageList) {
         int[] maxWidth = new int[5];
 
@@ -118,6 +126,11 @@ public interface Options {
         return builder.toString();
     }
 
+    /**
+     * Constructs the usage string from the supplied Options subclass.
+     * @param options The options to construct a usage for.
+     * @return The usage string.
+     */
     public static List<List<String>> getUsage(Class<? extends Options> options) {
         ArrayList<List<String>> list = new ArrayList<>();
         ArrayList<List<String>> optionsList = new ArrayList<>();
@@ -175,28 +188,70 @@ public interface Options {
         }
     }
 
+    /**
+     * Returns a String representing the Enum constants from this class surrounded by '{', '}'
+     * and separated by a comma and a space.
+     * @param enumClazz The enum class to represent.
+     * @return A String containing all the enum constants.
+     */
+    public static String getEnumConstantString(Class<? extends Enum<?>> enumClazz) {
+        Enum<?>[] constants = enumClazz.getEnumConstants();
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        for (Enum<?> o : constants) {
+            sb.append(o.name());
+            sb.append(", ");
+        }
+        sb.replace(sb.length() - 2, sb.length(), "}");
+        return sb.toString();
+    }
+
     public static String generateTypeDescription(Field f) {
         Class<?> clazz = f.getType();
         if (clazz.isEnum()) {
-            Object[] constants = clazz.getEnumConstants();
-            StringBuilder sb = new StringBuilder();
-            sb.append("enum - {");
-            for (Object o : constants) {
-                sb.append(((Enum)o).name());
-                sb.append(", ");
+            @SuppressWarnings("unchecked") //guarded by isEnum check
+            Class<? extends Enum<?>> enumClazz = (Class<? extends Enum<?>>) clazz;
+            return "enum - " + getEnumConstantString(enumClazz);
+        } else if (clazz == EnumSet.class) {
+            Type type = f.getGenericType();
+            if (type instanceof ParameterizedType) {
+                ParameterizedType typeName = (ParameterizedType) type;
+                // Should only have a single type parameter
+                Type enumType = typeName.getActualTypeArguments()[0];
+                try {
+                    @SuppressWarnings("unchecked") // type parameter to an enumset must be an enum
+                    Class<? extends Enum<?>> enumClazz = (Class<? extends Enum<?>>) Class.forName(enumType.getTypeName());
+                    return "EnumSet - " + getEnumConstantString(enumClazz);
+                } catch (ClassNotFoundException e) {
+                    Logger.getLogger(Options.class.getName()).warning("Failed to load enum class '" + enumType.getTypeName() + "'");
+                    return typeName.getTypeName();
+                }
+            } else {
+                return f.getGenericType().getTypeName();
             }
-            sb.replace(sb.length()-2,sb.length(),"}");
-            return sb.toString();
         } else {
             return f.getGenericType().getTypeName();
         }
     }
 
+    /**
+     * Gets the fields for this option's usage string.
+     * @param option The option annotation.
+     * @param f The annotated field.
+     * @param obj The parent options object, used to access the default value for this field.
+     * @return The fields for the usage string.
+     */
     public static ArrayList<String> getOptionUsage(Option option, Field f, Options obj) {
         String typeString = generateTypeDescription(f);
         return getOptionUsage(option,f,obj,typeString);
     }
 
+    /**
+     * Gets the usage for one of the default options (which don't have a parent options object).
+     * @param option The option annotation.
+     * @param type The type of the option.
+     * @return The fields for the usage string.
+     */
     public static ArrayList<String> getOptionUsage(Option option, String type) {
         ArrayList<String> output = new ArrayList<>();
         if (option.charName() != Option.EMPTY_CHAR) {
@@ -211,6 +266,14 @@ public interface Options {
         return output;
     }
 
+    /**
+     * Gets the usage fields for the supplied option.
+     * @param option The option annotation.
+     * @param f The field the annotation is attached to.
+     * @param obj The parent options object, used to access the default value for this field.
+     * @param type The type string used in the usage (may be the enum constants, or a short type descriptor).
+     * @return The fields for the usage string.
+     */
     public static ArrayList<String> getOptionUsage(Option option, Field f, Options obj, String type) {
         ArrayList<String> output = new ArrayList<>();
         if (option.charName() != Option.EMPTY_CHAR) {

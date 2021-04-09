@@ -32,6 +32,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
 
@@ -42,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class OptionsTest {
 
-@Test
+    @Test
     public void testBasic() {
         String[] args = new String[] {"--deeper-string","How low can you go?",
                 "--deep-string", "double bass",
@@ -152,6 +153,22 @@ public class OptionsTest {
         assertTrue(e.getMessage().contains("no default constructor"));
 
     }
+
+    @Test
+    public void enumSetUsage() {
+        EnumSetOptions opts = new EnumSetOptions();
+
+        String[] args = new String[]{"--enum-set", "THINGS,STUFF"};
+
+        ConfigurationManager cm = new ConfigurationManager(args, opts);
+
+        EnumSet<OptionsEnum> enumSet = EnumSet.of(OptionsEnum.THINGS, OptionsEnum.STUFF);
+        assertEquals(opts.enumSet,enumSet);
+
+        String usage = cm.usage();
+
+        assertTrue(usage.contains("EnumSet - {THINGS, STUFF, OTHER_THINGS}"));
+    }
 }
 
 class TestOptions implements Options {
@@ -248,6 +265,20 @@ class DeeperOptions implements Options {
     @Override
     public String toString() {
         return "deeperString="+deeperString;
+    }
+}
+
+class EnumSetOptions implements Options {
+    @Override
+    public String getOptionsDescription() {
+        return "It's got an enumset.";
+    }
+    @Option(charName='e', longName="enum-set", usage="It's an enum set")
+    public EnumSet<OptionsEnum> enumSet;
+
+    @Override
+    public String toString() {
+        return "enumSet="+enumSet.toString();
     }
 }
 

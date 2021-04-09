@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -30,9 +30,15 @@ package com.oracle.labs.mlrg.olcut.config;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import com.oracle.labs.mlrg.olcut.config.test.Ape;
+import com.oracle.labs.mlrg.olcut.config.test.Barbary;
+import com.oracle.labs.mlrg.olcut.config.test.Chimp;
+import com.oracle.labs.mlrg.olcut.config.test.Gorilla;
 import com.oracle.labs.mlrg.olcut.config.test.Monkey;
+import com.oracle.labs.mlrg.olcut.config.test.Orangutan;
+import com.oracle.labs.mlrg.olcut.config.test.Rhesus;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,6 +62,41 @@ public class GenericConfigTest {
         List<Ape> apes = cm.lookupAll(apeClazz);
 
         assertEquals(3, apes.size(), "Didn't find all the Ape classes");
+    }
+
+    @SuppressWarnings("unchecked")//Looking up a specific class via it's full name
+    @Test
+    public void lookupAllMapTest() throws ClassNotFoundException {
+        ConfigurationManager cm = new ConfigurationManager("genericConfig.xml");
+
+        Class<Monkey> clazz = (Class<Monkey>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.Monkey");
+        Map<String,Monkey> monkeys = cm.lookupAllMap(clazz);
+
+        assertEquals(5, monkeys.size(), "Didn't find all the MonkeyConfigurable classes");
+        assertTrue(monkeys.get("monkey-one") instanceof Gorilla);
+        assertTrue(monkeys.get("monkey-two") instanceof Chimp);
+        assertTrue(monkeys.get("monkey-three") instanceof Orangutan);
+        assertTrue(monkeys.get("monkey-four") instanceof Rhesus);
+        assertTrue(monkeys.get("monkey-five") instanceof Barbary);
+
+        Class<Ape> apeClazz = (Class<Ape>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.Ape");
+        Map<String,Ape> apes = cm.lookupAllMap(apeClazz);
+
+        assertEquals(3, apes.size(), "Didn't find all the Ape classes");
+        assertTrue(apes.get("monkey-one") instanceof Gorilla);
+        assertTrue(apes.get("monkey-two") instanceof Chimp);
+        assertTrue(apes.get("monkey-three") instanceof Orangutan);
+
+        Class<Gorilla> gorillaClazz = (Class<Gorilla>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.Gorilla");
+        Map<String,Gorilla> gorillas = cm.lookupAllMap(gorillaClazz);
+
+        assertEquals(1,gorillas.size(),"Didn't find the Gorilla instance");
+        assertTrue(gorillas.get("monkey-one") instanceof Gorilla);
+
+        Class<ArrayStringConfigurable> arrStrConfClazz = (Class<ArrayStringConfigurable>) Class.forName("com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable");
+        Map<String,ArrayStringConfigurable> arrays = cm.lookupAllMap(arrStrConfClazz);
+
+        assertTrue(arrays.isEmpty());
     }
 
     @Test
