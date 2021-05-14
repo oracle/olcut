@@ -61,7 +61,12 @@ public class DescribeConfigurable {
 
     public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Field Name","Type","Mandatory","Redact","Default","Description"));
 
-    private static class FieldInfo {
+    /**
+     * All the configuration relevant field information.
+     * <p>
+     * Conceptually a record, and may one day actually be a record.
+     */
+    public static class FieldInfo {
         public enum FieldInfoType {NORMAL, ENUM, LIST, ENUM_LIST, MAP}
         public final String name;
         public final String className;
@@ -77,9 +82,9 @@ public class DescribeConfigurable {
 
         public final String classShortName;
 
-        public final ArrayList<String> enumConstants = new ArrayList<>();
+        public final List<String> enumConstants;
 
-        private FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, FieldInfoType type, String genericListClass, String genericMapKeyClass, String genericMapValueClass) {
+        private FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, FieldInfoType type, String genericListClass, String genericMapKeyClass, String genericMapValueClass, List<String> enumConstants) {
             this.name = name;
             this.className = className;
             this.field = field;
@@ -93,28 +98,27 @@ public class DescribeConfigurable {
             this.type = type;
             int index = className.lastIndexOf(".");
             this.classShortName = index > -1 ? className.substring(index+1) : className;
+            this.enumConstants = enumConstants;
         }
 
         public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal) {
-            this(name,className,field,annotation,defaultVal,FieldInfoType.NORMAL,"","","");
+            this(name,className,field,annotation,defaultVal,FieldInfoType.NORMAL,"","","",Collections.emptyList());
         }
 
         public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, List<String> enumConstants) {
-            this(name,className,field,annotation,defaultVal,FieldInfoType.ENUM,"","","");
-            this.enumConstants.addAll(enumConstants);
+            this(name,className,field,annotation,defaultVal,FieldInfoType.ENUM,"","","",Collections.unmodifiableList(enumConstants));
         }
 
         public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, String genericListClass) {
-            this(name,className,field,annotation,defaultVal,FieldInfoType.LIST,genericListClass,"","");
+            this(name,className,field,annotation,defaultVal,FieldInfoType.LIST,genericListClass,"","",Collections.emptyList());
         }
 
         public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, String genericListClass, List<String> enumConstants) {
-            this(name,className,field,annotation,defaultVal,FieldInfoType.ENUM_LIST,genericListClass,"","");
-            this.enumConstants.addAll(enumConstants);
+            this(name,className,field,annotation,defaultVal,FieldInfoType.ENUM_LIST,genericListClass,"","",Collections.unmodifiableList(enumConstants));
         }
 
         public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, String genericKeyClass, String genericValueClass) {
-            this(name,className,field,annotation,defaultVal,FieldInfoType.MAP,"",genericKeyClass,genericValueClass);
+            this(name,className,field,annotation,defaultVal,FieldInfoType.MAP,"",genericKeyClass,genericValueClass,Collections.emptyList());
         }
     }
 
