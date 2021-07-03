@@ -2018,6 +2018,14 @@ public class ConfigurationManager implements Closeable {
                     propertyName = field.getName();
                     Class<?> fieldClass = field.getType();
                     if (!configAnnotation.redact()) {
+                        if (field.get(configurable) == null) {
+                            if (configAnnotation.mandatory()) {
+                                throw new PropertyException(name,field.getName(),"Expected to extract a value from mandatory field, but found null");
+                            } else {
+                                // skip null fields, we can't extract configuration from them
+                                continue;
+                            }
+                        }
                         FieldType ft = FieldType.getFieldType(fieldClass);
                         List<Class<?>> genericList = PropertySheet.getGenericClass(field);
                         Class<?> genericType = Object.class;
