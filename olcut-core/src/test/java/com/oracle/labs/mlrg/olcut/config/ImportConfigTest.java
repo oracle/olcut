@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -34,9 +34,12 @@ import org.junit.jupiter.api.Test;
 
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 
 /**
@@ -160,7 +163,7 @@ public class ImportConfigTest {
         StringListConfigurable sl2 = (StringListConfigurable) cm1.lookup(
                 "listTest");
 
-        for(int i = 0; i < sl1.strings.size(); i++) {
+        for (int i = 0; i < sl1.strings.size(); i++) {
             assertEquals(sl1.strings.get(i), sl2.strings.get(i));
         }
     }
@@ -208,7 +211,7 @@ public class ImportConfigTest {
         assertEquals(l1.c.c.c.s, l1n.c.c.c.s);
         assertEquals(l1.c.c.c.i, l1n.c.c.c.i);
         assertEquals(l1.c.c.c.d, l1n.c.c.c.d, 0.001);
-     }
+    }
 
     @Test
     public void importMultiEmbeddedComponentList() throws IOException {
@@ -237,6 +240,30 @@ public class ImportConfigTest {
         assertEquals(l1.c.c.c.s, l1n.c.c.c.s);
         assertEquals(l1.c.c.c.i, l1n.c.c.c.i);
         assertEquals(l1.c.c.c.d, l1n.c.c.c.d, 0.001);
-     }
-    
+    }
+
+    @Test
+    public void testNullImport() {
+        ConfigurationManager cm = new ConfigurationManager();
+
+        // Test import when mandatory field is non-null
+        ListConfig l = new ListConfig();
+        l.doubleList = Arrays.asList(1.0,2.0,3.0);
+        l.stringList = null;
+        l.stringConfigurableList = null;
+
+        cm.importConfigurable(l,"list-config");
+        ListConfig newL = (ListConfig) cm.lookup("list-config");
+        assertEquals(l.doubleList, newL.doubleList);
+        assertNull(newL.stringList);
+        assertNull(newL.stringConfigurableList);
+
+        // Test import when mandatory field is null, should throw
+        ListConfig nullMandatory = new ListConfig();
+        nullMandatory.doubleList = null;
+        nullMandatory.stringConfigurableList = null;
+        nullMandatory.stringList = Arrays.asList("foo","bar","baz","quux");
+
+        assertThrows(PropertyException.class,() -> cm.importConfigurable(nullMandatory,"null-list-config"));
+    }
 }
