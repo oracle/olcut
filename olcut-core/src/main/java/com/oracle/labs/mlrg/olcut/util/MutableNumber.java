@@ -29,7 +29,9 @@
 package com.oracle.labs.mlrg.olcut.util;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * The base class for the mutable primitive boxes in OLCUT.
@@ -46,14 +48,23 @@ public abstract class MutableNumber extends Number {
      * Copies a map which contains mutable number values.
      * <p>
      * Used to duplicate maps which count things ensuring that they don't
-     * double count values. The keys are *not* copied.
+     * double count values. The keys are *not* copied. Preserves the iteration
+     * order of {@link SortedMap} and {@link LinkedHashMap} by returning {@link LinkedHashMap}
+     * otherwise returns {@link HashMap}.
      * @param input The map to copy.
      * @param <T> The key type.
      * @param <U> The value type.
      * @return A copy of the map with copied values.
      */
     public static <T,U extends MutableNumber> Map<T,U> copyMap(Map<T,U> input) {
-        HashMap<T,U> output = new HashMap<>();
+        Map<T,U> output;
+
+        // If the map has an iteration order then preserve it.
+        if ((input instanceof SortedMap) || (input instanceof LinkedHashMap)) {
+            output = new LinkedHashMap<>();
+        } else {
+            output = new HashMap<>();
+        }
 
         for (Map.Entry<T,U> e : input.entrySet()) {
             @SuppressWarnings("unchecked") //copy returns the same type.

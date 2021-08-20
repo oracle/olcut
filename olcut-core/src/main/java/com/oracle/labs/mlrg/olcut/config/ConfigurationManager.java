@@ -1247,7 +1247,7 @@ public class ConfigurationManager implements Closeable {
     public Set<String> getInstanceNames(Class<? extends Configurable> type) {
         Set<String> instanceNames = new HashSet<>();
 
-        for (PropertySheet ps : symbolTable.values()) {
+        for (PropertySheet<?> ps : symbolTable.values()) {
             if (!ps.isInstantiated()) {
                 continue;
             }
@@ -1279,7 +1279,7 @@ public class ConfigurationManager implements Closeable {
      * with that name does not occur in the configuration.
      */
     public Object lookupSerializedObject(String objectName) {
-        SerializedObject so = serializedObjects.get(objectName);
+        SerializedObject<?> so = serializedObjects.get(objectName);
         if(so == null) {
             return null;
         }
