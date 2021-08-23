@@ -22,6 +22,9 @@ manifest.mf
 .project
 .settings
 
+# Miscellaneous files
+*.log
+
 # Subproject files
 olcut-core/target
 olcut-config-json/target

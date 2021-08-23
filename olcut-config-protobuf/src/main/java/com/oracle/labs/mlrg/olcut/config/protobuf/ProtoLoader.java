@@ -64,6 +64,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * A loader for configuration data stored in protobuf format.
+ */
 public final class ProtoLoader implements ConfigLoader {
 
     private static final Logger logger = Logger.getLogger(ProtoLoader.class.getName());
@@ -80,6 +83,15 @@ public final class ProtoLoader implements ConfigLoader {
 
     private final boolean parseTextFormat;
 
+    /**
+     * Constructs a configuration loader for protobuf data.
+     * @param parent The URL loader for this instance of the configuration manager.
+     * @param rpdMap The configuration data for the current instance.
+     * @param existingRPD Any pre-existing configuration data which may be inherited.
+     * @param serializedObjects The current set of serialized objects.
+     * @param globalProperties The global properties.
+     * @param parseTextFormat Should this loader parse text protobufs or binary ones.
+     */
     public ProtoLoader(URLLoader parent, Map<String, ConfigurationData> rpdMap,
                                   Map<String, ConfigurationData> existingRPD,
                                   Map<String, SerializedObject> serializedObjects,
