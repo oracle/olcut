@@ -1,0 +1,97 @@
+/*
+ * Copyright (c) 2021, Oracle and/or its affiliates.
+ *
+ * Licensed under the 2-clause BSD license.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+syntax = "proto3";
+
+/*
+Protos for interacting with configuration files and provenance objects.
+ */
+package olcut;
+
+option java_multiple_files = true;
+option java_package = "com.oracle.labs.mlrg.olcut.config.protobuf.protos";
+
+/*
+Root message which contains the full configuration.
+ */
+message ConfigProto {
+  map<string,string> properties = 1;
+  repeated ComponentProto components = 2;
+  repeated ConfigFileProto config_file = 3;
+  repeated SerializedObjectProto serialized_object = 4;
+}
+
+/*
+A configurable component.
+ */
+message ComponentProto {
+  string name = 1;
+  optional string type = 2;
+  map<string,string> properties = 3;
+  repeated PropertyListProto list_properties = 4;
+  repeated PropertyMapProto map_properties = 5;
+  optional string override = 6;
+  optional bool exportable = 7;
+  optional bool importable = 8;
+  optional int64 leaseTime = 9;
+  optional string serialized = 10;
+  optional string entries = 11;
+}
+
+/*
+A reference to another config file.
+ */
+message ConfigFileProto {
+  string name = 1;
+  string value = 2;
+}
+
+/*
+A property list in a component.
+ */
+message PropertyListProto {
+  string name = 1;
+  repeated string item = 2;
+  repeated string type = 3;
+}
+
+/*
+A property map in a component.
+ */
+message PropertyMapProto {
+  string name = 1;
+  map<string,string> elements = 2;
+}
+
+/*
+A reference to a serialized object on disk.
+ */
+message SerializedObjectProto {
+  string name = 1;
+  string type = 2;
+  string location = 3;
+}

@@ -5,6 +5,10 @@
 manifest.mf
 .flattened-pom.xml
 
+# Binaries
+*.jar
+*.class
+
 # Backup files
 *~
 .*.swp
@@ -22,4 +26,5 @@ manifest.mf
 olcut-core/target
 olcut-config-json/target
 olcut-config-edn/target
+olcut-config-protobuf/target
 olcut-extras/target
