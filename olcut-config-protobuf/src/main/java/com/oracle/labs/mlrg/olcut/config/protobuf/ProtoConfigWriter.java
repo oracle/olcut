@@ -145,6 +145,7 @@ public final class ProtoConfigWriter implements ConfigWriter {
                 for (Map.Entry<String, SimpleProperty> e : ((MapProperty) value).getMap().entrySet()) {
                     mapBuilder.putElements(e.getKey(), e.getValue().getValue());
                 }
+                componentBuilder.addMapProperty(mapBuilder.build());
             } else {
                 //
                 // Standard property

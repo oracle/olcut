@@ -1,5 +1,0 @@
-(config
-	(component startme [mlrg olcut config StartableConfigurable]
-		{:import "false" :export "false"}
-		:add "foo"
-		:numReps "5"))

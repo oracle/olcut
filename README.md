@@ -5,7 +5,7 @@ components with standard and interoperable command line interfaces. It has its r
 the Sphinx 4 speech recognizer but has been significantly extended. These pieces can
 be used in concert or independently:
 
-* The Configuration System provides runtime configuration management without recompiles
+* The Configuration System provides runtime configuration management without recompilation
 * The Options Processor cleanly processes command-line arguments, including configuration changes
 * The Command Interpreter provides an Annotation-based interactive shell with tab completion
 * Additional Odds & Ends provide helpful utility classes
@@ -16,7 +16,7 @@ the needs of a varied user-base.
 # Quick Start
 
 ## Maven Coordinates
-OLCUT's main components (i.e. `olcut-core`, `olcut-config-json` and `olcut-config-edn`) are available on Maven Central.
+OLCUT's main components (i.e. `olcut-core`, `olcut-config-json`, `olcut-config-protobuf` and `olcut-config-edn`) are available on Maven Central.
 
 Maven:
 ```xml
@@ -47,16 +47,16 @@ to facilitate code integration.
 ```xml
     <config>
     <component name="myArchive" type="com.example.ArchiveImpl">
-        <property name="store" value="diskStore">
-        <property name="maxAgeYears" value="10">
+        <property name="store" value="diskStore"/>
+        <property name="maxAgeYears" value="10"/>
     </component>
     
     <component name="diskStore" type="com.example.DiskStore">
-        <property name="path" value="/tmp/diskStore">
+        <property name="path" value="/tmp/diskStore"/>
     </component>
     
     <component name="dbStore" type="com.example.DatabaseStore">
-        <property name="jdbcURL" value="jdbc:foodb:/connection/string">
+        <property name="jdbcURL" value="jdbc:foodb:/connection/string"/>
     </component>
     </config>
 ```
@@ -73,7 +73,7 @@ Archive is loaded:
     ArchiveImpl archive = (ArchiveImpl)cm.lookup("myArchive");
 ```
 
-To be able to load your AchiveImpl concrete class like this, simply annotate
+To be able to load your ArchiveImpl concrete class like this, simply annotate
 the appropriate fields.
 
 ```java
@@ -108,7 +108,7 @@ is pretty straightforward.
             @Option(charName='a', longName='add', usage="add a file to the archive")
             public File fileToAdd = null;
             
-            @Option(charName'd', longName='delete', usage="remove a file from the archive")
+            @Option(charName='d', longName='delete', usage="remove a file from the archive")
             public String fileNameToRemove = null;
         }
         
@@ -201,7 +201,7 @@ immutable Provenance objects used to record the state of a computation. It's hea
 used in [Tribuo](https://tribuo.org) to record a trainer and dataset configuration.
 It can optionally include
 non-configurable state. It supports conversion to a marshalled format which can be
-easily serialised and deserialised from JSON.
+easily serialised and deserialised from JSON or protobuf.
 
 Provenance objects can be converted back into a list of configurations, which can be 
 used to recreate the config file that generated that provenance. This can be used
@@ -219,7 +219,7 @@ Utility | Description
 ------- | -----------
 Channel, File, & IO Utils | `ChannelUtil` has helpers for interacting with `java.nio.channels`. `FileUtil` has methods for operating on directories. `IOUtil` has many many functions for building Input and OutputStreams of various kinds. These are particularly helpful for finding resources that might be in your jar, on your filesystem, or at a particular URL. Many of these methods automatically un-gzip input streams if they are gzipped.
 Log Formatter | There are two `java.util.logging log formatters` (`LabsLogFormatter` and `SimpleLabsLogFormatter` that have a nice single line logging output. They also have a static method that sets all the loggers to use the appropriate formatter, which makes integrating them simpler.
-LRA Cache | An extennsion of a LinkedHashMap that acts as a least recently accessed cache.
+LRA Cache | An extension of a LinkedHashMap that acts as a least recently accessed cache.
 Date Parser | The CDateParser can parse dates in almost 90 different formats that we've seen, returning a Java Date object without complaining.
 Getopt | Getopt is now deprecated. Use [Options Processing](README-Options.md) instead. This is still here if you need something small and simple.
 Mutable Primitive Objects | Mutable types for Double, Long, and Number for use in, for example, Maps when you don't want to unbox and rebox the true primitives with every update.

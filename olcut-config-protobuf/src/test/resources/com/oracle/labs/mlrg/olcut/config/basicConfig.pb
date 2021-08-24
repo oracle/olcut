@@ -1,0 +1,9 @@
+T
+a3com.oracle.labs.mlrg.olcut.config.BasicConfigurable
+sone
+d3.0
+i2T
+b3com.oracle.labs.mlrg.olcut.config.BasicConfigurable
+stwo
+d6.3
+i3
