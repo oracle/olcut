@@ -398,7 +398,7 @@ public final class ConfigurationData implements Serializable {
      * properties refer to another ConfigurationData by name, if all of their properties are structurally
      * equal recursively.
      *
-     * <p/>
+     * <p></p>
      *
      * {@code aName} should be the name of an element of {@code a} that is to be compared to {@code bName}
      * in {@code b}. {@code a} and {@code b} should each contain all the ConfigurationData objects
