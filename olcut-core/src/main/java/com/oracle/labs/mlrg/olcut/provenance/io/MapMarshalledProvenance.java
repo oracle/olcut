@@ -45,10 +45,17 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
 
     private final Map<String, FlatMarshalledProvenance> map;
 
+    /**
+     * Constructs a MapMarshalledProvenance wrapped around the supplied map.
+     * @param map The map.
+     */
     public MapMarshalledProvenance(Map<String, FlatMarshalledProvenance> map) {
         this.map = Collections.unmodifiableMap(new HashMap<>(map));
     }
 
+    /**
+     * Constructs an empty MapMarshalledProvenance.
+     */
     public MapMarshalledProvenance() {
         this.map = Collections.emptyMap();
     }
@@ -60,7 +67,7 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
 
     @Override
     public String toString() {
-        return map.toString();
+        return "MapMarshalledProvenance" + map.toString();
     }
 
     @Override
@@ -95,6 +102,5 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
             return new Pair<>(item.getKey(),item.getValue());
         }
     }
-
 
 }
