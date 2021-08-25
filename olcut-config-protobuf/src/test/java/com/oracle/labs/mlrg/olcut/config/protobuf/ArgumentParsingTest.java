@@ -48,7 +48,7 @@ public class ArgumentParsingTest {
         loadFromArgs("--config-file",args);
         args = new String[]{"-o","--config-file","stringListConfig.pb,componentListConfig.pbtxt", "--config-file-formats", "com.oracle.labs.mlrg.olcut.config.protobuf.ProtoConfigFactory,com.oracle.labs.mlrg.olcut.config.protobuf.ProtoTxtConfigFactory","-s"};
         loadFromArgs("--config-file with multiple files",args);
-        args = new String[]{"-o","--config-file","componentListConfig.pb","-s", "--config-file-formats", "com.oracle.labs.mlrg.olcut.config.protobuf.ProtoTxtConfigFactory,com.oracle.labs.mlrg.olcut.config.protobuf.ProtoConfigFactory","-c","stringListConfig.pb"};
+        args = new String[]{"-o","--config-file","componentListConfig.pbtxt","-s", "--config-file-formats", "com.oracle.labs.mlrg.olcut.config.protobuf.ProtoTxtConfigFactory,com.oracle.labs.mlrg.olcut.config.protobuf.ProtoConfigFactory","-c","stringListConfig.pb"};
         loadFromArgs("overriding --config-file with -c",args);
     }
 

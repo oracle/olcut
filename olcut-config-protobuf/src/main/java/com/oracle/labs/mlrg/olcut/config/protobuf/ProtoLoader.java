@@ -31,6 +31,7 @@ package com.oracle.labs.mlrg.olcut.config.protobuf;
 import com.google.protobuf.TextFormat;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.SerializedObject;
 import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
@@ -160,7 +161,11 @@ public final class ProtoLoader implements ConfigLoader {
     private void parseConfigProto(String workingDir, ConfigProto proto) {
         // Parse global properties
         for (Map.Entry<String,String> e : proto.getPropertiesMap().entrySet()) {
-            globalProperties.setValue(e.getKey(), e.getValue());
+            try {
+                globalProperties.setValue(e.getKey(), e.getValue());
+            } catch (PropertyException ex) {
+                throw new ConfigLoaderException("Invalid global property name: " + e.getKey());
+            }
         }
 
         // Parse additional files
