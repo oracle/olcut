@@ -33,21 +33,32 @@ package com.oracle.labs.mlrg.olcut.config;
 import com.oracle.labs.mlrg.olcut.config.io.ConfigLoader;
 import com.oracle.labs.mlrg.olcut.config.io.ConfigWriter;
 import com.oracle.labs.mlrg.olcut.config.io.ConfigWriterException;
+import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
+import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
+import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Carrier for property data. Principally a {@link Map} from {@link String} to {@link Property}, and
  * a class name.
  */
 public final class ConfigurationData implements Serializable {
+    private static final Logger logger = Logger.getLogger(ConfigurationData.class.getName());
+
     private static final long serialVersionUID = 1L;
 
     public static final long DEFAULT_LEASE_TIME = -1;
@@ -261,6 +272,151 @@ public final class ConfigurationData implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(name, className, properties, serializedForm, exportable, importable, leaseTime, entriesName);
+    }
+
+    @Override
+    public String toString() {
+        return "ConfigurationData(" +
+                "name='" + name + '\'' +
+                ", className='" + className + '\'' +
+                ", properties=" + properties +
+                ", serializedForm='" + serializedForm + '\'' +
+                ", exportable=" + exportable +
+                ", importable=" + importable +
+                ", leaseTime=" + leaseTime +
+                ", entriesName='" + entriesName + '\'' +
+                ')';
+    }
+
+    private static boolean simplePropertyDerefEquals(Map<String, ConfigurationData> a, Map<String, ConfigurationData> b, SimpleProperty aSimple, SimpleProperty bSimple, String propName) {
+        Optional<ConfigurationData> aDerefOpt = Optional.ofNullable(a.get(aSimple.getValue()));
+        Optional<ConfigurationData> bDerefOpt = Optional.ofNullable(b.get(bSimple.getValue()));
+        if(aDerefOpt.isPresent() && bDerefOpt.isPresent()) {
+            // both are references
+            boolean eq = innerStructuralEquals(a, b, aSimple.getValue(), bSimple.getValue());
+            if(!eq) {
+                logger.info(String.format("Property key: %s, a does not structurally equal b", propName));
+            }
+            return eq;
+        } else if ((!aDerefOpt.isPresent()) && (!bDerefOpt.isPresent())) {
+            // both are not references
+            boolean valueMatch = aSimple.equals(bSimple);
+            if(!valueMatch) {
+                logger.info(String.format("Property key: %s, a.value: %s, b.value: %s",
+                        propName, aSimple.getValue(), bSimple.getValue()));
+            }
+            return valueMatch;
+        } else {
+            // mismatch between reference and non-reference
+            if(aDerefOpt.isPresent()) {
+                logger.info(String.format("Property key: %s a (%s) is a reference while b (%s) is a value", propName, aSimple.getValue(), bSimple.getValue()));
+            } else {
+                logger.info(String.format("Property key: %s a (%s) is a value while b (%s) is a reference", propName, aSimple.getValue(), bSimple.getValue()));
+            }
+            return false;
+        }
+    }
+
+    /**
+     * See {@link #structuralEquals(List, List, String, String)} for description of behavior.
+     */
+    private static boolean innerStructuralEquals(Map<String, ConfigurationData> a, Map<String, ConfigurationData> b, String aName, String bName) {
+        Optional<ConfigurationData> aRootOpt = Optional.ofNullable(a.get(aName));
+        Optional<ConfigurationData> bRootOpt = Optional.ofNullable(b.get(bName));
+        if((!aRootOpt.isPresent()) || (!bRootOpt.isPresent())) {
+            if(!aRootOpt.isPresent()) {
+                logger.info(String.format("%s is not found", aName));
+            } else {
+                logger.info(String.format("%s is not found", bName));
+            }
+            return false;
+        } else if(aRootOpt.get().equals(bRootOpt.get())) {
+            logger.info(String.format("%s and %s are .equals()", aName, bName));
+            return true;
+        } else {
+            ConfigurationData aRoot = aRootOpt.get();
+            ConfigurationData bRoot = bRootOpt.get();
+
+            Set<String> propNames = new HashSet<>(aRoot.getProperties().keySet());
+            propNames.addAll(bRoot.getProperties().keySet());
+
+            boolean typesMatch = aRoot.getClassName().equals(bRoot.getClassName());
+            if(!typesMatch) {
+                logger.info(String.format("type mismatch, a.class: %s b.class: %s", aRoot.getClassName(), bRoot.getClassName()));
+            }
+
+            return typesMatch &&
+                    propNames.stream().allMatch(propName -> {
+                        Optional<Property> aPropOpt = Optional.ofNullable(aRoot.getProperties().get(propName));
+                        Optional<Property> bPropOpt = Optional.ofNullable(bRoot.getProperties().get(propName));
+                        if(aPropOpt.isPresent() && bPropOpt.isPresent()) {
+                            Property aProp = aPropOpt.get();
+                            Property bProp = bPropOpt.get();
+                            if(aProp instanceof SimpleProperty && bProp instanceof SimpleProperty) {
+                                return simplePropertyDerefEquals(a, b, (SimpleProperty) aProp, (SimpleProperty) bProp, propName);
+                            } else if(aProp instanceof ListProperty && bProp instanceof ListProperty) {
+                                List<SimpleProperty> aList = ((ListProperty) aProp).getSimpleList();
+                                List<SimpleProperty> bList = ((ListProperty) bProp).getSimpleList();
+                                return aList.size() == bList.size() &&
+                                        IntStream.range(0, aList.size()).allMatch(i -> {
+                                            boolean eq = simplePropertyDerefEquals(a, b, aList.get(i), bList.get(i), propName);
+                                            if(!eq) {
+                                                logger.info(String.format("Property key: %s, List index: %d, a.value: %s, b.value: %s",
+                                                        propName, i, aList.get(i).getValue(), bList.get(i).getValue()));
+                                            }
+                                            return eq;
+                                        });
+                            } else if(aProp instanceof MapProperty && bProp instanceof MapProperty) {
+                                Map<String, SimpleProperty> aMap = ((MapProperty) aProp).getMap();
+                                Map<String, SimpleProperty> bMap = ((MapProperty) bProp).getMap();
+                                return aMap.keySet().equals(bMap.keySet()) &&
+                                        aMap.keySet().stream().allMatch(k -> {
+                                            boolean eq = simplePropertyDerefEquals(a, b, aMap.get(k), bMap.get(k), propName);
+                                            if(!eq) {
+                                                logger.info(String.format("Property key: %s, PropValue Key: %s, a.value: %s, b.value: %s",
+                                                        propName, k, aMap.get(k).getValue(), bMap.get(k).getValue()));
+                                            }
+                                            return eq;
+                                        });
+                            } else {
+                                logger.severe(String.format("Unrecognized Property type: %s with name: %s", aProp.getClass().getName(), propName));
+                                return false;
+                            }
+                        } else if((!aPropOpt.isPresent()) && (!bPropOpt.isPresent())) {
+                            return true; // both missing is a match
+                        } else {
+                            logger.info(String.format("Property key: %s, aOpt: %s, bOpt: %s", propName, aPropOpt, bPropOpt));
+                            return false;
+                        }
+                    });
+        }
+    }
+
+    /**
+     * Checks whether two ConfigurationData objects are 'structurally equal'. Two objects are structurally
+     * equal when their classNames are the same and when all of their properties are equal or, if those
+     * properties refer to another ConfigurationData by name, if all of their properties are structurally
+     * equal recursively.
+     *
+     * <p/>
+     *
+     * {@code aName} should be the name of an element of {@code a} that is to be compared to {@code bName}
+     * in {@code b}. {@code a} and {@code b} should each contain all the ConfigurationData objects
+     * needed to instantiate the objects named by {@code aName} and {@code bName} respectively. Objects not
+     * instantiated by traversing children of {@code aName} and {@code bName} are ignored.
+     *
+     * @param a ConfigurationData List for the first object and its children
+     * @param b ConfigurationData List for the second object and its children
+     * @param aName Name of the first object
+     * @param bName Name of the second object
+     * @return {@code true} if class and all values of {@code aName} and {@code bName} are the same once
+     * they have been dereferenced by name according to {@code a} and {@code b}.
+     */
+    public static boolean structuralEquals(List<ConfigurationData> a, List<ConfigurationData> b , String aName, String bName) {
+        return innerStructuralEquals(
+                a.stream().collect(Collectors.toMap(ConfigurationData::getName, Function.identity())),
+                b.stream().collect(Collectors.toMap(ConfigurationData::getName, Function.identity())),
+                aName, bName);
     }
 
     /**

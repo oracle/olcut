@@ -471,7 +471,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 return Optional.of(new DoubleProvenance(fieldName, (Double) o));
             case STRING: {
                 if (o == null) {
-                    return Optional.of(new StringProvenance(fieldName, ""));
+                    return Optional.empty();
                 } else {
                     return Optional.of(new StringProvenance(fieldName, (String) o));
                 }
