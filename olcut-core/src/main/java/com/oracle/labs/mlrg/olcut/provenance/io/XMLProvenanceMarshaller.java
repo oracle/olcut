@@ -195,8 +195,8 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
             if (prettyPrint) {
                 writer.writeCharacters(System.lineSeparator());
             }
-            for (Map.Entry<String,FlatMarshalledProvenance> e : provMap.entrySet()) {
-                dispatchFMP(writer,e.getKey(),e.getValue(),2);
+            for (Map.Entry<String, FlatMarshalledProvenance> e : provMap.entrySet()) {
+                dispatchFMP(writer, e.getKey(), e.getValue(), 2);
             }
             if (prettyPrint) {
                 writer.writeCharacters("\t");
@@ -210,9 +210,10 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
 
     /**
      * Writes the supplied SimpleMarshalledProvenance to the XML stream.
+     *
      * @param writer The XML writer.
-     * @param smp The provenance to write.
-     * @param depth The depth for tabbing in the pretty print.
+     * @param smp    The provenance to write.
+     * @param depth  The depth for tabbing in the pretty print.
      * @throws XMLStreamException If the XML is invalid.
      */
     private void writeSMP(XMLStreamWriter writer, SimpleMarshalledProvenance smp, int depth) throws XMLStreamException {
@@ -226,7 +227,7 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
         writer.writeAttribute(PROV_VALUE, smp.getValue());
         writer.writeAttribute(PROV_ADDITIONAL, smp.getAdditional());
         writer.writeAttribute(PROVENANCE_CLASS_NAME, smp.getProvenanceClassName());
-        writer.writeAttribute(IS_REFERENCE, ""+smp.isReference());
+        writer.writeAttribute(IS_REFERENCE, "" + smp.isReference());
         if (prettyPrint) {
             writer.writeCharacters(System.lineSeparator());
         }
@@ -234,9 +235,10 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
 
     /**
      * Writes the supplied ListMarshalledProvenance to the XML stream.
+     *
      * @param writer The XML writer.
-     * @param lmp The provenance to write.
-     * @param depth The depth for tabbing in the pretty print.
+     * @param lmp    The provenance to write.
+     * @param depth  The depth for tabbing in the pretty print.
      * @throws XMLStreamException If the XML is invalid.
      */
     private void writeLMP(XMLStreamWriter writer, String key, ListMarshalledProvenance lmp, int depth) throws XMLStreamException {
@@ -255,7 +257,7 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
                 writer.writeCharacters(System.lineSeparator());
             }
             for (FlatMarshalledProvenance fmp : lmp.getList()) {
-                dispatchFMP(writer,"",fmp,depth+1);
+                dispatchFMP(writer, "", fmp, depth + 1);
             }
             if (prettyPrint) {
                 for (int i = 0; i < depth; i++) {
@@ -271,9 +273,10 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
 
     /**
      * Writes the supplied MapMarshalledProvenance to the XML stream.
+     *
      * @param writer The XML writer.
-     * @param mmp The provenance to write.
-     * @param depth The depth for tabbing in the pretty print.
+     * @param mmp    The provenance to write.
+     * @param depth  The depth for tabbing in the pretty print.
      * @throws XMLStreamException If the XML is invalid.
      */
     private void writeMMP(XMLStreamWriter writer, String key, MapMarshalledProvenance mmp, int depth) throws XMLStreamException {
@@ -291,8 +294,8 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
             if (prettyPrint) {
                 writer.writeCharacters(System.lineSeparator());
             }
-            for (Pair<String,FlatMarshalledProvenance> p : mmp) {
-                dispatchFMP(writer,p.getA(),p.getB(),depth+1);
+            for (Pair<String, FlatMarshalledProvenance> p : mmp) {
+                dispatchFMP(writer, p.getA(), p.getB(), depth + 1);
             }
             if (prettyPrint) {
                 for (int i = 0; i < depth; i++) {
@@ -308,22 +311,23 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
 
     /**
      * Dispatch on the type of FlatMarshalledProvenance.
+     *
      * @param writer The XML writer.
-     * @param key The key of the containing provenance.
-     * @param fmp The FMP to dispatch on.
-     * @param depth The depth for tabbing in the pretty print.
+     * @param key    The key of the containing provenance.
+     * @param fmp    The FMP to dispatch on.
+     * @param depth  The depth for tabbing in the pretty print.
      * @throws XMLStreamException If the XML is invalid.
      */
     private void dispatchFMP(XMLStreamWriter writer, String key, FlatMarshalledProvenance fmp, int depth) throws XMLStreamException {
         if (fmp instanceof SimpleMarshalledProvenance) {
             SimpleMarshalledProvenance smp = (SimpleMarshalledProvenance) fmp;
-            writeSMP(writer,smp,depth);
+            writeSMP(writer, smp, depth);
         } else if (fmp instanceof ListMarshalledProvenance) {
             ListMarshalledProvenance lmp = (ListMarshalledProvenance) fmp;
-            writeLMP(writer,key,lmp,depth);
+            writeLMP(writer, key, lmp, depth);
         } else if (fmp instanceof MapMarshalledProvenance) {
             MapMarshalledProvenance mmp = (MapMarshalledProvenance) fmp;
-            writeMMP(writer,key,mmp,depth);
+            writeMMP(writer, key, mmp, depth);
         } else {
             throw new RuntimeException("Should not reach here, unexpected FlatMarshalledProvenance subclass " + fmp.getClass());
         }
