@@ -20,12 +20,17 @@ public interface ComponentProtoOrBuilder extends
       getNameBytes();
 
   /**
-   * <code>string type = 2;</code>
+   * <code>optional string type = 2;</code>
+   * @return Whether the type field is set.
+   */
+  boolean hasType();
+  /**
+   * <code>optional string type = 2;</code>
    * @return The type.
    */
   java.lang.String getType();
   /**
-   * <code>string type = 2;</code>
+   * <code>optional string type = 2;</code>
    * @return The bytes for type.
    */
   com.google.protobuf.ByteString

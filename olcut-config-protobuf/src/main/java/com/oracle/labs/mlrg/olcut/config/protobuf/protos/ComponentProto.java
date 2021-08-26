@@ -68,15 +68,15 @@ private static final long serialVersionUID = 0L;
           }
           case 18: {
             java.lang.String s = input.readStringRequireUtf8();
-
+            bitField0_ |= 0x00000001;
             type_ = s;
             break;
           }
           case 26: {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
               properties_ = com.google.protobuf.MapField.newMapField(
                   PropertiesDefaultEntryHolder.defaultEntry);
-              mutable_bitField0_ |= 0x00000001;
+              mutable_bitField0_ |= 0x00000002;
             }
             com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
             properties__ = input.readMessage(
@@ -86,18 +86,18 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 34: {
-            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
               listProperty_ = new java.util.ArrayList<com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyListProto>();
-              mutable_bitField0_ |= 0x00000002;
+              mutable_bitField0_ |= 0x00000004;
             }
             listProperty_.add(
                 input.readMessage(com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyListProto.parser(), extensionRegistry));
             break;
           }
           case 42: {
-            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
+            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
               mapProperty_ = new java.util.ArrayList<com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyMapProto>();
-              mutable_bitField0_ |= 0x00000004;
+              mutable_bitField0_ |= 0x00000008;
             }
             mapProperty_.add(
                 input.readMessage(com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyMapProto.parser(), extensionRegistry));
@@ -105,34 +105,34 @@ private static final long serialVersionUID = 0L;
           }
           case 50: {
             java.lang.String s = input.readStringRequireUtf8();
-            bitField0_ |= 0x00000001;
+            bitField0_ |= 0x00000002;
             override_ = s;
             break;
           }
           case 56: {
-            bitField0_ |= 0x00000002;
+            bitField0_ |= 0x00000004;
             exportable_ = input.readBool();
             break;
           }
           case 64: {
-            bitField0_ |= 0x00000004;
+            bitField0_ |= 0x00000008;
             importable_ = input.readBool();
             break;
           }
           case 72: {
-            bitField0_ |= 0x00000008;
+            bitField0_ |= 0x00000010;
             leaseTime_ = input.readInt64();
             break;
           }
           case 82: {
             java.lang.String s = input.readStringRequireUtf8();
-            bitField0_ |= 0x00000010;
+            bitField0_ |= 0x00000020;
             serialized_ = s;
             break;
           }
           case 90: {
             java.lang.String s = input.readStringRequireUtf8();
-            bitField0_ |= 0x00000020;
+            bitField0_ |= 0x00000040;
             entries_ = s;
             break;
           }
@@ -151,10 +151,10 @@ private static final long serialVersionUID = 0L;
       throw new com.google.protobuf.InvalidProtocolBufferException(
           e).setUnfinishedMessage(this);
     } finally {
-      if (((mutable_bitField0_ & 0x00000002) != 0)) {
+      if (((mutable_bitField0_ & 0x00000004) != 0)) {
         listProperty_ = java.util.Collections.unmodifiableList(listProperty_);
       }
-      if (((mutable_bitField0_ & 0x00000004) != 0)) {
+      if (((mutable_bitField0_ & 0x00000008) != 0)) {
         mapProperty_ = java.util.Collections.unmodifiableList(mapProperty_);
       }
       this.unknownFields = unknownFields.build();
@@ -228,7 +228,15 @@ private static final long serialVersionUID = 0L;
   public static final int TYPE_FIELD_NUMBER = 2;
   private volatile java.lang.Object type_;
   /**
-   * <code>string type = 2;</code>
+   * <code>optional string type = 2;</code>
+   * @return Whether the type field is set.
+   */
+  @java.lang.Override
+  public boolean hasType() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <code>optional string type = 2;</code>
    * @return The type.
    */
   @java.lang.Override
@@ -245,7 +253,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string type = 2;</code>
+   * <code>optional string type = 2;</code>
    * @return The bytes for type.
    */
   @java.lang.Override
@@ -432,7 +440,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasOverride() {
-    return ((bitField0_ & 0x00000001) != 0);
+    return ((bitField0_ & 0x00000002) != 0);
   }
   /**
    * <code>optional string override = 6;</code>
@@ -478,7 +486,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasExportable() {
-    return ((bitField0_ & 0x00000002) != 0);
+    return ((bitField0_ & 0x00000004) != 0);
   }
   /**
    * <code>optional bool exportable = 7;</code>
@@ -497,7 +505,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasImportable() {
-    return ((bitField0_ & 0x00000004) != 0);
+    return ((bitField0_ & 0x00000008) != 0);
   }
   /**
    * <code>optional bool importable = 8;</code>
@@ -516,7 +524,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasLeaseTime() {
-    return ((bitField0_ & 0x00000008) != 0);
+    return ((bitField0_ & 0x00000010) != 0);
   }
   /**
    * <code>optional int64 leaseTime = 9;</code>
@@ -535,7 +543,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasSerialized() {
-    return ((bitField0_ & 0x00000010) != 0);
+    return ((bitField0_ & 0x00000020) != 0);
   }
   /**
    * <code>optional string serialized = 10;</code>
@@ -581,7 +589,7 @@ private static final long serialVersionUID = 0L;
    */
   @java.lang.Override
   public boolean hasEntries() {
-    return ((bitField0_ & 0x00000020) != 0);
+    return ((bitField0_ & 0x00000040) != 0);
   }
   /**
    * <code>optional string entries = 11;</code>
@@ -636,7 +644,7 @@ private static final long serialVersionUID = 0L;
     if (!getNameBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
     }
-    if (!getTypeBytes().isEmpty()) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, type_);
     }
     com.google.protobuf.GeneratedMessageV3
@@ -651,22 +659,22 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < mapProperty_.size(); i++) {
       output.writeMessage(5, mapProperty_.get(i));
     }
-    if (((bitField0_ & 0x00000001) != 0)) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 6, override_);
     }
-    if (((bitField0_ & 0x00000002) != 0)) {
+    if (((bitField0_ & 0x00000004) != 0)) {
       output.writeBool(7, exportable_);
     }
-    if (((bitField0_ & 0x00000004) != 0)) {
+    if (((bitField0_ & 0x00000008) != 0)) {
       output.writeBool(8, importable_);
     }
-    if (((bitField0_ & 0x00000008) != 0)) {
+    if (((bitField0_ & 0x00000010) != 0)) {
       output.writeInt64(9, leaseTime_);
     }
-    if (((bitField0_ & 0x00000010) != 0)) {
+    if (((bitField0_ & 0x00000020) != 0)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 10, serialized_);
     }
-    if (((bitField0_ & 0x00000020) != 0)) {
+    if (((bitField0_ & 0x00000040) != 0)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 11, entries_);
     }
     unknownFields.writeTo(output);
@@ -681,7 +689,7 @@ private static final long serialVersionUID = 0L;
     if (!getNameBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
     }
-    if (!getTypeBytes().isEmpty()) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, type_);
     }
     for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
@@ -702,25 +710,25 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(5, mapProperty_.get(i));
     }
-    if (((bitField0_ & 0x00000001) != 0)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, override_);
-    }
     if (((bitField0_ & 0x00000002) != 0)) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(7, exportable_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, override_);
     }
     if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(8, importable_);
+        .computeBoolSize(7, exportable_);
     }
     if (((bitField0_ & 0x00000008) != 0)) {
       size += com.google.protobuf.CodedOutputStream
-        .computeInt64Size(9, leaseTime_);
+        .computeBoolSize(8, importable_);
     }
     if (((bitField0_ & 0x00000010) != 0)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, serialized_);
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt64Size(9, leaseTime_);
     }
     if (((bitField0_ & 0x00000020) != 0)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, serialized_);
+    }
+    if (((bitField0_ & 0x00000040) != 0)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, entries_);
     }
     size += unknownFields.getSerializedSize();
@@ -740,8 +748,11 @@ private static final long serialVersionUID = 0L;
 
     if (!getName()
         .equals(other.getName())) return false;
-    if (!getType()
-        .equals(other.getType())) return false;
+    if (hasType() != other.hasType()) return false;
+    if (hasType()) {
+      if (!getType()
+          .equals(other.getType())) return false;
+    }
     if (!internalGetProperties().equals(
         other.internalGetProperties())) return false;
     if (!getListPropertyList()
@@ -791,8 +802,10 @@ private static final long serialVersionUID = 0L;
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + NAME_FIELD_NUMBER;
     hash = (53 * hash) + getName().hashCode();
-    hash = (37 * hash) + TYPE_FIELD_NUMBER;
-    hash = (53 * hash) + getType().hashCode();
+    if (hasType()) {
+      hash = (37 * hash) + TYPE_FIELD_NUMBER;
+      hash = (53 * hash) + getType().hashCode();
+    }
     if (!internalGetProperties().getMap().isEmpty()) {
       hash = (37 * hash) + PROPERTIES_FIELD_NUMBER;
       hash = (53 * hash) + internalGetProperties().hashCode();
@@ -996,32 +1009,32 @@ private static final long serialVersionUID = 0L;
       name_ = "";
 
       type_ = "";
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       internalGetMutableProperties().clear();
       if (listPropertyBuilder_ == null) {
         listProperty_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
       } else {
         listPropertyBuilder_.clear();
       }
       if (mapPropertyBuilder_ == null) {
         mapProperty_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
       } else {
         mapPropertyBuilder_.clear();
       }
       override_ = "";
-      bitField0_ = (bitField0_ & ~0x00000008);
-      exportable_ = false;
       bitField0_ = (bitField0_ & ~0x00000010);
-      importable_ = false;
+      exportable_ = false;
       bitField0_ = (bitField0_ & ~0x00000020);
-      leaseTime_ = 0L;
+      importable_ = false;
       bitField0_ = (bitField0_ & ~0x00000040);
-      serialized_ = "";
+      leaseTime_ = 0L;
       bitField0_ = (bitField0_ & ~0x00000080);
-      entries_ = "";
+      serialized_ = "";
       bitField0_ = (bitField0_ & ~0x00000100);
+      entries_ = "";
+      bitField0_ = (bitField0_ & ~0x00000200);
       return this;
     }
 
@@ -1051,49 +1064,52 @@ private static final long serialVersionUID = 0L;
       int from_bitField0_ = bitField0_;
       int to_bitField0_ = 0;
       result.name_ = name_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        to_bitField0_ |= 0x00000001;
+      }
       result.type_ = type_;
       result.properties_ = internalGetProperties();
       result.properties_.makeImmutable();
       if (listPropertyBuilder_ == null) {
-        if (((bitField0_ & 0x00000002) != 0)) {
+        if (((bitField0_ & 0x00000004) != 0)) {
           listProperty_ = java.util.Collections.unmodifiableList(listProperty_);
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000004);
         }
         result.listProperty_ = listProperty_;
       } else {
         result.listProperty_ = listPropertyBuilder_.build();
       }
       if (mapPropertyBuilder_ == null) {
-        if (((bitField0_ & 0x00000004) != 0)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           mapProperty_ = java.util.Collections.unmodifiableList(mapProperty_);
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
         }
         result.mapProperty_ = mapProperty_;
       } else {
         result.mapProperty_ = mapPropertyBuilder_.build();
       }
-      if (((from_bitField0_ & 0x00000008) != 0)) {
-        to_bitField0_ |= 0x00000001;
-      }
-      result.override_ = override_;
       if (((from_bitField0_ & 0x00000010) != 0)) {
-        result.exportable_ = exportable_;
         to_bitField0_ |= 0x00000002;
       }
+      result.override_ = override_;
       if (((from_bitField0_ & 0x00000020) != 0)) {
-        result.importable_ = importable_;
+        result.exportable_ = exportable_;
         to_bitField0_ |= 0x00000004;
       }
       if (((from_bitField0_ & 0x00000040) != 0)) {
-        result.leaseTime_ = leaseTime_;
+        result.importable_ = importable_;
         to_bitField0_ |= 0x00000008;
       }
       if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.leaseTime_ = leaseTime_;
         to_bitField0_ |= 0x00000010;
       }
-      result.serialized_ = serialized_;
       if (((from_bitField0_ & 0x00000100) != 0)) {
         to_bitField0_ |= 0x00000020;
+      }
+      result.serialized_ = serialized_;
+      if (((from_bitField0_ & 0x00000200) != 0)) {
+        to_bitField0_ |= 0x00000040;
       }
       result.entries_ = entries_;
       result.bitField0_ = to_bitField0_;
@@ -1149,7 +1165,8 @@ private static final long serialVersionUID = 0L;
         name_ = other.name_;
         onChanged();
       }
-      if (!other.getType().isEmpty()) {
+      if (other.hasType()) {
+        bitField0_ |= 0x00000001;
         type_ = other.type_;
         onChanged();
       }
@@ -1159,7 +1176,7 @@ private static final long serialVersionUID = 0L;
         if (!other.listProperty_.isEmpty()) {
           if (listProperty_.isEmpty()) {
             listProperty_ = other.listProperty_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
           } else {
             ensureListPropertyIsMutable();
             listProperty_.addAll(other.listProperty_);
@@ -1172,7 +1189,7 @@ private static final long serialVersionUID = 0L;
             listPropertyBuilder_.dispose();
             listPropertyBuilder_ = null;
             listProperty_ = other.listProperty_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
             listPropertyBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getListPropertyFieldBuilder() : null;
@@ -1185,7 +1202,7 @@ private static final long serialVersionUID = 0L;
         if (!other.mapProperty_.isEmpty()) {
           if (mapProperty_.isEmpty()) {
             mapProperty_ = other.mapProperty_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
           } else {
             ensureMapPropertyIsMutable();
             mapProperty_.addAll(other.mapProperty_);
@@ -1198,7 +1215,7 @@ private static final long serialVersionUID = 0L;
             mapPropertyBuilder_.dispose();
             mapPropertyBuilder_ = null;
             mapProperty_ = other.mapProperty_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
             mapPropertyBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getMapPropertyFieldBuilder() : null;
@@ -1208,7 +1225,7 @@ private static final long serialVersionUID = 0L;
         }
       }
       if (other.hasOverride()) {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         override_ = other.override_;
         onChanged();
       }
@@ -1222,12 +1239,12 @@ private static final long serialVersionUID = 0L;
         setLeaseTime(other.getLeaseTime());
       }
       if (other.hasSerialized()) {
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000100;
         serialized_ = other.serialized_;
         onChanged();
       }
       if (other.hasEntries()) {
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000200;
         entries_ = other.entries_;
         onChanged();
       }
@@ -1339,7 +1356,14 @@ private static final long serialVersionUID = 0L;
 
     private java.lang.Object type_ = "";
     /**
-     * <code>string type = 2;</code>
+     * <code>optional string type = 2;</code>
+     * @return Whether the type field is set.
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional string type = 2;</code>
      * @return The type.
      */
     public java.lang.String getType() {
@@ -1355,7 +1379,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string type = 2;</code>
+     * <code>optional string type = 2;</code>
      * @return The bytes for type.
      */
     public com.google.protobuf.ByteString
@@ -1372,7 +1396,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string type = 2;</code>
+     * <code>optional string type = 2;</code>
      * @param value The type to set.
      * @return This builder for chaining.
      */
@@ -1381,23 +1405,23 @@ private static final long serialVersionUID = 0L;
       if (value == null) {
     throw new NullPointerException();
   }
-  
+  bitField0_ |= 0x00000001;
       type_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>string type = 2;</code>
+     * <code>optional string type = 2;</code>
      * @return This builder for chaining.
      */
     public Builder clearType() {
-      
+      bitField0_ = (bitField0_ & ~0x00000001);
       type_ = getDefaultInstance().getType();
       onChanged();
       return this;
     }
     /**
-     * <code>string type = 2;</code>
+     * <code>optional string type = 2;</code>
      * @param value The bytes for type to set.
      * @return This builder for chaining.
      */
@@ -1407,7 +1431,7 @@ private static final long serialVersionUID = 0L;
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-      
+      bitField0_ |= 0x00000001;
       type_ = value;
       onChanged();
       return this;
@@ -1544,9 +1568,9 @@ private static final long serialVersionUID = 0L;
     private java.util.List<com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyListProto> listProperty_ =
       java.util.Collections.emptyList();
     private void ensureListPropertyIsMutable() {
-      if (!((bitField0_ & 0x00000002) != 0)) {
+      if (!((bitField0_ & 0x00000004) != 0)) {
         listProperty_ = new java.util.ArrayList<com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyListProto>(listProperty_);
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
        }
     }
 
@@ -1696,7 +1720,7 @@ private static final long serialVersionUID = 0L;
     public Builder clearListProperty() {
       if (listPropertyBuilder_ == null) {
         listProperty_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
       } else {
         listPropertyBuilder_.clear();
@@ -1773,7 +1797,7 @@ private static final long serialVersionUID = 0L;
         listPropertyBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyListProto, com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyListProto.Builder, com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyListProtoOrBuilder>(
                 listProperty_,
-                ((bitField0_ & 0x00000002) != 0),
+                ((bitField0_ & 0x00000004) != 0),
                 getParentForChildren(),
                 isClean());
         listProperty_ = null;
@@ -1784,9 +1808,9 @@ private static final long serialVersionUID = 0L;
     private java.util.List<com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyMapProto> mapProperty_ =
       java.util.Collections.emptyList();
     private void ensureMapPropertyIsMutable() {
-      if (!((bitField0_ & 0x00000004) != 0)) {
+      if (!((bitField0_ & 0x00000008) != 0)) {
         mapProperty_ = new java.util.ArrayList<com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyMapProto>(mapProperty_);
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
        }
     }
 
@@ -1936,7 +1960,7 @@ private static final long serialVersionUID = 0L;
     public Builder clearMapProperty() {
       if (mapPropertyBuilder_ == null) {
         mapProperty_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
       } else {
         mapPropertyBuilder_.clear();
@@ -2013,7 +2037,7 @@ private static final long serialVersionUID = 0L;
         mapPropertyBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyMapProto, com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyMapProto.Builder, com.oracle.labs.mlrg.olcut.config.protobuf.protos.PropertyMapProtoOrBuilder>(
                 mapProperty_,
-                ((bitField0_ & 0x00000004) != 0),
+                ((bitField0_ & 0x00000008) != 0),
                 getParentForChildren(),
                 isClean());
         mapProperty_ = null;
@@ -2027,7 +2051,7 @@ private static final long serialVersionUID = 0L;
      * @return Whether the override field is set.
      */
     public boolean hasOverride() {
-      return ((bitField0_ & 0x00000008) != 0);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <code>optional string override = 6;</code>
@@ -2072,7 +2096,7 @@ private static final long serialVersionUID = 0L;
       if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000010;
       override_ = value;
       onChanged();
       return this;
@@ -2082,7 +2106,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearOverride() {
-      bitField0_ = (bitField0_ & ~0x00000008);
+      bitField0_ = (bitField0_ & ~0x00000010);
       override_ = getDefaultInstance().getOverride();
       onChanged();
       return this;
@@ -2098,7 +2122,7 @@ private static final long serialVersionUID = 0L;
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-      bitField0_ |= 0x00000008;
+      bitField0_ |= 0x00000010;
       override_ = value;
       onChanged();
       return this;
@@ -2111,7 +2135,7 @@ private static final long serialVersionUID = 0L;
      */
     @java.lang.Override
     public boolean hasExportable() {
-      return ((bitField0_ & 0x00000010) != 0);
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      * <code>optional bool exportable = 7;</code>
@@ -2127,7 +2151,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder setExportable(boolean value) {
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000020;
       exportable_ = value;
       onChanged();
       return this;
@@ -2137,7 +2161,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearExportable() {
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000020);
       exportable_ = false;
       onChanged();
       return this;
@@ -2150,7 +2174,7 @@ private static final long serialVersionUID = 0L;
      */
     @java.lang.Override
     public boolean hasImportable() {
-      return ((bitField0_ & 0x00000020) != 0);
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      * <code>optional bool importable = 8;</code>
@@ -2166,7 +2190,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder setImportable(boolean value) {
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       importable_ = value;
       onChanged();
       return this;
@@ -2176,7 +2200,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearImportable() {
-      bitField0_ = (bitField0_ & ~0x00000020);
+      bitField0_ = (bitField0_ & ~0x00000040);
       importable_ = false;
       onChanged();
       return this;
@@ -2189,7 +2213,7 @@ private static final long serialVersionUID = 0L;
      */
     @java.lang.Override
     public boolean hasLeaseTime() {
-      return ((bitField0_ & 0x00000040) != 0);
+      return ((bitField0_ & 0x00000080) != 0);
     }
     /**
      * <code>optional int64 leaseTime = 9;</code>
@@ -2205,7 +2229,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder setLeaseTime(long value) {
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000080;
       leaseTime_ = value;
       onChanged();
       return this;
@@ -2215,7 +2239,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearLeaseTime() {
-      bitField0_ = (bitField0_ & ~0x00000040);
+      bitField0_ = (bitField0_ & ~0x00000080);
       leaseTime_ = 0L;
       onChanged();
       return this;
@@ -2227,7 +2251,7 @@ private static final long serialVersionUID = 0L;
      * @return Whether the serialized field is set.
      */
     public boolean hasSerialized() {
-      return ((bitField0_ & 0x00000080) != 0);
+      return ((bitField0_ & 0x00000100) != 0);
     }
     /**
      * <code>optional string serialized = 10;</code>
@@ -2272,7 +2296,7 @@ private static final long serialVersionUID = 0L;
       if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000080;
+  bitField0_ |= 0x00000100;
       serialized_ = value;
       onChanged();
       return this;
@@ -2282,7 +2306,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearSerialized() {
-      bitField0_ = (bitField0_ & ~0x00000080);
+      bitField0_ = (bitField0_ & ~0x00000100);
       serialized_ = getDefaultInstance().getSerialized();
       onChanged();
       return this;
@@ -2298,7 +2322,7 @@ private static final long serialVersionUID = 0L;
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000100;
       serialized_ = value;
       onChanged();
       return this;
@@ -2310,7 +2334,7 @@ private static final long serialVersionUID = 0L;
      * @return Whether the entries field is set.
      */
     public boolean hasEntries() {
-      return ((bitField0_ & 0x00000100) != 0);
+      return ((bitField0_ & 0x00000200) != 0);
     }
     /**
      * <code>optional string entries = 11;</code>
@@ -2355,7 +2379,7 @@ private static final long serialVersionUID = 0L;
       if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000100;
+  bitField0_ |= 0x00000200;
       entries_ = value;
       onChanged();
       return this;
@@ -2365,7 +2389,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearEntries() {
-      bitField0_ = (bitField0_ & ~0x00000100);
+      bitField0_ = (bitField0_ & ~0x00000200);
       entries_ = getDefaultInstance().getEntries();
       onChanged();
       return this;
@@ -2381,7 +2405,7 @@ private static final long serialVersionUID = 0L;
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000200;
       entries_ = value;
       onChanged();
       return this;

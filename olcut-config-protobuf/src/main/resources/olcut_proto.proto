@@ -36,7 +36,7 @@ option java_multiple_files = true;
 option java_package = "com.oracle.labs.mlrg.olcut.config.protobuf.protos";
 
 /*
-Root message which contains the full configuration.
+ Root message which contains the full configuration.
  */
 message ConfigProto {
   map<string,string> properties = 1;
@@ -46,14 +46,14 @@ message ConfigProto {
 }
 
 /*
-A configurable component.
+ A configurable component.
  */
 message ComponentProto {
   string name = 1;
   optional string type = 2;
   map<string,string> properties = 3;
-  repeated PropertyListProto list_properties = 4;
-  repeated PropertyMapProto map_properties = 5;
+  repeated PropertyListProto list_property = 4;
+  repeated PropertyMapProto map_property = 5;
   optional string override = 6;
   optional bool exportable = 7;
   optional bool importable = 8;
@@ -63,7 +63,7 @@ message ComponentProto {
 }
 
 /*
-A reference to another config file.
+ A reference to another config file.
  */
 message ConfigFileProto {
   string name = 1;
@@ -71,7 +71,7 @@ message ConfigFileProto {
 }
 
 /*
-A property list in a component.
+ A property list in a component.
  */
 message PropertyListProto {
   string name = 1;
@@ -80,7 +80,7 @@ message PropertyListProto {
 }
 
 /*
-A property map in a component.
+ A property map in a component.
  */
 message PropertyMapProto {
   string name = 1;
@@ -88,10 +88,59 @@ message PropertyMapProto {
 }
 
 /*
-A reference to a serialized object on disk.
+ A reference to a serialized object on disk.
  */
 message SerializedObjectProto {
   string name = 1;
   string type = 2;
   string location = 3;
+}
+
+/*
+ Root message for a list of marshalled provenances.
+ */
+message RootProvenanceProto {
+  repeated ObjectProvenanceProto omp = 1;
+  repeated SimpleProvenanceProto smp = 2;
+  repeated MapProvenanceProto mmp = 3;
+  repeated ListProvenanceProto lmp = 4;
+}
+
+/*
+ An ObjectMarshalledProvenance proto with the references converted into indices.
+ */
+message ObjectProvenanceProto {
+  int32 index = 1;
+  string object_name = 2;
+  string object_class_name = 3;
+  string provenance_class_name = 4;
+  map<string,int32> values = 5;
+}
+
+/*
+ A SimpleMarshalledProvenance proto.
+ */
+message SimpleProvenanceProto {
+  int32 index = 1;
+  string key = 2;
+  string value = 3;
+  string additional = 4;
+  string provenance_class_name = 5;
+  bool is_reference = 6;
+}
+
+/*
+ A MapMarshalledProvenance proto with the references converted into indices.
+ */
+message MapProvenanceProto {
+  int32 index = 1;
+  map<string,int32> values = 2;
+}
+
+/*
+ A ListMarshalledProvenance proto with the references converted into indices.
+ */
+message ListProvenanceProto {
+  int32 index = 1;
+  repeated int32 values = 2;
 }

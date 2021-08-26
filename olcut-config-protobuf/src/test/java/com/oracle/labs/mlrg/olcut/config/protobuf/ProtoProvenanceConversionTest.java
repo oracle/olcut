@@ -29,42 +29,49 @@
 package com.oracle.labs.mlrg.olcut.config.protobuf;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.protobuf.protos.RootProvenanceProto;
 import com.oracle.labs.mlrg.olcut.provenance.ExampleProvenancableConfigurable;
 import com.oracle.labs.mlrg.olcut.provenance.ListProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.SimpleObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil;
-import com.oracle.labs.mlrg.olcut.provenance.io.MarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.SplittableRandom;
 
 import static com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.constructProvenance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
  */
 public class ProtoProvenanceConversionTest {
-    private File f;
+    private ProtoProvenanceMarshaller textMarshaller;
+    private ProtoProvenanceMarshaller binMarshaller;
+    private Path textPath;
+    private Path binPath;
 
     @BeforeEach
     public void setUp() throws IOException {
         ConfigurationManager.addFileFormatFactory(new ProtoConfigFactory());
-        f = File.createTempFile("provenance", ".pb");
-        f.deleteOnExit();
+
+        textMarshaller = new ProtoProvenanceMarshaller(true);
+        binMarshaller = new ProtoProvenanceMarshaller(false);
+
+        textPath = Files.createTempFile("olcut-config-proto",".pbtxt");
+        textPath.toFile().deleteOnExit();
+        binPath = Files.createTempFile("olcut-config-proto",".pb");
+        binPath.toFile().deleteOnExit();
     }
 
-    /*
     @Test
     public void marshallingTest() throws IOException {
         ConfigurationManager cm1 = new ConfigurationManager("/com/oracle/labs/mlrg/olcut/provenance/example-provenance-config.xml");
@@ -76,21 +83,24 @@ public class ProtoProvenanceConversionTest {
         List<ObjectMarshalledProvenance> marshalledProvenances = ProvenanceUtil.marshalProvenance(provenance);
         assertEquals(8,marshalledProvenances.size());
 
-        ProvenanceProto proto = ProtoProvenanceUtil.serializeToProto(marshalledProvenances);
+        serde(marshalledProvenances,provenance,textMarshaller,textPath);
+        serde(marshalledProvenances,provenance,binMarshaller,binPath);
+    }
 
-        List<MarshalledProvenance> protoProvenances = ProtoProvenanceUtil.deserializeFromProto(proto);
+    private static void serde(List<ObjectMarshalledProvenance> marshalledProvenances, ObjectProvenance provenance, ProtoProvenanceMarshaller marshaller, Path tmpPath) throws IOException {
+        RootProvenanceProto proto = marshaller.serializeToProto(marshalledProvenances);
+        List<ObjectMarshalledProvenance> protoProvenances = marshaller.deserializeFromProto(proto);
+        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(protoProvenances);
+        assertEquals(provenance,unmarshalledProvenance);
 
-        List<ObjectMarshalledProvenance> jps = new ArrayList<>();
-        for (MarshalledProvenance mp : protoProvenances) {
-            if (mp instanceof ObjectMarshalledProvenance) {
-                jps.add((ObjectMarshalledProvenance) mp);
-            } else {
-                fail("Unexpected provenance deserialized.");
-            }
-        }
+        String protoStr = marshaller.serializeToString(marshalledProvenances);
+        protoProvenances = marshaller.deserializeFromString(protoStr);
+        unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(protoProvenances);
+        assertEquals(provenance,unmarshalledProvenance);
 
-        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jps);
-
+        marshaller.serializeToFile(marshalledProvenances,tmpPath);
+        protoProvenances = marshaller.deserializeFromFile(tmpPath);
+        unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(protoProvenances);
         assertEquals(provenance,unmarshalledProvenance);
     }
 
@@ -106,23 +116,8 @@ public class ProtoProvenanceConversionTest {
 
         assertEquals(1,marshalledProvenance.size());
 
-        ProvenanceProto proto = ProtoProvenanceUtil.serializeToProto(marshalledProvenance);
-
-        List<MarshalledProvenance> protoProvenances = ProtoProvenanceUtil.deserializeFromProto(proto);
-
-        List<ObjectMarshalledProvenance> jps = new ArrayList<>();
-        for (MarshalledProvenance mp : protoProvenances) {
-            if (mp instanceof ObjectMarshalledProvenance) {
-                jps.add((ObjectMarshalledProvenance) mp);
-            } else {
-                fail("Unexpected provenance deserialized.");
-            }
-        }
-
-        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jps);
-
-        assertEquals(objProv,unmarshalledProvenance);
+        serde(marshalledProvenance,objProv,textMarshaller,textPath);
+        serde(marshalledProvenance,objProv,binMarshaller,binPath);
     }
-     */
 
 }

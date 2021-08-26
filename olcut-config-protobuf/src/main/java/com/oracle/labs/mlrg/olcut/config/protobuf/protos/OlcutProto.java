@@ -59,6 +59,41 @@ public final class OlcutProto {
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_olcut_SerializedObjectProto_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_olcut_RootProvenanceProto_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_olcut_RootProvenanceProto_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_olcut_ObjectProvenanceProto_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_olcut_ObjectProvenanceProto_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_olcut_ObjectProvenanceProto_ValuesEntry_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_olcut_ObjectProvenanceProto_ValuesEntry_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_olcut_SimpleProvenanceProto_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_olcut_SimpleProvenanceProto_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_olcut_MapProvenanceProto_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_olcut_MapProvenanceProto_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_olcut_MapProvenanceProto_ValuesEntry_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_olcut_MapProvenanceProto_ValuesEntry_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_olcut_ListProvenanceProto_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_olcut_ListProvenanceProto_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -75,29 +110,48 @@ public final class OlcutProto {
       "(\0132\026.olcut.ConfigFileProto\0227\n\021serialized" +
       "_object\030\004 \003(\0132\034.olcut.SerializedObjectPr" +
       "oto\0321\n\017PropertiesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005v" +
-      "alue\030\002 \001(\t:\0028\001\"\336\003\n\016ComponentProto\022\014\n\004nam" +
-      "e\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\0229\n\nproperties\030\003 \003(" +
-      "\0132%.olcut.ComponentProto.PropertiesEntry" +
-      "\022/\n\rlist_property\030\004 \003(\0132\030.olcut.Property" +
-      "ListProto\022-\n\014map_property\030\005 \003(\0132\027.olcut." +
-      "PropertyMapProto\022\025\n\010override\030\006 \001(\tH\000\210\001\001\022" +
-      "\027\n\nexportable\030\007 \001(\010H\001\210\001\001\022\027\n\nimportable\030\010" +
-      " \001(\010H\002\210\001\001\022\026\n\tleaseTime\030\t \001(\003H\003\210\001\001\022\027\n\nser" +
-      "ialized\030\n \001(\tH\004\210\001\001\022\024\n\007entries\030\013 \001(\tH\005\210\001\001" +
-      "\0321\n\017PropertiesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005valu" +
-      "e\030\002 \001(\t:\0028\001B\013\n\t_overrideB\r\n\013_exportableB" +
-      "\r\n\013_importableB\014\n\n_leaseTimeB\r\n\013_seriali" +
-      "zedB\n\n\010_entries\".\n\017ConfigFileProto\022\014\n\004na" +
-      "me\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"=\n\021PropertyListP" +
-      "roto\022\014\n\004name\030\001 \001(\t\022\014\n\004item\030\002 \003(\t\022\014\n\004type" +
-      "\030\003 \003(\t\"\212\001\n\020PropertyMapProto\022\014\n\004name\030\001 \001(" +
-      "\t\0227\n\010elements\030\002 \003(\0132%.olcut.PropertyMapP" +
-      "roto.ElementsEntry\032/\n\rElementsEntry\022\013\n\003k" +
-      "ey\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"E\n\025Serialize" +
-      "dObjectProto\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t" +
-      "\022\020\n\010location\030\003 \001(\tB5\n1com.oracle.labs.ml" +
-      "rg.olcut.config.protobuf.protosP\001b\006proto" +
-      "3"
+      "alue\030\002 \001(\t:\0028\001\"\354\003\n\016ComponentProto\022\014\n\004nam" +
+      "e\030\001 \001(\t\022\021\n\004type\030\002 \001(\tH\000\210\001\001\0229\n\nproperties" +
+      "\030\003 \003(\0132%.olcut.ComponentProto.Properties" +
+      "Entry\022/\n\rlist_property\030\004 \003(\0132\030.olcut.Pro" +
+      "pertyListProto\022-\n\014map_property\030\005 \003(\0132\027.o" +
+      "lcut.PropertyMapProto\022\025\n\010override\030\006 \001(\tH" +
+      "\001\210\001\001\022\027\n\nexportable\030\007 \001(\010H\002\210\001\001\022\027\n\nimporta" +
+      "ble\030\010 \001(\010H\003\210\001\001\022\026\n\tleaseTime\030\t \001(\003H\004\210\001\001\022\027" +
+      "\n\nserialized\030\n \001(\tH\005\210\001\001\022\024\n\007entries\030\013 \001(\t" +
+      "H\006\210\001\001\0321\n\017PropertiesEntry\022\013\n\003key\030\001 \001(\t\022\r\n" +
+      "\005value\030\002 \001(\t:\0028\001B\007\n\005_typeB\013\n\t_overrideB\r" +
+      "\n\013_exportableB\r\n\013_importableB\014\n\n_leaseTi" +
+      "meB\r\n\013_serializedB\n\n\010_entries\".\n\017ConfigF" +
+      "ileProto\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"=\n" +
+      "\021PropertyListProto\022\014\n\004name\030\001 \001(\t\022\014\n\004item" +
+      "\030\002 \003(\t\022\014\n\004type\030\003 \003(\t\"\212\001\n\020PropertyMapProt" +
+      "o\022\014\n\004name\030\001 \001(\t\0227\n\010elements\030\002 \003(\0132%.olcu" +
+      "t.PropertyMapProto.ElementsEntry\032/\n\rElem" +
+      "entsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028" +
+      "\001\"E\n\025SerializedObjectProto\022\014\n\004name\030\001 \001(\t" +
+      "\022\014\n\004type\030\002 \001(\t\022\020\n\010location\030\003 \001(\t\"\274\001\n\023Roo" +
+      "tProvenanceProto\022)\n\003omp\030\001 \003(\0132\034.olcut.Ob" +
+      "jectProvenanceProto\022)\n\003smp\030\002 \003(\0132\034.olcut" +
+      ".SimpleProvenanceProto\022&\n\003mmp\030\003 \003(\0132\031.ol" +
+      "cut.MapProvenanceProto\022\'\n\003lmp\030\004 \003(\0132\032.ol" +
+      "cut.ListProvenanceProto\"\336\001\n\025ObjectProven" +
+      "anceProto\022\r\n\005index\030\001 \001(\005\022\023\n\013object_name\030" +
+      "\002 \001(\t\022\031\n\021object_class_name\030\003 \001(\t\022\035\n\025prov" +
+      "enance_class_name\030\004 \001(\t\0228\n\006values\030\005 \003(\0132" +
+      "(.olcut.ObjectProvenanceProto.ValuesEntr" +
+      "y\032-\n\013ValuesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002" +
+      " \001(\005:\0028\001\"\213\001\n\025SimpleProvenanceProto\022\r\n\005in" +
+      "dex\030\001 \001(\005\022\013\n\003key\030\002 \001(\t\022\r\n\005value\030\003 \001(\t\022\022\n" +
+      "\nadditional\030\004 \001(\t\022\035\n\025provenance_class_na" +
+      "me\030\005 \001(\t\022\024\n\014is_reference\030\006 \001(\010\"\211\001\n\022MapPr" +
+      "ovenanceProto\022\r\n\005index\030\001 \001(\005\0225\n\006values\030\002" +
+      " \003(\0132%.olcut.MapProvenanceProto.ValuesEn" +
+      "try\032-\n\013ValuesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value" +
+      "\030\002 \001(\005:\0028\001\"4\n\023ListProvenanceProto\022\r\n\005ind" +
+      "ex\030\001 \001(\005\022\016\n\006values\030\002 \003(\005B5\n1com.oracle.l" +
+      "abs.mlrg.olcut.config.protobuf.protosP\001b" +
+      "\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -120,7 +174,7 @@ public final class OlcutProto {
     internal_static_olcut_ComponentProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_olcut_ComponentProto_descriptor,
-        new java.lang.String[] { "Name", "Type", "Properties", "ListProperty", "MapProperty", "Override", "Exportable", "Importable", "LeaseTime", "Serialized", "Entries", "Override", "Exportable", "Importable", "LeaseTime", "Serialized", "Entries", });
+        new java.lang.String[] { "Name", "Type", "Properties", "ListProperty", "MapProperty", "Override", "Exportable", "Importable", "LeaseTime", "Serialized", "Entries", "Type", "Override", "Exportable", "Importable", "LeaseTime", "Serialized", "Entries", });
     internal_static_olcut_ComponentProto_PropertiesEntry_descriptor =
       internal_static_olcut_ComponentProto_descriptor.getNestedTypes().get(0);
     internal_static_olcut_ComponentProto_PropertiesEntry_fieldAccessorTable = new
@@ -157,6 +211,48 @@ public final class OlcutProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_olcut_SerializedObjectProto_descriptor,
         new java.lang.String[] { "Name", "Type", "Location", });
+    internal_static_olcut_RootProvenanceProto_descriptor =
+      getDescriptor().getMessageTypes().get(6);
+    internal_static_olcut_RootProvenanceProto_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_olcut_RootProvenanceProto_descriptor,
+        new java.lang.String[] { "Omp", "Smp", "Mmp", "Lmp", });
+    internal_static_olcut_ObjectProvenanceProto_descriptor =
+      getDescriptor().getMessageTypes().get(7);
+    internal_static_olcut_ObjectProvenanceProto_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_olcut_ObjectProvenanceProto_descriptor,
+        new java.lang.String[] { "Index", "ObjectName", "ObjectClassName", "ProvenanceClassName", "Values", });
+    internal_static_olcut_ObjectProvenanceProto_ValuesEntry_descriptor =
+      internal_static_olcut_ObjectProvenanceProto_descriptor.getNestedTypes().get(0);
+    internal_static_olcut_ObjectProvenanceProto_ValuesEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_olcut_ObjectProvenanceProto_ValuesEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_olcut_SimpleProvenanceProto_descriptor =
+      getDescriptor().getMessageTypes().get(8);
+    internal_static_olcut_SimpleProvenanceProto_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_olcut_SimpleProvenanceProto_descriptor,
+        new java.lang.String[] { "Index", "Key", "Value", "Additional", "ProvenanceClassName", "IsReference", });
+    internal_static_olcut_MapProvenanceProto_descriptor =
+      getDescriptor().getMessageTypes().get(9);
+    internal_static_olcut_MapProvenanceProto_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_olcut_MapProvenanceProto_descriptor,
+        new java.lang.String[] { "Index", "Values", });
+    internal_static_olcut_MapProvenanceProto_ValuesEntry_descriptor =
+      internal_static_olcut_MapProvenanceProto_descriptor.getNestedTypes().get(0);
+    internal_static_olcut_MapProvenanceProto_ValuesEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_olcut_MapProvenanceProto_ValuesEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_olcut_ListProvenanceProto_descriptor =
+      getDescriptor().getMessageTypes().get(10);
+    internal_static_olcut_ListProvenanceProto_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_olcut_ListProvenanceProto_descriptor,
+        new java.lang.String[] { "Index", "Values", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
