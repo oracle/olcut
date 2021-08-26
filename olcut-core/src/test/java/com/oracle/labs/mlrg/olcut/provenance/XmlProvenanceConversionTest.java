@@ -68,7 +68,6 @@ public class XmlProvenanceConversionTest {
         assertEquals(8,marshalledProvenances.size());
 
         String xmlResult = marshaller.serializeToString(marshalledProvenances);
-        //marshaller.serializeToFile(marshalledProvenances, Paths.get("/","tmp","marshalling-test.xml"));
 
         List<ObjectMarshalledProvenance> xmlProvenances = marshaller.deserializeFromString(xmlResult);
 
@@ -90,7 +89,6 @@ public class XmlProvenanceConversionTest {
         assertEquals(1,marshalledProvenance.size());
 
         String xmlResult = marshaller.serializeToString(marshalledProvenance);
-        //marshaller.serializeToFile(marshalledProvenance, Paths.get("/","tmp","recursive-marshalling-test.xml"));
 
         List<ObjectMarshalledProvenance> xmlProvenances = marshaller.deserializeFromString(xmlResult);
 

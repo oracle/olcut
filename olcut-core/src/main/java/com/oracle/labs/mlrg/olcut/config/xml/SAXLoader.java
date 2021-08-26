@@ -202,6 +202,7 @@ public class SAXLoader implements ConfigLoader {
         /* (non-Javadoc)
          * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
          */
+        @Override
         public void startElement(String uri, String localName, String qName,
                 Attributes attributes) throws SAXException {
             switch (qName) {
@@ -394,6 +395,7 @@ public class SAXLoader implements ConfigLoader {
         /* (non-Javadoc)
          * @see org.xml.sax.ContentHandler#characters(char[], int, int)
          */
+        @Override
         public void characters(char[] ch, int start, int length) {
             if (curItem != null) {
                 curItem.append(ch, start, length);
@@ -403,6 +405,7 @@ public class SAXLoader implements ConfigLoader {
         /* (non-Javadoc)
          * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
          */
+        @Override
         public void endElement(String uri, String localName, String qName)
                 throws SAXParseException {
             switch (qName) {
@@ -452,6 +455,7 @@ public class SAXLoader implements ConfigLoader {
         /* (non-Javadoc)
          * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
          */
+        @Override
         public void setDocumentLocator(Locator locator) {
             this.locator = locator;
         }

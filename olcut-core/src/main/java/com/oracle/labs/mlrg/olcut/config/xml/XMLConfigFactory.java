@@ -54,9 +54,10 @@ public class XMLConfigFactory implements FileFormatFactory {
 
     private final XMLOutputFactory factory = XMLOutputFactory.newFactory();
 
-    public XMLConfigFactory() {
-
-    }
+    /**
+     * Creates a new XMLConfigFactory.
+     */
+    public XMLConfigFactory() {}
 
     @Override
     public String getExtension() {
