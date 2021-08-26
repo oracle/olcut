@@ -60,6 +60,14 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
         this.map = Collections.emptyMap();
     }
 
+    /**
+     * Is this MapMarshalledProvenance empty?
+     * @return True if the provenance contains no other provenances.
+     */
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
+
     @Override
     public Iterator<Pair<String, FlatMarshalledProvenance>> iterator() {
         return new MapMarshalledProvenanceIterator(map.entrySet().iterator());
