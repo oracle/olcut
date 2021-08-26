@@ -68,7 +68,7 @@ public final class JsonProvenanceMarshaller implements ProvenanceMarshaller {
 
     @Override
     public String getFileExtension() {
-        return ".json";
+        return "json";
     }
 
     @Override
