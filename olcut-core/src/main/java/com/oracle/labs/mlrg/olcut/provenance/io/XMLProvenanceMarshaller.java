@@ -130,17 +130,17 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
     }
 
     @Override
-    public List<ObjectMarshalledProvenance> deserializeFromFile(Path path) throws IOException {
+    public List<ObjectMarshalledProvenance> deserializeFromFile(Path path) throws ProvenanceSerializationException, IOException {
         return parse(new InputSource(Files.newInputStream(path)),path.toString());
     }
 
     @Override
-    public List<ObjectMarshalledProvenance> deserializeFromString(String input) {
+    public List<ObjectMarshalledProvenance> deserializeFromString(String input) throws ProvenanceSerializationException {
         try {
             InputSource source = new InputSource(new StringReader(input));
             return parse(source,"");
         } catch (IOException e) {
-            throw new IllegalStateException("Found an IOException when reading from an in-memory string",e);
+            throw new ProvenanceSerializationException("Found an IOException when reading from an in-memory string",e);
         }
     }
 
@@ -149,8 +149,10 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
      * @param source The XML input source to parse.
      * @param location The file path if known.
      * @return The parsed provenances.
+     * @throws ProvenanceSerializationException If the provenance could not be parsed from the file.
+     * @throws IOException If the file failed to read.
      */
-    private List<ObjectMarshalledProvenance> parse(InputSource source, String location) throws IOException {
+    private List<ObjectMarshalledProvenance> parse(InputSource source, String location) throws ProvenanceSerializationException, IOException {
         try {
             List<ObjectMarshalledProvenance> outputList = new ArrayList<>();
             XMLReader xr = saxFactory.newSAXParser().getXMLReader();
@@ -170,9 +172,9 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
                 msg = "Error while parsing line " + e.getLineNumber()
                         + " of input: " + e.getMessage();
             }
-            throw new IllegalArgumentException(msg,e);
+            throw new ProvenanceSerializationException(msg,e);
         } catch (SAXException e) {
-            throw new IllegalArgumentException("Problem with XML: " + e,e);
+            throw new ProvenanceSerializationException("Problem with XML: " + e,e);
         }
     }
 

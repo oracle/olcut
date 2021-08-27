@@ -31,13 +31,12 @@ package com.oracle.labs.mlrg.olcut.provenance;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.SimpleObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceMarshaller;
+import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceSerializationException;
 import com.oracle.labs.mlrg.olcut.provenance.io.XMLProvenanceMarshaller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.SplittableRandom;
 
@@ -57,7 +56,7 @@ public class XmlProvenanceConversionTest {
     }
 
     @Test
-    public void marshallingTest() throws IOException {
+    public void marshallingTest() throws ProvenanceSerializationException {
         ConfigurationManager cm1 = new ConfigurationManager("/com/oracle/labs/mlrg/olcut/provenance/example-provenance-config.xml");
         ExampleProvenancableConfigurable e = (ExampleProvenancableConfigurable) cm1.lookup("example-config");
         assertNotNull(e, "Failed to load example config");
@@ -77,7 +76,7 @@ public class XmlProvenanceConversionTest {
     }
 
     @Test
-    public void recursiveMarshallingTest() throws IOException {
+    public void recursiveMarshallingTest() throws ProvenanceSerializationException {
         Provenance prov = constructProvenance(new SplittableRandom(42),5,3,"prov");
 
         assertNotNull(prov);
