@@ -28,13 +28,16 @@
 
 package com.oracle.labs.mlrg.olcut.config.json;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.oracle.labs.mlrg.olcut.provenance.io.MarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceMarshaller;
+import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceSerializationException;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -72,21 +75,25 @@ public final class JsonProvenanceMarshaller implements ProvenanceMarshaller {
     }
 
     @Override
-    public List<ObjectMarshalledProvenance> deserializeFromFile(Path path) throws IOException {
-        List<MarshalledProvenance> jsonProvenances = mapper.readValue(path.toFile(), typeRef);
-        List<ObjectMarshalledProvenance> jps = new ArrayList<>();
-        for (MarshalledProvenance mp : jsonProvenances) {
-            if (mp instanceof ObjectMarshalledProvenance) {
-                jps.add((ObjectMarshalledProvenance) mp);
-            } else {
-                throw new IllegalArgumentException("Invalid provenance found, expected ObjectMarshalledProvenance, found " + mp);
+    public List<ObjectMarshalledProvenance> deserializeFromFile(Path path) throws ProvenanceSerializationException, IOException {
+        try {
+            List<MarshalledProvenance> jsonProvenances = mapper.readValue(path.toFile(), typeRef);
+            List<ObjectMarshalledProvenance> jps = new ArrayList<>();
+            for (MarshalledProvenance mp : jsonProvenances) {
+                if (mp instanceof ObjectMarshalledProvenance) {
+                    jps.add((ObjectMarshalledProvenance) mp);
+                } else {
+                    throw new ProvenanceSerializationException("Invalid provenance found, expected ObjectMarshalledProvenance, found " + mp);
+                }
             }
+            return jps;
+        } catch (JsonParseException | JsonMappingException e) {
+            throw new ProvenanceSerializationException("Failed to parse JSON",e);
         }
-        return jps;
     }
 
     @Override
-    public List<ObjectMarshalledProvenance> deserializeFromString(String input) {
+    public List<ObjectMarshalledProvenance> deserializeFromString(String input) throws ProvenanceSerializationException {
         try {
             List<MarshalledProvenance> jsonProvenances = mapper.readValue(input, typeRef);
             List<ObjectMarshalledProvenance> jps = new ArrayList<>();
@@ -99,7 +106,7 @@ public final class JsonProvenanceMarshaller implements ProvenanceMarshaller {
             }
             return jps;
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Failed to deserialize provenance", e);
+            throw new ProvenanceSerializationException("Failed to deserialize provenance", e);
         }
     }
 

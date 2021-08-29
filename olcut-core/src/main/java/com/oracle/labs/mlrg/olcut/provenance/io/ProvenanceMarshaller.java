@@ -51,24 +51,27 @@ public interface ProvenanceMarshaller {
      * Loads in a list of marshalled provenances from the specified file.
      * @param path The file to load.
      * @return The marshalled provenances in the file.
+     * @throws ProvenanceSerializationException If the provenance could not be parsed from the file.
      * @throws IOException If the file failed to read.
      */
-    public List<ObjectMarshalledProvenance> deserializeFromFile(Path path) throws IOException;
+    public List<ObjectMarshalledProvenance> deserializeFromFile(Path path) throws ProvenanceSerializationException, IOException;
 
     /**
      * Loads in a list of marshalled provenances from the supplied string.
      * @param input The string to deserialize.
      * @return The marshalled provenances in the string.
+     * @throws ProvenanceSerializationException If the provenance could not be parsed from the string.
      */
-    public List<ObjectMarshalledProvenance> deserializeFromString(String input);
+    public List<ObjectMarshalledProvenance> deserializeFromString(String input) throws ProvenanceSerializationException;
 
     /**
      * Deserializes and unmarshalls the provenances in the specified file.
      * @param path The file to load.
      * @return The object provenance specified by the marshalled provenances in the file.
+     * @throws ProvenanceSerializationException If the provenance could not be parsed from the file.
      * @throws IOException If the file failed to read.
      */
-    default public ObjectProvenance deserializeAndUnmarshal(Path path) throws IOException {
+    default public ObjectProvenance deserializeAndUnmarshal(Path path) throws ProvenanceSerializationException, IOException {
         return ProvenanceUtil.unmarshalProvenance(deserializeFromFile(path));
     }
 
@@ -76,8 +79,9 @@ public interface ProvenanceMarshaller {
      * Deserializes and unmarshalls the provenances from the supplied string..
      * @param input The string to deserialize.
      * @return The object provenance specified by the marshalled provenances in the string.
+     * @throws ProvenanceSerializationException If the provenance could not be parsed from the string.
      */
-    default public ObjectProvenance deserializeAndUnmarshal(String input) {
+    default public ObjectProvenance deserializeAndUnmarshal(String input) throws ProvenanceSerializationException {
         return ProvenanceUtil.unmarshalProvenance(deserializeFromString(input));
     }
 

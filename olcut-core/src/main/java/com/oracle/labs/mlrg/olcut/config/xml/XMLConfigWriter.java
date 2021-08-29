@@ -44,11 +44,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- *
+ * A {@link ConfigWriter} for XML format configuration files.
+ * <p>
+ * This class is not thread-safe.
  */
 public class XMLConfigWriter implements ConfigWriter {
     private final XMLStreamWriter writer;
 
+    /**
+     * Constructs an XMLConfigWriter using the supplied XMLStreamWriter.
+     * @param writer The XML writer to use.
+     */
     public XMLConfigWriter(XMLStreamWriter writer) {
         this.writer = writer;
     }
