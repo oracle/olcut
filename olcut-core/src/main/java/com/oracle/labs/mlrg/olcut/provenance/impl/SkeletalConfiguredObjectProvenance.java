@@ -239,6 +239,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                             case LONG_ARRAY:
                             case FLOAT_ARRAY:
                             case DOUBLE_ARRAY:
+                            case BOOLEAN_ARRAY:
                                 map.put(f.getName(), convertPrimitiveArray(ft, f, f.get(host)));
                                 break;
                             case STRING_ARRAY:
@@ -343,6 +344,13 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 double[] array = (double[]) object;
                 for (double e : array) {
                     list.add(new DoubleProvenance(fieldName,e));
+                }
+                break;
+            }
+            case BOOLEAN_ARRAY:{
+                boolean[] array = (boolean[]) object;
+                for (boolean e : array) {
+                    list.add(new BooleanProvenance(fieldName,e));
                 }
                 break;
             }
