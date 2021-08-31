@@ -89,6 +89,11 @@
             <item>2e-16</item>
             <item>3.16</item>
         </propertylist>
+        <propertylist name="booleanArrayField">
+            <item>true</item>
+            <item>false</item>
+            <item>True</item>
+        </propertylist>
 
         <propertylist name="stringArrayField">
             <item>gibbons</item>

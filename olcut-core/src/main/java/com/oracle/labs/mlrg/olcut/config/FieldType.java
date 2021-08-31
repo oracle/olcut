@@ -69,6 +69,7 @@ public enum FieldType {
     LONG_ARRAY(long[].class),
     FLOAT_ARRAY(float[].class),
     DOUBLE_ARRAY(double[].class),
+    BOOLEAN_ARRAY(boolean[].class),
     //Configurable classes
     CONFIGURABLE(Configurable.class),
     //Object array types
@@ -100,10 +101,10 @@ public enum FieldType {
     
     private final static Map<Class<?>,FieldType> m = new HashMap<>();
     
-    public final static EnumSet<FieldType> arrayTypes = EnumSet.of(BYTE_ARRAY, CHAR_ARRAY, SHORT_ARRAY,
-                                                                  INTEGER_ARRAY, LONG_ARRAY,
-                                                                  FLOAT_ARRAY, DOUBLE_ARRAY, STRING_ARRAY,
-                                                                  CONFIGURABLE_ARRAY);
+    public final static EnumSet<FieldType> arrayTypes = EnumSet.of(BYTE_ARRAY, CHAR_ARRAY, SHORT_ARRAY, INTEGER_ARRAY, LONG_ARRAY,
+                                                                   FLOAT_ARRAY, DOUBLE_ARRAY,
+                                                                   BOOLEAN_ARRAY,
+                                                                   STRING_ARRAY, CONFIGURABLE_ARRAY);
 
     public final static EnumSet<FieldType> listTypes = EnumSet.of(LIST,SET,ENUM_SET);
 

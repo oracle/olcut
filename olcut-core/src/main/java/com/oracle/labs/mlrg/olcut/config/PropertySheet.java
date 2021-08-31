@@ -600,6 +600,14 @@ public class PropertySheet<T extends Configurable> {
                     throw new PropertyException(ex, instanceName, fieldName, String.format("%s does not specify an array of double", replaced.toString()));
                 }
                 break;
+            case BOOLEAN_ARRAY:
+                boolean[] ba = new boolean[replaced.size()];
+                int i = 0;
+                for (String v : replaced) {
+                    ba[i++] = Boolean.parseBoolean(v);
+                }
+                output = ba;
+                break;
         }
         classVals.removeAll(removeList);
         if (classVals.size() > 0) {
