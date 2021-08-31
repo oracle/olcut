@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII"?>
 
 <!--
-  ~ Copyright (c) 2004-2020, Oracle and/or its affiliates.
+  ~ Copyright (c) 2004-2021, Oracle and/or its affiliates.
   ~
   ~ Licensed under the 2-clause BSD license.
   ~
@@ -88,6 +88,11 @@
             <item>1e-16</item>
             <item>2e-16</item>
             <item>3.16</item>
+        </propertylist>
+        <propertylist name="booleanArrayField">
+            <item>true</item>
+            <item>false</item>
+            <item>True</item>
         </propertylist>
 
         <propertylist name="stringArrayField">

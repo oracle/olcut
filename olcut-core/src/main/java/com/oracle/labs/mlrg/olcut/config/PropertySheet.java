@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -85,7 +85,27 @@ import javax.management.ObjectName;
 public class PropertySheet<T extends Configurable> {
     private static final Logger logger = Logger.getLogger(PropertySheet.class.getName());
 
-    public enum StoredFieldType { LIST, MAP, STRING, NONE }
+    /**
+     * The way a field is stored in the configuration.
+     */
+    public enum StoredFieldType {
+        /**
+         * LIST stores List, array and Set.
+         */
+        LIST,
+        /**
+         * MAP stores Map.
+         */
+        MAP,
+        /**
+         * All non-collection field types are stored as STRING.
+         */
+        STRING,
+        /**
+         * Sentinel used for types which are not configurable.
+         */
+        NONE
+    }
 
     private final Map<String, Config> registeredProperties = new HashMap<>();
 
@@ -599,6 +619,14 @@ public class PropertySheet<T extends Configurable> {
                 } catch (NumberFormatException ex) {
                     throw new PropertyException(ex, instanceName, fieldName, String.format("%s does not specify an array of double", replaced.toString()));
                 }
+                break;
+            case BOOLEAN_ARRAY:
+                boolean[] ba = new boolean[replaced.size()];
+                int i = 0;
+                for (String v : replaced) {
+                    ba[i++] = Boolean.parseBoolean(v);
+                }
+                output = ba;
                 break;
         }
         classVals.removeAll(removeList);

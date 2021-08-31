@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -128,6 +128,9 @@ public class AllFieldsConfigurable implements Configurable, Provenancable<Config
 
     @Config
     public double[] doubleArrayField;
+
+    @Config
+    public boolean[] booleanArrayField;
 
     //Configurable classes
     @Config
