@@ -104,7 +104,6 @@
         <property name="dateField" value="1948-06-21"/>
         <property name="dateTimeField" value="1949-06-16T20:30:00+01:00"/>
         <property name="timeField" value="12:34+00:00"/>
-        <property name="randomField" value="12345"/>
         <propertylist name="enumSetField">
             <item>A</item>
             <item>C</item>
@@ -132,10 +131,6 @@
         <propertylist name="listStringField">
             <item>e</item>
             <item>pi</item>
-        </propertylist>
-        <propertylist name="listRandomField">
-            <item>1234</item>
-            <item>12345</item>
         </propertylist>
         <propertylist name="listConfigurableSubclassField">
             <item>first-configurable</item>

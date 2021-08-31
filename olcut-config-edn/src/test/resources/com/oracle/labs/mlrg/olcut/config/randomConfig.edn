@@ -1,5 +1,0 @@
-(config
-	(component random [mlrg olcut config RandomConfigurable]
-		{:import "false" :export "false"}
-		:one "10"
-		:two "20"))

@@ -150,8 +150,6 @@ public class AllFieldsConfigurable implements Configurable, Provenancable<Config
     @Config
     public List<String> listStringField;
     @Config
-    public List<Random> listRandomField;
-    @Config
     public List<StringConfigurable> listConfigurableSubclassField;
 
     @Config
@@ -198,9 +196,6 @@ public class AllFieldsConfigurable implements Configurable, Provenancable<Config
 
     @Config
     public OffsetTime timeField;
-
-    @Config
-    public Random randomField;
 
     @Config
     public Type enumField;
@@ -259,7 +254,6 @@ public class AllFieldsConfigurable implements Configurable, Provenancable<Config
                 ", configurableSubclassArrayField=" + Arrays.toString(configurableSubclassArrayField) +
                 ", listDoubleField=" + listDoubleField +
                 ", listStringField=" + listStringField +
-                ", listRandomField=" + listRandomField +
                 ", listConfigurableSubclassField=" + listConfigurableSubclassField +
                 ", setDoubleField=" + setDoubleField +
                 ", setStringField=" + setStringField +
@@ -278,7 +272,6 @@ public class AllFieldsConfigurable implements Configurable, Provenancable<Config
                 ", dateField=" + dateField +
                 ", dateTimeField=" + dateTimeField +
                 ", timeField=" + timeField +
-                ", randomField=" + randomField +
                 ", enumField=" + enumField +
                 '}';
     }
@@ -357,11 +350,6 @@ public class AllFieldsConfigurable implements Configurable, Provenancable<Config
         if (!Objects.equals(dateField, that.dateField)) {logger.log(Level.INFO,"dateField differs, this = " + dateField + ", other = " + that.dateField); return false;}
         if (!Objects.equals(dateTimeField, that.dateTimeField)) {logger.log(Level.INFO,"dateTimeField differs, this = " + dateTimeField + ", other = " + that.dateTimeField); return false;}
         if (!Objects.equals(timeField, that.timeField)) {logger.log(Level.INFO,"timeField differs, this = " + timeField + ", other = " + that.timeField); return false;}
-        /* java.util.Random doesn't implement equals.
-         * if (listRandomField != null ? !listRandomField.equals(that.listRandomField) : that.listRandomField != null)
-         * {logger.log(Level.INFO,"listRandomField differs, this = " + listRandomField + ", other = " + that.listRandomField); return false;}
-         * if (randomField != null ? !randomField.equals(that.randomField) : that.randomField != null) {logger.log(Level.INFO,"randomField differs, this = " + randomField + ", other = " + that.randomField); return false;}
-         */
         return Objects.equals(enumField, that.enumField);
     }
 
@@ -420,10 +408,6 @@ public class AllFieldsConfigurable implements Configurable, Provenancable<Config
         result = 31 * result + (dateField != null ? dateField.hashCode() : 0);
         result = 31 * result + (dateTimeField != null ? dateTimeField.hashCode() : 0);
         result = 31 * result + (timeField != null ? timeField.hashCode() : 0);
-        /* java.util.Random doesn't do hashCode consistent with equals either.
-        result = 31 * result + (listRandomField != null ? listRandomField.hashCode() : 0);
-        result = 31 * result + (randomField != null ? randomField.hashCode() : 0);
-        */
         result = 31 * result + (enumField != null ? enumField.hashCode() : 0);
         return result;
     }

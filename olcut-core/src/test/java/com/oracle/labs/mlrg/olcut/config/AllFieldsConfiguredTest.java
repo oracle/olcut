@@ -191,9 +191,6 @@ public class AllFieldsConfiguredTest {
         ac.listStringField = new ArrayList<>();
         ac.listStringField.add("e");
         ac.listStringField.add("pi");
-        ac.listRandomField = new ArrayList<>();
-        ac.listRandomField.add(new Random(1234));
-        ac.listRandomField.add(new Random(12345));
         ac.listConfigurableSubclassField = new ArrayList<>();
         ac.listConfigurableSubclassField.add(ac.configurableSubclassArrayField[0]);
         ac.listConfigurableSubclassField.add(ac.configurableSubclassArrayField[1]);
@@ -241,7 +238,6 @@ public class AllFieldsConfiguredTest {
         ac.dateField = LocalDate.parse("1948-06-21");
         ac.dateTimeField = OffsetDateTime.parse("1949-06-16T20:30:00+01:00");
         ac.timeField = OffsetTime.parse("12:34:00+00:00");
-        ac.randomField = new Random(1234);
         ac.enumField = AllFieldsConfigurable.Type.F;
 
         ac.postConfig();
