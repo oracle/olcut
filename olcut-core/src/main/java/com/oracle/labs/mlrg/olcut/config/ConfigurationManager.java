@@ -2083,6 +2083,10 @@ public class ConfigurationManager implements Closeable {
                                     for (double d : (double[]) field.get(configurable)) {
                                         stringList.add("" + d);
                                     }
+                                } else if (boolean.class.isAssignableFrom(arrayComponentType)) {
+                                    for (boolean d : (boolean[]) field.get(configurable)) {
+                                        stringList.add("" + d);
+                                    }
                                 } else if (String.class.isAssignableFrom(arrayComponentType)) {
                                     stringList.addAll(Arrays.asList((String[]) field.get(configurable)));
                                 } else {

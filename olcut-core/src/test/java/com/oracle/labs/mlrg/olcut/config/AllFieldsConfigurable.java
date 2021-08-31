@@ -129,6 +129,9 @@ public class AllFieldsConfigurable implements Configurable, Provenancable<Config
     @Config
     public double[] doubleArrayField;
 
+    @Config
+    public boolean[] booleanArrayField;
+
     //Configurable classes
     @Config
     public Configurable configurableField;
