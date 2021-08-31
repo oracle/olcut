@@ -85,7 +85,27 @@ import javax.management.ObjectName;
 public class PropertySheet<T extends Configurable> {
     private static final Logger logger = Logger.getLogger(PropertySheet.class.getName());
 
-    public enum StoredFieldType { LIST, MAP, STRING, NONE }
+    /**
+     * The way a field is stored in the configuration.
+     */
+    public enum StoredFieldType {
+        /**
+         * LIST stores List, array and Set.
+         */
+        LIST,
+        /**
+         * MAP stores Map.
+         */
+        MAP,
+        /**
+         * All non-collection field types are stored as STRING.
+         */
+        STRING,
+        /**
+         * Sentinel used for types which are not configurable.
+         */
+        NONE
+    }
 
     private final Map<String, Config> registeredProperties = new HashMap<>();
 
