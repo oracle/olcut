@@ -395,6 +395,9 @@ public final class DescribeConfigurable {
      */
     public static void writeExampleConfig(OutputStream stream, String fileFormat, Class<? extends Configurable> configurableClass, Map<String, FieldInfo> map) {
         FileFormatFactory factory = ConfigurationManager.getFileFormatFactory(fileFormat);
+        if (factory == null) {
+            throw new IllegalArgumentException("No format factory found for extension '" + fileFormat + "'");
+        }
         ConfigWriter configWriter = factory.getWriter(stream);
 
         // Generate attributes
