@@ -78,15 +78,7 @@ public final class JsonProvenanceMarshaller implements ProvenanceMarshaller {
     public List<ObjectMarshalledProvenance> deserializeFromFile(Path path) throws ProvenanceSerializationException, IOException {
         try {
             List<MarshalledProvenance> jsonProvenances = mapper.readValue(path.toFile(), typeRef);
-            List<ObjectMarshalledProvenance> jps = new ArrayList<>();
-            for (MarshalledProvenance mp : jsonProvenances) {
-                if (mp instanceof ObjectMarshalledProvenance) {
-                    jps.add((ObjectMarshalledProvenance) mp);
-                } else {
-                    throw new ProvenanceSerializationException("Invalid provenance found, expected ObjectMarshalledProvenance, found " + mp);
-                }
-            }
-            return jps;
+            return convertMarshalledProvenanceList(jsonProvenances);
         } catch (JsonParseException | JsonMappingException e) {
             throw new ProvenanceSerializationException("Failed to parse JSON",e);
         }
@@ -96,18 +88,31 @@ public final class JsonProvenanceMarshaller implements ProvenanceMarshaller {
     public List<ObjectMarshalledProvenance> deserializeFromString(String input) throws ProvenanceSerializationException {
         try {
             List<MarshalledProvenance> jsonProvenances = mapper.readValue(input, typeRef);
-            List<ObjectMarshalledProvenance> jps = new ArrayList<>();
-            for (MarshalledProvenance mp : jsonProvenances) {
-                if (mp instanceof ObjectMarshalledProvenance) {
-                    jps.add((ObjectMarshalledProvenance) mp);
-                } else {
-                    throw new IllegalArgumentException("Invalid provenance found, expected ObjectMarshalledProvenance, found " + mp);
-                }
-            }
-            return jps;
+            return convertMarshalledProvenanceList(jsonProvenances);
         } catch (JsonProcessingException e) {
             throw new ProvenanceSerializationException("Failed to deserialize provenance", e);
         }
+    }
+
+    /**
+     * Converts the list of {@link MarshalledProvenance}s to a list of {@link ObjectMarshalledProvenance}s.
+     * <p>
+     * This is because Jackson's deserialization doesn't give a sharp enough type, so we have to check.
+     * It will throw {@link IllegalArgumentException} in the event the provenance stream was malformed and
+     * so contained a top level {@link com.oracle.labs.mlrg.olcut.provenance.io.FlatMarshalledProvenance}.
+     * @param provenances The provenances to cast.
+     * @return A list of {@link ObjectMarshalledProvenance}s.
+     */
+    private static List<ObjectMarshalledProvenance> convertMarshalledProvenanceList(List<MarshalledProvenance> provenances) {
+        List<ObjectMarshalledProvenance> jps = new ArrayList<>();
+        for (MarshalledProvenance mp : provenances) {
+            if (mp instanceof ObjectMarshalledProvenance) {
+                jps.add((ObjectMarshalledProvenance) mp);
+            } else {
+                throw new IllegalArgumentException("Invalid provenance found, expected ObjectMarshalledProvenance, found " + mp);
+            }
+        }
+        return jps;
     }
 
     @Override
