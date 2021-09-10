@@ -102,7 +102,7 @@ public class ConfigurationManager implements Closeable {
     public static final Option configFileOption = new Option() {
         public String longName() { return "config-file"; }
         public char charName() { return 'c'; }
-        public String usage() { return "A comma separated list of olcut config files."; }
+        public String usage() { return "A comma separated list of OLCUT config files."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
@@ -116,7 +116,7 @@ public class ConfigurationManager implements Closeable {
     public static final Option fileFormatOption = new Option() {
         public String longName() { return "config-file-formats"; }
         public char charName() { return '\0'; }
-        public String usage() { return "A comma separated list of olcut FileFormatFactory implementations (assumed to be on the classpath)."; }
+        public String usage() { return "A comma separated list of OLCUT FileFormatFactory implementations (assumed to be on the classpath)."; }
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 

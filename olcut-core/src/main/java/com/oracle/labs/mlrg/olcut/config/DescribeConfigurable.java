@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -49,25 +49,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Describes a Configurable class.
+ * Describes a {@link Configurable} class.
  */
-public class DescribeConfigurable {
+public final class DescribeConfigurable {
     private static final Logger logger = Logger.getLogger(DescribeConfigurable.class.getName());
 
-    public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Field Name","Type","Mandatory","Redact","Default","Description"));
+    /**
+     * The description column headers.
+     */
+    public static final List<String> HEADER = Collections.unmodifiableList(Arrays.asList("Field Name", "Type", "Mandatory", "Redact", "Default", "Description"));
 
     /**
      * All the configuration relevant field information.
      * <p>
      * Conceptually a record, and may one day actually be a record.
      */
-    public static class FieldInfo {
+    public static final class FieldInfo {
         public enum FieldInfoType {NORMAL, ENUM, LIST, ENUM_LIST, MAP}
+
         public final String name;
         public final String className;
         public final Field field;
@@ -84,6 +89,20 @@ public class DescribeConfigurable {
 
         public final List<String> enumConstants;
 
+        /**
+         * Internal constructor for a FieldInfo.
+         *
+         * @param name                 The field name.
+         * @param className            The type of the field.
+         * @param field                The field object.
+         * @param annotation           The config annotation on that field.
+         * @param defaultVal           The default value of the field.
+         * @param type                 The field info type.
+         * @param genericListClass     The generic class of a list field.
+         * @param genericMapKeyClass   The generic key class of a map field.
+         * @param genericMapValueClass The generic value class of a map field.
+         * @param enumConstants        A list of the enum constants if this field is an enum type.
+         */
         private FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, FieldInfoType type, String genericListClass, String genericMapKeyClass, String genericMapValueClass, List<String> enumConstants) {
             this.name = name;
             this.className = className;
@@ -97,31 +116,88 @@ public class DescribeConfigurable {
             this.genericMapValueClass = genericMapValueClass;
             this.type = type;
             int index = className.lastIndexOf(".");
-            this.classShortName = index > -1 ? className.substring(index+1) : className;
+            this.classShortName = index > -1 ? className.substring(index + 1) : className;
             this.enumConstants = enumConstants;
         }
 
+        /**
+         * Constructs a field info for a non-collection, non-enum field.
+         *
+         * @param name       The field name.
+         * @param className  The type of the field.
+         * @param field      The field object.
+         * @param annotation The config annotation on that field.
+         * @param defaultVal The default value of the field.
+         */
         public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal) {
-            this(name,className,field,annotation,defaultVal,FieldInfoType.NORMAL,"","","",Collections.emptyList());
+            this(name, className, field, annotation, defaultVal, FieldInfoType.NORMAL, "", "", "", Collections.emptyList());
         }
 
+        /**
+         * Constructs a field info for an enum field.
+         *
+         * @param name          The field name.
+         * @param className     The type of the field.
+         * @param field         The field object.
+         * @param annotation    The config annotation on that field.
+         * @param defaultVal    The default value of the field.
+         * @param enumConstants The list of enum constants as strings.
+         */
         public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, List<String> enumConstants) {
-            this(name,className,field,annotation,defaultVal,FieldInfoType.ENUM,"","","",Collections.unmodifiableList(enumConstants));
+            this(name, className, field, annotation, defaultVal, FieldInfoType.ENUM, "", "", "", Collections.unmodifiableList(enumConstants));
         }
 
+        /**
+         * Constructs a field info for a non-enum list or set field.
+         *
+         * @param name             The field name.
+         * @param className        The type of the field.
+         * @param field            The field object.
+         * @param annotation       The config annotation on that field.
+         * @param defaultVal       The default value of the field.
+         * @param genericListClass The generic class of a list field.
+         */
         public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, String genericListClass) {
-            this(name,className,field,annotation,defaultVal,FieldInfoType.LIST,genericListClass,"","",Collections.emptyList());
+            this(name, className, field, annotation, defaultVal, FieldInfoType.LIST, genericListClass, "", "", Collections.emptyList());
         }
 
+        /**
+         * Constructs a field info for an enum list or set field.
+         *
+         * @param name             The field name.
+         * @param className        The type of the field.
+         * @param field            The field object.
+         * @param annotation       The config annotation on that field.
+         * @param defaultVal       The default value of the field.
+         * @param genericListClass The generic class of a list field.
+         * @param enumConstants    The list of enum constants as strings.
+         */
         public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, String genericListClass, List<String> enumConstants) {
-            this(name,className,field,annotation,defaultVal,FieldInfoType.ENUM_LIST,genericListClass,"","",Collections.unmodifiableList(enumConstants));
+            this(name, className, field, annotation, defaultVal, FieldInfoType.ENUM_LIST, genericListClass, "", "", Collections.unmodifiableList(enumConstants));
         }
 
+        /**
+         * Constructs a field info for a map field.
+         *
+         * @param name              The field name.
+         * @param className         The type of the field.
+         * @param field             The field object.
+         * @param annotation        The config annotation on that field.
+         * @param defaultVal        The default value of the field.
+         * @param genericKeyClass   The generic key class of a map field.
+         * @param genericValueClass The generic value class of a map field.
+         */
         public FieldInfo(String name, String className, Field field, Config annotation, String defaultVal, String genericKeyClass, String genericValueClass) {
-            this(name,className,field,annotation,defaultVal,FieldInfoType.MAP,"",genericKeyClass,genericValueClass,Collections.emptyList());
+            this(name, className, field, annotation, defaultVal, FieldInfoType.MAP, "", genericKeyClass, genericValueClass, Collections.emptyList());
         }
     }
 
+    /**
+     * Generates the default value from a field info.
+     *
+     * @param fi The field info to use.
+     * @return The default value for that type.
+     */
     private static String generateDefaultValue(FieldInfo fi) {
         FieldType ft = FieldType.getFieldType(fi.field);
         switch (ft) {
@@ -161,7 +237,13 @@ public class DescribeConfigurable {
         }
     }
 
-    public static TreeMap<String,FieldInfo> generateFieldInfo(Class<? extends Configurable> configurableClass) {
+    /**
+     * Extracts the configurable fields from the supplied class and generates the map of field information.
+     *
+     * @param configurableClass The class to inspect.
+     * @return The information for the configurable fields.
+     */
+    public static SortedMap<String, FieldInfo> generateFieldInfo(Class<? extends Configurable> configurableClass) {
         Set<Field> fieldSet = PropertySheet.getAllFields(configurableClass);
 
         Object instance;
@@ -177,7 +259,7 @@ public class DescribeConfigurable {
             throw new IllegalStateException("Can't instantiate class " + configurableClass, ex);
         }
 
-        TreeMap<String, FieldInfo> map = new TreeMap<>();
+        SortedMap<String, FieldInfo> map = new TreeMap<>();
         for (Field f : fieldSet) {
             Config configAnnotation = f.getAnnotation(Config.class);
             if (configAnnotation != null) {
@@ -207,13 +289,13 @@ public class DescribeConfigurable {
                                 Object[] constants = listType.getEnumConstants();
                                 List<String> enumConstants = new ArrayList<>();
                                 for (Object o : constants) {
-                                    enumConstants.add(((Enum<?>)o).name());
+                                    enumConstants.add(((Enum<?>) o).name());
                                 }
-                                fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation,defaultVal,listType.getCanonicalName(),enumConstants);
+                                fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation, defaultVal, listType.getCanonicalName(), enumConstants);
                             } else {
-                                fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation,defaultVal,listType.getCanonicalName());
+                                fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation, defaultVal, listType.getCanonicalName());
                             }
-                            map.put(f.getName(),fi);
+                            map.put(f.getName(), fi);
                         } else {
                             logger.warning("This class has an invalid configurable field called " + f.getName() + ", failed to extract the generic type arguments for a list or set, found: " + genericList.toString());
                         }
@@ -222,8 +304,8 @@ public class DescribeConfigurable {
                         // Pull out the generic types from the map.
                         List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                         if (genericList.size() == 2) {
-                            FieldInfo fi = new FieldInfo(f.getName(),f.getType().getName(),f,configAnnotation,defaultVal,genericList.get(0).getCanonicalName(),genericList.get(1).getCanonicalName());
-                            map.put(f.getName(),fi);
+                            FieldInfo fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation, defaultVal, genericList.get(0).getCanonicalName(), genericList.get(1).getCanonicalName());
+                            map.put(f.getName(), fi);
                         } else {
                             logger.warning("This class has an invalid configurable field called " + f.getName() + ", failed to extract the generic type arguments for a map, found: " + genericList.toString());
                         }
@@ -234,13 +316,13 @@ public class DescribeConfigurable {
                             Object[] constants = f.getType().getEnumConstants();
                             List<String> enumConstants = new ArrayList<>();
                             for (Object o : constants) {
-                                enumConstants.add(((Enum) o).name());
+                                enumConstants.add(((Enum<?>) o).name());
                             }
                             fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation, defaultVal, enumConstants);
                         } else {
                             fi = new FieldInfo(f.getName(), f.getType().getName(), f, configAnnotation, defaultVal);
                         }
-                        map.put(f.getName(),fi);
+                        map.put(f.getName(), fi);
                     }
                 }
                 f.setAccessible(accessible);
@@ -250,10 +332,17 @@ public class DescribeConfigurable {
         return map;
     }
 
-    public static List<List<String>> generateDescription(Map<String,FieldInfo> map) {
+    /**
+     * Generates a description of the supplied field infos, listing the properties for the columns in {@link #HEADER}.
+     *
+     * @param map The field infos to describe.
+     * @return A List containing a multiple lists, one per field, where each list contains the description values for
+     * that column.
+     */
+    public static List<List<String>> generateDescription(Map<String, FieldInfo> map) {
         List<List<String>> output = new ArrayList<>();
 
-        output.add(header);
+        output.add(HEADER);
 
         for (Map.Entry<String, FieldInfo> e : map.entrySet()) {
             ArrayList<String> fieldString = new ArrayList<>();
@@ -281,8 +370,8 @@ public class DescribeConfigurable {
 
             fieldString.add(fi.name);
             fieldString.add(type);
-            fieldString.add(""+fi.mandatory);
-            fieldString.add(""+fi.redact);
+            fieldString.add("" + fi.mandatory);
+            fieldString.add("" + fi.redact);
             if (fi.mandatory) {
                 fieldString.add("");
             } else {
@@ -296,34 +385,45 @@ public class DescribeConfigurable {
         return output;
     }
 
-    public static void writeExampleConfig(OutputStream stream, String fileFormat, Class<? extends Configurable> configurableClass, Map<String,FieldInfo> map) {
+    /**
+     * Writes an example configuration for the specified object to the supplied output stream.
+     *
+     * @param stream            The stream to write to.
+     * @param fileFormat        The file format to write in.
+     * @param configurableClass The configurable class to use.
+     * @param map               The field infos for that class.
+     */
+    public static void writeExampleConfig(OutputStream stream, String fileFormat, Class<? extends Configurable> configurableClass, Map<String, FieldInfo> map) {
         FileFormatFactory factory = ConfigurationManager.getFileFormatFactory(fileFormat);
+        if (factory == null) {
+            throw new IllegalArgumentException("No format factory found for extension '" + fileFormat + "'");
+        }
         ConfigWriter configWriter = factory.getWriter(stream);
 
         // Generate attributes
-        Map<String,String> attributes = new HashMap<>();
-        attributes.put(ConfigLoader.NAME,"example");
-        attributes.put(ConfigLoader.EXPORT,"false");
-        attributes.put(ConfigLoader.IMPORT,"false");
-        attributes.put(ConfigLoader.TYPE,configurableClass.getCanonicalName());
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put(ConfigLoader.NAME, "example");
+        attributes.put(ConfigLoader.EXPORT, "false");
+        attributes.put(ConfigLoader.IMPORT, "false");
+        attributes.put(ConfigLoader.TYPE, configurableClass.getCanonicalName());
 
         // Generate default properties
         Map<String, Property> properties = new HashMap<>();
-        for (Map.Entry<String,FieldInfo> e : map.entrySet()) {
+        for (Map.Entry<String, FieldInfo> e : map.entrySet()) {
             FieldInfo fi = e.getValue();
             switch (fi.type) {
                 case NORMAL:
                 case ENUM:
-                    properties.put(e.getKey(),new SimpleProperty(generateDefaultValue(fi)));
+                    properties.put(e.getKey(), new SimpleProperty(generateDefaultValue(fi)));
                     break;
                 case LIST:
                 case ENUM_LIST:
-                    properties.put(e.getKey(),new ListProperty(Collections.singletonList(new SimpleProperty(fi.className + "-instance"))));
+                    properties.put(e.getKey(), new ListProperty(Collections.singletonList(new SimpleProperty(fi.className + "-instance"))));
                     break;
                 case MAP:
-                    Map<String,SimpleProperty> newMap = new HashMap<>();
-                    newMap.put("mapKey",new SimpleProperty(fi.genericMapValueClass+"-instance"));
-                    properties.put(e.getKey(),new MapProperty(newMap));
+                    Map<String, SimpleProperty> newMap = new HashMap<>();
+                    newMap.put("mapKey", new SimpleProperty(fi.genericMapValueClass + "-instance"));
+                    properties.put(e.getKey(), new MapProperty(newMap));
                     break;
             }
         }
@@ -336,6 +436,12 @@ public class DescribeConfigurable {
         configWriter.close();
     }
 
+    /**
+     * Formats a description by aligning everything into columns.
+     *
+     * @param descriptions The descriptions to format.
+     * @return A single String which contains all the descriptions, formatted so each column lines up.
+     */
     public static String formatDescription(List<List<String>> descriptions) {
         int[] maxWidth = new int[6];
 
@@ -359,23 +465,28 @@ public class DescribeConfigurable {
             }
         }
 
-        String formatString = "%-"+maxWidth[0]+"s %-"+maxWidth[1]+"s %-"+maxWidth[2]+"s %-"+maxWidth[3]+"s %-"+maxWidth[4]+"s %s\n";
+        String formatString = "%-" + maxWidth[0] + "s %-" + maxWidth[1] + "s %-" + maxWidth[2] + "s %-" + maxWidth[3] + "s %-" + maxWidth[4] + "s %s\n";
         StringBuilder builder = new StringBuilder();
 
         for (List<String> a : descriptions) {
             if (a.size() == 6) {
-                builder.append(String.format(formatString,a.get(0),a.get(1),a.get(2),a.get(3),a.get(4),a.get(5)));
+                builder.append(String.format(formatString, a.get(0), a.get(1), a.get(2), a.get(3), a.get(4), a.get(5)));
             }
         }
         return builder.toString();
     }
 
-    public static class DescribeOptions implements Options {
-        @Option(charName='e',longName="file-format",usage="File format to write out, must have an instance of FileFormatFactory on the classpath and added in through the options.")
+    /**
+     * CLI options for {@link DescribeConfigurable}.
+     */
+    public static final class DescribeOptions implements Options {
+        @Option(longName = "config-file-formats", usage = "A comma separated list of OLCUT FileFormatFactory implementations (assumed to be on the classpath).")
+        public List<String> fileFormats;
+        @Option(charName = 'e', longName = "file-format", usage = "File format to write out, must have an instance of FileFormatFactory on the classpath and added in through the options.")
         public String extension = "xml";
-        @Option(charName='n',longName="class-name",usage="Name of the Configurable class to describe.")
+        @Option(charName = 'n', longName = "class-name", usage = "Name of the Configurable class to describe.")
         public String className;
-        @Option(charName='o',longName="output-example-configuration",usage="Emit an example configuration in XML.")
+        @Option(charName = 'o', longName = "output-example-configuration", usage = "Emit an example configuration in XML.")
         public boolean output;
     }
 
@@ -385,7 +496,7 @@ public class DescribeConfigurable {
 
         ConfigurationManager cm;
         try {
-            cm = new ConfigurationManager(args,o,false);
+            cm = new ConfigurationManager(args, o, false);
         } catch (UsageException e) {
             logger.info(e.getMessage());
             return;
@@ -397,12 +508,31 @@ public class DescribeConfigurable {
             return;
         }
 
+        if (o.fileFormats != null && !o.fileFormats.isEmpty()) {
+            for (String s : o.fileFormats) {
+                System.out.println("Adding file format:" + s);
+                try {
+                    Class<?> clazz = Class.forName(s);
+                    if (FileFormatFactory.class.isAssignableFrom(clazz)) {
+                        FileFormatFactory fff = (FileFormatFactory) clazz.getDeclaredConstructor().newInstance();
+                        ConfigurationManager.addFileFormatFactory(fff);
+                    } else {
+                        throw new ArgumentException("config-file-formats", s + " does not implement com.oracle.labs.mlrg.olcut.config.io.FileFormatFactory");
+                    }
+                } catch (ClassNotFoundException e) {
+                    throw new ArgumentException(e, "config-file-formats", "Class not found '" + s + "'");
+                } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                    throw new ArgumentException(e, "config-file-formats", "Could not instantiate class '" + s + "'");
+                }
+            }
+        }
+
         try {
             Class<?> clazz = Class.forName(o.className);
             if (Configurable.class.isAssignableFrom(clazz)) {
                 Class<? extends Configurable> configurableClass = (Class<? extends Configurable>) clazz;
 
-                Map<String,FieldInfo> map = generateFieldInfo(configurableClass);
+                Map<String, FieldInfo> map = generateFieldInfo(configurableClass);
 
                 List<List<String>> output = generateDescription(map);
 
@@ -412,7 +542,7 @@ public class DescribeConfigurable {
                 if (o.output) {
                     ByteArrayOutputStream writer = new ByteArrayOutputStream();
 
-                    writeExampleConfig(writer,o.extension,configurableClass,map);
+                    writeExampleConfig(writer, o.extension, configurableClass, map);
 
                     System.out.println("Example :\n" + writer.toString("UTF-8"));
                 }
