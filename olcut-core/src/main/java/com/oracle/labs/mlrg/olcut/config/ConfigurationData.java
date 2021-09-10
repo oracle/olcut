@@ -37,8 +37,12 @@ import com.oracle.labs.mlrg.olcut.config.property.ListProperty;
 import com.oracle.labs.mlrg.olcut.config.property.MapProperty;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.util.Util;
 
 import java.io.Serializable;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +51,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -289,69 +294,273 @@ public final class ConfigurationData implements Serializable {
     }
 
     /**
-     * Checks whether a pair of SimplePropertys are equal to one another, dereferencing and recursively traversing
-     * ConfigurationData as necessary.
+     * Supporting class for {@link ConfigurationData#structuralEquals(List, List, String, String)}. This class defines
+     * equality semantics for an instance of {@link ConfigurationData} by checking className equality and checking for
+     * equality between dereferenced property lists.
      */
-    private static boolean simplePropertyDerefEquals(Map<String, ConfigurationData> a, Map<String, ConfigurationData> b, SimpleProperty aSimple, SimpleProperty bSimple, String propName, Optional<String> locationContext) {
-        Optional<ConfigurationData> aDerefOpt = Optional.ofNullable(a.get(aSimple.getValue()));
-        Optional<ConfigurationData> bDerefOpt = Optional.ofNullable(b.get(bSimple.getValue()));
-        if(aDerefOpt.isPresent() && bDerefOpt.isPresent()) {
-            // both are references
-            boolean eq = innerStructuralEquals(a, b, aSimple.getValue(), bSimple.getValue());
-            if(!eq) {
-                logger.fine(String.format("Property key: %s%s, a does not structurally equal b", propName, locationContext.orElse("")));
+    private static class StructuralConfigurationData {
+        private final String name;
+        private final String className;
+
+        private Map<String, DerefedProperty> simpleProperties;
+        private Map<String, List<DerefedProperty>> listProperties;
+        private Map<String, List<Class<?>>> listClassProperties;
+        private Map<String, Map<String, DerefedProperty>> mapProperties;
+
+        public static Optional<StructuralConfigurationData> fromName(Map<String, ConfigurationData> contextMap, String name) {
+            return Optional.ofNullable(contextMap.get(name))
+                    .map(configurationData ->
+                            new StructuralConfigurationData(contextMap, configurationData));
+        }
+
+        public StructuralConfigurationData(Map<String, ConfigurationData> contextMap, ConfigurationData referencedCD) {
+            this.name = referencedCD.name;
+            this.className = referencedCD.className;
+            this.simpleProperties = new HashMap<>();
+            this.listProperties = new HashMap<>();
+            this.listClassProperties = new HashMap<>();
+            this.mapProperties = new HashMap<>();
+            for(Map.Entry<String, Property> propertyEntry: referencedCD.properties.entrySet()) {
+                String propName = propertyEntry.getKey();
+                Property prop = propertyEntry.getValue();
+                if(prop instanceof SimpleProperty) {
+                    this.simpleProperties.put(propName, new DerefedProperty(contextMap, (SimpleProperty) prop, propName, ""));
+                } else if (prop instanceof ListProperty) {
+                    ListProperty listProperty = (ListProperty) prop;
+                    this.listProperties.put(propName,
+                            IntStream.range(0, listProperty.getSimpleList().size())
+                                    .mapToObj(i ->
+                                            new DerefedProperty(contextMap, listProperty.getSimpleList().get(i), propName, ", index: " + i))
+                                    .collect(Collectors.toList()));
+                    this.listClassProperties.put(propName, listProperty.getClassList());
+                } else if (prop instanceof MapProperty) {
+                    MapProperty mapProperty = (MapProperty) prop;
+                    this.mapProperties.put(propName, mapProperty.getMap().entrySet().stream()
+                            .collect(Collectors.toMap(Map.Entry::getKey,
+                                    e -> new DerefedProperty(contextMap, e.getValue(),
+                                            propName, ", PropValue key: " + e.getKey()))));
+                } else {
+                    logger.fine(String.format("Unknown Property of key: %s with type: %s", propertyEntry.getKey(), prop.getClass()));
+                }
             }
-            return eq;
-        } else if ((!aDerefOpt.isPresent()) && (!bDerefOpt.isPresent())) {
-            // both are not references
-            boolean valueMatch = aSimple.equals(bSimple);
-            if(!valueMatch) {
-                logger.fine(String.format("Property key: %s%s, a.value: %s, b.value: %s",
-                        propName, locationContext.orElse(""), aSimple.getValue(), bSimple.getValue()));
-            }
-            return valueMatch;
-        } else {
-            // mismatch between reference and non-reference
-            if(aDerefOpt.isPresent()) {
-                logger.fine(String.format("Property key: %s%s a (%s) is a reference while b (%s) is a value", propName, locationContext.orElse(""), aSimple.getValue(), bSimple.getValue()));
+        }
+
+
+
+        private static <T> boolean checkPresenceAllMatch(Map<String, T> aMap, Map<String, T> bMap, BiPredicate<T, T> matchPair) {
+            Set<String> allKeys = new HashSet<>(aMap.keySet());
+            allKeys.addAll(bMap.keySet());
+            return allKeys.stream().allMatch(k -> {
+                Optional<T> maybeA = Optional.ofNullable(aMap.get(k));
+                Optional<T> maybeB = Optional.ofNullable(bMap.get(k));
+                if (maybeA.isPresent() && maybeB.isPresent()) {
+                    return matchPair.test(maybeA.get(), maybeB.get());
+                } else {
+                    if (maybeA.isPresent()) {
+                        logger.fine(String.format("Missing property: a: %s, no value for b", k));
+                    } else {
+                        logger.fine(String.format("Missing property: b: %s, no value for a", k));
+                    }
+                    return false;
+                }
+            });
+        }
+
+        /**
+         * Note that this does not check the {@code name} field deliberately.
+         */
+        @Override
+        public int hashCode() {
+            return Objects.hash(className, simpleProperties, listProperties, listClassProperties, mapProperties);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof StructuralConfigurationData) {
+                StructuralConfigurationData that = (StructuralConfigurationData) o;
+                if (this.className.equals(that.className)) {
+                    boolean simpleMatch = checkPresenceAllMatch(this.simpleProperties, that.simpleProperties,
+                            DerefedProperty::equals);
+
+                    if(!simpleMatch) {
+                        logger.fine("SimpleProperties don't match: as: " + this.simpleProperties + " bs: " +that.simpleProperties);
+                    }
+
+                    boolean mapMatch = checkPresenceAllMatch(this.mapProperties, that.mapProperties,
+                            (aMap, bMap) ->
+                                    aMap.keySet().equals(bMap.keySet()) &&
+                                            aMap.keySet().stream()
+                                                    .allMatch(k -> aMap.get(k).equals(bMap.get(k))));
+
+                    if(!mapMatch) {
+                        logger.fine("MapProperties don't match: as: " + this.mapProperties + " bs: " + that.mapProperties);
+                    }
+
+                    boolean listMatch = checkPresenceAllMatch(this.listProperties,that.listProperties, (as, bs) -> {
+                       boolean eq = Util.bagEquality(as, bs);
+                        if(!eq) {
+                            logger.fine("bags not equal:\na: " + as.toString() +  "\nb: " + bs.toString());
+                        }
+                        return eq;
+                    }) &&
+                            checkPresenceAllMatch(this.listClassProperties, that.listClassProperties, (as, bs) -> {
+                                boolean eq = Util.bagEquality(as, bs);
+                                if(!eq) {
+                                    logger.fine("bags not equal:\na: " + as.toString() +  "\nb: " + bs.toString());
+                                }
+                                return eq;
+                            });
+
+                if(!listMatch) {
+                        logger.fine("ListProperties don't match: as: " + this.listProperties+ " bs: " + that.listProperties);
+                        logger.fine("ListClassProperties don't match: as: " + this.listClassProperties + " bs: " + that.listClassProperties);
+                    }
+
+                    return simpleMatch && mapMatch && listMatch;
+                } else {
+                    logger.fine(String.format("type mismatch, a.class: %s b.class: %s", this.className, this.className));
+                    return false;
+                }
             } else {
-                logger.fine(String.format("Property key: %s%s a (%s) is a value while b (%s) is a reference", propName, locationContext.orElse(""), aSimple.getValue(), bSimple.getValue()));
+                return false;
             }
-            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "StructuralConfigurationData(" +
+                    "name='" + name + '\'' +
+                    ", className='" + className + '\'' +
+                    ", simpleProperties=" + simpleProperties +
+                    ", listProperties=" + listProperties +
+                    ", listClassProperties=" + listClassProperties +
+                    ", mapProperties=" + mapProperties +
+                    ')';
         }
     }
 
     /**
-     * Checks whether a property name between two ConfigurationData objects 'matches', whether it represents an equal
-     * value or, recursively whether it is structurally equal.
+     * Supporting class for {@link ConfigurationData#structuralEquals(List, List, String, String)}. This class provides
+     * equality semantics for individual instances of {@link SimpleProperty} that both dereference references and attempt
+     * to deal with string representations of typed values in the way users typically expect. This leads to some strange
+     * implementations, however. Details can be found on {@link DerefedProperty#equals(Object)}.
      */
-    private static boolean propertyNamesMatch (String propName, Map<String, ConfigurationData> a, Map<String, ConfigurationData> b, ConfigurationData aRoot, ConfigurationData bRoot) {
-        Optional<Property> aPropOpt = Optional.ofNullable(aRoot.getProperties().get(propName));
-        Optional<Property> bPropOpt = Optional.ofNullable(bRoot.getProperties().get(propName));
-        if(aPropOpt.isPresent() && bPropOpt.isPresent()) {
-            Property aProp = aPropOpt.get();
-            Property bProp = bPropOpt.get();
-            if(aProp instanceof SimpleProperty && bProp instanceof SimpleProperty) {
-                return simplePropertyDerefEquals(a, b, (SimpleProperty) aProp, (SimpleProperty) bProp, propName, Optional.empty());
-            } else if(aProp instanceof ListProperty && bProp instanceof ListProperty) {
-                List<SimpleProperty> aList = ((ListProperty) aProp).getSimpleList();
-                List<SimpleProperty> bList = ((ListProperty) bProp).getSimpleList();
-                return aList.size() == bList.size() &&
-                        IntStream.range(0, aList.size()).allMatch(i -> simplePropertyDerefEquals(a, b, aList.get(i), bList.get(i), propName, Optional.of(", List index: " + i)));
-            } else if(aProp instanceof MapProperty && bProp instanceof MapProperty) {
-                Map<String, SimpleProperty> aMap = ((MapProperty) aProp).getMap();
-                Map<String, SimpleProperty> bMap = ((MapProperty) bProp).getMap();
-                return aMap.keySet().equals(bMap.keySet()) &&
-                        aMap.keySet().stream().allMatch(k -> simplePropertyDerefEquals(a, b, aMap.get(k), bMap.get(k), propName, Optional.of(", PropValue key: " + k)));
+    private static class DerefedProperty {
+
+        private boolean isDerefed;
+        private Map<String, ConfigurationData> configState;
+        private StructuralConfigurationData innerConf;
+        private String innerValue;
+        private String propName;
+        private String locationContext;
+        private Optional<Double> innerDoubleValue;
+        private Optional<OffsetDateTime> innerDateTime;
+        private Optional<OffsetTime> innerTime;
+
+        public DerefedProperty(Map<String, ConfigurationData> confs, SimpleProperty prop, String propName, String locationContext) {
+            this.propName = propName;
+            this.locationContext = locationContext;
+            this.innerValue = prop.getValue();
+            try {
+                this.innerDoubleValue = Optional.of(Double.parseDouble(this.innerValue));
+            } catch (NumberFormatException e) {
+                this.innerDoubleValue = Optional.empty();
+            }
+            try {
+                this.innerDateTime = Optional.of(OffsetDateTime.parse(this.innerValue));
+            } catch (DateTimeParseException e) {
+                this.innerDateTime = Optional.empty();
+            }
+            try {
+                this.innerTime = Optional.of(OffsetTime.parse(this.innerValue));
+            } catch (DateTimeParseException e) {
+                this.innerTime = Optional.empty();
+            }
+            this.configState = confs;
+            Optional<ConfigurationData> maybeDeref = Optional.ofNullable(confs.get(prop.getValue()));
+            isDerefed = maybeDeref.isPresent();
+            if(isDerefed) {
+                innerConf = new StructuralConfigurationData(confs, maybeDeref.get());
+            }
+        }
+
+        public DerefedProperty(Map<String, ConfigurationData> confs, SimpleProperty prop, String propName) {
+            this(confs, prop, propName, "");
+        }
+
+        private String reportString() {
+            return String.format("Property Key: %s%s, with value %s %s %s %s", propName, locationContext,
+                    innerValue, (isDerefed ? "(is a reference)" : "(is not a reference)"),
+                    innerDoubleValue.map(d -> "(parsed as double " + d +")").orElse("(not parsed as double)"),
+                    innerDateTime.map(d -> "(parsed as date " + d + ")").orElse("(not parsed as date)"));
+        }
+
+        @Override public int hashCode() {
+            if(this.isDerefed) {
+                return Objects.hash(this.isDerefed, this.innerConf);
+            } else if(this.innerDoubleValue.isPresent()){
+                return Objects.hash(this.isDerefed, this.innerDoubleValue.get());
+            } else if (this.innerDateTime.isPresent()) {
+                return Objects.hash(this.isDerefed, this.innerDateTime.get());
+            } else if (this.innerTime.isPresent()) {
+                return Objects.hash(this.isDerefed, this.innerTime.get());
             } else {
-                logger.severe(String.format("Unrecognized Property type: %s with name: %s", aProp.getClass().getName(), propName));
+                return Objects.hash(this.isDerefed, this.innerValue);
+            }
+        }
+
+        /**
+         * To match the typical behavior a user would expect, this method uses a bad hack to try to infer types whose
+         * string representation is likely to have different equality semantics from its typed representation. First
+         * it attempts to resolve references and test them for equality. If that fails it will attempt to parse the
+         * string as a double and test for equality using {@link Util#doubleEquals(double, double)}, then it will attempt
+         * to use {@link OffsetDateTime#parse(CharSequence)} and test equality, followed by {@link OffsetTime#parse(CharSequence)}.
+         * Finally, it will test using {@link String#equals(Object)}.
+         *
+         * @param o another object to equality test
+         * @return true if the objects' values are equal according to the logic described above, false otherwise
+         */
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof DerefedProperty) {
+                DerefedProperty that = (DerefedProperty) o;
+                if(this.isDerefed && that.isDerefed) {
+                    return this.innerConf.equals(that.innerConf);
+                } else if(!this.isDerefed && !that.isDerefed) {
+                    boolean valueMatch;
+
+                    if(this.innerDoubleValue.isPresent() && that.innerDoubleValue.isPresent()) {
+                        valueMatch = Util.doubleEquals(this.innerDoubleValue.get(), that.innerDoubleValue.get());
+                    } else if (this.innerDateTime.isPresent() && that.innerDateTime.isPresent()) {
+                        valueMatch = this.innerDateTime.get().equals(that.innerDateTime.get());
+                    } else if (this.innerTime.isPresent() && that.innerTime.isPresent()) {
+                        valueMatch = this.innerTime.get().equals(that.innerTime.get());
+                    } else {
+                        valueMatch = this.innerValue.equals(that.innerValue);
+                    }
+                    if(!valueMatch) {
+                        logger.fine(String.format("Property Value mismatch: %s and %s", this.reportString(), that.reportString()));
+                    }
+                    return valueMatch;
+                } else {
+                    logger.fine(String.format("Reference/Value mismatch: %s and %s", this.reportString(), that.reportString()));
+                    return false;
+                }
+            } else {
+                logger.fine("b is not a DerefedProperty b.class: " + o.getClass());
                 return false;
             }
-        } else if((!aPropOpt.isPresent()) && (!bPropOpt.isPresent())) {
-            return true; // both missing is a match
-        } else {
-            logger.fine(String.format("Property key: %s, aOpt: %s, bOpt: %s", propName, aPropOpt, bPropOpt));
-            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "DerefedProperty(" +
+                    "isDerefed=" + isDerefed +
+                    ", innerConf=" + innerConf +
+                    ", innerValue='" + innerValue + '\'' +
+                    ", propName='" + propName + '\'' +
+                    ", locationContext='" + locationContext + '\'' +
+                    ')';
         }
     }
 
@@ -359,32 +568,17 @@ public final class ConfigurationData implements Serializable {
      * See {@link #structuralEquals(List, List, String, String)} for description of behavior.
      */
     private static boolean innerStructuralEquals(Map<String, ConfigurationData> a, Map<String, ConfigurationData> b, String aName, String bName) {
-        Optional<ConfigurationData> aRootOpt = Optional.ofNullable(a.get(aName));
-        Optional<ConfigurationData> bRootOpt = Optional.ofNullable(b.get(bName));
-        if((!aRootOpt.isPresent()) || (!bRootOpt.isPresent())) {
-            if(!aRootOpt.isPresent()) {
-                logger.fine(String.format("%s is not found", aName));
+        Optional<StructuralConfigurationData> aRootOpt = StructuralConfigurationData.fromName(a, aName);
+        Optional<StructuralConfigurationData> bRootOpt = StructuralConfigurationData.fromName(b, bName);
+        if (aRootOpt.isPresent() && bRootOpt.isPresent()) {
+            return aRootOpt.get().equals(bRootOpt.get());
+        } else {
+            if (aRootOpt.isPresent()) {
+                logger.fine(String.format("Component with name: %s not found in b", bName));
             } else {
-                logger.fine(String.format("%s is not found", bName));
+                logger.fine(String.format("Component with name: %s not found in a", aName));
             }
             return false;
-        } else if(aRootOpt.get().equals(bRootOpt.get())) {
-            logger.fine(String.format("%s and %s are .equals()", aName, bName));
-            return true;
-        } else {
-            ConfigurationData aRoot = aRootOpt.get();
-            ConfigurationData bRoot = bRootOpt.get();
-
-            Set<String> propNames = new HashSet<>(aRoot.getProperties().keySet());
-            propNames.addAll(bRoot.getProperties().keySet());
-
-            boolean typesMatch = aRoot.getClassName().equals(bRoot.getClassName());
-            if(!typesMatch) {
-                logger.fine(String.format("type mismatch, a.class: %s b.class: %s", aRoot.getClassName(), bRoot.getClassName()));
-            }
-
-            return typesMatch &&
-                    propNames.stream().allMatch(propName -> propertyNamesMatch(propName, a, b, aRoot, bRoot));
         }
     }
 
@@ -396,6 +590,14 @@ public final class ConfigurationData implements Serializable {
      *
      * <p>
      *
+     * N.B. Because the serialized configuration format internally represents things as strings with no type information
+     * but equality semantics often differ between strings and the types the represent, the method attempts to intuit
+     * represented types by attempting to parse the string as that type and treating it as that type if it successfully
+     * parses. This means that, eg. ID values that are typed as strings but are fully numerical will be converted to
+     * doubles and be compared for equality that way. For more details on the processing see {@link DerefedProperty#equals(Object)}.
+     *
+     * <p>
+     *
      * {@code aName} should be the name of an element of {@code a} that is to be compared to {@code bName}
      * in {@code b}. {@code a} and {@code b} should each contain all the ConfigurationData objects
      * needed to instantiate the objects named by {@code aName} and {@code bName} respectively. Objects not
@@ -404,7 +606,7 @@ public final class ConfigurationData implements Serializable {
      * <p>
      *
      * At log-level {@code FINE} this reports the first place where the two instances differ, and the nature of their
-     * difference.
+     * difference. Any time this method returns {@code false}, it should also log at least one message.
      *
      * @param a ConfigurationData List for the first object and its children
      * @param b ConfigurationData List for the second object and its children

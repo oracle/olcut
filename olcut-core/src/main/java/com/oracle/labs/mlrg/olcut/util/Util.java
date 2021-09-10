@@ -35,7 +35,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Other utility functions.
@@ -129,6 +132,48 @@ public class Util {
         } else {
             return formatted;
         }
+    }
+
+    /**
+     * Compares two doubles to see if they are equal within some threshold epsilon. Originally from Knuth, Art of
+     * Computer Programming. Typically the version which provides a defaulted epsilon ({@link #doubleEquals(double, double)})
+     * will serve.
+     * @param x a double to compare
+     * @param y a double to compare
+     * @param epsilon a threshold for equality
+     * @return true if the two values are 'essentially equal', false otherwise
+     */
+    public static boolean doubleEquals(double x, double y, double epsilon) {
+        return Math.abs(x - y) <= Math.max(x, y) * epsilon;
+    }
+
+    /**
+     * Compares two doubles to see if they are equal within some threshold epsilon.  Originally from Knuth, Art of
+     * Computer Programming. By default the threshold is one 'unit in last place'.
+     * @param x a double to compare
+     * @param y a double to compare
+     * @return true if the two values are 'essentially equal', false otherwise
+     */
+    public static boolean doubleEquals(double x, double y) {
+        return doubleEquals(x, y, Math.ulp(1.0));
+    }
+
+    /**
+     * Implements bag/multiset equality semantics for two collections. Two collections are 'bag equals' if they contain
+     * the same elements in any order.
+     *
+     * <p>
+     *
+     * N.B. Internally this uses hash maps, so equality in this case is ultimately defined by {@link Object#hashCode()}
+     * rather than {@link Object#equals(Object)}.
+     * @param as a collection to compare
+     * @param bs a collection to compare
+     * @return true if the two values are 'multiset equal', false otherwise
+     */
+    public static <T> boolean bagEquality(Collection<T> as, Collection<T> bs) {
+        Map<T, Long> aCounts = as.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        Map<T, Long> bCounts = bs.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        return aCounts.equals(bCounts);
     }
 
     /**

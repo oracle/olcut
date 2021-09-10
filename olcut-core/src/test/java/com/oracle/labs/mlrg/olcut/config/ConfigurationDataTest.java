@@ -1,9 +1,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil;
-import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtilTest;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -20,12 +18,11 @@ public class ConfigurationDataTest {
 
     @BeforeAll
     public static void setup() {
-        Logger logger = Logger.getLogger(PropertySheet.class.getName());
-        logger.setLevel(Level.FINER);
+        Logger logger = Logger.getLogger(ConfigurationData.class.getName());
+        logger.setLevel(Level.FINE);
     }
 
 
-    /*
     @Test
     public void structuralEqualsAllConfig() {
         final String aName = "all-config";
@@ -50,10 +47,6 @@ public class ConfigurationDataTest {
         ConfigurationData aRoot = a.stream().filter(cd -> cd.getName().equals(aName)).findFirst().get();
         ConfigurationData bRoot = b.stream().filter(cd -> cd.getName().equals(bName)).findFirst().get();
 
-        System.out.println("ac.urlField: " + ac.urlField);
-        System.out.println("a.urlField: " + aRoot.get("urlField"));
-        System.out.println("b.urlField: " + bRoot.get("urlField"));
-
         assertTrue(ConfigurationData.structuralEquals(a, b, aName, bName));
 
         ac.stringField = "Something different from before";
@@ -71,7 +64,6 @@ public class ConfigurationDataTest {
 
         assertFalse(ConfigurationData.structuralEquals(a, b, aName, bName));
     }
-     */
 
     @Test
     public void structuralEqualsProvenanceRoundtrip() {
