@@ -26,7 +26,6 @@
     :byteField "123"
     :listStringField ["e" "pi"]
     :atomicLongField "123456789"
-    :listRandomField ["1234" "12345"]
     :pathField "/tmp/a-path.txt"
     :intField "12345"
     :FloatField "3.14159"
@@ -38,7 +37,6 @@
     :longArrayField ["9223372036854775807" "9223372036854775806" "5"]
     :listConfigurableSubclassField ["first-configurable" "second-configurable"]
     :DoubleField "3.141592653589793"
-    :randomField "12345"
     :BoolField "true"
     :longField "123456789"
     :shortArrayField ["12345" "2345" "345"]
