@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -173,6 +173,7 @@ public class AllFieldsConfiguredTest {
         ac.longArrayField = new long[]{9223372036854775807L,9223372036854775806L,5L};
         ac.floatArrayField = new float[]{1.1f,2.3f,3.5f};
         ac.doubleArrayField = new double[]{1e-16,2e-16,3.16};
+        ac.booleanArrayField = new boolean[]{true,false,true};
 
         //Configurable classes
         ac.configurableField = new StringConfigurable("A","B","C");

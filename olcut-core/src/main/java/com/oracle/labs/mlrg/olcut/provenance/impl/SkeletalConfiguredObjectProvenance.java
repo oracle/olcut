@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -204,68 +204,73 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 Config configAnnotation = f.getAnnotation(Config.class);
                 if ((configAnnotation != null) && !configAnnotation.redact()) {
                     FieldType ft = FieldType.getFieldType(f);
-                    switch (ft) {
-                        case BOOLEAN:
-                        case BYTE:
-                        case CHAR:
-                        case SHORT:
-                        case INTEGER:
-                        case LONG:
-                        case FLOAT:
-                        case DOUBLE:
-                        case STRING:
-                        case FILE:
-                        case PATH:
-                        case URL:
-                        case DATE_TIME:
-                        case DATE:
-                        case TIME:
-                        case ENUM:
-                        case CONFIGURABLE:
-                        case ATOMIC_INTEGER:
-                        case ATOMIC_LONG:
-                            Optional<Provenance> opt = convertPrimitive(ft,f.getType(),f.getName(),f.get(host));
-                            if (opt.isPresent()) {
-                                map.put(f.getName(), opt.get());
+                    if (ft == null) {
+                        logger.log(Level.SEVERE, "Provenance and configuration not supported for field '" + f.getName() + "' of type '" + f.getType() + ", value not recorded.");
+                    } else {
+                        switch (ft) {
+                            case BOOLEAN:
+                            case BYTE:
+                            case CHAR:
+                            case SHORT:
+                            case INTEGER:
+                            case LONG:
+                            case FLOAT:
+                            case DOUBLE:
+                            case STRING:
+                            case FILE:
+                            case PATH:
+                            case URL:
+                            case DATE_TIME:
+                            case DATE:
+                            case TIME:
+                            case ENUM:
+                            case CONFIGURABLE:
+                            case ATOMIC_INTEGER:
+                            case ATOMIC_LONG:
+                                Optional<Provenance> opt = convertPrimitive(ft, f.getType(), f.getName(), f.get(host));
+                                if (opt.isPresent()) {
+                                    map.put(f.getName(), opt.get());
+                                }
+                                break;
+                            case BYTE_ARRAY:
+                            case CHAR_ARRAY:
+                            case SHORT_ARRAY:
+                            case INTEGER_ARRAY:
+                            case LONG_ARRAY:
+                            case FLOAT_ARRAY:
+                            case DOUBLE_ARRAY:
+                            case BOOLEAN_ARRAY:
+                                map.put(f.getName(), convertPrimitiveArray(ft, f, f.get(host)));
+                                break;
+                            case STRING_ARRAY:
+                            case CONFIGURABLE_ARRAY:
+                                map.put(f.getName(), convertObjectArray(ft, f, (Object[]) f.get(host)));
+                                break;
+                            case LIST:
+                            case ENUM_SET:
+                            case SET: {
+                                List<Class<?>> genericClasses = PropertySheet.getGenericClass(f);
+                                if (genericClasses.size() != 1) {
+                                    logger.log(Level.SEVERE, "Invalid configurable field definition, field not recorded - found too many or too few generic type parameters for field " + f.getName());
+                                } else {
+                                    map.put(f.getName(), convertCollection(f, (Collection) f.get(host), genericClasses.get(0)));
+                                }
+                                break;
                             }
-                            break;
-                        case BYTE_ARRAY:
-                        case CHAR_ARRAY:
-                        case SHORT_ARRAY:
-                        case INTEGER_ARRAY:
-                        case LONG_ARRAY:
-                        case FLOAT_ARRAY:
-                        case DOUBLE_ARRAY:
-                            map.put(f.getName(), convertPrimitiveArray(ft, f, f.get(host)));
-                            break;
-                        case STRING_ARRAY:
-                        case CONFIGURABLE_ARRAY:
-                            map.put(f.getName(), convertObjectArray(ft, f, (Object[]) f.get(host)));
-                            break;
-                        case LIST:
-                        case ENUM_SET:
-                        case SET: {
-                            List<Class<?>> genericClasses = PropertySheet.getGenericClass(f);
-                            if (genericClasses.size() != 1) {
-                                logger.log(Level.SEVERE, "Invalid configurable field definition, field not recorded - found too many or too few generic type parameters for field " + f.getName());
-                            } else {
-                                map.put(f.getName(), convertCollection(f, (Collection) f.get(host), genericClasses.get(0)));
+                            case MAP: {
+                                List<Class<?>> genericClasses = PropertySheet.getGenericClass(f);
+                                if (genericClasses.size() != 2) {
+                                    logger.log(Level.SEVERE, "Invalid configurable field definition, field not recorded - found too many or too few generic type parameters for field " + f.getName());
+                                } else {
+                                    map.put(f.getName(), convertMap(f, (Map) f.get(host), genericClasses.get(1)));
+                                }
+                                break;
                             }
-                            break;
+                            case RANDOM:
+                            default:
+                                logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + f.getName() + "' not recorded.");
+                                break;
                         }
-                        case MAP: {
-                            List<Class<?>> genericClasses = PropertySheet.getGenericClass(f);
-                            if (genericClasses.size() != 2) {
-                                logger.log(Level.SEVERE, "Invalid configurable field definition, field not recorded - found too many or too few generic type parameters for field " + f.getName());
-                            } else {
-                                map.put(f.getName(), convertMap(f, (Map) f.get(host), genericClasses.get(1)));
-                            }
-                            break;
-                        }
-                        case RANDOM:
-                        default:
-                            logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + f.getName() + "' not recorded.");
-                            break;
                     }
                 }
                 f.setAccessible(accessible);
@@ -339,6 +344,13 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 double[] array = (double[]) object;
                 for (double e : array) {
                     list.add(new DoubleProvenance(fieldName,e));
+                }
+                break;
+            }
+            case BOOLEAN_ARRAY:{
+                boolean[] array = (boolean[]) object;
+                for (boolean e : array) {
+                    list.add(new BooleanProvenance(fieldName,e));
                 }
                 break;
             }

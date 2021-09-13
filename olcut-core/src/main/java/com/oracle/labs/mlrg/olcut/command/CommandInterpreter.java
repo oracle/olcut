@@ -60,6 +60,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -1507,6 +1508,75 @@ public class CommandInterpreter extends Thread {
             ci.out = System.out;
             return "";
         }
+
+        /**
+         * Adjusts the level of a logger and tunes the root log handlers to emit that level. If a logger name
+         * is given, this will only escalate the handler level to finer levels than it is currently set to and will
+         * not deescalate them. If no logger name is given, the root handlers only are adjusted and without
+         * constraint.
+         *
+         * @param ci the command interpreter
+         * @param level the new level to set the log to
+         * @param loggerName the name of a logger (expects package or canonical class name)
+         * @return a string of command output
+         */
+        @Command(usage="<LogLevel> [<LoggerName>] - sets the logging level for a logger, if specified, or sets the root handler level")
+        public String setLogLevel(CommandInterpreter ci, String level, @Optional(val="") String loggerName) {
+            Level logLevel = null;
+            try {
+                //
+                // Verify our args.
+                logLevel = Level.parse(level);
+            } catch (IllegalArgumentException e) {
+                return "Unknown log level: " + level;
+            }
+
+
+            //
+            // Logger names by convention are class or package names. Warn in that isn't the case to help
+            // prevent typo frustration.
+            if (!loggerName.isEmpty()) {
+                // Is this a class name?
+                try {
+                    Class.forName(loggerName);
+                } catch (ClassNotFoundException e) {
+                    // Not a class - how about package name?
+                    if (!Arrays.stream(Package.getPackages())
+                            .anyMatch(p -> p.getName().startsWith(loggerName) && (p.getName().equals(loggerName) || p.getName().charAt(loggerName.length()) == '.'))) {
+                        // Not a package either
+                        ci.out.println("Warning: \"" + loggerName + "\" doesn't appear to be a class or package name");
+                    }
+                }
+                Logger target = Logger.getLogger(loggerName);
+                target.setLevel(logLevel);
+            }
+
+            //
+            // Get the current Handler level.
+            Handler[] handlers = Logger.getLogger("").getHandlers();
+            if (handlers == null || handlers.length <= 0) {
+                return "No root log handlers defined.";
+            }
+            Level currLevel = handlers[0].getLevel();
+
+            //
+            // Should we adjust the handler level too?  We should if no logger was specified
+            // or if the requested level is finer than the current level.
+            if (loggerName.isEmpty() || (logLevel.intValue() < currLevel.intValue())) {
+                for (Handler h : handlers) {
+                    h.setLevel(logLevel);
+                }
+            } else if (!loggerName.isEmpty() && logLevel.intValue() > currLevel.intValue()) {
+                ci.out.println(logLevel.toString() + " is less fine than current "
+                        + currLevel.toString() + ", won't automatically deescalate the Handler level");
+            }
+            if (loggerName.isEmpty()) {
+                return "Set root log handlers to " + logLevel.toString();
+            } else {
+                return "Log level set to " + logLevel.toString() + " for " + loggerName;
+            }
+        }
+
 
         @Override
         public String getName() {
