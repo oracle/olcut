@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -25,6 +26,11 @@ public class ConfigurationDataTest {
 
     @Test
     public void structuralEqualsAllConfig() {
+
+        ConsoleHandler ch = new ConsoleHandler();
+        ch.setLevel(Level.FINE);
+        Logger l1 = Logger.getLogger(ConfigurationData.class.getName());
+        l1.addHandler(ch);
         final String aName = "all-config";
         ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup(aName);
