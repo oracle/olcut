@@ -2,7 +2,7 @@
  * Copyright 1999-2004 Carnegie Mellon University.
  * Portions Copyright 2004 Sun Microsystems, Inc.
  * Portions Copyright 2003 Mitsubishi Electric Research Laboratories.
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -302,10 +302,10 @@ public final class ConfigurationData implements Serializable {
         private final String name;
         private final String className;
 
-        private Map<String, DerefedProperty> simpleProperties;
-        private Map<String, List<DerefedProperty>> listProperties;
-        private Map<String, List<Class<?>>> listClassProperties;
-        private Map<String, Map<String, DerefedProperty>> mapProperties;
+        private final Map<String, DerefedProperty> simpleProperties;
+        private final Map<String, List<DerefedProperty>> listProperties;
+        private final Map<String, List<Class<?>>> listClassProperties;
+        private final Map<String, Map<String, DerefedProperty>> mapProperties;
 
         public static Optional<StructuralConfigurationData> fromName(Map<String, ConfigurationData> contextMap, String name) {
             return Optional.ofNullable(contextMap.get(name))
@@ -344,8 +344,6 @@ public final class ConfigurationData implements Serializable {
                 }
             }
         }
-
-
 
         private static <T> boolean checkPresenceAllMatch(Map<String, T> aMap, Map<String, T> bMap, BiPredicate<T, T> matchPair) {
             Set<String> allKeys = new HashSet<>(aMap.keySet());
@@ -399,19 +397,19 @@ public final class ConfigurationData implements Serializable {
                     boolean listMatch = checkPresenceAllMatch(this.listProperties,that.listProperties, (as, bs) -> {
                        boolean eq = Util.bagEquality(as, bs);
                         if(!eq) {
-                            logger.fine("bags not equal:\na: " + as.toString() +  "\nb: " + bs.toString());
+                            logger.fine("ListProperties not equal using bag equality:\na: " + as.toString() +  "\nb: " + bs.toString());
                         }
                         return eq;
                     }) &&
                             checkPresenceAllMatch(this.listClassProperties, that.listClassProperties, (as, bs) -> {
                                 boolean eq = Util.bagEquality(as, bs);
                                 if(!eq) {
-                                    logger.fine("bags not equal:\na: " + as.toString() +  "\nb: " + bs.toString());
+                                    logger.fine("ListClassProperties not equal using bag equality:\na: " + as.toString() +  "\nb: " + bs.toString());
                                 }
                                 return eq;
                             });
 
-                if(!listMatch) {
+                    if(!listMatch) {
                         logger.fine("ListProperties don't match: as: " + this.listProperties+ " bs: " + that.listProperties);
                         logger.fine("ListClassProperties don't match: as: " + this.listClassProperties + " bs: " + that.listClassProperties);
                     }
@@ -447,12 +445,11 @@ public final class ConfigurationData implements Serializable {
      */
     private static class DerefedProperty {
 
-        private boolean isDerefed;
-        private Map<String, ConfigurationData> configState;
+        private final boolean isDerefed;
         private StructuralConfigurationData innerConf;
-        private String innerValue;
-        private String propName;
-        private String locationContext;
+        private final String innerValue;
+        private final String propName;
+        private final String locationContext;
         private Optional<Double> innerDoubleValue;
         private Optional<OffsetDateTime> innerDateTime;
         private Optional<OffsetTime> innerTime;
@@ -483,7 +480,6 @@ public final class ConfigurationData implements Serializable {
             } catch (DateTimeParseException e) {
                 this.innerTime = Optional.empty();
             }
-            this.configState = confs;
             Optional<ConfigurationData> maybeDeref = Optional.ofNullable(confs.get(prop.getValue()));
             isDerefed = maybeDeref.isPresent();
             if(isDerefed) {
@@ -503,7 +499,8 @@ public final class ConfigurationData implements Serializable {
                     innerBool.map(d -> "(parsed as bool " + d + ")").orElse("(not parsed as bool)"));
         }
 
-        @Override public int hashCode() {
+        @Override
+        public int hashCode() {
             if(this.isDerefed) {
                 return Objects.hash(this.isDerefed, this.innerConf);
             } else if(this.innerBool.isPresent()) {
@@ -599,7 +596,10 @@ public final class ConfigurationData implements Serializable {
      * Checks whether two ConfigurationData objects are 'structurally equal'. Two objects are structurally
      * equal when their classNames are the same and when all of their properties are equal or, if those
      * properties refer to another ConfigurationData by name, if all of their properties are structurally
-     * equal recursively.
+     * equal recursively. It does not compare {@link ConfigurationData#serializedForm}, {@link ConfigurationData#importable},
+     * {@link ConfigurationData#exportable}, {@link ConfigurationData#leaseTime}, or {@link ConfigurationData#entriesName}.
+     * The SerializedForm is not relevant to the equality comparison we are making here, and the remaining fields are
+     * all deprecated.
      *
      * <p>
      *
@@ -618,8 +618,9 @@ public final class ConfigurationData implements Serializable {
      *
      * <p>
      *
-     * At log-level {@code FINE} this reports the first place where the two instances differ, and the nature of their
-     * difference. Any time this method returns {@code false}, it should also log at least one message.
+     * At log-level {@link java.util.logging.Level#FINE} this reports the first configuration object where the two
+     * instances differ, together with the property values that differ between those instances. Any time this method
+     * returns {@code false}, it should also log at least one message.
      *
      * @param a ConfigurationData List for the first object and its children
      * @param b ConfigurationData List for the second object and its children
