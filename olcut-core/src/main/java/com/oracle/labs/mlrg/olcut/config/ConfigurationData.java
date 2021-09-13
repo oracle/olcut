@@ -456,11 +456,18 @@ public final class ConfigurationData implements Serializable {
         private Optional<Double> innerDoubleValue;
         private Optional<OffsetDateTime> innerDateTime;
         private Optional<OffsetTime> innerTime;
+        private Optional<Boolean> innerBool;
 
         public DerefedProperty(Map<String, ConfigurationData> confs, SimpleProperty prop, String propName, String locationContext) {
             this.propName = propName;
             this.locationContext = locationContext;
             this.innerValue = prop.getValue();
+            // we do it this way because Boolean.parseBoolean doesn't throw like other parse methods
+            if(this.innerValue.trim().equalsIgnoreCase("true") || this.innerValue.trim().equalsIgnoreCase("false")) {
+                this.innerBool = Optional.of(Boolean.parseBoolean(this.innerValue));
+            } else {
+                this.innerBool = Optional.empty();
+            }
             try {
                 this.innerDoubleValue = Optional.of(Double.parseDouble(this.innerValue));
             } catch (NumberFormatException e) {
@@ -489,15 +496,18 @@ public final class ConfigurationData implements Serializable {
         }
 
         private String reportString() {
-            return String.format("Property Key: %s%s, with value %s %s %s %s", propName, locationContext,
+            return String.format("Property Key: %s%s, with value %s %s %s %s %s", propName, locationContext,
                     innerValue, (isDerefed ? "(is a reference)" : "(is not a reference)"),
                     innerDoubleValue.map(d -> "(parsed as double " + d +")").orElse("(not parsed as double)"),
-                    innerDateTime.map(d -> "(parsed as date " + d + ")").orElse("(not parsed as date)"));
+                    innerDateTime.map(d -> "(parsed as date " + d + ")").orElse("(not parsed as date)"),
+                    innerBool.map(d -> "(parsed as bool " + d + ")").orElse("(not parsed as bool)"));
         }
 
         @Override public int hashCode() {
             if(this.isDerefed) {
                 return Objects.hash(this.isDerefed, this.innerConf);
+            } else if(this.innerBool.isPresent()) {
+                return Objects.hash(this.isDerefed, this.innerBool.get());
             } else if(this.innerDoubleValue.isPresent()){
                 return Objects.hash(this.isDerefed, this.innerDoubleValue.get());
             } else if (this.innerDateTime.isPresent()) {
@@ -513,9 +523,10 @@ public final class ConfigurationData implements Serializable {
          * To match the typical behavior a user would expect, this method uses a bad hack to try to infer types whose
          * string representation is likely to have different equality semantics from its typed representation. First
          * it attempts to resolve references and test them for equality. If that fails it will attempt to parse the
-         * string as a double and test for equality using {@link Util#doubleEquals(double, double)}, then it will attempt
-         * to use {@link OffsetDateTime#parse(CharSequence)} and test equality, followed by {@link OffsetTime#parse(CharSequence)}.
-         * Finally, it will test using {@link String#equals(Object)}.
+         * string as a boolean and test equality, then as a double and test for equality using
+         * {@link Util#doubleEquals(double, double)}, then it will attempt to use
+         * {@link OffsetDateTime#parse(CharSequence)} and test equality, followed by
+         * {@link OffsetTime#parse(CharSequence)}. Finally, it will test using {@link String#equals(Object)}.
          *
          * @param o another object to equality test
          * @return true if the objects' values are equal according to the logic described above, false otherwise
@@ -529,7 +540,9 @@ public final class ConfigurationData implements Serializable {
                 } else if(!this.isDerefed && !that.isDerefed) {
                     boolean valueMatch;
 
-                    if(this.innerDoubleValue.isPresent() && that.innerDoubleValue.isPresent()) {
+                    if (this.innerBool.isPresent() && that.innerBool.isPresent()) {
+                        valueMatch = this.innerBool.get().booleanValue() == that.innerBool.get().booleanValue();
+                    } else if(this.innerDoubleValue.isPresent() && that.innerDoubleValue.isPresent()) {
                         valueMatch = Util.doubleEquals(this.innerDoubleValue.get(), that.innerDoubleValue.get());
                     } else if (this.innerDateTime.isPresent() && that.innerDateTime.isPresent()) {
                         valueMatch = this.innerDateTime.get().equals(that.innerDateTime.get());
