@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -61,7 +61,7 @@ import java.util.Objects;
 /**
  * A marshalled provenance representing a primitive type, or a reference to
  * another {@link ObjectMarshalledProvenance} in the marshalled object stream.
- *
+ * <p>
  * If the {@link PrimitiveProvenance} requires extra information beyond it's
  * key and value, this class must be updated to have a specific constructor
  * for that type.
@@ -243,7 +243,7 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
 
     /**
      * Any additional information necessary beyond the key and value,
-     * e.g. the hash type.
+     * e.g., the hash type.
      * @return Any additional information necessary to encode the provenance.
      */
     public String getAdditional() {

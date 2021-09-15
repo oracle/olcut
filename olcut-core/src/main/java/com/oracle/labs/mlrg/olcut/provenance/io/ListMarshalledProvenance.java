@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -43,6 +43,10 @@ public final class ListMarshalledProvenance implements FlatMarshalledProvenance,
 
     private final List<FlatMarshalledProvenance> list;
 
+    /**
+     * Constructs a ListMarshalledProvenance wrapped around the supplied list.
+     * @param list The list.
+     */
     public ListMarshalledProvenance(List<FlatMarshalledProvenance> list) {
         this.list = Collections.unmodifiableList(list);
     }
@@ -70,7 +74,7 @@ public final class ListMarshalledProvenance implements FlatMarshalledProvenance,
 
     @Override
     public String toString() {
-        return list.toString();
+        return "ListMarshalledProvenance" + list.toString();
     }
 
     @Override

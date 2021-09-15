@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -28,9 +28,6 @@
 
 package com.oracle.labs.mlrg.olcut.config.json;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.provenance.ExampleProvenancableConfigurable;
 import com.oracle.labs.mlrg.olcut.provenance.ListProvenance;
@@ -38,41 +35,32 @@ import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.SimpleObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil;
-import com.oracle.labs.mlrg.olcut.provenance.io.MarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceSerializationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.SplittableRandom;
 
 import static com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.constructProvenance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
  */
-public class JsonProvenanceConversionTest {
-    private File f;
-    private ObjectMapper mapper;
+public class JsonProvenanceSerializationTest {
+    private final JsonProvenanceSerialization marshaller = new JsonProvenanceSerialization(true);
 
     @BeforeEach
     public void setUp() throws IOException {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
-        mapper = new ObjectMapper();
-        mapper.registerModule(new JsonProvenanceModule());
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        f = File.createTempFile("provenance", ".json");
-        f.deleteOnExit();
     }
 
     @Test
-    public void marshallingTest() throws IOException {
+    public void marshallingTest() throws ProvenanceSerializationException {
         ConfigurationManager cm1 = new ConfigurationManager("/com/oracle/labs/mlrg/olcut/provenance/example-provenance-config.xml");
         ExampleProvenancableConfigurable e = (ExampleProvenancableConfigurable) cm1.lookup("example-config");
         assertNotNull(e, "Failed to load example config");
@@ -82,26 +70,17 @@ public class JsonProvenanceConversionTest {
         List<ObjectMarshalledProvenance> marshalledProvenances = ProvenanceUtil.marshalProvenance(provenance);
         assertEquals(8,marshalledProvenances.size());
 
-        String jsonResult = mapper.writeValueAsString(marshalledProvenances);
+        String jsonResult = marshaller.serializeToString(marshalledProvenances);
 
-        List<MarshalledProvenance> jsonProvenances = mapper.readValue(jsonResult, new TypeReference<List<MarshalledProvenance>>(){});
+        List<ObjectMarshalledProvenance> jsonProvenances = marshaller.deserializeFromString(jsonResult);
 
-        List<ObjectMarshalledProvenance> jps = new ArrayList<>();
-        for (MarshalledProvenance mp : jsonProvenances) {
-            if (mp instanceof ObjectMarshalledProvenance) {
-                jps.add((ObjectMarshalledProvenance) mp);
-            } else {
-                fail("Unexpected provenance deserialized.");
-            }
-        }
-
-        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jps);
+        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jsonProvenances);
 
         assertEquals(provenance,unmarshalledProvenance);
     }
 
     @Test
-    public void recursiveMarshallingTest() throws IOException {
+    public void recursiveMarshallingTest() throws ProvenanceSerializationException {
         Provenance prov = constructProvenance(new SplittableRandom(42),5,3,"prov");
 
         assertNotNull(prov);
@@ -112,20 +91,11 @@ public class JsonProvenanceConversionTest {
 
         assertEquals(1,marshalledProvenance.size());
 
-        String jsonResult = mapper.writeValueAsString(marshalledProvenance);
+        String jsonResult = marshaller.serializeToString(marshalledProvenance);
 
-        List<MarshalledProvenance> jsonProvenances = mapper.readValue(jsonResult, new TypeReference<List<MarshalledProvenance>>(){});
+        List<ObjectMarshalledProvenance> jsonProvenances = marshaller.deserializeFromString(jsonResult);
 
-        List<ObjectMarshalledProvenance> jps = new ArrayList<>();
-        for (MarshalledProvenance mp : jsonProvenances) {
-            if (mp instanceof ObjectMarshalledProvenance) {
-                jps.add((ObjectMarshalledProvenance) mp);
-            } else {
-                fail("Unexpected provenance deserialized.");
-            }
-        }
-
-        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jps);
+        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jsonProvenances);
 
         assertEquals(objProv,unmarshalledProvenance);
     }
