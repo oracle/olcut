@@ -40,6 +40,7 @@ import com.oracle.labs.mlrg.olcut.provenance.io.FlatMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ListMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.MapMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceSerialization;
 import com.oracle.labs.mlrg.olcut.provenance.io.SimpleMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.util.MutableLong;
 import com.oracle.labs.mlrg.olcut.util.Pair;
@@ -64,7 +65,7 @@ import java.util.Map;
  * Uses {@link Base64} to encode and decode binary protobufs into and out of Strings if requested, though it
  * is preferable to use protobuf's built-in text format.
  */
-public final class ProtoProvenanceMarshaller {
+public final class ProtoProvenanceSerialization implements ProvenanceSerialization {
 
     private static final Base64.Encoder base64Encoder = Base64.getEncoder();
     private static final Base64.Decoder base64Decoder = Base64.getDecoder();
@@ -72,18 +73,20 @@ public final class ProtoProvenanceMarshaller {
     private final boolean textFormat;
 
     /**
-     * Construct a ProtoProvenanceMarshaller.
+     * Construct a ProtoProvenanceSerialization.
      *
      * @param textFormat Output a pbtxt.
      */
-    public ProtoProvenanceMarshaller(boolean textFormat) {
+    public ProtoProvenanceSerialization(boolean textFormat) {
         this.textFormat = textFormat;
     }
 
+    @Override
     public String getFileExtension() {
         return textFormat ? "pbtxt" : "pb";
     }
 
+    @Override
     public List<ObjectMarshalledProvenance> deserializeFromFile(Path path) throws IOException {
         try {
             InputStream is = Files.newInputStream(path);
@@ -101,6 +104,7 @@ public final class ProtoProvenanceMarshaller {
         }
     }
 
+    @Override
     public List<ObjectMarshalledProvenance> deserializeFromString(String input) {
         try {
             RootProvenanceProto proto;
@@ -367,6 +371,7 @@ public final class ProtoProvenanceMarshaller {
         return curIndex;
     }
 
+    @Override
     public String serializeToString(List<ObjectMarshalledProvenance> marshalledProvenances) {
         RootProvenanceProto proto = serializeToProto(marshalledProvenances);
 
@@ -377,6 +382,7 @@ public final class ProtoProvenanceMarshaller {
         }
     }
 
+    @Override
     public void serializeToFile(List<ObjectMarshalledProvenance> marshalledProvenances, Path path) throws IOException {
         RootProvenanceProto proto = serializeToProto(marshalledProvenances);
 

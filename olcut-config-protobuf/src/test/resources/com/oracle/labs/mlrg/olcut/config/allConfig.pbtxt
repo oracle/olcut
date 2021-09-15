@@ -154,10 +154,6 @@ components {
     value: "/tmp/a-path.txt"
   }
   properties {
-    key: "randomField"
-    value: "12345"
-  }
-  properties {
     key: "shortField"
     value: "1234"
   }
@@ -220,11 +216,6 @@ components {
     name: "setPathField"
     item: "/foo/bar/first-path"
     item: "/foo/bar/second-path"
-  }
-  list_property {
-    name: "listRandomField"
-    item: "1234"
-    item: "12345"
   }
   list_property {
     name: "listDoubleField"

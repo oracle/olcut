@@ -23,7 +23,7 @@ first-file/tmp/first-file.txt
 oneA
 twoB
 
-threeCÉ
+threeC¹
 
 all-config7com.oracle.labs.mlrg.olcut.config.AllFieldsConfigurable
 
@@ -33,11 +33,10 @@ floatField3.14159
 configurableSubclassFieldsecond-configurable
 	byteField123
 atomicLongField	123456789
-intField12345&
-urlFieldfile:///tmp/a-file-url.txt
+intField12345$
+urlFieldfile:/tmp/a-file-url.txt
 	LongField	123456789 
-DoubleField3.141592653589793
-randomField12345
+DoubleField3.141592653589793
 	dateField
 1948-06-21
 
@@ -59,7 +58,8 @@ FloatField3.14159
 	ByteField123
 	fileField/tmp/a-file.txt
 stringFieldmonkeys
-	enumFieldF"
+	enumFieldF"&
+booleanArrayFieldtruefalseTrue"
 listStringFieldepi""
 setDoubleField2.718283.14159"G
 setConfigurableSubclassFieldfirst-configurablesecond-configurable"&
@@ -68,8 +68,7 @@ FloatField3.14159
 configurableArrayFieldfirst-configurablesecond-configurable"I
 configurableSubclassArrayFieldfirst-configurablesecond-configurable"
 enumSetFieldACE"9
-setPathField/foo/bar/first-path/foo/bar/second-path"
-listRandomField123412345"#
+setPathField/foo/bar/first-path/foo/bar/second-path"#
 listDoubleField2.718283.14159"
 charArrayField123"=
 longArrayField922337203685477580792233720368547758065"H

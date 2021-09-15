@@ -54,8 +54,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  */
 public class ProtoProvenanceConversionTest {
-    private ProtoProvenanceMarshaller textMarshaller;
-    private ProtoProvenanceMarshaller binMarshaller;
+    private ProtoProvenanceSerialization textMarshaller;
+    private ProtoProvenanceSerialization binMarshaller;
     private Path textPath;
     private Path binPath;
 
@@ -63,8 +63,8 @@ public class ProtoProvenanceConversionTest {
     public void setUp() throws IOException {
         ConfigurationManager.addFileFormatFactory(new ProtoConfigFactory());
 
-        textMarshaller = new ProtoProvenanceMarshaller(true);
-        binMarshaller = new ProtoProvenanceMarshaller(false);
+        textMarshaller = new ProtoProvenanceSerialization(true);
+        binMarshaller = new ProtoProvenanceSerialization(false);
 
         textPath = Files.createTempFile("olcut-config-proto",".pbtxt");
         textPath.toFile().deleteOnExit();
@@ -87,7 +87,7 @@ public class ProtoProvenanceConversionTest {
         serde(marshalledProvenances,provenance,binMarshaller,binPath);
     }
 
-    private static void serde(List<ObjectMarshalledProvenance> marshalledProvenances, ObjectProvenance provenance, ProtoProvenanceMarshaller marshaller, Path tmpPath) throws IOException {
+    private static void serde(List<ObjectMarshalledProvenance> marshalledProvenances, ObjectProvenance provenance, ProtoProvenanceSerialization marshaller, Path tmpPath) throws IOException {
         RootProvenanceProto proto = marshaller.serializeToProto(marshalledProvenances);
         List<ObjectMarshalledProvenance> protoProvenances = marshaller.deserializeFromProto(proto);
         ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(protoProvenances);
