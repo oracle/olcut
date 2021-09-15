@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,17 +26,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.provenance;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.provenance.ExampleProvenancableConfigurable;
-import com.oracle.labs.mlrg.olcut.provenance.ListProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.SimpleObjectProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceSerializationException;
+import com.oracle.labs.mlrg.olcut.provenance.io.XMLProvenanceSerialization;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -51,14 +47,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  *
  */
-public class JsonProvenanceConversionTest {
-    private JsonProvenanceMarshaller marshaller;
-
-    @BeforeEach
-    public void setUp() throws IOException {
-        ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
-        marshaller = new JsonProvenanceMarshaller(true);
-    }
+public class XmlProvenanceSerializationTest {
+    private final XMLProvenanceSerialization marshaller = new XMLProvenanceSerialization(true);
 
     @Test
     public void marshallingTest() throws ProvenanceSerializationException {
@@ -71,11 +61,11 @@ public class JsonProvenanceConversionTest {
         List<ObjectMarshalledProvenance> marshalledProvenances = ProvenanceUtil.marshalProvenance(provenance);
         assertEquals(8,marshalledProvenances.size());
 
-        String jsonResult = marshaller.serializeToString(marshalledProvenances);
+        String xmlResult = marshaller.serializeToString(marshalledProvenances);
 
-        List<ObjectMarshalledProvenance> jsonProvenances = marshaller.deserializeFromString(jsonResult);
+        List<ObjectMarshalledProvenance> xmlProvenances = marshaller.deserializeFromString(xmlResult);
 
-        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jsonProvenances);
+        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(xmlProvenances);
 
         assertEquals(provenance,unmarshalledProvenance);
     }
@@ -92,11 +82,11 @@ public class JsonProvenanceConversionTest {
 
         assertEquals(1,marshalledProvenance.size());
 
-        String jsonResult = marshaller.serializeToString(marshalledProvenance);
+        String xmlResult = marshaller.serializeToString(marshalledProvenance);
 
-        List<ObjectMarshalledProvenance> jsonProvenances = marshaller.deserializeFromString(jsonResult);
+        List<ObjectMarshalledProvenance> xmlProvenances = marshaller.deserializeFromString(xmlResult);
 
-        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(jsonProvenances);
+        ObjectProvenance unmarshalledProvenance = ProvenanceUtil.unmarshalProvenance(xmlProvenances);
 
         assertEquals(objProv,unmarshalledProvenance);
     }

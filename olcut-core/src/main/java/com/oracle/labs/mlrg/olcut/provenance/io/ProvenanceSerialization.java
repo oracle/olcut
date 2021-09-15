@@ -39,10 +39,10 @@ import java.util.List;
  * Interface for serializing and deserializing marshalled provenances to
  * and from strings or files.
  */
-public interface ProvenanceMarshaller {
+public interface ProvenanceSerialization {
 
     /**
-     * The file extension this ProvenanceMarshaller supports.
+     * The file extension this ProvenanceSerialization supports.
      * @return The file extension.
      */
     public String getFileExtension();

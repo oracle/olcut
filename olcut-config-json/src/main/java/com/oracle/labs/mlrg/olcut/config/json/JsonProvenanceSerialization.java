@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.oracle.labs.mlrg.olcut.provenance.io.MarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceMarshaller;
+import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceSerialization;
 import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceSerializationException;
 
 import java.io.BufferedWriter;
@@ -50,18 +50,18 @@ import java.util.List;
 /**
  * Class for serializing and deserializing provenances to/from json.
  */
-public final class JsonProvenanceMarshaller implements ProvenanceMarshaller {
+public final class JsonProvenanceSerialization implements ProvenanceSerialization {
 
     private static final TypeReference<List<MarshalledProvenance>> typeRef = new TypeReference<List<MarshalledProvenance>>() {};
 
     private final ObjectMapper mapper;
 
     /**
-     * Construct a JsonProvenanceMarshaller.
+     * Construct a JsonProvenanceSerialization.
      *
      * @param indentOutput Indent the output.
      */
-    public JsonProvenanceMarshaller(boolean indentOutput) {
+    public JsonProvenanceSerialization(boolean indentOutput) {
         mapper = new ObjectMapper();
         mapper.registerModule(new JsonProvenanceModule());
         if (indentOutput) {

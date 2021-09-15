@@ -59,7 +59,7 @@ import java.util.Map;
 /**
  * Class for serializing and deserializing provenances to/from xml.
  */
-public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
+public final class XMLProvenanceSerialization implements ProvenanceSerialization {
 
     /**
      * Container for all provenances.
@@ -116,11 +116,11 @@ public final class XMLProvenanceMarshaller implements ProvenanceMarshaller {
     private final boolean prettyPrint;
 
     /**
-     * Constructs an XMLProvenanceMarshaller.
+     * Constructs an XMLProvenanceSerialization.
      *
      * @param prettyPrint Print tabs and newlines to appropriately format the XML output for readability.
      */
-    public XMLProvenanceMarshaller(boolean prettyPrint) {
+    public XMLProvenanceSerialization(boolean prettyPrint) {
         this.prettyPrint = prettyPrint;
     }
 
