@@ -36,6 +36,7 @@ public abstract class StartableAdapter implements Startable {
     
     private Thread t;
 
+    @Override
     public void join() {
         try {
             t.join();
@@ -44,14 +45,17 @@ public abstract class StartableAdapter implements Startable {
         }
     }
 
+    @Override
     public boolean isDone() {
         return !t.isAlive();
     }
 
+    @Override
     public void setThread(Thread t) {
         this.t = t;
     }
 
+    @Override
     public Thread getThread() {
         return t;
     }

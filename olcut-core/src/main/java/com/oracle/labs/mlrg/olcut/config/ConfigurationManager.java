@@ -100,37 +100,57 @@ public class ConfigurationManager implements Closeable {
     private static final Pattern WHITESPACE = Pattern.compile("\\s");
 
     public static final Option configFileOption = new Option() {
+        @Override
         public String longName() { return "config-file"; }
+        @Override
         public char charName() { return 'c'; }
+        @Override
         public String usage() { return "A comma separated list of OLCUT config files."; }
+        @Override
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
     public static final Function<String,Option> defaultConfigOptionFunction = (String path) -> new Option() {
+        @Override
         public char charName() { return '\0'; }
+        @Override
         public String longName() { return ""; }
+        @Override
         public String usage() { return "Default configuration is loaded from '" + path + "'."; }
+        @Override
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
     public static final Option fileFormatOption = new Option() {
+        @Override
         public String longName() { return "config-file-formats"; }
+        @Override
         public char charName() { return '\0'; }
+        @Override
         public String usage() { return "A comma separated list of OLCUT FileFormatFactory implementations (assumed to be on the classpath)."; }
+        @Override
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
     public static final Option usageOption = new Option() {
+        @Override
         public String longName() { return "usage"; }
+        @Override
         public char charName() { return '\0'; }
+        @Override
         public String usage() { return "Write out this usage/help statement."; }
+        @Override
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
     public static final Option helpOption = new Option() {
+        @Override
         public String longName() { return "help"; }
+        @Override
         public char charName() { return '\0'; }
+        @Override
         public String usage() { return "Write out this usage/help statement."; }
+        @Override
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 

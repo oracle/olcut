@@ -64,6 +64,7 @@ public final class ExampleProvenancableConfigurable implements Configurable, Pro
 
     private ExampleProvenance provenance;
 
+    @Override
     public void postConfig() {
         this.provenance = new ExampleProvenance(this);
     }

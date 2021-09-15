@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  *
  */
-public class ProtoProvenanceConversionTest {
+public class ProtoProvenanceSerializationTest {
     private ProtoProvenanceSerialization textMarshaller;
     private ProtoProvenanceSerialization binMarshaller;
     private Path textPath;
