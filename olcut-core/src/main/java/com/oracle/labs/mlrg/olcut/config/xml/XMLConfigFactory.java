@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -48,15 +48,16 @@ import java.io.OutputStream;
 import java.util.Map;
 
 /**
- *
+ * A file format factory for operating on XML format configuration files.
  */
 public class XMLConfigFactory implements FileFormatFactory {
 
     private final XMLOutputFactory factory = XMLOutputFactory.newFactory();
 
-    public XMLConfigFactory() {
-
-    }
+    /**
+     * Creates a new XMLConfigFactory.
+     */
+    public XMLConfigFactory() {}
 
     @Override
     public String getExtension() {

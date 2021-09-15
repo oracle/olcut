@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -45,12 +45,27 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
 
     private final Map<String, FlatMarshalledProvenance> map;
 
+    /**
+     * Constructs a MapMarshalledProvenance wrapped around the supplied map.
+     * @param map The map.
+     */
     public MapMarshalledProvenance(Map<String, FlatMarshalledProvenance> map) {
         this.map = Collections.unmodifiableMap(new HashMap<>(map));
     }
 
+    /**
+     * Constructs an empty MapMarshalledProvenance.
+     */
     public MapMarshalledProvenance() {
         this.map = Collections.emptyMap();
+    }
+
+    /**
+     * Is this MapMarshalledProvenance empty?
+     * @return True if the provenance contains no other provenances.
+     */
+    public boolean isEmpty() {
+        return map.isEmpty();
     }
 
     @Override
@@ -60,7 +75,7 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
 
     @Override
     public String toString() {
-        return map.toString();
+        return "MapMarshalledProvenance" + map.toString();
     }
 
     @Override
@@ -95,6 +110,5 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
             return new Pair<>(item.getKey(),item.getValue());
         }
     }
-
 
 }

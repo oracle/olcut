@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -27,6 +27,7 @@
  */
 
 /**
- * Provides classes which represent marshalled provenance objects.
+ * Provides classes which represent marshalled provenance objects, a provenance serialization interface,
+ * and an implementation of that interface which reads and writes XML.
  */
 package com.oracle.labs.mlrg.olcut.provenance.io;

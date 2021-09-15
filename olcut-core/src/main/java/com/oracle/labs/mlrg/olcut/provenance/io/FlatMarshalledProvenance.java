@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -31,7 +31,7 @@ package com.oracle.labs.mlrg.olcut.provenance.io;
 /**
  * A marshalled provenance that is either a {@link ListMarshalledProvenance},
  * a {@link MapMarshalledProvenance} or a {@link SimpleMarshalledProvenance}.
- *
+ * <p>
  * Will be sealed to those types one day.
  */
 public interface FlatMarshalledProvenance extends MarshalledProvenance { }

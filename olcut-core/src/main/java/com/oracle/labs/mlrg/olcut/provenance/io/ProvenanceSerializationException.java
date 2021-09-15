@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -29,9 +29,32 @@
 package com.oracle.labs.mlrg.olcut.provenance.io;
 
 /**
- * An interface for marshalled provenance types.
- * <p>
- * Will be sealed to {@link FlatMarshalledProvenance} and {@link ObjectMarshalledProvenance}
- * one day.
+ * Thrown by the provenance serialization system when parsing a marshalled or serialized provenance that is malformed.
  */
-public interface MarshalledProvenance { }
+public class ProvenanceSerializationException extends Exception {
+
+    /**
+     * Constructs a ProvenanceSerializationException wrapping another exception.
+     * @param e The wrapped exception.
+     */
+    public ProvenanceSerializationException(Exception e) {
+        super(e);
+    }
+
+    /**
+     * Constructs a ProvenanceSerializationException wrapping another exception.
+     * @param msg The exception message.
+     * @param e The exception cause.
+     */
+    public ProvenanceSerializationException(String msg, Exception e) {
+        super(msg,e);
+    }
+
+    /**
+     * Constructs a ProvenanceSerializationException with the supplied message.
+     * @param msg The exception message.
+     */
+    public ProvenanceSerializationException(String msg) {
+        super(msg);
+    }
+}
