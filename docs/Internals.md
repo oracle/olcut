@@ -73,3 +73,27 @@ when parsing options.
 8. All arguments which match a charName or longName in the supplied options instance (and any nested options instances) have their values parsed (using the same logic as the configuration system), and assigned to the marked field. This can trigger object instantiation from the configuration, any fields which are subtypes of Configurable or collections of Configurable treat the supplied value as a configurable object name and look it up in the configuration.
 9. All remaining unparsed arguments are stored in a String array for inspection from the ConfigurationManager
 10. The ConfigurationManager constructor returns.
+
+
+## When adding a new config format
+
+We bootstrap new config formats by copying across the test configs once the config writing functionality is
+implemented (even before loading is implemented). This doesn't work for the chain-loading configs, nor the 
+intentionally invalid ones, but it will bring up the majority of passing tests.
+
+The conversion can be run using jshell, the example below generates the protobuf text format configs from the json 
+format ones.
+
+```java
+ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
+ConfigurationManager.addFileFormatFactory(new ProtoTxtConfigFactory());
+Stream<Path> files = Files.list(Paths.get("./olcut-config-json/src/test/resources/com/oracle/labs/mlrg/olcut/config/"));
+files.filter(f -> f.toString().endsWith(".json")).forEach(f -> {
+    String pathString = f.toString();
+    try {
+        ConfigurationManager cm=new ConfigurationManager(pathString);
+        String outputPath=pathString.replace(".json",".pbtxt");
+        cm.save(new File(outputPath),true);
+    } catch (Exception e) {}
+});
+```

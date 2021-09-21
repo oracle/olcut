@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,40 +26,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.edn;
+package com.oracle.labs.mlrg.olcut.config.protobuf;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.StartableConfigurable;
-
-import java.io.IOException;
-import java.util.List;
+import com.oracle.labs.mlrg.olcut.config.MapConfigurable;
+import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
- *
+ * Tests the extraction of {@link Map} objects from a {@link PropertySheet}.
  */
-public class StartableTest {
+
+public class MapTest {
 
     @BeforeAll
-    public static void setUpClass() throws IOException {
-        ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
+    public static void setUpClass() throws Exception {
+        ConfigurationManager.addFileFormatFactory(new ProtoConfigFactory());
     }
 
     @Test
-    public void simpleTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("startableConfig.edn");
-        StartableConfigurable sc = (StartableConfigurable) cm.lookup("startme");
-        assertFalse(sc.isDone());
-        sc.join();
-        List<String> l = sc.getResult();
-        assertEquals(5, l.size());
-        for(String s : l) {
-            assertEquals(s, "foo");
-        }
+    public void mapTest() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager("mapConfig.pb");
+        MapConfigurable m = (MapConfigurable) cm.lookup("mapTest");
+        Map<String,String> map = m.map;
+        assertEquals("stuff",map.get("things"));
+        assertEquals("quux",map.get("foo"));
+        assertNull(map.get("bar"));
     }
 }

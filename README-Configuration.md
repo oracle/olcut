@@ -181,6 +181,7 @@ in the same directory, or use the same name prefix.  The path could be
 defined in a global variable and used in the rest of the configuration.
 
 ```xml
+<config>
     <property name="outputDir" value="/work/sound/output"/>
     
     <component name="mp3encoder" type="com.oracle.labs.sound.MP3Encoder">
@@ -190,6 +191,7 @@ defined in a global variable and used in the rest of the configuration.
     <component name="loggingStage" type="com.oracle.labs.sound.Logger">
         <property name="logFile" value="${outputDir}/pipeline.log"/>
     </component>
+</config>
 ```
 
 Each user can change the outputDir in a single location and have it reflected
@@ -322,6 +324,12 @@ register it with the ConfigurationManager before instantiation. For example:
     ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
 ```
 
+or
+
+```java
+    ConfigurationManager.addFileFormatFactory(new ProtoTxtConfigFactory());
+```
+
 or 
 
 ```java
@@ -331,8 +339,8 @@ or
 For the exact file format, we recommend looking at allConfig.edn or allConfig.json
 in the appropriate src/test/resources directory. OLCUT supports chain loading
 between all the known types of files, provided they have been registered with the
-ConfigurationManager before instantiation. You'll need to add the `olcut-config-edn`
-or `olcut-config-json` artifacts to your build as well.
+ConfigurationManager before instantiation. You'll need to add the `olcut-config-edn`,
+`olcut-config-protobuf` or `olcut-config-json` artifacts to your build as well.
 
 It's possible to dynamically register a format factory at runtime by supplying 
 the command line argument `--config-file-formats` which accepts a comma separated 

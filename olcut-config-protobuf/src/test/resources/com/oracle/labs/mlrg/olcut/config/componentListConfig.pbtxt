@@ -1,0 +1,129 @@
+components {
+  name: "bad"
+  type: "com.oracle.labs.mlrg.olcut.config.ListConfigurable"
+  list_property {
+    name: "list"
+    item: "non_existent"
+    item: "strings"
+  }
+}
+components {
+  name: "dualtyped"
+  type: "com.oracle.labs.mlrg.olcut.config.ListConfigurable"
+  list_property {
+    name: "list"
+    type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+    type: "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable"
+  }
+}
+components {
+  name: "combotyped"
+  type: "com.oracle.labs.mlrg.olcut.config.ListConfigurable"
+  list_property {
+    name: "list"
+    item: "simp"
+    type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  }
+}
+components {
+  name: "simple"
+  type: "com.oracle.labs.mlrg.olcut.config.ListConfigurable"
+  list_property {
+    name: "list"
+    item: "simp"
+    item: "strings"
+  }
+}
+components {
+  name: "simp"
+  type: "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable"
+  properties {
+    key: "simple"
+    value: "10"
+  }
+}
+components {
+  name: "simp2"
+  type: "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable"
+  properties {
+    key: "simple"
+    value: "20"
+  }
+}
+components {
+  name: "strings"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "alpha"
+  }
+  properties {
+    key: "two"
+    value: "beta"
+  }
+  properties {
+    key: "three"
+    value: "charlie"
+  }
+}
+components {
+  name: "strings2"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "one"
+  }
+  properties {
+    key: "two"
+    value: "two"
+  }
+  properties {
+    key: "three"
+    value: "three"
+  }
+}
+components {
+  name: "strings3"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "un"
+  }
+  properties {
+    key: "two"
+    value: "deux"
+  }
+  properties {
+    key: "three"
+    value: "trois"
+  }
+}
+components {
+  name: "typed"
+  type: "com.oracle.labs.mlrg.olcut.config.ListConfigurable"
+  list_property {
+    name: "list"
+    type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  }
+}
+components {
+  name: "stringconfigurablearray"
+  type: "com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable"
+  list_property {
+    name: "stringArray"
+    item: "strings"
+    item: "strings2"
+    item: "strings3"
+  }
+}
+components {
+  name: "stringconfigurablearraybroken"
+  type: "com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable"
+  list_property {
+    name: "stringArray"
+    item: "strings"
+    item: "monkeys"
+    item: "gibbons"
+  }
+}
+

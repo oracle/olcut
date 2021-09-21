@@ -41,7 +41,7 @@ The ConfigurationManager by default provides three arguments:
 
 * "-c" or "--config-file", which accepts a comma separated list of configuration files.
 * "--usage" or "--help", which generates an exception that contains the usage message.
-* "--config-file-formats", which accepts a comma separated list of FileFormatFactory implemenations to be loaded before parsing the config files.
+* "--config-file-formats", which accepts a comma separated list of FileFormatFactory implementations to be loaded before parsing the config files.
      
 The usage statement is generated from the supplied Options object.
 If the user supplies "--usage" or "--help" the ConfigurationManager throws UsageException

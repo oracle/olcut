@@ -108,7 +108,7 @@ should go:
         @Command(usage="<inFile> [<outFile>] - run this filter on a file")
         public String filter(CommandInterpreter ci,
                              File inFile, 
-                             @Optional(val="/tmp/output.au", File outFile) {
+                             @Optional(val="/tmp/output.au") File outFile) {
             pipeline.filter(inFile, outFile);
             return "";
         }

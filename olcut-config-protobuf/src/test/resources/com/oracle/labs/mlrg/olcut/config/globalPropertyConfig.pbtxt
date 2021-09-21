@@ -1,0 +1,261 @@
+properties {
+  key: "a"
+  value: "alpha"
+}
+properties {
+  key: "a-beta"
+  value: "ab"
+}
+properties {
+  key: "a-beta-charlie"
+  value: "abc"
+}
+properties {
+  key: "a-prime"
+  value: "${a}"
+}
+properties {
+  key: "adprime"
+  value: "${a-prime}"
+}
+properties {
+  key: "apath"
+  value: "/tmp/${a}"
+}
+properties {
+  key: "b"
+  value: "beta"
+}
+properties {
+  key: "bamma"
+  value: "gamma"
+}
+properties {
+  key: "c"
+  value: "charlie"
+}
+properties {
+  key: "ema"
+  value: "amma"
+}
+properties {
+  key: "foo"
+  value: "${a}/bar"
+}
+properties {
+  key: "home"
+  value: "${user.home}/Projects/LabsUtil"
+}
+properties {
+  key: "ta"
+  value: "ma"
+}
+properties {
+  key: "z"
+  value: "a"
+}
+components {
+  name: "recurse2"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${foo}"
+  }
+  properties {
+    key: "three"
+    value: "y"
+  }
+  properties {
+    key: "two"
+    value: "x"
+  }
+}
+components {
+  name: "listTest"
+  type: "com.oracle.labs.mlrg.olcut.config.StringListConfigurable"
+  list_property {
+    name: "strings"
+    item: "${a}"
+    item: "${b}"
+    item: "${a}/${b}"
+    item: "intro/${b}"
+    item: "${a}/extro"
+  }
+}
+components {
+  name: "recurse3"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${apath}"
+  }
+  properties {
+    key: "three"
+    value: "y"
+  }
+  properties {
+    key: "two"
+    value: "${apath}/bpath"
+  }
+}
+components {
+  name: "simple"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${a}"
+  }
+  properties {
+    key: "three"
+    value: "${c}"
+  }
+  properties {
+    key: "two"
+    value: "${b}"
+  }
+}
+components {
+  name: "distinguished"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${gp.hostName}"
+  }
+  properties {
+    key: "three"
+    value: "three"
+  }
+  properties {
+    key: "two"
+    value: "${user.name}"
+  }
+}
+components {
+  name: "compound"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${a}/${b}"
+  }
+  properties {
+    key: "three"
+    value: "${c}:${a}"
+  }
+  properties {
+    key: "two"
+    value: "${b}${c}"
+  }
+}
+components {
+  name: "recursive"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${a-${b}}"
+  }
+  properties {
+    key: "three"
+    value: "${b${e${t${z}}}}"
+  }
+  properties {
+    key: "two"
+    value: "${a-${b}-${c}}"
+  }
+}
+components {
+  name: "unknown"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${d}"
+  }
+  properties {
+    key: "three"
+    value: "${f}"
+  }
+  properties {
+    key: "two"
+    value: "${e}"
+  }
+}
+components {
+  name: "nonglobal"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${a"
+  }
+  properties {
+    key: "three"
+    value: "$c"
+  }
+  properties {
+    key: "two"
+    value: "$b}"
+  }
+}
+components {
+  name: "compoundrecurse"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "one ${b}/${a-prime}"
+  }
+  properties {
+    key: "three"
+    value: "three ${adprime}/${b}/${c}"
+  }
+  properties {
+    key: "two"
+    value: "two ${c}/${a-prime}/${b}/${adprime}"
+  }
+}
+components {
+  name: "sysprops"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${home}/jini/jsk-all.policy"
+  }
+  properties {
+    key: "three"
+    value: "three"
+  }
+  properties {
+    key: "two"
+    value: "two"
+  }
+}
+components {
+  name: "recurse"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${a}"
+  }
+  properties {
+    key: "three"
+    value: "${adprime}"
+  }
+  properties {
+    key: "two"
+    value: "${a-prime}"
+  }
+}
+components {
+  name: "badlyformed"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "${a${b}}"
+  }
+  properties {
+    key: "three"
+    value: "${a c}"
+  }
+  properties {
+    key: "two"
+    value: "${b$}"
+  }
+}
+

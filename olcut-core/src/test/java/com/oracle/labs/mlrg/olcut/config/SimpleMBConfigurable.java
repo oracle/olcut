@@ -45,10 +45,12 @@ public class SimpleMBConfigurable implements Configurable, ConfigurableMXBean {
     @Config
     List<String> c = Arrays.asList("foo","bar");
 
+    @Override
     public String[] getProperties() {
         return new String[] {"a", "b", "c"};
     }
 
+    @Override
     public String getValue(String property) {
         if(property.equals("a")) {
             return String.valueOf(a);
@@ -59,6 +61,7 @@ public class SimpleMBConfigurable implements Configurable, ConfigurableMXBean {
         }
     }
 
+    @Override
     public String[] getValues(String property) {
         if(property.equals("c")) {
             return c.toArray(new String[0]);
