@@ -1,0 +1,9 @@
+properties {
+  key: "a"
+  value: "alpha"
+}
+properties {
+  key: "a#5~?!"
+  value: "beta"
+}
+

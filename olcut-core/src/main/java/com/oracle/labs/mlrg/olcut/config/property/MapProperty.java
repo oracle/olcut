@@ -48,6 +48,7 @@ public final class MapProperty implements Property {
         return map;
     }
 
+    @Override
     public MapProperty copy() {
         Map<String,SimpleProperty> output = new HashMap<>();
 

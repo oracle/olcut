@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,40 +26,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.protobuf;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.StartableConfigurable;
-
-import java.io.IOException;
-import java.util.List;
+import com.oracle.labs.mlrg.olcut.config.PathConfigurable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  *
  */
-public class StartableTest {
+public class PathTest {
 
     @BeforeAll
-    public static void setUpClass() throws IOException {
-        ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
+    public static void setUpClass() throws Exception {
+        ConfigurationManager.addFileFormatFactory(new ProtoConfigFactory());
     }
 
     @Test
-    public void simpleTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("startableConfig.json");
-        StartableConfigurable sc = (StartableConfigurable) cm.lookup("startme");
-        assertFalse(sc.isDone());
-        sc.join();
-        List<String> l = sc.getResult();
-        assertEquals(5, l.size());
-        for(String s : l) {
-            assertEquals(s, "foo");
-        }
+    public void test() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager("pathConfig.pb");
+        PathConfigurable pc = (PathConfigurable) cm.lookup(
+                "pathTest");
+        String actualPath = pc.getPath().toString();
+        actualPath = actualPath.replace('\\', '/');
+        
+        assertEquals("/this/is/a/test/path", actualPath);
     }
+
 }

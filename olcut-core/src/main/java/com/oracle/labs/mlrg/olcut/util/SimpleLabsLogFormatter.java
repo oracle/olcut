@@ -74,6 +74,7 @@ public class SimpleLabsLogFormatter extends Formatter {
      * @param record the record to format
      * @return the formatted string
      */
+    @Override
     public String format(LogRecord record) {
         String message = formatMessage(record);
         if(terse) {
