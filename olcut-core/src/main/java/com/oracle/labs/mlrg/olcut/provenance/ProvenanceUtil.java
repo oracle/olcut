@@ -495,7 +495,7 @@ public final class ProvenanceUtil {
      * @return An ordering of {@link ConfiguredObjectProvenance}s.
      */
     public static ProvenanceOrdering orderProvenances(ObjectProvenance provenance) {
-        Map<ConfiguredObjectProvenance,Integer> provenanceTracker = new IdentityHashMap<>(30);
+        IdentityHashMap<ConfiguredObjectProvenance,Integer> provenanceTracker = new IdentityHashMap<>(30);
         List<ConfiguredObjectProvenance> traversalOrder = new ArrayList<>();
 
         int counter = 0;
@@ -913,9 +913,9 @@ public final class ProvenanceUtil {
          * @param traversalOrder The traversal order of the configured object provenances.
          * @param provenanceTracker The id mapping of the provenances.
          */
-        ProvenanceOrdering(List<ConfiguredObjectProvenance> traversalOrder, Map<ConfiguredObjectProvenance,Integer> provenanceTracker) {
-            this.traversalOrder = traversalOrder;
-            this.provenanceTracker = provenanceTracker;
+        ProvenanceOrdering(List<ConfiguredObjectProvenance> traversalOrder, IdentityHashMap<ConfiguredObjectProvenance,Integer> provenanceTracker) {
+            this.traversalOrder = Collections.unmodifiableList(traversalOrder);
+            this.provenanceTracker = Collections.unmodifiableMap(provenanceTracker);
         }
     }
 }
