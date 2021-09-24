@@ -4,9 +4,10 @@ The OLCUT Configuration System uses runtime dependency-injection to instantiate
 configurable components on the fly based on the contents of your configuration
 file.  It allows you to both specify the parameters ("properties") that should
 be given to the components at initialization time as well as which types of
-objects should actually be instantiated for each component.  It uses an XML
-file to describe the configuration. OLCUT uses Java Annotations extensively
-to facilitate code integration.
+objects should actually be instantiated for each component.  By default it uses
+an XML file to describe the configuration, though edn, json and protobuf
+formats are available. OLCUT uses Java Annotations extensively to facilitate
+code integration.
 
 
 ## Basic Configuration / Initialization
@@ -123,7 +124,9 @@ The supported list of annotated field types are:
     * `double`, `Double`
     * `String`
 * Primitive array types
+    * `boolean[]`
     * `byte[]`
+    * `char[]`
     * `short[]`
     * `int[]`
     * `long[]`
@@ -352,3 +355,6 @@ list of fully qualified class names which implement `FileFormatFactory`. For exa
 
 will insert the JsonConfigFactory into the configuration manager before the
 configuration is loaded.
+
+Support for protobuf config formats was added in OLCUT 5.2.
+
