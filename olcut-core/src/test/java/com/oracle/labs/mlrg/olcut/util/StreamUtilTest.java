@@ -52,7 +52,7 @@ public class StreamUtilTest {
 
     @Test
     public void testBoundedParallelism() throws ExecutionException, InterruptedException {
-        ForkJoinPool fjp = new ForkJoinPool(2);
+        ForkJoinPool fjp = new ForkJoinPool(1);
 
         AtomicInteger unboundedCounter = new AtomicInteger();
         Stream<Integer> unbounded = wrapStream(StreamUtil.boundParallelism(arrayFactory(10000).parallel()),unboundedCounter);
@@ -64,7 +64,7 @@ public class StreamUtilTest {
 
         logger.finer("Unbounded = " + unboundedCounter.get() + ", bounded = " + boundedCounter.get());
         assertNotEquals(boundedCounter.get(), unboundedCounter.get(), "Parallelism wasn't bounded");
-        assertEquals(2 << 2, boundedCounter.get(), "Parallelism wasn't bounded");
+        assertEquals(1 << 2, boundedCounter.get(), "Parallelism wasn't bounded");
     }
 
     public static Stream<Integer> arrayFactory(int size) {
