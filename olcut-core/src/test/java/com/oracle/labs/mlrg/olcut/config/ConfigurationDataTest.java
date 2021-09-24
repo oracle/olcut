@@ -42,9 +42,14 @@ public class ConfigurationDataTest {
 
     @Test
     public void structuralEqualsAllConfig() {
+        // We're going to round-trip this through instantiation and importing once to normalize all the
+        // values. Otherwise Windows produces paths rooted at "C:\" while posix platforms use "/".
         final String aName = "all-config";
         ConfigurationManager cm = new ConfigurationManager("allConfig.xml");
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup(aName);
+        cm.close();
+        cm = new ConfigurationManager();
+        cm.importConfigurable(ac);
         List<ConfigurationData> a = cm.getComponentNames().stream()
                 .map(cm::getConfigurationData)
                 .filter(Optional::isPresent)
@@ -54,7 +59,6 @@ public class ConfigurationDataTest {
         cm.close();
         cm = new ConfigurationManager();
         final String bName = cm.importConfigurable(ac);
-
         List<ConfigurationData> b = cm.getComponentNames().stream()
                 .map(cm::getConfigurationData)
                 .filter(Optional::isPresent)

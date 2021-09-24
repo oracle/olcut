@@ -32,6 +32,7 @@ package com.oracle.labs.mlrg.olcut.util;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Spliterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -52,7 +53,16 @@ public class StreamUtilTest {
 
     @Test
     public void testBoundedParallelism() throws ExecutionException, InterruptedException {
-        ForkJoinPool fjp = new ForkJoinPool(2);
+        // This hack is to ensure that tests pass on Github Actions, which uses weird VMs for macOS that confuse the
+        // parallelism checks.
+        int parallelismLevel;
+        String os = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
+        if (os.contains("mac") || os.contains("darwin")) {
+            parallelismLevel = 1;
+        } else {
+            parallelismLevel = 2;
+        }
+        ForkJoinPool fjp = new ForkJoinPool(parallelismLevel);
 
         AtomicInteger unboundedCounter = new AtomicInteger();
         Stream<Integer> unbounded = wrapStream(StreamUtil.boundParallelism(arrayFactory(10000).parallel()),unboundedCounter);
@@ -64,7 +74,7 @@ public class StreamUtilTest {
 
         logger.finer("Unbounded = " + unboundedCounter.get() + ", bounded = " + boundedCounter.get());
         assertNotEquals(boundedCounter.get(), unboundedCounter.get(), "Parallelism wasn't bounded");
-        assertEquals(2 << 2, boundedCounter.get(), "Parallelism wasn't bounded");
+        assertEquals(parallelismLevel << 2, boundedCounter.get(), "Parallelism wasn't bounded");
     }
 
     public static Stream<Integer> arrayFactory(int size) {
