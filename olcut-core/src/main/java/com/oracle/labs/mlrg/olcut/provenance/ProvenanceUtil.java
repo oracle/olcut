@@ -471,6 +471,13 @@ public final class ProvenanceUtil {
      * Extracts a list of ConfigurationData which can be used to reconstruct the objects
      * recorded in this provenance.
      * <p>
+     * This method accepts {@link ObjectProvenance} but returns {@link ConfigurationData} objects
+     * only for {@link ConfiguredObjectProvenance} objects that are found when traversing the object
+     * graph rooted at {@code provenance}. This is because provenance is a mixture of information
+     * computed at runtime and configuration information used to build the runnable objects. The
+     * configuration data must be supplied to the objects and the computation re-executed to recreate
+     * the provenance.
+     * <p>
      * The configurations are given machine generated names, and it makes a best effort
      * attempt to flatten cycles without duplicating objects.
      * <p>
