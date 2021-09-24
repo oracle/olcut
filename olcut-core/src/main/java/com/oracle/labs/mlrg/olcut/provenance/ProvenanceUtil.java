@@ -65,12 +65,12 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -471,23 +471,44 @@ public final class ProvenanceUtil {
      * Extracts a list of ConfigurationData which can be used to reconstruct the objects
      * recorded in this provenance.
      * <p>
+     * This method accepts {@link ObjectProvenance} but returns {@link ConfigurationData} objects
+     * only for {@link ConfiguredObjectProvenance} objects that are found when traversing the object
+     * graph rooted at {@code provenance}. This is because provenance is a mixture of information
+     * computed at runtime and configuration information used to build the runnable objects. The
+     * configuration data must be supplied to the objects and the computation re-executed to recreate
+     * the provenance.
+     * <p>
      * The configurations are given machine generated names, and it makes a best effort
      * attempt to flatten cycles without duplicating objects.
      * <p>
      * This method uses computeName to make the names of the returned ConfigurationData objects.  The
      * component name of the object corresponding to the provenance that is passed in can be retrieved
      * with returnValues.get(0).getName()
+     * <p>
+     * This method calls {@link #orderProvenances(ObjectProvenance)} and passes the results to
+     * {@link #extractConfigurationFromOrdering(ProvenanceOrdering)}.
      * @param provenance The provenance to extract configuration from.
      * @return A list of configurations.
      */
     public static List<ConfigurationData> extractConfiguration(ObjectProvenance provenance) {
-        Map<ConfiguredObjectProvenance,Integer> provenanceTracker = new IdentityHashMap<>(30);
+        ProvenanceOrdering ordering = orderProvenances(provenance);
+        return extractConfigurationFromOrdering(ordering);
+    }
+
+    /**
+     * Extracts the {@link ConfiguredObjectProvenance}s referenced by the supplied {@link ObjectProvenance},
+     * setting a traversal order and giving each one a unique number.
+     * @param provenance The provenance to extract.
+     * @return An ordering of {@link ConfiguredObjectProvenance}s.
+     */
+    public static ProvenanceOrdering orderProvenances(ObjectProvenance provenance) {
+        IdentityHashMap<ConfiguredObjectProvenance,Integer> provenanceTracker = new IdentityHashMap<>(30);
         List<ConfiguredObjectProvenance> traversalOrder = new ArrayList<>();
 
         int counter = 0;
 
         // Extract all the ObjectProvenance instances from the object graph rooted at provenance
-        Queue<ObjectProvenance> processingQueue = new LinkedList<>();
+        Queue<ObjectProvenance> processingQueue = new ArrayDeque<>();
         processingQueue.add(provenance);
         while (!processingQueue.isEmpty()) {
             ObjectProvenance curProv = processingQueue.poll();
@@ -504,11 +525,28 @@ public final class ProvenanceUtil {
             }
         }
 
+        return new ProvenanceOrdering(traversalOrder,provenanceTracker);
+    }
+
+    /**
+     * Extracts a list of ConfigurationData which can be used to reconstruct the objects
+     * recorded in this provenance.
+     * <p>
+     * The configurations are given machine generated names, and it makes a best effort
+     * attempt to flatten cycles without duplicating objects.
+     * <p>
+     * This method uses computeName to make the names of the returned ConfigurationData objects.  The
+     * component name of the object corresponding to the provenance that is passed in can be retrieved
+     * with returnValues.get(0).getName()
+     * @param ordering The {@link ConfiguredObjectProvenance}s to convert into {@link ConfigurationData}.
+     * @return A list of configurations.
+     */
+    public static List<ConfigurationData> extractConfigurationFromOrdering(ProvenanceOrdering ordering) {
         List<ConfigurationData> output = new ArrayList<>();
 
-        for (int i = 0; i < traversalOrder.size(); i++) {
-            ConfiguredObjectProvenance curProv = traversalOrder.get(i);
-            output.add(extractSingleConfiguration(curProv,computeName(curProv,i),provenanceTracker));
+        for (int i = 0; i < ordering.traversalOrder.size(); i++) {
+            ConfiguredObjectProvenance curProv = ordering.traversalOrder.get(i);
+            output.add(extractSingleConfiguration(curProv,computeName(curProv,i),ordering.provenanceTracker));
         }
 
         return output;
@@ -600,7 +638,7 @@ public final class ProvenanceUtil {
         int counter = 0;
 
         // Extract all the ObjectProvenance instances from the object graph rooted at provenance
-        Queue<ObjectProvenance> processingQueue = new LinkedList<>();
+        Queue<ObjectProvenance> processingQueue = new ArrayDeque<>();
         processingQueue.add(provenance);
         while (!processingQueue.isEmpty()) {
             ObjectProvenance curProv = processingQueue.poll();
@@ -862,4 +900,29 @@ public final class ProvenanceUtil {
         return provenancable;
     }
 
+    /**
+     * A named tuple representing the extraction order of the {@link ConfiguredObjectProvenance}s discovered in a single {@link ObjectProvenance}.
+     * <p>
+     * It'll be a record one day.
+     */
+    public static final class ProvenanceOrdering {
+        /**
+         * The traversal order of the provenances.
+         */
+        public final List<ConfiguredObjectProvenance> traversalOrder;
+        /**
+         * The mapping function to an index.
+         */
+        public final Map<ConfiguredObjectProvenance,Integer> provenanceTracker;
+
+        /**
+         * Constructs a ProvenanceOrdering tuple.
+         * @param traversalOrder The traversal order of the configured object provenances.
+         * @param provenanceTracker The id mapping of the provenances.
+         */
+        ProvenanceOrdering(List<ConfiguredObjectProvenance> traversalOrder, IdentityHashMap<ConfiguredObjectProvenance,Integer> provenanceTracker) {
+            this.traversalOrder = Collections.unmodifiableList(traversalOrder);
+            this.provenanceTracker = Collections.unmodifiableMap(provenanceTracker);
+        }
+    }
 }
