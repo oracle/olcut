@@ -23,12 +23,12 @@ Maven:
 <dependency>
     <groupId>com.oracle.labs.olcut</groupId>
     <artifactId>olcut-core</artifactId>
-    <version>5.1.6</version>
+    <version>5.2.0</version>
 </dependency>
 ```
 or from Gradle:
 ```groovy
-implementation 'com.oracle.labs.olcut:olcut-core:5.1.6'
+implementation 'com.oracle.labs.olcut:olcut-core:5.2.0'
 ```
 
 The `olcut-extras` artifact is designed as a small tool for developers, as such you should compile the appropriate 
@@ -37,12 +37,13 @@ version based on your needs.
 ## Configuration System
 
 The OLCUT [Configuration System](README-Configuration.md) uses runtime
-dependency-injection to instantiate configurable components on the fly based on 
-the contents of your configuration file.  It allows you to both specify the parameters
-("properties") that should be given to the components at initialization time as well
-as which types of objects should actually be instantiated for each component.  It
-uses an XML file to describe the configuration. OLCUT uses Java Annotations extensively
-to facilitate code integration.
+dependency-injection to instantiate configurable components on the fly based on
+the contents of your configuration file.  It allows you to both specify the
+parameters ("properties") that should be given to the components at
+initialization time as well as which types of objects should actually be
+instantiated for each component. By default it uses an XML file to describe the
+configuration, though edn, json and protobuf formats are available. OLCUT uses
+Java Annotations extensively to facilitate code integration.
 
 ```xml
     <config>
@@ -90,7 +91,7 @@ the appropriate fields.
 
 This is just a small sample of what the Configuration system can do. It
 supports **inheritance**, many configurable types, **command line overrides**, self-description,
-and multiple file formats including **JSON**.
+and multiple file formats including **JSON**, **edn**, and **protobuf**.
 
 Read all about the [Configuration System](README-Configuration.md).
 
@@ -196,12 +197,12 @@ Read more about the [Command Interpreter](README-Commands.md).
 
 ## Provenance
 
-OLCUT provides a system for extracting the state of configurable objects into 
-immutable Provenance objects used to record the state of a computation. It's heavily
-used in [Tribuo](https://tribuo.org) to record a trainer and dataset configuration.
-It can optionally include
-non-configurable state. It supports conversion to a marshalled format which can be
-easily serialised and deserialised from JSON or protobuf.
+OLCUT provides a system for extracting the state of configurable objects into
+immutable Provenance objects used to record the state of a computation. It's
+heavily used in [Tribuo](https://tribuo.org) to record a trainer and dataset
+configuration.  It can optionally include non-configurable state. It supports
+conversion to a marshalled format which can be easily serialised and
+deserialised from JSON, xml or protobuf.
 
 Provenance objects can be converted back into a list of configurations, which can be 
 used to recreate the config file that generated that provenance. This can be used
