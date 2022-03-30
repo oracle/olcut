@@ -42,7 +42,7 @@
         <edn.version>0.7.1</edn.version>
         <jackson.version>2.13.2</jackson.version>
         <jline.version>3.21.0</jline.version>
-        <junit.version>5.7.1</junit.version>
+        <junit.version>5.8.2</junit.version>
         <protobuf.version>3.19.4</protobuf.version>
     </properties>
     <modules>
