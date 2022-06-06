@@ -59,8 +59,13 @@ import java.util.logging.Logger;
 public final class SubprocessConnection {
     public static final Logger logger = Logger.getLogger(SubprocessConnection.class.getName());
 
+    /**
+     * This string is sent to the subprocess before it is terminated. The process
+     * is given a short time to shut itself down cleanly before being terminated.
+     */
     public static final String SHUTDOWN = "SHUTDOWN";
-    public static final String PYTHONUNBUFFERED = "PYTHONUNBUFFERED";
+
+    private static final String PYTHONUNBUFFERED = "PYTHONUNBUFFERED";
 
     private final String command;
 
