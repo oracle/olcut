@@ -57,7 +57,7 @@ import java.util.logging.Logger;
  * if the idle timeout is reached and new commands are sent.
  */
 public final class SubprocessConnection {
-    public static final Logger logger = Logger.getLogger(SubprocessConnection.class.getName());
+    private static final Logger logger = Logger.getLogger(SubprocessConnection.class.getName());
 
     /**
      * This string is sent to the subprocess before it is terminated. The process
