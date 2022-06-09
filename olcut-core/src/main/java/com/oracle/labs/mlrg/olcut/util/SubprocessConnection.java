@@ -35,6 +35,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -45,16 +46,21 @@ import java.util.logging.Logger;
 /**
  * A connection to a sub-process that can be communicated with over stdio. The subprocess
  * starts implicitly on activity or can be started explicitly. An idle timeout can also
- * be used to shut the process down when not in use. Subprocesses should be implemented to take
- * commands or opcodes and return output followed by an empty line as a response. They should also
- * watch for a "SHUTDOWN" command (the word "SHUTDOWN" on a line by itself) for terminating
- * the subprocess cleanly.
+ * be used to shut the process down when not in use.
+ *
+ * When a subprocess starts up, it should output the string "Ready" on a line by itself
+ * to indicate that any startup output has quiesced and it is ready to receive commands.
+ * When a command is run with the {@link #run} method, it will be sent to the subprocess
+ * followed by a newline.  The subprocess should return its output followed by an empty line
+ * as a response. The subprocess should watch for a "SHUTDOWN" command (the string
+ * "SHUTDOWN" on a line by itself) for terminating the subprocess cleanly. Processes
+ * that don't respond to "SHUTDOWN" in a timely fashion will be terminated.
  *
  * Commands invoked by SubprocessConnection are assumed either to be stateless or to persist
  * state themselves. It is safe to call {@link #shutdown} on this class to cause the subprocess
  * to terminate, then to issue more commands, causing the subprocess to be restarted. Setting
  * an idle timeout for the process with {@link #setTimeout} will cause this behavior to happen
- * if the idle timeout is reached and new commands are sent.
+ * if the idle timeout is reached and new commands are then sent.
  */
 public final class SubprocessConnection {
     private static final Logger logger = Logger.getLogger(SubprocessConnection.class.getName());
@@ -244,7 +250,7 @@ public final class SubprocessConnection {
                 String line;
                 while ((line = stdout.readLine()) != null) {
                     logger.fine("RECEIVED::" + line);
-                    if (line.startsWith("Ready")) {
+                    if (line.toLowerCase(Locale.ROOT).equals("ready")) {
                         logger.info("Subprocess is ready");
                         break;
                     }
