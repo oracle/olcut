@@ -30,12 +30,15 @@ package com.oracle.labs.mlrg.olcut.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -225,6 +228,45 @@ public final class SubprocessConnection {
             lastIOTime = System.currentTimeMillis();
         }
         return results.toString();
+    }
+
+    private static long transferTo(InputStream is, OutputStream os) throws IOException{
+        long transferred = 0;
+        byte[] buffer = new byte[8192];
+        int read;
+        while((read = is.read(buffer, 0, 8192)) >=0) {
+            os.write(buffer, 0, read);
+            transferred += read;
+        }
+        return transferred;
+    }
+
+    /**
+     * Sends the full contents of the provided input stream to the subprocess and returns
+     * the resulting output as a list of strings, one per line of output. A subprocess
+     * implementing this run style must still end its output with an empty line to
+     * indicate it is done returning output.
+     *
+     * @param is the data to send to the subprocess
+     * @return a list of strings, one string per line of output from the subprocess
+     * @throws IOException
+     */
+    public List<String> run(InputStream is) throws IOException {
+        List<String> results = new ArrayList<>();
+        ensureRunning();
+        synchronized (process) {
+            long transferred = transferTo(is,process.getOutputStream());
+            logger.fine("Transferred "+ transferred + " bytes");
+
+            BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = null;
+            while(!(line = stdout.readLine().trim()).isEmpty()) {
+                logger.finer(line);
+                results.add(line);
+            }
+            lastIOTime = System.currentTimeMillis();
+        }
+        return results;
     }
 
     /**
