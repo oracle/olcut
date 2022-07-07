@@ -230,7 +230,7 @@ public final class SubprocessConnection {
      * @throws TimeoutException if too much time elapsed since any output had been collected
      *                          - this likely means any output is incomplete
      */
-    private void collectOutputWithTimeout(Consumer<String> func) throws IOException, TimeoutException {
+    private void collectOutputWithTimeout(Consumer<String> func) throws TimeoutException {
         BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
         Timer readTimeoutTimer = null;
         if (readTimeoutMillis > 0) {
@@ -241,37 +241,42 @@ public final class SubprocessConnection {
         //
         // Read until something goes wrong or we got our signal empty line
         String line = null;
-        while ((line = stdout.readLine()) != null && !line.trim().isEmpty()) {
-            logger.finer("RECEIVED::" + line);
-            //
-            // Accumulate answers.
-            func.accept(line);
-            lastIOTime = System.currentTimeMillis();
+        try {
+            while ((line = stdout.readLine()) != null && !line.trim().isEmpty()) {
+                logger.finer("RECEIVED::" + line);
+                //
+                // Accumulate answers.
+                func.accept(line);
+                lastIOTime = System.currentTimeMillis();
 
+                //
+                // We read something, so cancel and restart the timer
+                if (readTimeoutTimer != null) {
+                    readTimeoutTimer.cancel();
+                    readTimeoutTimer = new Timer();
+                    readTimeoutTimer.schedule(new ReaderCloser(process.getInputStream()), readTimeoutMillis);
+                }
+
+            }
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Error reading from subprocess stdout", e);
+        } finally {
             //
-            // We read something, so cancel and restart the timer
+            // One way or another, we're done reading, so stop the timer if there is one
             if (readTimeoutTimer != null) {
                 readTimeoutTimer.cancel();
-                readTimeoutTimer = new Timer();
-                readTimeoutTimer.schedule(new ReaderCloser(process.getInputStream()), readTimeoutMillis);
             }
-
-        }
-        //
-        // One way or another, we're done reading, so stop the timer if there is one
-        if (readTimeoutTimer != null) {
-            readTimeoutTimer.cancel();
-        }
-        if (line == null) {
-            //
-            // We had an unexpected EOF. This shouldn't happen unless there was
-            // a problem with the stream.  Probably the subprocess got shut down by the
-            // read timer, but to make sure, we'll do another shutdown here.  The locking
-            // should make sure we're safe.  Once everything is cleaned up, throw
-            // an exception indicating we probably didn't read everything.
-            logger.fine("Read a null line - EOF reached, shutting down engine");
-            shutdown(false);
-            throw new TimeoutException("Reading interrupted because stream was closed (read timed out?)");
+            if (line == null) {
+                //
+                // We had an unexpected EOF. This shouldn't happen unless there was
+                // a problem with the stream.  Probably the subprocess got shut down by the
+                // read timer, but to make sure, we'll do another shutdown here.  The locking
+                // should make sure we're safe.  Once everything is cleaned up, throw
+                // an exception indicating we probably didn't read everything.
+                logger.fine("Read a null line - EOF reached, shutting down engine");
+                shutdown(false);
+                throw new TimeoutException("Reading interrupted because stream was closed (read timed out?)");
+            }
         }
     }
 
@@ -303,7 +308,7 @@ public final class SubprocessConnection {
 
             //
             // Read until an empty line is returned
-            collectOutputWithTimeout(line -> results.append(line));
+            collectOutputWithTimeout(results::append);
         }
         return results.toString();
     }
