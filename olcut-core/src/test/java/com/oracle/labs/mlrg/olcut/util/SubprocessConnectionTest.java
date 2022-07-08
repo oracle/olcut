@@ -38,7 +38,7 @@ public class SubprocessConnectionTest {
             }
 
             @Override
-            public void subprocessPreShutdown(SubprocessConnection connection) {
+            public void subprocessPreShutdown(SubprocessConnection connection, boolean graceful) {
                 preShutdown++;
                 System.err.println("Subprocess pre shutdown times: " +preShutdown);
             }

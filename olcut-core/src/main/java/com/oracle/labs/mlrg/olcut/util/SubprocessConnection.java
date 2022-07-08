@@ -44,6 +44,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,6 +92,8 @@ public final class SubprocessConnection {
     private long readTimeoutMillis;
 
     private Process process = null;
+
+    private ReentrantLock processLock = new ReentrantLock();
 
     private Timer idlerTimer = null;
 
@@ -234,8 +237,8 @@ public final class SubprocessConnection {
         BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
         Timer readTimeoutTimer = null;
         if (readTimeoutMillis > 0) {
-            readTimeoutTimer = new Timer();
-            readTimeoutTimer.schedule(new ReaderCloser(process.getInputStream()), readTimeoutMillis);
+            readTimeoutTimer = new Timer("SubprocessReaper");
+            readTimeoutTimer.schedule(new SubprocessReaper(process), readTimeoutMillis);
         }
 
         //
@@ -253,13 +256,14 @@ public final class SubprocessConnection {
                 // We read something, so cancel and restart the timer
                 if (readTimeoutTimer != null) {
                     readTimeoutTimer.cancel();
-                    readTimeoutTimer = new Timer();
-                    readTimeoutTimer.schedule(new ReaderCloser(process.getInputStream()), readTimeoutMillis);
+                    readTimeoutTimer = new Timer("SubprocessReaper");
+                    readTimeoutTimer.schedule(new SubprocessReaper(process), readTimeoutMillis);
                 }
 
             }
         } catch (IOException e) {
             logger.log(Level.WARNING, "Error reading from subprocess stdout", e);
+            line = null;
         } finally {
             //
             // One way or another, we're done reading, so stop the timer if there is one
@@ -295,10 +299,15 @@ public final class SubprocessConnection {
      * @throws IOException if an error occurred reading from the subprocess
      * @throws TimeoutException if reading from the subprocess took too long
      */
-    public String run(String command) throws IOException, TimeoutException {
+    public synchronized String run(String command) throws IOException, TimeoutException {
+        //
+        // This method is synchronized to limit the threads that can wait on the processLock.
+        // If a process is killed, we want the process reaper to grab the lock before anybody
+        // else can, so keeping threads waiting above this method helps make that possible.
         final StringBuilder results = new StringBuilder();
-        ensureRunning();
-        synchronized (process) {
+        try {
+            processLock.lock();
+            ensureRunning();
             //
             // Get this process's stdin and write the command string to it
             PrintWriter stdin = new PrintWriter(process.getOutputStream());
@@ -309,6 +318,8 @@ public final class SubprocessConnection {
             //
             // Read until an empty line is returned
             collectOutputWithTimeout(results::append);
+        } finally {
+            processLock.unlock();
         }
         return results.toString();
     }
@@ -340,14 +351,21 @@ public final class SubprocessConnection {
      * @throws IOException if an error occurs communicating with the subprocess
      * @throws TimeoutException if reading from the subprocess takes too long
      */
-    public List<String> run(InputStream is) throws IOException, TimeoutException {
+    public synchronized List<String> run(InputStream is) throws IOException, TimeoutException {
+        //
+        // This method is synchronized to limit the threads that can wait on the processLock.
+        // If a process is killed, we want the process reaper to grab the lock before anybody
+        // else can, so keeping threads waiting above this method helps make that possible.
         List<String> results = new ArrayList<>();
-        ensureRunning();
-        synchronized (process) {
+        try {
+            processLock.lock();
+            ensureRunning();
             long transferred = transferTo(is,process.getOutputStream());
             logger.fine("Transferred "+ transferred + " bytes");
 
             collectOutputWithTimeout(line -> results.add(line));
+        } finally {
+            processLock.unlock();
         }
         return results;
     }
@@ -358,19 +376,19 @@ public final class SubprocessConnection {
      *
      * @throws IOException if subprocess startup fails
      */
-    private synchronized void ensureRunning() throws IOException {
+    private void ensureRunning() throws IOException {
         //
         // Let's be sure nobody else can mess with process while we're
-        // messing with process. The method is synchronized so we only do it
-        // one at a time, and we synchronized on process below as well, so we don't
-        // trample other parts of the class.
-        if (process == null || !process.isAlive()) {
-            ProcessBuilder pb = new ProcessBuilder(command.split("\\s+"));
-            logger.info("Running subprocess " + Arrays.toString(command.split("\\s+")));
-            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-            pb.environment().putAll(environment);
-            process = pb.start();
-            synchronized (process) {
+        // messing with process.
+        try {
+            processLock.lock();
+            if (process == null || !process.isAlive()) {
+                ProcessBuilder pb = new ProcessBuilder(command.split("\\s+"));
+                logger.info("Running subprocess " + Arrays.toString(command.split("\\s+")));
+                pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+                pb.environment().putAll(environment);
+                process = pb.start();
+                processLock.lock();
                 BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line;
                 while ((line = stdout.readLine()) != null) {
@@ -381,16 +399,18 @@ public final class SubprocessConnection {
                     }
                 }
                 lastIOTime = System.currentTimeMillis();
+                //
+                // Notify our listeners that we just started
+                listeners.forEach(l -> l.subprocessStarted(this));
             }
             //
-            // Notify our listeners that we just started
-            listeners.forEach(l -> l.subprocessStarted(this));
-        }
-        //
-        // If the idler isn't running, start it up too. Check if idle time has elapsed every 30 seconds.
-        if (idleTimeoutMillis != 0 && idlerTimer == null) {
-            idlerTimer = new Timer("SubProcessIdler", true);
-            idlerTimer.schedule(new Idler(), 30 * 1000, 30 * 1000);
+            // If the idler isn't running, start it up too. Check if idle time has elapsed every 30 seconds.
+            if (idleTimeoutMillis != 0 && idlerTimer == null) {
+                idlerTimer = new Timer("SubProcessIdler", true);
+                idlerTimer.schedule(new Idler(), 30 * 1000, 30 * 1000);
+            }
+        } finally {
+            processLock.unlock();
         }
     }
 
@@ -416,60 +436,80 @@ public final class SubprocessConnection {
      * @param graceful whether to shut down gracefully.
      */
     public void shutdown(boolean graceful) {
-        if (process != null) {
-            synchronized (process) {
-                if (process.isAlive()) {
-                    //
-                    // Announce that we're about to shut down.
-                    listeners.forEach(l -> l.subprocessPreShutdown(this));
+        try {
+            processLock.lock();
+            if (process != null && process.isAlive()) {
+                //
+                // Announce that we're about to shut down.
+                listeners.forEach(l -> l.subprocessPreShutdown(this, graceful));
 
-                    try {
-                        if (graceful) {
-                            // First, tell it to shut down, then wait a short
-                            // period before making sure it is down.
-                            PrintWriter stdin = new PrintWriter(process.getOutputStream());
-                            stdin.println(SHUTDOWN);
-                            stdin.flush();
-                            if (!process.waitFor(5, TimeUnit.SECONDS)) {
-                                process.destroyForcibly();
-                            }
-                        } else {
+                try {
+                    if (graceful) {
+                        // First, tell it to shut down, then wait a short
+                        // period before making sure it is down.
+                        PrintWriter stdin = new PrintWriter(process.getOutputStream());
+                        stdin.println(SHUTDOWN);
+                        stdin.flush();
+                        if (!process.waitFor(5, TimeUnit.SECONDS)) {
                             process.destroyForcibly();
                         }
-                    } catch (InterruptedException e) {
-                        logger.log(Level.WARNING, "Shutdown interrupted", e);
+                    } else {
                         process.destroyForcibly();
                     }
-                    //
-                    // Announce that shutdown has happened.
-                    listeners.forEach(l -> l.subprocessPostShutdown(this));
+                } catch (InterruptedException e) {
+                    logger.log(Level.WARNING, "Shutdown interrupted", e);
+                    process.destroyForcibly();
+                } finally {
+                    process = null;
                 }
+                //
+                // Announce that shutdown has happened.
+                listeners.forEach(l -> l.subprocessPostShutdown(this));
+            } else {
+                //
+                // Announce that shutdown has happened.
+                listeners.forEach(l -> l.subprocessPostShutdown(this));
             }
-        }
-        if (idlerTimer != null) {
-            idlerTimer.cancel();
-            idlerTimer = null;
+            if (idlerTimer != null) {
+                idlerTimer.cancel();
+                idlerTimer = null;
+            }
+        } finally {
+            processLock.unlock();
         }
 
     }
 
-    protected class ReaderCloser extends TimerTask {
-        protected InputStream stream;
+    protected class SubprocessReaper extends TimerTask {
+        protected Process proc;
 
-        public ReaderCloser(InputStream stream) {
-            this.stream = stream;
+        public SubprocessReaper(Process proc) {
+            this.proc = proc;
         }
 
         @Override
         public void run() {
-            logger.fine("Closing stream reader - subprocess unresponsive");
+            //
+            // Announce that we're about to shut down.
+            listeners.forEach(l -> l.subprocessPreShutdown(SubprocessConnection.this, false));
+
+            logger.fine("Killing subprocess");
             try {
-                stream.close();
-                shutdown(false);
-                logger.finer("Stream closed");
-            } catch (IOException e) {
-                logger.log(Level.INFO, "Cancel reading from subprocess failed?", e);
+                proc.destroyForcibly();
+                //
+                // Get in line to try to be the next one to hold the lock. This way nobody can
+                // reclaim it until the process is fully exited.
+                processLock.lock();
+                //
+                // Maks sure we're fully done before releasing the lock.
+                proc.waitFor();
+            } catch (InterruptedException e) {
+                logger.log(Level.WARNING, "Waiting for subprocess destruction interrupted", e);
+            } finally {
+                processLock.unlock();
             }
+            shutdown(false);
+            logger.fine("Subprocess destroy");
         }
 
     }
@@ -482,18 +522,19 @@ public final class SubprocessConnection {
 
         @Override
         public void run() {
-            if (process != null) {
-                synchronized (process) {
-                    if (process.isAlive()) {
-                        long currTime = System.currentTimeMillis();
-                        if (currTime - lastIOTime > idleTimeoutMillis) {
-                            //
-                            // Time expired, shut down the subprocess.
-                            logger.info("Shutting down subprocess due to idle timeout.");
-                            shutdown();
-                        }
+            try {
+                processLock.lock();
+                if (process != null && process.isAlive()) {
+                    long currTime = System.currentTimeMillis();
+                    if (currTime - lastIOTime > idleTimeoutMillis) {
+                        //
+                        // Time expired, shut down the subprocess.
+                        logger.info("Shutting down subprocess due to idle timeout.");
+                        shutdown();
                     }
                 }
+            } finally {
+                processLock.unlock();
             }
         }
     }

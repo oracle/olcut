@@ -45,7 +45,7 @@ public interface SubprocessConnectionListener {
      * a shutdown hook for the JVM, this should not be a long-running
      * method.
      */
-    public void subprocessPreShutdown(SubprocessConnection connection);
+    public void subprocessPreShutdown(SubprocessConnection connection, boolean graceful);
 
     /**
      * Called immediately after a subprocess has completed shutdown.
