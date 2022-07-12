@@ -237,7 +237,7 @@ public final class SubprocessConnection {
         BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
         Timer readTimeoutTimer = null;
         if (readTimeoutMillis > 0) {
-            readTimeoutTimer = new Timer("SubprocessReaper");
+            readTimeoutTimer = new Timer("SubprocessReaper", true);
             readTimeoutTimer.schedule(new SubprocessReaper(process), readTimeoutMillis);
         }
 
@@ -256,7 +256,7 @@ public final class SubprocessConnection {
                 // We read something, so cancel and restart the timer
                 if (readTimeoutTimer != null) {
                     readTimeoutTimer.cancel();
-                    readTimeoutTimer = new Timer("SubprocessReaper");
+                    readTimeoutTimer = new Timer("SubprocessReaper", true);
                     readTimeoutTimer.schedule(new SubprocessReaper(process), readTimeoutMillis);
                 }
 
@@ -388,7 +388,7 @@ public final class SubprocessConnection {
                 pb.redirectError(ProcessBuilder.Redirect.INHERIT);
                 pb.environment().putAll(environment);
                 process = pb.start();
-                processLock.lock();
+
                 BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line;
                 while ((line = stdout.readLine()) != null) {
@@ -426,7 +426,7 @@ public final class SubprocessConnection {
     }
 
     /**
-     * Shuts down teh running subprocess, optionally giving the process a chance to
+     * Shuts down the running subprocess, optionally giving the process a chance to
      * close itself gracefully by sending it the text "SHUTDOWN" to on a line by itself.
      * If the process is already running a command, this method will block until the
      * process is done before shutting down. If you want a running command to shut
