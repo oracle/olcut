@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2022, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -28,26 +28,43 @@
 
 package com.oracle.labs.mlrg.olcut.util;
 
+import java.util.Objects;
+
 /**
  * A mutable version of java.lang.Double.
  */
-public final class MutableDouble extends MutableNumber {
+public final class MutableDouble extends MutableNumber implements Comparable<MutableDouble> {
     private static final long serialVersionUID = 1L;
 
     private double value;
 
+    /**
+     * Constructs a mutable boxed double with the specified value.
+     * @param value The initial value.
+     */
     public MutableDouble(double value) {
         this.value = value;
     }
 
+    /**
+     * Constructs a mutable boxed double containing zero.
+     */
     public MutableDouble() {
         value = 0L;
     }
 
+    /**
+     * Constructs a copy of the supplied mutable double.
+     * @param other The value to copy.
+     */
     public MutableDouble(MutableDouble other) {
         value = other.value;
     }
 
+    /**
+     * Constructs a copy of the supplied number using {@link Number#doubleValue()}.
+     * @param other The value to copy.
+     */
     public MutableDouble(Number other) {
         value = other.doubleValue();
     }
@@ -124,5 +141,23 @@ public final class MutableDouble extends MutableNumber {
     @Override
     public MutableDouble copy() {
         return new MutableDouble(value);
+    }
+
+    @Override
+    public int compareTo(MutableDouble o) {
+        return Double.compare(value,o.value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MutableDouble that = (MutableDouble) o;
+        return Double.compare(that.value, value) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 }
