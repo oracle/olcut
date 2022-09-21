@@ -441,7 +441,7 @@ public final class SubprocessConnection {
             if (process != null && process.isAlive()) {
                 //
                 // Announce that we're about to shut down.
-                listeners.forEach(l -> l.subprocessPreShutdown(this, graceful));
+                listeners.forEach(l -> l.subprocessPreShutdown(this));
 
                 try {
                     if (graceful) {
@@ -491,7 +491,7 @@ public final class SubprocessConnection {
         public void run() {
             //
             // Announce that we're about to shut down.
-            listeners.forEach(l -> l.subprocessPreShutdown(SubprocessConnection.this, false));
+            listeners.forEach(l -> l.subprocessPreShutdown(SubprocessConnection.this));
 
             logger.fine("Killing subprocess");
             try {
