@@ -57,7 +57,7 @@ import java.util.logging.Logger;
  * during the specified timeout period.
  *
  * When a subprocess starts up, it should output the string "ready" (case insensitive)
- * on a line by itself to indicate that any startup output has quiesced and it is ready
+ * on a line by itself to indicate that any startup output has quiesced, and it is ready
  * to receive commands.
  *
  * When a command is run with the {@link #run} method, it will be sent to the subprocess
@@ -67,7 +67,7 @@ import java.util.logging.Logger;
  * that don't respond to "SHUTDOWN" in a timely fashion will be terminated.
  *
  * Commands invoked by SubprocessConnection are assumed either to be stateless or to persist
- * state themselves. It is safe to call {@link #shutdown} on this class to cause the subprocess
+ * state themselves. It should be safe to call {@link #shutdown} on this class to cause the subprocess
  * to terminate, then to issue more commands, causing the subprocess to be restarted. Setting
  * an idle timeout for the process with {@link #setIdleTimeout} will cause this behavior to happen
  * if the idle timeout is reached and new commands are then sent.
@@ -77,7 +77,7 @@ public final class SubprocessConnection {
 
     /**
      * This string is sent to the subprocess before it is terminated. The process
-     * is given a short time to shut itself down cleanly before being terminated.
+     * is given a short time to shut itself down cleanly and is then terminated.
      */
     public static final String SHUTDOWN = "SHUTDOWN";
 
@@ -104,7 +104,7 @@ public final class SubprocessConnection {
     /**
      * Create a sub-process connection, but does not start the process.
      *
-     * NB: In case the subprocess is <code>python</code> in it, SubprocessConnection ensures
+     * NB: In case the subprocess is <code>python</code>, SubprocessConnection ensures
      * that <code>$PYTHONUNBUFFERED</code> is set in the environment. Without this setting, python
      * will not automatically flush responses to stdio and the process will appear to be hung.
      *
@@ -119,7 +119,7 @@ public final class SubprocessConnection {
      * Creates a sub-process connection that can start the subprocess immediately without
      * waiting for any interaction with the process.
      *
-     * NB: In case the subprocess is <code>python</code> in it, SubprocessConnection ensures
+     * NB: In case the subprocess is <code>python</code>, SubprocessConnection ensures
      * that <code>$PYTHONUNBUFFERED</code> is set in the environment. Without this setting, python
      * will not automatically flush responses to stdio and the process will appear to be hung.
      *
@@ -133,7 +133,8 @@ public final class SubprocessConnection {
 
     /**
      * Creates a sub-process connection with the provided environment that can be started immediately
-     * without waiting for any interaction with the process.
+     * without waiting for any interaction with the process. The environment is passed through to
+     * the subprocess.
      *
      * NB: In case the subprocess is <code>python</code>, SubprocessConnection always ensures
      * that <code>$PYTHONUNBUFFERED</code> is set in the environment. Without this setting, python
@@ -174,7 +175,8 @@ public final class SubprocessConnection {
 
     /**
      * Removes a listener so that it no longer receives events related to this object.
-     * Does nothing if the listener was not added.
+     * Does nothing if the listener was not added. Uses {@link Object#equals} to find
+     * the listener.
      *
      * @param l the listener to remove
      */
@@ -193,7 +195,8 @@ public final class SubprocessConnection {
     }
 
     /**
-     * Sets a timeout that should be used to shut down the subprocess.  If no
+     * Sets a timeout that should be used to shut down the subprocess if it
+     * hasn't been used in teh specified time.  If no
      * timeout is set, no automatic shutdown will occur. If the subprocess is
      * shutdown by the idle timeout, it will be restarted if a new command is run.
      * Idle time is checked every 30 seconds.
@@ -211,10 +214,10 @@ public final class SubprocessConnection {
      * Sets a timeout that should be used to cancel reading from a subprocess if
      * no input has been received while waiting to read results.  If the timeout
      * is reached, the subprocess will be shut down and restarted the next time
-     * a command is issued.
+     * a command is issued. If no timeout is set, commands will not be interrupted.
      *
-     * @param time
-     * @param unit
+     * @param time the duration
+     * @param unit units of the duration
      */
     public void setReadTimeout(int time, TimeUnit unit) {
         if (time > 0 && unit != null) {
@@ -418,7 +421,7 @@ public final class SubprocessConnection {
      * Shuts down the running subprocess. Attempts to shut down gracefully by issuing the
      * text "SHUTDOWN" on a line by itself to the process. If the process does not exit
      * after 5 seconds, the process is terminated forcibly. Note that this does not
-     * interrupt a command that is current running.  The shutdown will occur after
+     * interrupt a command that is currently running.  The shutdown will occur after
      * the command has completed.
      */
     public void shutdown() {
@@ -480,6 +483,9 @@ public final class SubprocessConnection {
 
     }
 
+    /**
+     * Destroys a subprocess while handling appropriate locking
+     */
     protected class SubprocessReaper extends TimerTask {
         protected Process proc;
 

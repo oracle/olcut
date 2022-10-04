@@ -228,6 +228,7 @@ Pair | It's a pair class. The fields are final and it has equals and hash code s
 Timers | `StopWatch` and `NanoWatch` provide handy timers, at millisecond or nanosecond granularity.
 Sort Utilities | `SortUtil` rovides a sort function which returns the indices that the input elements should be rearranged. Very useful for finding the original position of a sorted object without zipping it yourself.
 Stream Utilities | In Java 8 the stream API can run inside a Fork-Join Pool to bound the parallelism, but it does not bound the computation of the chunk size correctly. `StreamUtil` provides a bounded stream which knows how many threads are allocated, and so calculates the correct work chunk size. It also has methods for zipping two streams, and a special spliterator (`IOSpliterator`) which chunks work appropriately for reading from a IO system like a DB or a file.
+SubprocessConnection | Provides a simple mechanism for communicating over stdio with a subprocess (e.g. python script or an executable).
 
 ## Contributing
 
