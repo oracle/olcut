@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  * When a command is run with the {@link #run} method, it will be sent to the subprocess
  * followed by a newline.  The subprocess should return its output followed by an empty line
  * as a response. The subprocess should watch for a "SHUTDOWN" command (the string
- * "SHUTDOWN" on a line by itself) for terminating the subprocess cleanly. Processes
+ * "{@link #SHUTDOWN}" on a line by itself) for terminating the subprocess cleanly. Processes
  * that don't respond to "SHUTDOWN" in a timely fashion will be terminated.
  *
  * Commands invoked by SubprocessConnection are assumed either to be stateless or to persist
@@ -93,7 +93,7 @@ public final class SubprocessConnection {
 
     private Process process = null;
 
-    private ReentrantLock processLock = new ReentrantLock();
+    private final ReentrantLock processLock = new ReentrantLock();
 
     private Timer idlerTimer = null;
 
@@ -232,7 +232,6 @@ public final class SubprocessConnection {
      * specified and if that time has elapsed since the last output was generated.
      *
      * @param func the consumer function to hand text to
-     * @throws IOException if an error occurs reading from the process
      * @throws TimeoutException if too much time elapsed since any output had been collected
      *                          - this likely means any output is incomplete
      */
@@ -306,7 +305,7 @@ public final class SubprocessConnection {
         //
         // This method is synchronized to limit the threads that can wait on the processLock.
         // If a process is killed, we want the process reaper to grab the lock before anybody
-        // else can, so keeping threads waiting above this method helps make that possible.
+        // else can, so keeping threads waiting above this method helps make that more likely.
         final StringBuilder results = new StringBuilder();
         try {
             processLock.lock();
@@ -465,14 +464,10 @@ public final class SubprocessConnection {
                 } finally {
                     process = null;
                 }
-                //
-                // Announce that shutdown has happened.
-                listeners.forEach(l -> l.subprocessPostShutdown(this));
-            } else {
-                //
-                // Announce that shutdown has happened.
-                listeners.forEach(l -> l.subprocessPostShutdown(this));
             }
+            //
+            // Announce that shutdown has happened.
+            listeners.forEach(l -> l.subprocessPostShutdown(this));
             if (idlerTimer != null) {
                 idlerTimer.cancel();
                 idlerTimer = null;
@@ -487,7 +482,7 @@ public final class SubprocessConnection {
      * Destroys a subprocess while handling appropriate locking
      */
     protected class SubprocessReaper extends TimerTask {
-        protected Process proc;
+        protected final Process proc;
 
         public SubprocessReaper(Process proc) {
             this.proc = proc;
@@ -501,10 +496,18 @@ public final class SubprocessConnection {
 
             logger.fine("Killing subprocess");
             try {
+                //
+                // Since a process is already running, we do not attempt to obtain the processLock
+                // here. Rather we rely on the fact that invoking this will ultimately cause an
+                // exception to be thrown from the run(command) method. destroyForcibly is asynchronous
+                // which hopefully will allow us to queue on the processLock before it is released in
+                // the run(command) method (which is synchronized, keeping other waiters out).
                 proc.destroyForcibly();
                 //
                 // Get in line to try to be the next one to hold the lock. This way nobody can
-                // reclaim it until the process is fully exited.
+                // reclaim it until the process is fully exited. If this fails to get the lock
+                // right away (meaning that another invocation of run(command) got it), that invocation
+                // could potentially throw an IOException depending on the timing.
                 processLock.lock();
                 //
                 // Maks sure we're fully done before releasing the lock.
