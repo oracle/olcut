@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2004-2021, Oracle and/or its affiliates.
+  ~ Copyright (c) 2004-2022, Oracle and/or its affiliates.
   ~
   ~ Licensed under the 2-clause BSD license.
   ~
@@ -40,8 +40,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <edn.version>0.7.1</edn.version>
-        <jackson.version>2.13.2</jackson.version>
-        <jackson.databind.version>2.13.2.2</jackson.databind.version>
+        <jackson.version>2.13.4</jackson.version>
+        <jackson.databind.version>2.13.4.2</jackson.databind.version>
         <jline.version>3.21.0</jline.version>
         <junit.version>5.8.2</junit.version>
         <protobuf.version>3.19.6</protobuf.version>
