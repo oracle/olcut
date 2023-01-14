@@ -39,7 +39,7 @@ public class StandardCommandTest {
     @BeforeEach
     public  void setupEach() {
         //
-        // Start with a fresh command interpreter and bury and output
+        // Start with a fresh command interpreter and bury any output
         ci = new CommandInterpreter(false);
         ci.setOutput(new PrintStream(new OutputStream() {
             @Override
