@@ -219,7 +219,7 @@ In no particular order, they are as follows:
 Utility | Description
 ------- | -----------
 Channel, File, & IO Utils | `ChannelUtil` has helpers for interacting with `java.nio.channels`. `FileUtil` has methods for operating on directories. `IOUtil` has many many functions for building Input and OutputStreams of various kinds. These are particularly helpful for finding resources that might be in your jar, on your filesystem, or at a particular URL. Many of these methods automatically un-gzip input streams if they are gzipped.
-Log Formatter | There are two `java.util.logging log formatters` (`LabsLogFormatter` and `SimpleLabsLogFormatter` that have a nice single line logging output. They also have a static method that sets all the loggers to use the appropriate formatter, which makes integrating them simpler.
+Log Formatter | There are two `java.util.logging` log formatters (`LabsLogFormatter` and `SimpleLabsLogFormatter` that have a nice single line logging output. They also have a static method that sets all the loggers to use the appropriate formatter, which makes integrating them simpler.
 LRA Cache | An extension of a LinkedHashMap that acts as a least recently accessed cache.
 Date Parser | The CDateParser can parse dates in almost 90 different formats that we've seen, returning a Java Date object without complaining.
 Getopt | Getopt is now deprecated. Use [Options Processing](README-Options.md) instead. This is still here if you need something small and simple.
