@@ -31,7 +31,7 @@ package com.oracle.labs.mlrg.olcut.config;
 import java.io.IOException;
 import java.util.Map;
 
-import com.oracle.labs.mlrg.olcut.config.test.MapConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.MapConfigurable;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

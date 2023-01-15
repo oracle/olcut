@@ -36,9 +36,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable;
-import com.oracle.labs.mlrg.olcut.config.test.ListConfig;
-import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.ListConfig;
+import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

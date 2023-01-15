@@ -35,7 +35,7 @@
 
 <config>
 
-    <component name="pathTest" type="com.oracle.labs.mlrg.olcut.config.test.PathConfigurable">
+    <component name="pathTest" type="com.oracle.labs.mlrg.olcut.test.config.PathConfigurable">
         <property name="test" value="/this/is/a/test/path"/>
     </component>
 

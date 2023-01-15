@@ -28,7 +28,7 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

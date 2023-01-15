@@ -38,10 +38,10 @@
 -->
 
 <config>
-    <component name="simple" type="com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable">
+    <component name="simple" type="com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable">
         <property name="simpel" value="10"/>
     </component>
-    <component name="simple2" type="com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable">
+    <component name="simple2" type="com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable">
         <property name="simple" value="10"/>
         <property name="simpel" value="5"/>
     </component>

@@ -29,7 +29,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 
-import com.oracle.labs.mlrg.olcut.config.test.PathConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.PathConfigurable;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

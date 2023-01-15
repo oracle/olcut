@@ -28,7 +28,7 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.config.test.AllFieldsConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.AllFieldsConfigurable;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil;
 import org.junit.jupiter.api.Test;
 

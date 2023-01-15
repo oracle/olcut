@@ -61,79 +61,79 @@
     <property name="ema" value="amma"/>
     <property name="bamma" value="gamma"/>
 
-    <component name="recursive" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="recursive" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${a-${b}}"/>
         <property name="two" value="${a-${b}-${c}}"/>
         <property name="three" value="${b${e${t${z}}}}"/>
     </component>
 
-    <component name="unknown" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="unknown" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${d}"/>
         <property name="two" value="${e}"/>
         <property name="three" value="${f}"/>
     </component>
 
-    <component name="badlyformed" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="badlyformed" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${a${b}}"/>
         <property name="two" value="${b$}"/>
         <property name="three" value="${a c}"/>
     </component>
     
-    <component name="simple" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="simple" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${a}"/>
         <property name="two" value="${b}"/>
         <property name="three" value="${c}"/>
     </component>
 
-    <component name="compound" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="compound" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${a}/${b}"/>
         <property name="two" value="${b}${c}"/>
         <property name="three" value="${c}:${a}"/>
     </component>
 
-    <component name="nonglobal" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="nonglobal" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${a"/>
         <property name="two" value="$b}"/>
         <property name="three" value="$c"/>
     </component>
     
-    <component name="recurse" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="recurse" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${a}"/>
         <property name="two" value="${a-prime}"/>
         <property name="three" value="${adprime}"/>
     </component>
         
-    <component name="recurse2" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="recurse2" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${foo}"/>
         <property name="two" value="x"/>
         <property name="three" value="y"/>
     </component>
         
-    <component name="recurse3" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="recurse3" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${apath}"/>
         <property name="two" value="${apath}/bpath"/>
         <property name="three" value="y"/>
     </component>
         
-    <component name="compoundrecurse" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="compoundrecurse" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="one ${b}/${a-prime}"/>
         <property name="two" value="two ${c}/${a-prime}/${b}/${adprime}"/>
         <property name="three" value="three ${adprime}/${b}/${c}"/>
     </component>
     
-    <component name="sysprops" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="sysprops" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${home}/jini/jsk-all.policy"/>
         <property name="two" value="two"/>
         <property name="three" value="three"/>
     </component>
     
-    <component name="distinguished" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="distinguished" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="${gp.hostName}"/>
         <property name="two" value="${user.name}"/>
         <property name="three" value="three"/>
     </component>
     
-    <component name="listTest" type="com.oracle.labs.mlrg.olcut.config.test.StringListConfigurable">
+    <component name="listTest" type="com.oracle.labs.mlrg.olcut.test.config.StringListConfigurable">
         <propertylist name="strings">
             <item>${a}</item>
             <item>${b}</item>

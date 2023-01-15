@@ -27,14 +27,14 @@
   -->
 
 <config>
-<component name="p1" type="com.oracle.labs.mlrg.olcut.config.test.TypedProcessorString">
+<component name="p1" type="com.oracle.labs.mlrg.olcut.test.config.TypedProcessorString">
 	<property name="prefix" value="Mc"/>
 	<property name="suffix" value="Face"/>
 </component>
-<component name="p2" type="com.oracle.labs.mlrg.olcut.config.test.TypedProcessorString2">
+<component name="p2" type="com.oracle.labs.mlrg.olcut.test.config.TypedProcessorString2">
 	<property name="randomSeed" value="42"/>
 </component>
-<component name="typedProcessors" type="com.oracle.labs.mlrg.olcut.config.test.TypedProcessorList">
+<component name="typedProcessors" type="com.oracle.labs.mlrg.olcut.test.config.TypedProcessorList">
 	 <propertylist name="processors">
             <item>p1</item>
             <item>p2</item>

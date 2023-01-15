@@ -28,7 +28,7 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.config.test.TimeConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.TimeConfigurable;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

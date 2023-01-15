@@ -35,13 +35,13 @@
 
 <config>
     
-    <component name="a" type="com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable">
+    <component name="a" type="com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable">
         <property name="s" value="one"/>
         <property name="i" value="2"/>
         <property name="d" value="3.0"/>
     </component>
 
-    <component name="b" type="com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable">
+    <component name="b" type="com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable">
         <property name="s" value="two"/>
         <property name="i" value="3"/>
         <property name="d" value="6.3"/>

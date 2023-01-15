@@ -28,7 +28,7 @@
 
 package com.oracle.labs.mlrg.olcut.config.json;
 
-import com.oracle.labs.mlrg.olcut.config.test.ArrayConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.ArrayConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 

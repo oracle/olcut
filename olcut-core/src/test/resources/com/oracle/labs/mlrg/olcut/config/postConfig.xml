@@ -35,7 +35,7 @@
 
 <config>
     
-    <component name="post" type="com.oracle.labs.mlrg.olcut.config.test.PostConfigurable">
+    <component name="post" type="com.oracle.labs.mlrg.olcut.test.config.PostConfigurable">
         <property name="one" value="Monkeys"/>
         <property name="two" value="AlsoMonkeys"/>
     </component>

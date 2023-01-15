@@ -44,7 +44,7 @@
 
     <property name="stringC" value="C3P0"/>
     
-    <component name="configC" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="configC" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="fileC"/>
         <property name="two" value="${b}"/>
         <property name="three" value="${c}"/>

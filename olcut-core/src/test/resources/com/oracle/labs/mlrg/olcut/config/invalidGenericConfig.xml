@@ -34,7 +34,7 @@
 
 <config>
 
-    <component name="test" type="com.oracle.labs.mlrg.olcut.config.test.InvalidListConfigurable">
+    <component name="test" type="com.oracle.labs.mlrg.olcut.test.config.InvalidListConfigurable">
         <propertylist name="list">
             <item>one</item>
             <item>two</item>

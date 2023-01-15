@@ -28,12 +28,11 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.config.test.Ape;
-import com.oracle.labs.mlrg.olcut.config.test.Barbary;
-import com.oracle.labs.mlrg.olcut.config.test.Chimp;
-import com.oracle.labs.mlrg.olcut.config.test.Gorilla;
-import com.oracle.labs.mlrg.olcut.config.test.Monkey;
-import com.oracle.labs.mlrg.olcut.config.test.Orangutan;
+import com.oracle.labs.mlrg.olcut.test.config.Barbary;
+import com.oracle.labs.mlrg.olcut.test.config.Chimp;
+import com.oracle.labs.mlrg.olcut.test.config.Gorilla;
+import com.oracle.labs.mlrg.olcut.test.config.Monkey;
+import com.oracle.labs.mlrg.olcut.test.config.Orangutan;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

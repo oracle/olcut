@@ -37,31 +37,31 @@
     
     <property name="serFile" value="/tmp/ac.ser"/>
 
-    <component name="a" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="a" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="a"/>
         <property name="two" value="b"/>
         <property name="three" value="c"/>
     </component>
 
-    <component name="ac" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable" serialized="${serFile}">
+    <component name="ac" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable" serialized="${serFile}">
         <property name="one" value="a"/>
         <property name="two" value="b"/>
         <property name="three" value="c"/>
     </component>
 
     <!-- Any serialized object can be here -->
-    <serialized name="acs" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable" location="${serFile}"/>
+    <serialized name="acs" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable" location="${serFile}"/>
 
     <!-- Any serialized object can be here -->
     <serialized name="badClass" type="a.dangerous.group.of.Monkeys" location="${serFile}"/>
 
-    <component name="b" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="b" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="d"/>
         <property name="two" value="e"/>
         <property name="three" value="f"/>
     </component>
     
-    <component name="bc" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable" serialized="${serFile}">
+    <component name="bc" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable" serialized="${serFile}">
         <property name="one" value="d"/>
         <property name="two" value="e"/>
         <property name="three" value="f"/>

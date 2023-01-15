@@ -28,13 +28,13 @@
 
 package com.oracle.labs.mlrg.olcut.config.protobuf;
 
-import com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.test.ListConfig;
+import com.oracle.labs.mlrg.olcut.test.config.ListConfig;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.SetConfig;
-import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import org.junit.jupiter.api.BeforeEach;

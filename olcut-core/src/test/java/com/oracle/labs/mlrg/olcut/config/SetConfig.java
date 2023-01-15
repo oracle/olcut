@@ -28,7 +28,7 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
-import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 
 import java.util.Set;
 

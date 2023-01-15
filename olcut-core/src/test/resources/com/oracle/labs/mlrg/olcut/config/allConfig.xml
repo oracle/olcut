@@ -36,7 +36,7 @@
 
 <config>
 
-    <component name="all-config" type="com.oracle.labs.mlrg.olcut.config.test.AllFieldsConfigurable">
+    <component name="all-config" type="com.oracle.labs.mlrg.olcut.test.config.AllFieldsConfigurable">
         <property name="boolField" value="true"/>
         <property name="BoolField" value="true"/>
         <property name="byteField" value="123"/>
@@ -179,19 +179,19 @@
         </propertymap>
     </component>
 
-    <component name="first-configurable" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="first-configurable" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="A"/>
         <property name="two" value="B"/>
         <property name="three" value="C"/>
     </component>
 
-    <component name="second-configurable" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="second-configurable" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="alpha"/>
         <property name="two" value="beta"/>
         <property name="three" value="gamma"/>
     </component>
 
-    <component name="third-configurable" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="third-configurable" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="uno"/>
         <property name="two" value="dos"/>
         <property name="three" value="tres"/>

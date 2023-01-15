@@ -35,7 +35,7 @@
 
 <config>
 
-    <component name="a" type="com.oracle.labs.mlrg.olcut.config.test.ArrayConfigurable">
+    <component name="a" type="com.oracle.labs.mlrg.olcut.test.config.ArrayConfigurable">
         <propertylist name="byteArray">
             <item>1</item>
             <item>2</item>

@@ -35,81 +35,81 @@
 
 <config>
     
-    <component name="a" type="com.oracle.labs.mlrg.olcut.config.test.ComboConfigurable">
+    <component name="a" type="com.oracle.labs.mlrg.olcut.test.config.ComboConfigurable">
         <property name="alpha" value="one"/>
         <property name="sc" value="b"/>
     </component>
 
-    <component name="b" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="b" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="d"/>
         <property name="two" value="e"/>
         <property name="three" value="f"/>
     </component>
 
-    <component name="l1" type="com.oracle.labs.mlrg.olcut.config.test.L1Configurable">
+    <component name="l1" type="com.oracle.labs.mlrg.olcut.test.config.L1Configurable">
         <property name="c" value="l2"/>
     </component>
 
-    <component name="l2" type="com.oracle.labs.mlrg.olcut.config.test.L2Configurable">
+    <component name="l2" type="com.oracle.labs.mlrg.olcut.test.config.L2Configurable">
         <property name="c" value="l3"/>
     </component>
 
-    <component name="l3" type="com.oracle.labs.mlrg.olcut.config.test.L3Configurable">
+    <component name="l3" type="com.oracle.labs.mlrg.olcut.test.config.L3Configurable">
         <property name="c" value="basic"/>
     </component>
 
-    <component name="basic" type="com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable">
+    <component name="basic" type="com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable">
         <property name="s" value="alpha"/>
         <property name="i" value="7"/>
         <property name="d" value="3.14"/>
     </component>
 
-    <component name="l11" type="com.oracle.labs.mlrg.olcut.config.test.L1Configurable">
+    <component name="l11" type="com.oracle.labs.mlrg.olcut.test.config.L1Configurable">
         <property name="s" value="first-level"/>
         <property name="c" value="l21"/>
     </component>
 
-    <component name="l21" type="com.oracle.labs.mlrg.olcut.config.test.L2Configurable">
+    <component name="l21" type="com.oracle.labs.mlrg.olcut.test.config.L2Configurable">
         <property name="s" value="second-level"/>
         <property name="c" value="l31"/>
     </component>
 
-    <component name="l31" type="com.oracle.labs.mlrg.olcut.config.test.L3Configurable">
+    <component name="l31" type="com.oracle.labs.mlrg.olcut.test.config.L3Configurable">
         <property name="s" value="third-level"/>
         <property name="c" value="basic1"/>
     </component>
 
-    <component name="basic1" type="com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable">
+    <component name="basic1" type="com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable">
         <property name="s" value="beta"/>
         <property name="i" value="8"/>
         <property name="d" value="2.71"/>
     </component>
 
-    <component name="simpleList" type="com.oracle.labs.mlrg.olcut.config.test.ListConfigurable">
+    <component name="simpleList" type="com.oracle.labs.mlrg.olcut.test.config.ListConfigurable">
         <propertylist name="list">
             <item>simple</item>
             <item>strings</item>
         </propertylist>
     </component>
 
-    <component name="simple" type="com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable">
+    <component name="simple" type="com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable">
         <property name="simple" value="10"/>
     </component>
 
-    <component name="strings" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="strings" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="alpha"/>
         <property name="two" value="beta"/>
         <property name="three" value="charlie"/>
     </component>
 
-    <component name="singleEmbeddedList" type="com.oracle.labs.mlrg.olcut.config.test.ListConfigurable">
+    <component name="singleEmbeddedList" type="com.oracle.labs.mlrg.olcut.test.config.ListConfigurable">
         <propertylist name="list">
             <item>strings</item>
             <item>l1</item>
         </propertylist>
     </component>
 
-    <component name="multiEmbeddedList" type="com.oracle.labs.mlrg.olcut.config.test.ListConfigurable">
+    <component name="multiEmbeddedList" type="com.oracle.labs.mlrg.olcut.test.config.ListConfigurable">
         <propertylist name="list">
             <item>l1</item>
             <item>l11</item>

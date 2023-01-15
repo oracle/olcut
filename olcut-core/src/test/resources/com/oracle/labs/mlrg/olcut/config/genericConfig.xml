@@ -37,14 +37,14 @@
     <property name="pi" value="3.14"/>
     <property name="bar" value="quux"/>
 
-    <component name="mapTest" type="com.oracle.labs.mlrg.olcut.config.test.MapConfigurable">
+    <component name="mapTest" type="com.oracle.labs.mlrg.olcut.test.config.MapConfigurable">
         <propertymap name="map">
             <entry key="things" value="stuff"/>
             <entry key="foo" value="${bar}"/>
         </propertymap>
     </component>
 
-    <component name="correctListConfig" type="com.oracle.labs.mlrg.olcut.config.test.ListConfig">
+    <component name="correctListConfig" type="com.oracle.labs.mlrg.olcut.test.config.ListConfig">
         <propertylist name="doubleList">
             <item>5.5</item>
             <item>3.14</item>
@@ -63,7 +63,7 @@
         </propertylist>
     </component>
 
-    <component name="incorrectListConfig" type="com.oracle.labs.mlrg.olcut.config.test.ListConfig">
+    <component name="incorrectListConfig" type="com.oracle.labs.mlrg.olcut.test.config.ListConfig">
         <propertylist name="doubleList">
             <item>things</item>
             <item>wings</item>
@@ -116,19 +116,19 @@
         </propertylist>
     </component>
 
-    <component name="draconic" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="draconic" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="dragons"/>
         <property name="two" value="wyverns"/>
         <property name="three" value="wyrms"/>
     </component>
 
-    <component name="starwars" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="starwars" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="jedi"/>
         <property name="two" value="sith"/>
         <property name="three" value="scoundrels"/>
     </component>
 
-    <component name="startrek" type="com.oracle.labs.mlrg.olcut.config.test.StringleConfigurable">
+    <component name="startrek" type="com.oracle.labs.mlrg.olcut.test.config.StringleConfigurable">
         <property name="one" value="federation"/>
         <property name="two" value="federation"/>
         <property name="three" value="federation"/>
@@ -136,10 +136,10 @@
         <property name="five" value="federation"/>
     </component>
 
-    <component name="monkey-one" type="com.oracle.labs.mlrg.olcut.config.test.Gorilla"/>
-    <component name="monkey-two" type="com.oracle.labs.mlrg.olcut.config.test.Chimp"/>
-    <component name="monkey-three" type="com.oracle.labs.mlrg.olcut.config.test.Orangutan"/>
-    <component name="monkey-four" type="com.oracle.labs.mlrg.olcut.config.test.Rhesus"/>
-    <component name="monkey-five" type="com.oracle.labs.mlrg.olcut.config.test.Barbary"/>
+    <component name="monkey-one" type="com.oracle.labs.mlrg.olcut.test.config.Gorilla"/>
+    <component name="monkey-two" type="com.oracle.labs.mlrg.olcut.test.config.Chimp"/>
+    <component name="monkey-three" type="com.oracle.labs.mlrg.olcut.test.config.Orangutan"/>
+    <component name="monkey-four" type="com.oracle.labs.mlrg.olcut.test.config.Rhesus"/>
+    <component name="monkey-five" type="com.oracle.labs.mlrg.olcut.test.config.Barbary"/>
 
 </config>

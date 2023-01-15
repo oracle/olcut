@@ -32,10 +32,10 @@ package com.oracle.labs.mlrg.olcut.config;
 import java.io.IOException;
 import java.util.List;
 
-import com.oracle.labs.mlrg.olcut.config.test.ArrayStringConfigurable;
-import com.oracle.labs.mlrg.olcut.config.test.ListConfigurable;
-import com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable;
-import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.ArrayStringConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.ListConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

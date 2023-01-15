@@ -30,8 +30,8 @@ package com.oracle.labs.mlrg.olcut.config;
 
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
-import com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable;
-import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.util.LabsLogFormatter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

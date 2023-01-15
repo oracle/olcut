@@ -28,7 +28,7 @@
 
 package com.oracle.labs.mlrg.olcut.config.edn;
 
-import com.oracle.labs.mlrg.olcut.config.test.AllFieldsConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.AllFieldsConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 
 import java.io.File;

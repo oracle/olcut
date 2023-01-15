@@ -47,7 +47,7 @@ import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.oracle.labs.mlrg.olcut.config.test.AllFieldsConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.AllFieldsConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.util.IOUtil;

@@ -3,22 +3,22 @@
 
 <config>
 
-    <component name="chimp" type="com.oracle.labs.mlrg.olcut.config.test.Chimp">
+    <component name="chimp" type="com.oracle.labs.mlrg.olcut.test.config.Chimp">
     </component>
 
-    <component name="kingKong" type="com.oracle.labs.mlrg.olcut.config.test.Gorilla">
+    <component name="kingKong" type="com.oracle.labs.mlrg.olcut.test.config.Gorilla">
     </component>
 
-    <component name="grodd" type="com.oracle.labs.mlrg.olcut.config.test.Gorilla">
+    <component name="grodd" type="com.oracle.labs.mlrg.olcut.test.config.Gorilla">
     </component>
 
-    <component name="harlow" type="com.oracle.labs.mlrg.olcut.config.test.Rhesus">
+    <component name="harlow" type="com.oracle.labs.mlrg.olcut.test.config.Rhesus">
     </component>
 
-    <component name="bornie" type="com.oracle.labs.mlrg.olcut.config.test.Bornean">
+    <component name="bornie" type="com.oracle.labs.mlrg.olcut.test.config.Bornean">
     </component>
 
-    <component name="barbie" type="com.oracle.labs.mlrg.olcut.config.test.Barbary" import="true">
+    <component name="barbie" type="com.oracle.labs.mlrg.olcut.test.config.Barbary" import="true">
     </component>
 
 </config>

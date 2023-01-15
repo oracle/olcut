@@ -31,7 +31,7 @@ package com.oracle.labs.mlrg.olcut.config.edn;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.Option;
 import com.oracle.labs.mlrg.olcut.config.Options;
-import com.oracle.labs.mlrg.olcut.config.test.StringListConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.StringListConfigurable;
 
 import java.io.IOException;
 import org.junit.jupiter.api.Test;

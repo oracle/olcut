@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

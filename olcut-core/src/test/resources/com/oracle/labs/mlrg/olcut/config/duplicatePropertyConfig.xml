@@ -35,7 +35,7 @@
 
 <config>
     
-    <component name="a" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
+    <component name="a" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
         <property name="one" value="a"/>
         <property name="two" value="b"/>
         <property name="three" value="c"/>

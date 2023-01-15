@@ -35,7 +35,7 @@
 
 <config>
 
-    <component name="a" type="com.oracle.labs.mlrg.olcut.config.test.ArrayConfigurable">
+    <component name="a" type="com.oracle.labs.mlrg.olcut.test.config.ArrayConfigurable">
         <propertylist name="byteArray">
             <item>1</item>
             <item>2</item>
@@ -73,7 +73,7 @@
         </propertylist>
     </component>
 
-    <component name="invalid-char" type="com.oracle.labs.mlrg.olcut.config.test.ArrayConfigurable" inherit="a">
+    <component name="invalid-char" type="com.oracle.labs.mlrg.olcut.test.config.ArrayConfigurable" inherit="a">
         <propertylist name="charArray">
             <item>a</item>
             <item>b</item>

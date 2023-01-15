@@ -32,17 +32,17 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import com.oracle.labs.mlrg.olcut.config.test.Ape;
-import com.oracle.labs.mlrg.olcut.config.test.ArrayStringConfigurable;
-import com.oracle.labs.mlrg.olcut.config.test.Barbary;
-import com.oracle.labs.mlrg.olcut.config.test.Chimp;
-import com.oracle.labs.mlrg.olcut.config.test.Gorilla;
-import com.oracle.labs.mlrg.olcut.config.test.InvalidListConfigurable;
-import com.oracle.labs.mlrg.olcut.config.test.ListConfig;
-import com.oracle.labs.mlrg.olcut.config.test.Monkey;
-import com.oracle.labs.mlrg.olcut.config.test.Orangutan;
-import com.oracle.labs.mlrg.olcut.config.test.Rhesus;
-import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.Ape;
+import com.oracle.labs.mlrg.olcut.test.config.ArrayStringConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.Barbary;
+import com.oracle.labs.mlrg.olcut.test.config.Chimp;
+import com.oracle.labs.mlrg.olcut.test.config.Gorilla;
+import com.oracle.labs.mlrg.olcut.test.config.InvalidListConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.ListConfig;
+import com.oracle.labs.mlrg.olcut.test.config.Monkey;
+import com.oracle.labs.mlrg.olcut.test.config.Orangutan;
+import com.oracle.labs.mlrg.olcut.test.config.Rhesus;
+import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,12 +57,12 @@ public class GenericConfigTest {
     public void lookupAllTest() throws ClassNotFoundException {
         ConfigurationManager cm = new ConfigurationManager("genericConfig.xml");
 
-        Class<Monkey> clazz = (Class<Monkey>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.Monkey");
+        Class<Monkey> clazz = (Class<Monkey>) Class.forName("com.oracle.labs.mlrg.olcut.test.config.Monkey");
         List<Monkey> monkeys = cm.lookupAll(clazz);
 
         assertEquals(5, monkeys.size(), "Didn't find all the MonkeyConfigurable classes");
 
-        Class<Ape> apeClazz = (Class<Ape>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.Ape");
+        Class<Ape> apeClazz = (Class<Ape>) Class.forName("com.oracle.labs.mlrg.olcut.test.config.Ape");
         List<Ape> apes = cm.lookupAll(apeClazz);
 
         assertEquals(3, apes.size(), "Didn't find all the Ape classes");
@@ -73,7 +73,7 @@ public class GenericConfigTest {
     public void lookupAllMapTest() throws ClassNotFoundException {
         ConfigurationManager cm = new ConfigurationManager("genericConfig.xml");
 
-        Class<Monkey> clazz = (Class<Monkey>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.Monkey");
+        Class<Monkey> clazz = (Class<Monkey>) Class.forName("com.oracle.labs.mlrg.olcut.test.config.Monkey");
         Map<String,Monkey> monkeys = cm.lookupAllMap(clazz);
 
         assertEquals(5, monkeys.size(), "Didn't find all the MonkeyConfigurable classes");
@@ -83,7 +83,7 @@ public class GenericConfigTest {
         assertTrue(monkeys.get("monkey-four") instanceof Rhesus);
         assertTrue(monkeys.get("monkey-five") instanceof Barbary);
 
-        Class<Ape> apeClazz = (Class<Ape>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.Ape");
+        Class<Ape> apeClazz = (Class<Ape>) Class.forName("com.oracle.labs.mlrg.olcut.test.config.Ape");
         Map<String,Ape> apes = cm.lookupAllMap(apeClazz);
 
         assertEquals(3, apes.size(), "Didn't find all the Ape classes");
@@ -91,13 +91,13 @@ public class GenericConfigTest {
         assertTrue(apes.get("monkey-two") instanceof Chimp);
         assertTrue(apes.get("monkey-three") instanceof Orangutan);
 
-        Class<Gorilla> gorillaClazz = (Class<Gorilla>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.Gorilla");
+        Class<Gorilla> gorillaClazz = (Class<Gorilla>) Class.forName("com.oracle.labs.mlrg.olcut.test.config.Gorilla");
         Map<String,Gorilla> gorillas = cm.lookupAllMap(gorillaClazz);
 
         assertEquals(1,gorillas.size(),"Didn't find the Gorilla instance");
         assertTrue(gorillas.get("monkey-one") instanceof Gorilla);
 
-        Class<ArrayStringConfigurable> arrStrConfClazz = (Class<ArrayStringConfigurable>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.ArrayStringConfigurable");
+        Class<ArrayStringConfigurable> arrStrConfClazz = (Class<ArrayStringConfigurable>) Class.forName("com.oracle.labs.mlrg.olcut.test.config.ArrayStringConfigurable");
         Map<String, ArrayStringConfigurable> arrays = cm.lookupAllMap(arrStrConfClazz);
 
         assertTrue(arrays.isEmpty());

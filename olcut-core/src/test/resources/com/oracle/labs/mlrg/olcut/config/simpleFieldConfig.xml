@@ -36,7 +36,7 @@
 
 <config>
 
-    <component name="fieldTest" type="com.oracle.labs.mlrg.olcut.config.test.SimpleFieldConfigurable">
+    <component name="fieldTest" type="com.oracle.labs.mlrg.olcut.test.config.SimpleFieldConfigurable">
         <property name="boolField" value="true"/>
         <property name="BoolField" value="true"/>
         <property name="byteField" value="123"/>
@@ -56,7 +56,7 @@
         <property name="stringField" value="monkeys"/>
     </component>
 
-    <component name="invalidCharacterFieldTest" type="com.oracle.labs.mlrg.olcut.config.test.SimpleFieldConfigurable">
+    <component name="invalidCharacterFieldTest" type="com.oracle.labs.mlrg.olcut.test.config.SimpleFieldConfigurable">
         <property name="boolField" value="true"/>
         <property name="BoolField" value="true"/>
         <property name="byteField" value="123"/>
