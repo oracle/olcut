@@ -28,6 +28,14 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.test.ComboConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.EnumConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.L1Configurable;
+import com.oracle.labs.mlrg.olcut.config.test.ListConfig;
+import com.oracle.labs.mlrg.olcut.config.test.ListConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringListConfigurable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

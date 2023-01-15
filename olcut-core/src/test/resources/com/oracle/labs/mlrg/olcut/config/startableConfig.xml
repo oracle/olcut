@@ -38,7 +38,7 @@
 
 <config>
     <!-- A component that will be started at configuration time -->
-    <component name="startme" type="com.oracle.labs.mlrg.olcut.config.StartableConfigurable">
+    <component name="startme" type="com.oracle.labs.mlrg.olcut.config.test.StartableConfigurable">
         <property name="numReps" value="5"/>
         <property name="add" value="foo"/>
     </component>

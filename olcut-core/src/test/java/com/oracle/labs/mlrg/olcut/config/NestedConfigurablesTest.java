@@ -35,6 +35,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
+
+import com.oracle.labs.mlrg.olcut.config.test.FooConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.FooUserConfigurable;
 import org.junit.jupiter.api.Test;
 
 

@@ -38,12 +38,12 @@
 
 <config>
     
-    <component name="registerTest" type="com.oracle.labs.mlrg.olcut.config.SimpleMBConfigurable">
+    <component name="registerTest" type="com.oracle.labs.mlrg.olcut.config.test.SimpleMBConfigurable">
         <property name="a" value="10"/>
         <property name="b" value="test"/>
     </component>
 
-    <component name="listTest" type="com.oracle.labs.mlrg.olcut.config.SimpleMBConfigurable">
+    <component name="listTest" type="com.oracle.labs.mlrg.olcut.config.test.SimpleMBConfigurable">
         <property name="a" value="10"/>
         <property name="b" value="test"/>
         <propertylist name="c">

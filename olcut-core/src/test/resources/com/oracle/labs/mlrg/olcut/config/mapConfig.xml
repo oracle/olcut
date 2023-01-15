@@ -36,7 +36,7 @@
 
     <property name="bar" value="quux"/>
 
-    <component name="mapTest" type="com.oracle.labs.mlrg.olcut.config.MapConfigurable">
+    <component name="mapTest" type="com.oracle.labs.mlrg.olcut.config.test.MapConfigurable">
         <propertymap name="map">
             <entry key="things" value="stuff"/>
             <entry key="foo" value="${bar}"/>

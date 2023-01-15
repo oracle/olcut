@@ -29,7 +29,7 @@
 package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.PostConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.PostConfigurable;
 
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;

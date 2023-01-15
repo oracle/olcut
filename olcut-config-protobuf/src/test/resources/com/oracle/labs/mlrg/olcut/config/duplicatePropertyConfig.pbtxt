@@ -1,6 +1,6 @@
 component {
   name: "a"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "a"

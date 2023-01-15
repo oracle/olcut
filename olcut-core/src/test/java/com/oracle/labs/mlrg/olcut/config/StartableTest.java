@@ -30,6 +30,8 @@ package com.oracle.labs.mlrg.olcut.config;
 
 import java.io.IOException;
 import java.util.List;
+
+import com.oracle.labs.mlrg.olcut.config.test.StartableConfigurable;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -29,6 +29,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.config.test.RedactedConfigurable;
 import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil;
 import org.junit.jupiter.api.Assertions;

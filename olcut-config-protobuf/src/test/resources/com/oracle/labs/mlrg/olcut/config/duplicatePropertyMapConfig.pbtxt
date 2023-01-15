@@ -1,6 +1,6 @@
 component {
   name: "a"
-  type: "com.oracle.labs.mlrg.olcut.config.FooMapConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.FooMapConfigurable"
   map_property {
     name: "map"
     elements {
@@ -26,7 +26,7 @@ component {
 }
 component {
   name: "foo1"
-  type: "com.oracle.labs.mlrg.olcut.config.FooConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.FooConfigurable"
   properties {
     key: "name"
     value: "foo1"
@@ -38,7 +38,7 @@ component {
 }
 component {
   name: "foo2"
-  type: "com.oracle.labs.mlrg.olcut.config.FooConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.FooConfigurable"
   properties {
     key: "name"
     value: "foo2"

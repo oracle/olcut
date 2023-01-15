@@ -1,6 +1,6 @@
 components {
   name: "bad"
-  type: "com.oracle.labs.mlrg.olcut.config.ListConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.ListConfigurable"
   list_property {
     name: "list"
     item: "non_existent"
@@ -9,25 +9,25 @@ components {
 }
 components {
   name: "dualtyped"
-  type: "com.oracle.labs.mlrg.olcut.config.ListConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.ListConfigurable"
   list_property {
     name: "list"
-    type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
-    type: "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable"
+    type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
+    type: "com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable"
   }
 }
 components {
   name: "combotyped"
-  type: "com.oracle.labs.mlrg.olcut.config.ListConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.ListConfigurable"
   list_property {
     name: "list"
     item: "simp"
-    type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+    type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   }
 }
 components {
   name: "simple"
-  type: "com.oracle.labs.mlrg.olcut.config.ListConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.ListConfigurable"
   list_property {
     name: "list"
     item: "simp"
@@ -36,7 +36,7 @@ components {
 }
 components {
   name: "simp"
-  type: "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable"
   properties {
     key: "simple"
     value: "10"
@@ -44,7 +44,7 @@ components {
 }
 components {
   name: "simp2"
-  type: "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable"
   properties {
     key: "simple"
     value: "20"
@@ -52,7 +52,7 @@ components {
 }
 components {
   name: "strings"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "alpha"
@@ -68,7 +68,7 @@ components {
 }
 components {
   name: "strings2"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "one"
@@ -84,7 +84,7 @@ components {
 }
 components {
   name: "strings3"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "un"
@@ -100,15 +100,15 @@ components {
 }
 components {
   name: "typed"
-  type: "com.oracle.labs.mlrg.olcut.config.ListConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.ListConfigurable"
   list_property {
     name: "list"
-    type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+    type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   }
 }
 components {
   name: "stringconfigurablearray"
-  type: "com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.ArrayStringConfigurable"
   list_property {
     name: "stringArray"
     item: "strings"
@@ -118,7 +118,7 @@ components {
 }
 components {
   name: "stringconfigurablearraybroken"
-  type: "com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.ArrayStringConfigurable"
   list_property {
     name: "stringArray"
     item: "strings"

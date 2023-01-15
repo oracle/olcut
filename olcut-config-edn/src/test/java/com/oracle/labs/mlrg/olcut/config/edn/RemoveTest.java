@@ -28,10 +28,9 @@
 
 package com.oracle.labs.mlrg.olcut.config.edn;
 
-import com.oracle.labs.mlrg.olcut.config.BasicConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;

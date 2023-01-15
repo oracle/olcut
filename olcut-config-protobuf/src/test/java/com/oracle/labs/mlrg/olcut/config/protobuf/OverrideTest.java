@@ -29,8 +29,8 @@
 package com.oracle.labs.mlrg.olcut.config.protobuf;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
-import com.oracle.labs.mlrg.olcut.config.StringleConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringleConfigurable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

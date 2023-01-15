@@ -28,18 +28,18 @@
 
 package com.oracle.labs.mlrg.olcut.config.edn;
 
-import com.oracle.labs.mlrg.olcut.config.ComboConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.ComboConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.EnumConfigurable;
-import com.oracle.labs.mlrg.olcut.config.L1Configurable;
-import com.oracle.labs.mlrg.olcut.config.ListConfigurable;
-import com.oracle.labs.mlrg.olcut.config.SimpleConfigurable;
-import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
-import com.oracle.labs.mlrg.olcut.config.StringListConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.EnumConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.L1Configurable;
+import com.oracle.labs.mlrg.olcut.config.test.ListConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringListConfigurable;
 
 import java.io.File;
 import java.io.IOException;
-import org.junit.jupiter.api.AfterEach;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

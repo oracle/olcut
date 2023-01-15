@@ -1,5 +1,5 @@
 components {
   name: "monkeys"
-  type: "com.oracle.labs.mlrg.olcut.config.NamedConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.NamedConfigurable"
 }
 

@@ -40,12 +40,12 @@
     
     <property name="globA" value="A"/>
 
-    <component name="both" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+    <component name="both" type="com.oracle.labs.mlrg.olcut.config.test.EnumConfigurable">
         <property name="enum1" value="A"/>
         <property name="enum2" value="B"/>
     </component>
 
-    <component name="set1" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+    <component name="set1" type="com.oracle.labs.mlrg.olcut.config.test.EnumConfigurable">
         <property name="enum1" value="A"/>
         <property name="enum2" value="B"/>
         <propertylist name="enumSet1">
@@ -54,7 +54,7 @@
         </propertylist>
     </component>
 
-    <component name="badset" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+    <component name="badset" type="com.oracle.labs.mlrg.olcut.config.test.EnumConfigurable">
         <property name="enum1" value="A"/>
         <property name="enum2" value="B"/>
         <propertylist name="enumSet1">
@@ -63,19 +63,19 @@
         </propertylist>
     </component>
 
-    <component name="default" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+    <component name="default" type="com.oracle.labs.mlrg.olcut.config.test.EnumConfigurable">
         <property name="enum1" value="A"/>
     </component>
 
-    <component name="norequired" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+    <component name="norequired" type="com.oracle.labs.mlrg.olcut.config.test.EnumConfigurable">
         <property name="enum2" value="B"/>
     </component>
 
-    <component name="badvalue" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+    <component name="badvalue" type="com.oracle.labs.mlrg.olcut.config.test.EnumConfigurable">
         <property name="enum1" value="Gargle"/>
     </component>
 
-    <component name="global" type="com.oracle.labs.mlrg.olcut.config.EnumConfigurable">
+    <component name="global" type="com.oracle.labs.mlrg.olcut.config.test.EnumConfigurable">
         <property name="enum1" value="${globA}"/>
     </component>
 

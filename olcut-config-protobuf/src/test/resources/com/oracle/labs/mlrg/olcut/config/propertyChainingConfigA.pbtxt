@@ -20,7 +20,7 @@ config_file {
 }
 components {
   name: "configA"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "fileA"

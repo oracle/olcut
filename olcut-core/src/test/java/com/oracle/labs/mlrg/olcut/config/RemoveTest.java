@@ -33,6 +33,8 @@ import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

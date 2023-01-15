@@ -28,6 +28,7 @@
 
 package com.oracle.labs.mlrg.olcut.config;
 
+import com.oracle.labs.mlrg.olcut.config.test.SimpleMBConfigurable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 

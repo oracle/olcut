@@ -35,6 +35,6 @@
 
 <config>
 
-    <component name="monkeys" type="com.oracle.labs.mlrg.olcut.config.NamedConfigurable" />
+    <component name="monkeys" type="com.oracle.labs.mlrg.olcut.config.test.NamedConfigurable" />
 
 </config>

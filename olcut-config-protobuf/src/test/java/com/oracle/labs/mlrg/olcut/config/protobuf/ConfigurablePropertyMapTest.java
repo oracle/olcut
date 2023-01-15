@@ -29,7 +29,7 @@
 package com.oracle.labs.mlrg.olcut.config.protobuf;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.FooMapConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.FooMapConfigurable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

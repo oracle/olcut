@@ -33,12 +33,16 @@ import java.util.List;
 import java.util.Map;
 
 import com.oracle.labs.mlrg.olcut.config.test.Ape;
+import com.oracle.labs.mlrg.olcut.config.test.ArrayStringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.test.Barbary;
 import com.oracle.labs.mlrg.olcut.config.test.Chimp;
 import com.oracle.labs.mlrg.olcut.config.test.Gorilla;
+import com.oracle.labs.mlrg.olcut.config.test.InvalidListConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.ListConfig;
 import com.oracle.labs.mlrg.olcut.config.test.Monkey;
 import com.oracle.labs.mlrg.olcut.config.test.Orangutan;
 import com.oracle.labs.mlrg.olcut.config.test.Rhesus;
+import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -93,8 +97,8 @@ public class GenericConfigTest {
         assertEquals(1,gorillas.size(),"Didn't find the Gorilla instance");
         assertTrue(gorillas.get("monkey-one") instanceof Gorilla);
 
-        Class<ArrayStringConfigurable> arrStrConfClazz = (Class<ArrayStringConfigurable>) Class.forName("com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable");
-        Map<String,ArrayStringConfigurable> arrays = cm.lookupAllMap(arrStrConfClazz);
+        Class<ArrayStringConfigurable> arrStrConfClazz = (Class<ArrayStringConfigurable>) Class.forName("com.oracle.labs.mlrg.olcut.config.test.ArrayStringConfigurable");
+        Map<String, ArrayStringConfigurable> arrays = cm.lookupAllMap(arrStrConfClazz);
 
         assertTrue(arrays.isEmpty());
     }

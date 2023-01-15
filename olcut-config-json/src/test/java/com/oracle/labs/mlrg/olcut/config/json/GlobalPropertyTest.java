@@ -31,12 +31,12 @@ package com.oracle.labs.mlrg.olcut.config.json;
 import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
-import com.oracle.labs.mlrg.olcut.config.StringListConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringListConfigurable;
 import com.oracle.labs.mlrg.olcut.util.Util;
 
 import java.io.IOException;
-import org.junit.jupiter.api.AfterAll;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

@@ -56,7 +56,7 @@ properties {
 }
 components {
   name: "recurse2"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${foo}"
@@ -72,7 +72,7 @@ components {
 }
 components {
   name: "listTest"
-  type: "com.oracle.labs.mlrg.olcut.config.StringListConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringListConfigurable"
   list_property {
     name: "strings"
     item: "${a}"
@@ -84,7 +84,7 @@ components {
 }
 components {
   name: "recurse3"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${apath}"
@@ -100,7 +100,7 @@ components {
 }
 components {
   name: "simple"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${a}"
@@ -116,7 +116,7 @@ components {
 }
 components {
   name: "distinguished"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${gp.hostName}"
@@ -132,7 +132,7 @@ components {
 }
 components {
   name: "compound"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${a}/${b}"
@@ -148,7 +148,7 @@ components {
 }
 components {
   name: "recursive"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${a-${b}}"
@@ -164,7 +164,7 @@ components {
 }
 components {
   name: "unknown"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${d}"
@@ -180,7 +180,7 @@ components {
 }
 components {
   name: "nonglobal"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${a"
@@ -196,7 +196,7 @@ components {
 }
 components {
   name: "compoundrecurse"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "one ${b}/${a-prime}"
@@ -212,7 +212,7 @@ components {
 }
 components {
   name: "sysprops"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${home}/jini/jsk-all.policy"
@@ -228,7 +228,7 @@ components {
 }
 components {
   name: "recurse"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${a}"
@@ -244,7 +244,7 @@ components {
 }
 components {
   name: "badlyformed"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "${a${b}}"

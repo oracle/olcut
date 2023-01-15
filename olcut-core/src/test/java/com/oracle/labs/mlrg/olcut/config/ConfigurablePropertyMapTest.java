@@ -30,6 +30,8 @@ package com.oracle.labs.mlrg.olcut.config;
 
 import java.io.File;
 import java.io.IOException;
+
+import com.oracle.labs.mlrg.olcut.config.test.FooMapConfigurable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

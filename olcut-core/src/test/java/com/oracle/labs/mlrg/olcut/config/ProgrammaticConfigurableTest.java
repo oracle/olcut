@@ -30,6 +30,8 @@ package com.oracle.labs.mlrg.olcut.config;
 
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.util.LabsLogFormatter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -125,7 +126,7 @@ public class ProgrammaticConfigurableTest {
             Map<String,Property> m = new HashMap<>();
             m.put("s", new SimpleProperty("one"));
             m.put("i", new SimpleProperty("two"));
-            cm.addConfiguration(new ConfigurationData("c",BasicConfigurable.class.getName(),m));
+            cm.addConfiguration(new ConfigurationData("c", BasicConfigurable.class.getName(),m));
             BasicConfigurable bc = (BasicConfigurable) cm.lookup("c");
             assertEquals("one", bc.s);
             assertEquals(2, bc.i);

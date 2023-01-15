@@ -35,25 +35,25 @@
 
 <config>
 
-    <component name="valid-time" type="com.oracle.labs.mlrg.olcut.config.TimeConfigurable">
+    <component name="valid-time" type="com.oracle.labs.mlrg.olcut.config.test.TimeConfigurable">
         <property name="time" value="12:34:00+00:00"/>
         <property name="date" value="1066-10-04"/>
         <property name="dateTime" value="1949-06-16T20:30+01:00"/>
     </component>
 
-    <component name="invalid-time" type="com.oracle.labs.mlrg.olcut.config.TimeConfigurable">
+    <component name="invalid-time" type="com.oracle.labs.mlrg.olcut.config.test.TimeConfigurable">
         <property name="time" value="+01:00"/>
         <property name="date" value="1066-10-04"/>
         <property name="dateTime" value="1949-06-16T20:30+01:00"/>
     </component>
 
-    <component name="invalid-date" type="com.oracle.labs.mlrg.olcut.config.TimeConfigurable">
+    <component name="invalid-date" type="com.oracle.labs.mlrg.olcut.config.test.TimeConfigurable">
         <property name="time" value="12:24:00+01:00"/>
         <property name="date" value="monkeys"/>
         <property name="dateTime" value="1949-06-16T20:30+01:00"/>
     </component>
 
-    <component name="invalid-date-time" type="com.oracle.labs.mlrg.olcut.config.TimeConfigurable">
+    <component name="invalid-date-time" type="com.oracle.labs.mlrg.olcut.config.test.TimeConfigurable">
         <property name="time" value="12:24:00+01:00"/>
         <property name="date" value="1066-10-04"/>
         <property name="dateTime" value="last wednesday at noon"/>

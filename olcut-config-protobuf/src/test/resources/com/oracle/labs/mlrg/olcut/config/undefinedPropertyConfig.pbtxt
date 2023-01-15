@@ -1,6 +1,6 @@
 components {
   name: "simple"
-  type: "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable"
   properties {
     key: "simpel"
     value: "10"
@@ -8,7 +8,7 @@ components {
 }
 components {
   name: "simple2"
-  type: "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable"
   properties {
     key: "simpel"
     value: "5"

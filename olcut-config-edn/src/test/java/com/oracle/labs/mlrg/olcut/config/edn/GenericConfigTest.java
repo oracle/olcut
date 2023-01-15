@@ -29,10 +29,10 @@
 package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.ListConfig;
+import com.oracle.labs.mlrg.olcut.config.test.ListConfig;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 import com.oracle.labs.mlrg.olcut.config.SetConfig;
-import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
 
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;

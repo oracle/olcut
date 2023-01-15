@@ -24,7 +24,7 @@ properties {
 }
 components {
   name: "second-configurable"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "alpha"
@@ -40,7 +40,7 @@ components {
 }
 components {
   name: "first-configurable"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "A"
@@ -56,7 +56,7 @@ components {
 }
 components {
   name: "all-config"
-  type: "com.oracle.labs.mlrg.olcut.config.AllFieldsConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.AllFieldsConfigurable"
   properties {
     key: "BoolField"
     value: "true"
@@ -323,7 +323,7 @@ components {
 }
 components {
   name: "third-configurable"
-  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  type: "com.oracle.labs.mlrg.olcut.config.test.StringConfigurable"
   properties {
     key: "one"
     value: "uno"

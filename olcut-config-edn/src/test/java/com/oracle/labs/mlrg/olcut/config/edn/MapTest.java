@@ -29,7 +29,7 @@
 package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.MapConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.MapConfigurable;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 
 import java.io.IOException;

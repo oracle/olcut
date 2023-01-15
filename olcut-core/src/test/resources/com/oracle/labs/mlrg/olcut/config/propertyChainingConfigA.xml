@@ -48,7 +48,7 @@
 
     <property name="stringA" value="HK-47"/>
     
-    <component name="configA" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+    <component name="configA" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
         <property name="one" value="fileA"/>
         <property name="two" value="${b}"/>
         <property name="three" value="${c}"/>

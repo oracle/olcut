@@ -40,7 +40,7 @@
 
     <property name="global-b" value="monkeys"/>
     
-    <component name="listTest" type="com.oracle.labs.mlrg.olcut.config.StringListConfigurable">
+    <component name="listTest" type="com.oracle.labs.mlrg.olcut.config.test.StringListConfigurable">
         <propertylist name="strings">
             <item>a</item>
             <item>b</item>
@@ -48,7 +48,7 @@
         </propertylist>
     </component>
 
-    <component name="overridingTest" type="com.oracle.labs.mlrg.olcut.config.StringListConfigurable">
+    <component name="overridingTest" type="com.oracle.labs.mlrg.olcut.config.test.StringListConfigurable">
         <propertylist name="strings">
             <item>primates</item>
             <item>${global-b}</item>

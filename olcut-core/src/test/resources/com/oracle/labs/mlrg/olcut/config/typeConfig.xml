@@ -35,22 +35,22 @@
 
 <config>
     
-    <component name="default" type="com.oracle.labs.mlrg.olcut.config.BasicConfigurable">
+    <component name="default" type="com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable">
     </component>
 
-    <component name="type-a" type="com.oracle.labs.mlrg.olcut.config.BasicConfigurable">
+    <component name="type-a" type="com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable">
         <property name="s" value="one"/>
         <property name="i" value="2"/>
         <property name="d" value="3.0"/>
     </component>
 
-    <component name="type-b" type="com.oracle.labs.mlrg.olcut.config.BasicConfigurable">
+    <component name="type-b" type="com.oracle.labs.mlrg.olcut.config.test.BasicConfigurable">
         <property name="s" value="two"/>
         <property name="i" value="3"/>
         <property name="d" value="6.3"/>
     </component>
     
-    <component name="type-list" type="com.oracle.labs.mlrg.olcut.config.ListTypeConfigurable">
+    <component name="type-list" type="com.oracle.labs.mlrg.olcut.config.test.ListTypeConfigurable">
         <propertylist name="list">
             <item>default</item>
             <item>type-a</item>

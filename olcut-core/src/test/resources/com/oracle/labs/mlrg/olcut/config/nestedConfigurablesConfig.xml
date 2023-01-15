@@ -30,12 +30,12 @@
 
 <config>
 
-    <component name="foo1" type="com.oracle.labs.mlrg.olcut.config.FooConfigurable">
+    <component name="foo1" type="com.oracle.labs.mlrg.olcut.config.test.FooConfigurable">
         <property name="name" value="foo1"/>
         <property name="value" value="1"/>
     </component>
 
-    <component name="user" type="com.oracle.labs.mlrg.olcut.config.FooUserConfigurable">
+    <component name="user" type="com.oracle.labs.mlrg.olcut.config.test.FooUserConfigurable">
         <property name="foo" value="foo1" />
     </component>
 

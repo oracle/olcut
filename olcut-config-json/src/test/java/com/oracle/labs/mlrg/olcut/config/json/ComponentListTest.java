@@ -28,13 +28,13 @@
 
 package com.oracle.labs.mlrg.olcut.config.json;
 
-import com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.ArrayStringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.ListConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.ListConfigurable;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.SimpleConfigurable;
-import com.oracle.labs.mlrg.olcut.config.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.StringConfigurable;
 
 import java.io.IOException;
 import java.util.List;

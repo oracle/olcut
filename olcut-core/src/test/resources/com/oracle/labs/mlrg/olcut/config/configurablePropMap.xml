@@ -30,29 +30,29 @@
 
 <config>
 
-    <component name="foo1" type="com.oracle.labs.mlrg.olcut.config.FooConfigurable">
+    <component name="foo1" type="com.oracle.labs.mlrg.olcut.config.test.FooConfigurable">
         <property name="name" value="foo1"/>
         <property name="value" value="1"/>
     </component>
 
-    <component name="foo2" type="com.oracle.labs.mlrg.olcut.config.FooConfigurable">
+    <component name="foo2" type="com.oracle.labs.mlrg.olcut.config.test.FooConfigurable">
         <property name="name" value="foo2"/>
         <property name="value" value="2"/>
     </component>
 
-    <component name="foo3" type="com.oracle.labs.mlrg.olcut.config.FooConfigurable">
+    <component name="foo3" type="com.oracle.labs.mlrg.olcut.config.test.FooConfigurable">
         <property name="name" value="foo3"/>
         <property name="value" value="20"/>
     </component>
 
-    <component name="fooMap" type="com.oracle.labs.mlrg.olcut.config.FooMapConfigurable">
+    <component name="fooMap" type="com.oracle.labs.mlrg.olcut.config.test.FooMapConfigurable">
         <propertymap name="map">
             <entry key="first" value="foo1"/>
             <entry key="second" value="foo2"/>
         </propertymap>
     </component>
 
-    <component name="overriddenMap" type="com.oracle.labs.mlrg.olcut.config.FooMapConfigurable" inherit="fooMap">
+    <component name="overriddenMap" type="com.oracle.labs.mlrg.olcut.config.test.FooMapConfigurable" inherit="fooMap">
         <propertymap name="map">
             <entry key="first" value="foo3"/>
             <entry key="second" value="foo2"/>

@@ -35,7 +35,7 @@
 
 <config>
     
-    <component name="a" type="com.oracle.labs.mlrg.olcut.config.RedactedConfigurable">
+    <component name="a" type="com.oracle.labs.mlrg.olcut.config.test.RedactedConfigurable">
         <property name="present" value="present-value"/>
         <property name="redacted" value="unredacted-value"/>
         <property name="mandatoryRedacted" value="unredacted-mandatory-value"/>

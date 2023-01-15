@@ -37,41 +37,41 @@
 -->
 
 <config>
-    <component name="simple" type="com.oracle.labs.mlrg.olcut.config.ListConfigurable">
+    <component name="simple" type="com.oracle.labs.mlrg.olcut.config.test.ListConfigurable">
         <propertylist name="list">
             <item>simp</item>
             <item>strings</item>
         </propertylist>
     </component>
     
-    <component name="bad" type="com.oracle.labs.mlrg.olcut.config.ListConfigurable">
+    <component name="bad" type="com.oracle.labs.mlrg.olcut.config.test.ListConfigurable">
         <propertylist name="list">
             <item>non_existent</item>
             <item>strings</item>
         </propertylist>
     </component>
     
-    <component name="typed" type="com.oracle.labs.mlrg.olcut.config.ListConfigurable">
+    <component name="typed" type="com.oracle.labs.mlrg.olcut.config.test.ListConfigurable">
         <propertylist name="list">
-            <type>com.oracle.labs.mlrg.olcut.config.StringConfigurable</type>
+            <type>com.oracle.labs.mlrg.olcut.config.test.StringConfigurable</type>
         </propertylist>
     </component>
     
-    <component name="dualtyped" type="com.oracle.labs.mlrg.olcut.config.ListConfigurable">
+    <component name="dualtyped" type="com.oracle.labs.mlrg.olcut.config.test.ListConfigurable">
         <propertylist name="list">
-            <type>com.oracle.labs.mlrg.olcut.config.StringConfigurable</type>
-            <type>com.oracle.labs.mlrg.olcut.config.SimpleConfigurable</type>
+            <type>com.oracle.labs.mlrg.olcut.config.test.StringConfigurable</type>
+            <type>com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable</type>
         </propertylist>
     </component>
 
-    <component name="combotyped" type="com.oracle.labs.mlrg.olcut.config.ListConfigurable">
+    <component name="combotyped" type="com.oracle.labs.mlrg.olcut.config.test.ListConfigurable">
         <propertylist name="list">
             <item>simp</item>
-            <type>com.oracle.labs.mlrg.olcut.config.StringConfigurable</type>
+            <type>com.oracle.labs.mlrg.olcut.config.test.StringConfigurable</type>
         </propertylist>
     </component>
 
-    <component name="stringconfigurablearray" type="com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable">
+    <component name="stringconfigurablearray" type="com.oracle.labs.mlrg.olcut.config.test.ArrayStringConfigurable">
         <propertylist name="stringArray">
             <item>strings</item>
             <item>strings2</item>
@@ -79,7 +79,7 @@
         </propertylist>
     </component>
 
-    <component name="stringconfigurablearraybroken" type="com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable">
+    <component name="stringconfigurablearraybroken" type="com.oracle.labs.mlrg.olcut.config.test.ArrayStringConfigurable">
         <propertylist name="stringArray">
             <item>strings</item>
             <item>monkeys</item>
@@ -87,27 +87,27 @@
         </propertylist>
     </component>
     
-    <component name="simp" type="com.oracle.labs.mlrg.olcut.config.SimpleConfigurable">
+    <component name="simp" type="com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable">
         <property name="simple" value="10"/>
     </component>
     
-    <component name="simp2" type="com.oracle.labs.mlrg.olcut.config.SimpleConfigurable">
+    <component name="simp2" type="com.oracle.labs.mlrg.olcut.config.test.SimpleConfigurable">
         <property name="simple" value="20"/>
     </component>
     
-    <component name="strings" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+    <component name="strings" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
         <property name="one" value="alpha"/>
         <property name="two" value="beta"/>
         <property name="three" value="charlie"/>
     </component>
 
-    <component name="strings2" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+    <component name="strings2" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
         <property name="one" value="one"/>
         <property name="two" value="two"/>
         <property name="three" value="three"/>
     </component>
 
-    <component name="strings3" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+    <component name="strings3" type="com.oracle.labs.mlrg.olcut.config.test.StringConfigurable">
         <property name="one" value="un"/>
         <property name="two" value="deux"/>
         <property name="three" value="trois"/>

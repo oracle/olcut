@@ -29,8 +29,8 @@
 package com.oracle.labs.mlrg.olcut.config.edn;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.FooConfigurable;
-import com.oracle.labs.mlrg.olcut.config.FooUserConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.FooConfigurable;
+import com.oracle.labs.mlrg.olcut.config.test.FooUserConfigurable;
 
 import java.io.File;
 import java.io.IOException;
