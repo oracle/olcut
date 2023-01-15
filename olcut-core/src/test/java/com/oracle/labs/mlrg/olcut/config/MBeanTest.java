@@ -60,7 +60,7 @@ public class MBeanTest {
     public void tearDown() {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         try {
-            mbs.unregisterMBean(new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=registerTest"));
+            mbs.unregisterMBean(new ObjectName("com.oracle.labs.mlrg.olcut.config.test:type=SimpleMBConfigurable,name=registerTest"));
         } catch(InstanceNotFoundException ex) {
             //
             // This is OK, there might have been a failure in the test.
@@ -71,7 +71,7 @@ public class MBeanTest {
         try {
             mbs.unregisterMBean(
                     new ObjectName(
-                    "com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=listTest"));
+                    "com.oracle.labs.mlrg.olcut.config.test:type=SimpleMBConfigurable,name=listTest"));
         } catch(InstanceNotFoundException ex) {
             //
             // This is OK, there might have been a failure in the test.
@@ -96,7 +96,7 @@ public class MBeanTest {
         assertNotNull(smbc, "Couldn't lookup registerTest");
 
         MBeanServer mbs = cm.getMBeanServer();
-        ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=registerTest");
+        ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config.test:type=SimpleMBConfigurable,name=registerTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
@@ -110,7 +110,7 @@ public class MBeanTest {
         assertNotNull(smbc, "Couldn't lookup listTest");
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=listTest");
+        ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config.test:type=SimpleMBConfigurable,name=listTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
@@ -125,7 +125,7 @@ public class MBeanTest {
         assertNotNull(smbc, "Couldn't lookup listTest");
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=listTest");
+        ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config.test:type=SimpleMBConfigurable,name=listTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
@@ -143,7 +143,7 @@ public class MBeanTest {
         assertNotNull(smbc, "Couldn't lookup listTest");
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=listTest");
+        ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config.test:type=SimpleMBConfigurable,name=listTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
@@ -162,7 +162,7 @@ public class MBeanTest {
         assertNotNull(smbc, "Couldn't lookup listTest");
 
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config:type=SimpleMBConfigurable,name=listTest");
+        ObjectName oname = new ObjectName("com.oracle.labs.mlrg.olcut.config.test:type=SimpleMBConfigurable,name=listTest");
         ConfigurableMXBean cmxb = JMX.newMBeanProxy(mbs, oname, ConfigurableMXBean.class);
         assertEquals("10", cmxb.getValue("a"));
         assertEquals("test", cmxb.getValue("b"));
