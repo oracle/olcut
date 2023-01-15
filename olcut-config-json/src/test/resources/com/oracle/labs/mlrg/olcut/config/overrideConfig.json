@@ -4,7 +4,7 @@
     "components": [
       {
         "name": "a",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "a",
           "two": "b",
@@ -27,7 +27,7 @@
       },
       {
         "name" : "c1",
-        "type" : "com.oracle.labs.mlrg.olcut.config.StringleConfigurable",
+        "type" : "com.oracle.labs.mlrg.olcut.test.config.StringleConfigurable",
         "inherit" : "a",
         "properties": {
           "four" : "e"
@@ -35,7 +35,7 @@
       },
       {
         "name" : "c2",
-        "type" : "com.oracle.labs.mlrg.olcut.config.StringleConfigurable",
+        "type" : "com.oracle.labs.mlrg.olcut.test.config.StringleConfigurable",
         "inherit" : "a",
         "properties": {
           "three" : "d",
@@ -44,7 +44,7 @@
       },
       {
         "name" : "d",
-        "type" : "com.oracle.labs.mlrg.olcut.config.ListConfigurable",
+        "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfigurable",
         "inherit" : "a",
         "properties": {
           "three" : "d",

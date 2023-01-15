@@ -10,7 +10,7 @@
     },
     "components" : [ {
       "name" : "second-configurable",
-      "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -20,7 +20,7 @@
       }
     }, {
       "name" : "first-configurable",
-      "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -30,7 +30,7 @@
       }
     }, {
       "name" : "all-config",
-      "type" : "com.oracle.labs.mlrg.olcut.config.AllFieldsConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.AllFieldsConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -187,7 +187,7 @@
       }
     }, {
       "name" : "third-configurable",
-      "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {

@@ -49,6 +49,7 @@
     </properties>
     <modules>
         <module>olcut-core</module>
+        <module>olcut-core-test</module>
         <module>olcut-config-json</module>
         <module>olcut-config-edn</module>
         <module>olcut-config-protobuf</module>
@@ -162,7 +163,6 @@
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
                 <version>${junit.version}</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

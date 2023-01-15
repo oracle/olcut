@@ -3,7 +3,7 @@
     "global-properties" : { },
     "components" : [ {
       "name" : "bad",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ListConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -15,31 +15,31 @@
       }
     }, {
       "name" : "dualtyped",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ListConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
         "list" : [ {
-          "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+          "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable"
         }, {
-          "type" : "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable"
+          "type" : "com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable"
         } ]
       }
     }, {
       "name" : "combotyped",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ListConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
         "list" : [ {
           "item" : "simp"
         }, {
-          "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+          "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable"
         } ]
       }
     }, {
       "name" : "simple",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ListConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -51,7 +51,7 @@
       }
     }, {
       "name" : "simp",
-      "type" : "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -59,7 +59,7 @@
       }
     }, {
       "name" : "strings3",
-      "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -69,7 +69,7 @@
       }
     }, {
       "name" : "strings2",
-      "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -79,17 +79,17 @@
       }
     }, {
       "name" : "typed",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ListConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
         "list" : [ {
-          "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+          "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable"
         } ]
       }
     }, {
       "name" : "strings",
-      "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -99,7 +99,7 @@
       }
     }, {
       "name" : "stringconfigurablearray",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ArrayStringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -113,7 +113,7 @@
       }
     }, {
       "name" : "simp2",
-      "type" : "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -121,7 +121,7 @@
       }
     }, {
       "name" : "stringconfigurablearraybroken",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ArrayStringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ArrayStringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {

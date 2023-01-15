@@ -3,7 +3,7 @@
         "global-properties" : { },
         "components" : [ {
             "name" : "fooMap",
-            "type" : "com.oracle.labs.mlrg.olcut.config.FooMapConfigurable",
+            "type" : "com.oracle.labs.mlrg.olcut.test.config.FooMapConfigurable",
             "export" : "false",
             "import" : "false",
             "properties" : {
@@ -18,7 +18,7 @@
             }
         }, {
             "name" : "foo1",
-            "type" : "com.oracle.labs.mlrg.olcut.config.FooConfigurable",
+            "type" : "com.oracle.labs.mlrg.olcut.test.config.FooConfigurable",
             "export" : "false",
             "import" : "false",
             "properties" : {
@@ -27,7 +27,7 @@
             }
         }, {
             "name" : "foo2",
-            "type" : "com.oracle.labs.mlrg.olcut.config.FooConfigurable",
+            "type" : "com.oracle.labs.mlrg.olcut.test.config.FooConfigurable",
             "export" : "false",
             "import" : "false",
             "properties" : {

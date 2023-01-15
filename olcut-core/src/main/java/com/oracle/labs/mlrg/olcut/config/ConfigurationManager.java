@@ -97,6 +97,10 @@ import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
 public class ConfigurationManager implements Closeable {
     private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
 
+    /**
+     * Separator character between a JPMS module name and the fully qualified class name.
+     */
+    public static final char MODULE_SEPARATOR_CHAR = '|';
     private static final Pattern WHITESPACE = Pattern.compile("\\s");
 
     public static final Option configFileOption = new Option() {
@@ -647,6 +651,20 @@ public class ConfigurationManager implements Closeable {
     private static URL findURL(String input, String argumentName) {
         return AccessController.doPrivileged((PrivilegedAction<URL>)
                 () -> {
+                    int modIndex = input.indexOf(MODULE_SEPARATOR_CHAR);
+                    if (modIndex > 0) {
+                        try {
+                            String witnessClassName = input.substring(0, modIndex);
+                            String classPathName = input.substring(modIndex + 1);
+                            Class<?> witnessClass = Class.forName(witnessClassName);
+                            URL url = witnessClass.getResource(classPathName);
+                            if (url != null) {
+                                return url;
+                            } // else fall through to regular loading
+                        } catch (ClassNotFoundException e) {
+                            // fall through to regular loading
+                        }
+                    }
                     URL url = ConfigurationManager.class.getResource(input);
                     if (url == null) {
                         File file = new File(input);
@@ -2184,7 +2202,7 @@ public class ConfigurationManager implements Closeable {
      * @return the current MBean server, or <code>null</code> if there isn't
      * one available.
      */
-    protected MBeanServer getMBeanServer() {
+    public MBeanServer getMBeanServer() {
         if(mbs == null) {
             mbs = ManagementFactory.getPlatformMBeanServer();
         }

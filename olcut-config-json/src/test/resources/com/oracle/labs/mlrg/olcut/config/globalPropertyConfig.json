@@ -13,7 +13,7 @@
     "components": [
       {
         "name": "unknown",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "${d}",
           "two": "${e}",
@@ -22,7 +22,7 @@
       },
       {
         "name": "badlyformed",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "${a${b}}",
           "two": "${b$}",
@@ -31,7 +31,7 @@
       },
       {
         "name": "simple",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "${a}",
           "two": "${b}",
@@ -40,7 +40,7 @@
       },
       {
         "name": "compound",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "${a}/${b}",
           "two": "${b}${c}",
@@ -49,7 +49,7 @@
       },
       {
         "name": "nonglobal",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "${a",
           "two": "$b}",
@@ -58,7 +58,7 @@
       },
       {
         "name": "recurse",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "${a}",
           "two": "${a-prime}",
@@ -67,7 +67,7 @@
       },
       {
         "name": "recurse2",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "${foo}",
           "two": "x",
@@ -76,7 +76,7 @@
       },
       {
         "name": "recurse3",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "${apath}",
           "two": "${apath}/bpath",
@@ -85,7 +85,7 @@
       },
       {
         "name": "compoundrecurse",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "one ${b}/${a-prime}",
           "two": "two ${c}/${a-prime}/${b}/${adprime}",
@@ -94,7 +94,7 @@
       },
       {
         "name": "sysprops",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "${home}/jini/jsk-all.policy",
           "two": "two",
@@ -103,7 +103,7 @@
       },
       {
         "name": "distinguished",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "${gp.hostName}",
           "two": "${user.name}",
@@ -112,7 +112,7 @@
       },
       {
         "name": "listTest",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringListConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringListConfigurable",
         "properties": {
           "strings" : [
             { "item" : "${a}" },

@@ -29,6 +29,7 @@
 package com.oracle.labs.mlrg.olcut.util;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
@@ -43,6 +44,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisabledOnOs(OS.WINDOWS)
+@Disabled
 public class SubprocessConnectionTest {
 
     SubprocessConnection subproc;

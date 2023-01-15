@@ -6,7 +6,7 @@
     },
     "components" : [ {
       "name" : "draconic",
-      "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -16,7 +16,7 @@
       }
     }, {
       "name" : "mapTest",
-      "type" : "com.oracle.labs.mlrg.olcut.config.MapConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.MapConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -27,7 +27,7 @@
       }
     }, {
       "name" : "starwars",
-      "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -37,7 +37,7 @@
       }
     }, {
       "name" : "correctListConfig",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ListConfig",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfig",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -67,7 +67,7 @@
       }
     }, {
       "name" : "incorrectSetConfig",
-      "type" : "com.oracle.labs.mlrg.olcut.config.SetConfig",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.SetConfig",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -93,7 +93,7 @@
       }
     }, {
       "name" : "incorrectListConfig",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ListConfig",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfig",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -119,7 +119,7 @@
       }
     }, {
       "name" : "correctSetConfig",
-      "type" : "com.oracle.labs.mlrg.olcut.config.SetConfig",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.SetConfig",
       "export" : "false",
       "import" : "false",
       "properties" : {

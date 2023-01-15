@@ -3,7 +3,7 @@
     "global-properties" : { },
     "components" : [ {
       "name" : "post",
-      "type" : "com.oracle.labs.mlrg.olcut.config.PostConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.PostConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {

@@ -5,7 +5,7 @@
     },
     "components" : [ {
       "name" : "mapTest",
-      "type" : "com.oracle.labs.mlrg.olcut.config.MapConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.MapConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {

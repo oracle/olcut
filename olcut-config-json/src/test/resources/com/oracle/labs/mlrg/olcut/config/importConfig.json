@@ -3,7 +3,7 @@
     "global-properties" : { },
     "components" : [ {
       "name" : "a",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ComboConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ComboConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -12,7 +12,7 @@
       }
     }, {
       "name" : "b",
-      "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -22,7 +22,7 @@
       }
     }, {
       "name" : "basic1",
-      "type" : "com.oracle.labs.mlrg.olcut.config.BasicConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -32,7 +32,7 @@
       }
     }, {
       "name" : "l1",
-      "type" : "com.oracle.labs.mlrg.olcut.config.L1Configurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.L1Configurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -40,7 +40,7 @@
       }
     }, {
       "name" : "l2",
-      "type" : "com.oracle.labs.mlrg.olcut.config.L2Configurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.L2Configurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -48,7 +48,7 @@
       }
     }, {
       "name" : "l3",
-      "type" : "com.oracle.labs.mlrg.olcut.config.L3Configurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.L3Configurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -56,7 +56,7 @@
       }
     }, {
       "name" : "l21",
-      "type" : "com.oracle.labs.mlrg.olcut.config.L2Configurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.L2Configurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -65,7 +65,7 @@
       }
     }, {
       "name" : "simple",
-      "type" : "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -73,7 +73,7 @@
       }
     }, {
       "name" : "l31",
-      "type" : "com.oracle.labs.mlrg.olcut.config.L3Configurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.L3Configurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -82,7 +82,7 @@
       }
     }, {
       "name" : "l11",
-      "type" : "com.oracle.labs.mlrg.olcut.config.L1Configurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.L1Configurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -91,7 +91,7 @@
       }
     }, {
       "name" : "multiEmbeddedList",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ListConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -103,7 +103,7 @@
       }
     }, {
       "name" : "strings",
-      "type" : "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -113,7 +113,7 @@
       }
     }, {
       "name" : "simpleList",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ListConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -125,7 +125,7 @@
       }
     }, {
       "name" : "basic",
-      "type" : "com.oracle.labs.mlrg.olcut.config.BasicConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -135,7 +135,7 @@
       }
     }, {
       "name" : "singleEmbeddedList",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ListConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {

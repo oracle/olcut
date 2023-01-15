@@ -9,7 +9,7 @@
     "components": [
       {
         "name": "configC",
-        "type": "com.oracle.labs.mlrg.olcut.config.StringConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
         "properties": {
           "one": "fileC",
           "two": "${b}",

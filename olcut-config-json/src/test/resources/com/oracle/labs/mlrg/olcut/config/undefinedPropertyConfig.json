@@ -4,14 +4,14 @@
     "components": [
       {
         "name": "simple",
-        "type": "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable",
         "properties": {
           "simpel": "10"
         }
       },
       {
         "name": "simple2",
-        "type": "com.oracle.labs.mlrg.olcut.config.SimpleConfigurable",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable",
         "properties": {
           "simple": "10",
           "simpel": "5"

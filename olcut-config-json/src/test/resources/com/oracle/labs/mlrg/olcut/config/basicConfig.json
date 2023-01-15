@@ -3,7 +3,7 @@
     "global-properties" : { },
     "components" : [ {
       "name" : "a",
-      "type" : "com.oracle.labs.mlrg.olcut.config.BasicConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -13,7 +13,7 @@
       }
     }, {
       "name" : "b",
-      "type" : "com.oracle.labs.mlrg.olcut.config.BasicConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {

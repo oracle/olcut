@@ -3,7 +3,7 @@
     "global-properties" : { },
     "components" : [ {
       "name" : "a",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ArrayConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ArrayConfigurable",
       "export" : "false",
       "import" : "false",
       "properties" : {
@@ -59,7 +59,7 @@
       }
     }, {
       "name" : "invalid-char",
-      "type" : "com.oracle.labs.mlrg.olcut.config.ArrayConfigurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ArrayConfigurable",
       "export" : "false",
       "import" : "false",
       "inherit" : "a",
