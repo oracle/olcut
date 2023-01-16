@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.config.protobuf {
+module com.oracle.labs.mlrg.olcut.config.protobuf.test {
     requires java.base;
     requires java.logging;
 
@@ -38,6 +38,9 @@ module com.oracle.labs.mlrg.olcut.config.protobuf {
     requires com.oracle.labs.mlrg.olcut.core;
     requires com.oracle.labs.mlrg.olcut.core.test;
 
-    exports com.oracle.labs.mlrg.olcut.config.protobuf;
-    exports com.oracle.labs.mlrg.olcut.config.protobuf.protos;
+    requires com.oracle.labs.mlrg.olcut.config.protobuf;
+
+    exports com.oracle.labs.mlrg.olcut.config.protobuf.test;
+
+    opens com.oracle.labs.mlrg.olcut.config.protobuf.test to com.oracle.labs.mlrg.olcut.core;
 }

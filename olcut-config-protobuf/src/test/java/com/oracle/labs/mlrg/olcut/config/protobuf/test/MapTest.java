@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,16 +26,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.config.protobuf {
-    requires java.base;
-    requires java.logging;
+package com.oracle.labs.mlrg.olcut.config.protobuf.test;
 
-    requires com.google.protobuf;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.protobuf.ProtoConfigFactory;
+import com.oracle.labs.mlrg.olcut.test.config.MapConfigurable;
+import com.oracle.labs.mlrg.olcut.config.PropertySheet;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-    requires com.oracle.labs.mlrg.olcut.core;
+import java.io.IOException;
+import java.util.Map;
 
-    exports com.oracle.labs.mlrg.olcut.config.protobuf;
-    exports com.oracle.labs.mlrg.olcut.config.protobuf.protos;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-    opens com.oracle.labs.mlrg.olcut.config.protobuf to com.oracle.labs.mlrg.olcut.core;
+/**
+ * Tests the extraction of {@link Map} objects from a {@link PropertySheet}.
+ */
+
+public class MapTest {
+
+    @BeforeAll
+    public static void setUpClass() throws Exception {
+        ConfigurationManager.addFileFormatFactory(new ProtoConfigFactory());
+    }
+
+    @Test
+    public void mapTest() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mapConfig.pb");
+        MapConfigurable m = (MapConfigurable) cm.lookup("mapTest");
+        Map<String,String> map = m.map;
+        assertEquals("stuff",map.get("things"));
+        assertEquals("quux",map.get("foo"));
+        assertNull(map.get("bar"));
+    }
 }

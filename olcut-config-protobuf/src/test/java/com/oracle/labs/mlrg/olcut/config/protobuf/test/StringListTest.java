@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2021, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,16 +26,35 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.config.protobuf {
-    requires java.base;
-    requires java.logging;
+package com.oracle.labs.mlrg.olcut.config.protobuf.test;
 
-    requires com.google.protobuf;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.protobuf.ProtoConfigFactory;
+import com.oracle.labs.mlrg.olcut.test.config.StringListConfigurable;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-    requires com.oracle.labs.mlrg.olcut.core;
+import java.io.IOException;
 
-    exports com.oracle.labs.mlrg.olcut.config.protobuf;
-    exports com.oracle.labs.mlrg.olcut.config.protobuf.protos;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    opens com.oracle.labs.mlrg.olcut.config.protobuf to com.oracle.labs.mlrg.olcut.core;
+/**
+ *
+ */
+public class StringListTest {
+
+    @BeforeAll
+    public static void setUpClass() throws IOException {
+        ConfigurationManager.addFileFormatFactory(new ProtoConfigFactory());
+    }
+
+    @Test
+    public void getStrings() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringListConfig.pb");
+        StringListConfigurable slc = (StringListConfigurable) cm.lookup(
+                "listTest");
+        assertEquals("a", slc.strings.get(0));
+        assertEquals("b", slc.strings.get(1));
+        assertEquals("c", slc.strings.get(2));
+    }
 }
