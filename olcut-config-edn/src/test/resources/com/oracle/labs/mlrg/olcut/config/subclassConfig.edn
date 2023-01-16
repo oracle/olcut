@@ -1,8 +1,0 @@
-(config
-	(component stringConfigSubclass [mlrg olcut config StringleConfigurable]
-		{:import "false" :export "false"}
-		:four "d"
-		:one "a"
-		:five "e"
-		:two "b"
-		:three "c"))

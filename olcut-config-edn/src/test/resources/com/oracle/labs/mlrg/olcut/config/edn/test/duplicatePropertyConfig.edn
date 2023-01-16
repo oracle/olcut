@@ -1,0 +1,7 @@
+(config
+
+  (component a [mlrg olcut test config StringConfigurable]
+             :one "a"
+             :two "b"
+             :three "c"
+             :three "c"))

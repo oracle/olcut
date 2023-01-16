@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2020, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,15 +26,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.config.edn {
-    requires java.base;
-    requires java.logging;
+package com.oracle.labs.mlrg.olcut.config.edn.test;
 
-    requires edn.java;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.edn.EdnConfigFactory;
+import com.oracle.labs.mlrg.olcut.test.config.PostConfigurable;
 
-    requires com.oracle.labs.mlrg.olcut.core;
+import java.io.IOException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-    exports com.oracle.labs.mlrg.olcut.config.edn;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    opens com.oracle.labs.mlrg.olcut.config.edn to com.oracle.labs.mlrg.olcut.core;
+/**
+ * Tests that the postConfig method is properly called and updates the fields before lookup returns.
+ */
+public class PostConfigTest {
+
+    @BeforeAll
+    public static void setUpClass() throws Exception {
+        ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
+    }
+
+    @Test
+    public void postConfigTest() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|postConfig.edn");
+        PostConfigurable p = (PostConfigurable) cm.lookup("post");
+        assertEquals("Monkeys",p.one);
+        assertEquals("Gorillas",p.two);
+    }
+    
 }

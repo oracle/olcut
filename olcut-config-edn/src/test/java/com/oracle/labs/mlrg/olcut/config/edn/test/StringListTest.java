@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2020, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,15 +26,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.config.edn {
-    requires java.base;
-    requires java.logging;
+package com.oracle.labs.mlrg.olcut.config.edn.test;
 
-    requires edn.java;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.edn.EdnConfigFactory;
+import com.oracle.labs.mlrg.olcut.test.config.StringListConfigurable;
 
-    requires com.oracle.labs.mlrg.olcut.core;
+import java.io.IOException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-    exports com.oracle.labs.mlrg.olcut.config.edn;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    opens com.oracle.labs.mlrg.olcut.config.edn to com.oracle.labs.mlrg.olcut.core;
+
+/**
+ *
+ */
+public class StringListTest {
+
+    @BeforeAll
+    public static void setUpClass() throws IOException {
+        ConfigurationManager.addFileFormatFactory(new EdnConfigFactory());
+    }
+
+    @Test
+    public void getStrings() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringListConfig.edn");
+        StringListConfigurable slc = (StringListConfigurable) cm.lookup(
+                "listTest");
+        assertEquals("a", slc.strings.get(0));
+        assertEquals("b", slc.strings.get(1));
+        assertEquals("c", slc.strings.get(2));
+    }
+    
 }

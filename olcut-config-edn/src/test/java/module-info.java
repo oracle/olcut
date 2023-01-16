@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.config.edn {
+module com.oracle.labs.mlrg.olcut.config.edn.test {
     requires java.base;
     requires java.logging;
 
@@ -38,5 +38,9 @@ module com.oracle.labs.mlrg.olcut.config.edn {
     requires com.oracle.labs.mlrg.olcut.core;
     requires com.oracle.labs.mlrg.olcut.core.test;
 
-    exports com.oracle.labs.mlrg.olcut.config.edn;
+    requires com.oracle.labs.mlrg.olcut.config.edn;
+
+    exports com.oracle.labs.mlrg.olcut.config.edn.test;
+
+    opens com.oracle.labs.mlrg.olcut.config.edn.test to com.oracle.labs.mlrg.olcut.core;
 }

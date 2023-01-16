@@ -1,0 +1,15 @@
+(config
+    (components [mlrg olcut test config StringConfigurable]
+        [a :one "a" :two "b" :three "c"]
+        [b {:inherit a} :three "d"]
+        [bsub {:inherit b} :three "e"])
+
+    (components {:inherit a} [mlrg olcut test config StringleConfigurable]
+        :four "e"
+        [c1]
+        [c2 :three "d"])
+
+    (component d [mlrg olcut test config ListConfigurable]
+        {:inherit a}
+        :three "d"
+        :four "e"))

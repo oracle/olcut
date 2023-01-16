@@ -1,5 +1,0 @@
-(config
-	(component post [mlrg olcut config PostConfigurable]
-		{:import "false" :export "false"}
-		:one "Monkeys"
-		:two "AlsoMonkeys"))
