@@ -44,7 +44,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisabledOnOs(OS.WINDOWS)
-@Disabled
 public class SubprocessConnectionTest {
 
     SubprocessConnection subproc;
