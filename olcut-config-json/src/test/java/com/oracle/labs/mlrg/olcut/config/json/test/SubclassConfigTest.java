@@ -26,45 +26,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.test.config_tests;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
-import com.oracle.labs.mlrg.olcut.config.Config;
-import com.oracle.labs.mlrg.olcut.config.Configurable;
-import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
+import com.oracle.labs.mlrg.olcut.test.config.StringleConfigurable;
 
-import java.util.Set;
+import java.io.IOException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  *
  */
-public class SetConfig implements Configurable {
+public class SubclassConfigTest {
 
-    @Config
-    public Set<String> stringSet;
-
-    @Config
-    public Set<Double> doubleSet;
-
-    @Config
-    public Set<StringConfigurable> stringConfigurableSet;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        SetConfig setConfig = (SetConfig) o;
-
-        if (stringSet != null ? !stringSet.equals(setConfig.stringSet) : setConfig.stringSet != null) return false;
-        if (doubleSet != null ? !doubleSet.equals(setConfig.doubleSet) : setConfig.doubleSet != null) return false;
-        return stringConfigurableSet != null ? stringConfigurableSet.equals(setConfig.stringConfigurableSet) : setConfig.stringConfigurableSet == null;
+    @BeforeAll
+    public static void setUpClass() throws IOException {
+        ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
 
-    @Override
-    public int hashCode() {
-        int result = stringSet != null ? stringSet.hashCode() : 0;
-        result = 31 * result + (doubleSet != null ? doubleSet.hashCode() : 0);
-        result = 31 * result + (stringConfigurableSet != null ? stringConfigurableSet.hashCode() : 0);
-        return result;
+    @Test
+    public void testStringConfigSubclass() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|subclassConfig.json");
+        StringleConfigurable scc = (StringleConfigurable) cm.lookup(
+                "stringConfigSubclass");
+        assertEquals("a", scc.one);
+        assertEquals("b", scc.two);
+        assertEquals("c", scc.three);
+        assertEquals("d", scc.four);
+        assertEquals("e", scc.five);
     }
+
 }

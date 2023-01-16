@@ -26,47 +26,35 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable;
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
+import com.oracle.labs.mlrg.olcut.test.config.StringListConfigurable;
 
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
  */
-public class PropertyExceptionTest {
+public class StringListTest {
 
     @BeforeAll
     public static void setUpClass() throws IOException {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
 
-    /**
-     * A test that will throw a property exception due to an unknown property
-     * in the configuration file.
-     * @throws PropertyException
-     * @throws IOException
-     */
     @Test
-    public void unknownPropertyException() throws PropertyException, IOException {
-        assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager("undefinedPropertyConfig.json");
-            SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simple");
-        });
-    }
-    
-    @Test
-    public void unknownPropertyWithKnownPropertyException() throws PropertyException, IOException {
-        assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager("undefinedPropertyConfig.json");
-            SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simple2");
-        });
+    public void getStrings() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringListConfig.json");
+        StringListConfigurable slc = (StringListConfigurable) cm.lookup(
+                "listTest");
+        assertEquals("a", slc.strings.get(0));
+        assertEquals("b", slc.strings.get(1));
+        assertEquals("c", slc.strings.get(2));
     }
 }

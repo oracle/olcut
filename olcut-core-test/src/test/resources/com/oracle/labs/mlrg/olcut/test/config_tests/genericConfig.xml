@@ -80,7 +80,7 @@
         </propertylist>
     </component>
 
-    <component name="correctSetConfig" type="com.oracle.labs.mlrg.olcut.test.config_tests.SetConfig">
+    <component name="correctSetConfig" type="com.oracle.labs.mlrg.olcut.test.config.SetConfig">
         <propertylist name="doubleSet">
             <item>5.5</item>
             <item>3.14</item>
@@ -99,7 +99,7 @@
         </propertylist>
     </component>
 
-    <component name="incorrectSetConfig" type="com.oracle.labs.mlrg.olcut.test.config_tests.SetConfig">
+    <component name="incorrectSetConfig" type="com.oracle.labs.mlrg.olcut.test.config.SetConfig">
         <propertylist name="doubleSet">
             <item>things</item>
             <item>wings</item>

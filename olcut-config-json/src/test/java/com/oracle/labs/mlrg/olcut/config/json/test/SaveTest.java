@@ -26,16 +26,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
 import com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.test.config.ListConfig;
 import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
-import com.oracle.labs.mlrg.olcut.config.SetConfig;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
+import com.oracle.labs.mlrg.olcut.test.config.SetConfig;
 import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 
 import java.io.File;
@@ -64,7 +65,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithInstantiationGeneric() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("genericConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|genericConfig.json");
         SetConfig s1 = (SetConfig) cm1.lookup("correctSetConfig");
         cm1.save(f, true);
         assertEquals(3, cm1.getNumInstantiated());
@@ -78,7 +79,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithNoInstantiationGeneric() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("genericConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|genericConfig.json");
         cm1.save(f, true);
         assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
@@ -92,7 +93,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithInstantiation() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("basicConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         cm1.save(f, true);
         assertEquals(1, cm1.getNumInstantiated());
@@ -106,7 +107,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithNoInstantiation() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("basicConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
         cm1.save(f, true);
         assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
@@ -120,7 +121,7 @@ public class SaveTest {
     
     @Test
     public void saveAllWithInstantiationAndAddition() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("basicConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         Map<String, Property> m = new HashMap<>();
         m.put("s", new SimpleProperty("foo"));
@@ -144,7 +145,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithoutInstantiationAndAddition() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("basicConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
         Map<String, Property> m = new HashMap<>();
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
@@ -170,7 +171,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithInstantiationAndRemoval() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("basicConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         cm1.removeConfigurable("a");
         cm1.save(f, true);
@@ -189,7 +190,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithoutInstantiationAndRemoval() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("basicConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
         cm1.removeConfigurable("a");
         cm1.save(f, true);
         assertEquals(0, cm1.getNumInstantiated());
@@ -208,7 +209,7 @@ public class SaveTest {
 
     @Test
     public void removeProgramaticallyAddedUninstantiated() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("basicConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
         Map<String, Property> m = new HashMap<>();
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
@@ -244,7 +245,7 @@ public class SaveTest {
 
     @Test
     public void loadNastyStrings() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("nastyStringConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|nastyStringConfig.json");
         StringConfigurable sc = (StringConfigurable) cm.lookup(
                 "nastyStringTest");
         assertEquals("([^a-z0-9_!#$%&*@＠]|^|RT:?)(@＠+)([a-z0-9_]{1,20})(/[a-z][a-z0-9_\\\\-]{0,24})?", sc.one);

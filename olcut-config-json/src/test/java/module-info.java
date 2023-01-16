@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.config.json {
+module com.oracle.labs.mlrg.olcut.config.json.test {
     requires java.base;
     requires java.logging;
 
@@ -39,5 +39,9 @@ module com.oracle.labs.mlrg.olcut.config.json {
     requires com.oracle.labs.mlrg.olcut.core;
     requires com.oracle.labs.mlrg.olcut.core.test;
 
-    exports com.oracle.labs.mlrg.olcut.config.json;
+    requires com.oracle.labs.mlrg.olcut.config.json;
+
+    exports com.oracle.labs.mlrg.olcut.config.json.test;
+
+    opens com.oracle.labs.mlrg.olcut.config.json.test to com.oracle.labs.mlrg.olcut.core;
 }

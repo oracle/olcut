@@ -26,10 +26,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.test.config.StringleConfigurable;
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
+import com.oracle.labs.mlrg.olcut.test.config.PostConfigurable;
 
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,27 +38,22 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 /**
- *
+ * Tests that the postConfig method is properly called and updates the fields before lookup returns.
  */
-public class SubclassConfigTest {
+public class PostConfigTest {
 
     @BeforeAll
-    public static void setUpClass() throws IOException {
+    public static void setUpClass() throws Exception {
         ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
     }
 
     @Test
-    public void testStringConfigSubclass() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("subclassConfig.json");
-        StringleConfigurable scc = (StringleConfigurable) cm.lookup(
-                "stringConfigSubclass");
-        assertEquals("a", scc.one);
-        assertEquals("b", scc.two);
-        assertEquals("c", scc.three);
-        assertEquals("d", scc.four);
-        assertEquals("e", scc.five);
+    public void postConfigTest() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|postConfig.json");
+        PostConfigurable p = (PostConfigurable) cm.lookup("post");
+        assertEquals("Monkeys",p.one);
+        assertEquals("Gorillas",p.two);
     }
-
+    
 }

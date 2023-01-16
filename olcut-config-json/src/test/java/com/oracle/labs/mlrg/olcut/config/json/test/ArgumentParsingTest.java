@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.Option;
@@ -42,13 +42,14 @@ public class ArgumentParsingTest {
 
     @Test
     public void testConfigLoading() throws IOException {
-        String[] args = new String[]{"-c","stringListConfig.json","--other-arguments","that-get-in-the-way", "--config-file-formats", "com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory"};
+        String moduleStub = this.getClass().getName() + "|";
+        String[] args = new String[]{"-c", moduleStub + "stringListConfig.json","--other-arguments","that-get-in-the-way", "--config-file-formats", "com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory"};
         loadFromArgs("-c",args);
-        args = new String[]{"--config-file-formats", "com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory", "--config-file","stringListConfig.json","--other-arguments","that-get-in-the-way"};
+        args = new String[]{"--config-file-formats", "com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory", "--config-file", moduleStub + "stringListConfig.json","--other-arguments","that-get-in-the-way"};
         loadFromArgs("--config-file",args);
-        args = new String[]{"-o","--config-file","stringListConfig.json,componentListConfig.json", "--config-file-formats", "com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory","-s"};
+        args = new String[]{"-o","--config-file", moduleStub + "stringListConfig.json," + moduleStub + "componentListConfig.json", "--config-file-formats", "com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory","-s"};
         loadFromArgs("--config-file with multiple files",args);
-        args = new String[]{"-o","--config-file","componentListConfig.json","-s", "--config-file-formats", "com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory","-c","stringListConfig.json"};
+        args = new String[]{"-o","--config-file", moduleStub + "componentListConfig.json","-s", "--config-file-formats", "com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory","-c", moduleStub + "stringListConfig.json"};
         loadFromArgs("overriding --config-file with -c",args);
     }
 

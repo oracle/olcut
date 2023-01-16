@@ -26,9 +26,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
 import com.oracle.labs.mlrg.olcut.test.config.FooConfigurable;
 import com.oracle.labs.mlrg.olcut.test.config.FooUserConfigurable;
 
@@ -55,7 +56,7 @@ public class NestedConfigurablesTest {
 
     @Test
     public void testLoadFromXML() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("nestedConfigurablesConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|nestedConfigurablesConfig.json");
         FooUserConfigurable user = (FooUserConfigurable) cm.lookup("user");
         assertNotNull(user);
         FooConfigurable foo = user.getFoo();
@@ -66,7 +67,7 @@ public class NestedConfigurablesTest {
 
     @Test
     public void testSave() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("nestedConfigurablesConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|nestedConfigurablesConfig.json");
         FooUserConfigurable u1 = (FooUserConfigurable) cm1.lookup("user");
         File tmp = mkTmp();
         cm1.save(tmp);

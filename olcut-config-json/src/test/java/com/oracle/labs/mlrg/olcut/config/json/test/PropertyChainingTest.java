@@ -26,9 +26,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
 import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 
 import java.io.IOException;
@@ -50,7 +51,7 @@ public class PropertyChainingTest {
 
     @Test
     public void chainLoading() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("propertyChainingConfigA.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|propertyChainingConfigA.json");
         String stringA = cm.getGlobalProperty("stringA");
         String stringB = cm.getGlobalProperty("stringB");
         String stringC = cm.getGlobalProperty("stringC");
@@ -67,7 +68,7 @@ public class PropertyChainingTest {
 
     @Test
     public void overlay() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("propertyChainingConfigA.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|propertyChainingConfigA.json");
         String globalA = cm.getGlobalProperty("a");
         String globalB = cm.getGlobalProperty("b");
         String globalC = cm.getGlobalProperty("c");

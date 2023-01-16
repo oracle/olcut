@@ -37,6 +37,8 @@ import com.oracle.labs.mlrg.olcut.test.provenance.ExampleProvenancableConfigurab
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceSerializationException;
 import com.oracle.labs.mlrg.olcut.provenance.io.XMLProvenanceSerialization;
+import com.oracle.labs.mlrg.olcut.test.provenance.ProvenanceTestUtils;
+import com.oracle.labs.mlrg.olcut.test.provenance.SimpleObjectProvenance;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -73,11 +75,11 @@ public class XmlProvenanceSerializationTest {
 
     @Test
     public void recursiveMarshallingTest() throws ProvenanceSerializationException {
-        Provenance prov = ProvenanceConversionTest.constructProvenance(new SplittableRandom(42),5,3,"prov");
+        Provenance prov = ProvenanceTestUtils.constructProvenance(new SplittableRandom(42),5,3,"prov");
 
         assertNotNull(prov);
 
-        ProvenanceConversionTest.SimpleObjectProvenance objProv = new ProvenanceConversionTest.SimpleObjectProvenance((ListProvenance<?>)prov);
+        SimpleObjectProvenance objProv = new SimpleObjectProvenance((ListProvenance<?>)prov);
 
         List<ObjectMarshalledProvenance> marshalledProvenance = ProvenanceUtil.marshalProvenance(objProv);
 

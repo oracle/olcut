@@ -26,22 +26,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
+import com.oracle.labs.mlrg.olcut.test.config.ArrayStringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.test.config.PathConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.NamedConfigurable;
+import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
  *
  */
-public class PathTest {
+public class NameTest {
 
     @BeforeAll
     public static void setUpClass() throws Exception {
@@ -49,14 +53,25 @@ public class PathTest {
     }
 
     @Test
-    public void test() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("pathConfig.json");
-        PathConfigurable pc = (PathConfigurable) cm.lookup(
-                "pathTest");
-        String actualPath = pc.getPath().toString();
-        actualPath = actualPath.replace('\\', '/');
-        
-        assertEquals("/this/is/a/test/path", actualPath);
+    public void configurableNameTest() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.json");
+        ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearray");
+        assertEquals("stringconfigurablearray",lc.getName());
+        StringConfigurable[] l = lc.getArray();
+        assertEquals(3, l.length);
+        String firstOne = l[0].one;
+        assertEquals("alpha",firstOne);
+        String secondOne = l[1].one;
+        assertEquals("one",secondOne);
+        String thirdOne = l[2].one;
+        assertEquals("un",thirdOne);
+    }
+
+    @Test
+    public void componentNameTest() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|nameConfig.json");
+        NamedConfigurable nc = (NamedConfigurable) cm.lookup("monkeys");
+        assertEquals("monkeys",nc.getName());
     }
 
 }

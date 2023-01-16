@@ -26,17 +26,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.provenance.ExampleProvenancableConfigurable;
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
+import com.oracle.labs.mlrg.olcut.config.json.JsonProvenanceSerialization;
 import com.oracle.labs.mlrg.olcut.provenance.ListProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.Provenance;
-import com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.SimpleObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ProvenanceSerializationException;
+import com.oracle.labs.mlrg.olcut.test.provenance.ExampleProvenancableConfigurable;
+import com.oracle.labs.mlrg.olcut.test.provenance.SimpleObjectProvenance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -44,7 +46,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.SplittableRandom;
 
-import static com.oracle.labs.mlrg.olcut.provenance.ProvenanceConversionTest.constructProvenance;
+import static com.oracle.labs.mlrg.olcut.test.provenance.ProvenanceTestUtils.constructProvenance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -61,7 +63,7 @@ public class JsonProvenanceSerializationTest {
 
     @Test
     public void marshallingTest() throws ProvenanceSerializationException {
-        ConfigurationManager cm1 = new ConfigurationManager("/com/oracle/labs/mlrg/olcut/provenance/example-provenance-config.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|example-provenance-config.xml");
         ExampleProvenancableConfigurable e = (ExampleProvenancableConfigurable) cm1.lookup("example-config");
         assertNotNull(e, "Failed to load example config");
 

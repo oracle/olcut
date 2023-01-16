@@ -44,6 +44,7 @@ import com.oracle.labs.mlrg.olcut.test.config.ListConfig;
 import com.oracle.labs.mlrg.olcut.test.config.Monkey;
 import com.oracle.labs.mlrg.olcut.test.config.Orangutan;
 import com.oracle.labs.mlrg.olcut.test.config.Rhesus;
+import com.oracle.labs.mlrg.olcut.test.config.SetConfig;
 import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

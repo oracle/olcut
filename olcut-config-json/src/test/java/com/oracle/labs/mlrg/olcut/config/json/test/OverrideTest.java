@@ -26,9 +26,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
 import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.test.config.StringleConfigurable;
 
@@ -51,7 +52,7 @@ public class OverrideTest {
 
     @Test
     public void overrideWithSameType() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("overrideConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|overrideConfig.json");
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         assertEquals("a", sc.one);
         assertEquals("b", sc.two);
@@ -64,7 +65,7 @@ public class OverrideTest {
 
     @Test
     public void doubleOverride() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("overrideConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|overrideConfig.json");
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         assertEquals("a", sc.one);
         assertEquals("b", sc.two);
@@ -81,7 +82,7 @@ public class OverrideTest {
     
     @Test
     public void overrideWithSubType() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("overrideConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|overrideConfig.json");
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         assertEquals("a", sc.one);
         assertEquals("b", sc.two);

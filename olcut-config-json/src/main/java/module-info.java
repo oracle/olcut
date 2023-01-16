@@ -36,4 +36,6 @@ module com.oracle.labs.mlrg.olcut.config.json {
     requires com.oracle.labs.mlrg.olcut.core;
 
     exports com.oracle.labs.mlrg.olcut.config.json;
+
+    opens com.oracle.labs.mlrg.olcut.config.json to com.oracle.labs.mlrg.olcut.core;
 }

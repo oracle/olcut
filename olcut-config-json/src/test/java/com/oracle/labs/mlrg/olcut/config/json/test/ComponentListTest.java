@@ -26,8 +26,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
 import com.oracle.labs.mlrg.olcut.test.config.ArrayStringConfigurable;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
@@ -60,7 +61,7 @@ public class ComponentListTest {
 
     @Test
     public void componentListTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.json");
         ListConfigurable lc = (ListConfigurable) cm.lookup("simple");
         List<Configurable> l = lc.getList();
         assertEquals(2, l.size());
@@ -72,7 +73,7 @@ public class ComponentListTest {
     @Test
     public void badComponentListTest() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
+            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.json");
             ListConfigurable lc = (ListConfigurable) cm.lookup("bad");
             for (Configurable c : lc.getList()) {
                 assertNotNull(c);
@@ -82,7 +83,7 @@ public class ComponentListTest {
 
     @Test
     public void simpleTypedTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.json");
         ListConfigurable lc = (ListConfigurable) cm.lookup("typed");
         List<Configurable> l = lc.getList();
         assertEquals(3, l.size());
@@ -94,7 +95,7 @@ public class ComponentListTest {
 
     @Test
     public void dualTypedTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.json");
         ListConfigurable lc = (ListConfigurable) cm.lookup("dualtyped");
         List<Configurable> l = lc.getList();
         assertEquals(5, l.size());
@@ -117,7 +118,7 @@ public class ComponentListTest {
 
     @Test
     public void comboTypedTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.json");
         ListConfigurable lc = (ListConfigurable) cm.lookup("combotyped");
         List<Configurable> l = lc.getList();
         assertEquals(4, l.size());
@@ -139,7 +140,7 @@ public class ComponentListTest {
 
     @Test
     public void stringConfigurableArrayTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.json");
         ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearray");
         StringConfigurable[] l = lc.getArray();
         assertEquals(3, l.length);
@@ -154,7 +155,7 @@ public class ComponentListTest {
     @Test
     public void stringConfigurableBrokenArrayTest() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager("componentListConfig.json");
+            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.json");
             ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearraybroken");
         }, "Did not throw PropertyException when asking for unknown element in configurable array.");
     }

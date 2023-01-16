@@ -29,7 +29,6 @@
 package com.oracle.labs.mlrg.olcut.test.provenance_tests;
 
 import com.oracle.labs.mlrg.olcut.provenance.ListProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.MapProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil;
@@ -39,19 +38,13 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.provenance.impl.SkeletalConfiguredObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.io.ObjectMarshalledProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.primitives.IntProvenance;
 import com.oracle.labs.mlrg.olcut.test.provenance.ExampleProvenancableConfigurable;
-import com.oracle.labs.mlrg.olcut.util.Pair;
+import com.oracle.labs.mlrg.olcut.test.provenance.ProvenanceTestUtils;
+import com.oracle.labs.mlrg.olcut.test.provenance.SimpleObjectProvenance;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.SplittableRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -141,7 +134,7 @@ public class ProvenanceConversionTest {
 
     @Test
     public void recursiveMarshallingTest() {
-        Provenance prov = constructProvenance(new SplittableRandom(42),5,3,"prov");
+        Provenance prov = ProvenanceTestUtils.constructProvenance(new SplittableRandom(42),5,3,"prov");
 
         assertNotNull(prov);
 
@@ -156,67 +149,4 @@ public class ProvenanceConversionTest {
         assertEquals(objProv,unmarshalledProvenance);
     }
 
-    public static Provenance constructProvenance(SplittableRandom rng, int depth, int width, String key) {
-        if (depth == 0) {
-            // base case, generate primitives
-            return new IntProvenance(key,rng.nextInt(30));
-        } else if (depth % 2 == 0) {
-            // even - generate map
-            Map<String,Provenance> mapProv = new HashMap<>();
-            for (int i = 0; i < width; i++) {
-                String newKey = "d="+depth+",w="+i;
-                mapProv.put(newKey,constructProvenance(rng,depth-1,width,newKey));
-            }
-            return new MapProvenance<>(mapProv);
-        } else {
-            // odd - generate list
-            List<Provenance> listProv = new ArrayList<>();
-            for (int i = 0; i < width; i++) {
-                listProv.add(constructProvenance(rng,depth-1,width,key));
-            }
-            return new ListProvenance<>(listProv);
-        }
-    }
-
-    public static final class SimpleObjectProvenance implements ObjectProvenance {
-        private final ListProvenance<? extends Provenance> prov;
-
-        public SimpleObjectProvenance(ListProvenance<? extends Provenance> prov) {
-            this.prov = prov;
-        }
-
-        public SimpleObjectProvenance(Map<String,Provenance> prov) {
-            this.prov = (ListProvenance<?>)prov.get("prov");
-        }
-
-        @Override
-        public String getClassName() {
-            return ProvenanceConversionTest.class.getName();
-        }
-
-        @Override
-        public Iterator<Pair<String, Provenance>> iterator() {
-            return Collections.singletonList(new Pair<>("prov",(Provenance)prov)).iterator();
-        }
-
-        @Override
-        public String toString() {
-            return "SimpleObjectProvenance{" +
-                    "prov=" + prov +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof SimpleObjectProvenance)) return false;
-            SimpleObjectProvenance pairs = (SimpleObjectProvenance) o;
-            return prov.equals(pairs.prov);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(prov);
-        }
-    }
 }

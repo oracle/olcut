@@ -26,8 +26,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
 import com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationData;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
@@ -55,7 +56,7 @@ public class RemoveTest {
 
     @Test
     public void testInstantiatedRemove() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("basicConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         boolean removed = cm.removeConfigurable("a");
         assertTrue(removed);
@@ -67,7 +68,7 @@ public class RemoveTest {
 
     @Test
     public void testUninstantiatedRemove() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("basicConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
         boolean removed = cm.removeConfigurable("a");
         assertTrue(removed);
         try{

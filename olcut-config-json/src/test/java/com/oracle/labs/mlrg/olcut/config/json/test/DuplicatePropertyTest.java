@@ -26,21 +26,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import com.oracle.labs.mlrg.olcut.test.config.PostConfigurable;
-
-import java.io.IOException;
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * Tests that the postConfig method is properly called and updates the fields before lookup returns.
- */
-public class PostConfigTest {
+public class DuplicatePropertyTest {
 
     @BeforeAll
     public static void setUpClass() throws Exception {
@@ -48,11 +44,23 @@ public class PostConfigTest {
     }
 
     @Test
-    public void postConfigTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager("postConfig.json");
-        PostConfigurable p = (PostConfigurable) cm.lookup("post");
-        assertEquals("Monkeys",p.one);
-        assertEquals("Gorillas",p.two);
+    public void duplicatePropertyMap() {
+        assertThrows(ConfigLoaderException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyMapConfig.json");
+        }, "Should have thrown exception on loading");
     }
-    
+
+    @Test
+    public void duplicatePropertyList() {
+        assertThrows(ConfigLoaderException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyListConfig.json");
+        }, "Should have thrown exception on loading");
+    }
+
+    @Test
+    public void duplicateProperty() {
+        assertThrows(ConfigLoaderException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyConfig.json");
+        }, "Should have thrown exception on loading");
+    }
 }

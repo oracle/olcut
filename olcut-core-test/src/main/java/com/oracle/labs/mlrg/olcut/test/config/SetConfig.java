@@ -26,40 +26,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.test.config;
 
-import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
-import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import com.oracle.labs.mlrg.olcut.config.Config;
+import com.oracle.labs.mlrg.olcut.config.Configurable;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.Set;
 
-public class DuplicatePropertyTest {
+/**
+ *
+ */
+public class SetConfig implements Configurable {
 
-    @BeforeAll
-    public static void setUpClass() throws Exception {
-        ConfigurationManager.addFileFormatFactory(new JsonConfigFactory());
+    @Config
+    public Set<String> stringSet;
+
+    @Config
+    public Set<Double> doubleSet;
+
+    @Config
+    public Set<StringConfigurable> stringConfigurableSet;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SetConfig setConfig = (SetConfig) o;
+
+        if (stringSet != null ? !stringSet.equals(setConfig.stringSet) : setConfig.stringSet != null) return false;
+        if (doubleSet != null ? !doubleSet.equals(setConfig.doubleSet) : setConfig.doubleSet != null) return false;
+        return stringConfigurableSet != null ? stringConfigurableSet.equals(setConfig.stringConfigurableSet) : setConfig.stringConfigurableSet == null;
     }
 
-    @Test
-    public void duplicatePropertyMap() {
-        assertThrows(ConfigLoaderException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager("duplicatePropertyMapConfig.json");
-        }, "Should have thrown exception on loading");
-    }
-
-    @Test
-    public void duplicatePropertyList() {
-        assertThrows(ConfigLoaderException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager("duplicatePropertyListConfig.json");
-        }, "Should have thrown exception on loading");
-    }
-
-    @Test
-    public void duplicateProperty() {
-        assertThrows(ConfigLoaderException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager("duplicatePropertyConfig.json");
-        }, "Should have thrown exception on loading");
+    @Override
+    public int hashCode() {
+        int result = stringSet != null ? stringSet.hashCode() : 0;
+        result = 31 * result + (doubleSet != null ? doubleSet.hashCode() : 0);
+        result = 31 * result + (stringConfigurableSet != null ? stringConfigurableSet.hashCode() : 0);
+        return result;
     }
 }

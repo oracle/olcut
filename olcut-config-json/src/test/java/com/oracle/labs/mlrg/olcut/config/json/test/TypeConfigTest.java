@@ -26,8 +26,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.oracle.labs.mlrg.olcut.config.json;
+package com.oracle.labs.mlrg.olcut.config.json.test;
 
+import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
 import com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable;
 import com.oracle.labs.mlrg.olcut.config.Configurable;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
@@ -52,7 +53,7 @@ public class TypeConfigTest {
 
     @Test
     public void defaultValues() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("typeConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|typeConfig.json");
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("default");
         assertEquals(bc1.s, "default");
         assertEquals(bc1.i, 16);
@@ -65,7 +66,7 @@ public class TypeConfigTest {
 
     @Test
     public void configuredTypes() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("typeConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|typeConfig.json");
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         assertEquals(bc1.s, "one");
         assertEquals(bc1.i, 2);
@@ -78,7 +79,7 @@ public class TypeConfigTest {
     
     @Test
     public void listTypes() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager("typeConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|typeConfig.json");
         ListTypeConfigurable lc1 = (ListTypeConfigurable) cm1.lookup("l1");
         Configurable[] cl = lc1.getList();
         BasicConfigurable bc1 = (BasicConfigurable) cl[0];
