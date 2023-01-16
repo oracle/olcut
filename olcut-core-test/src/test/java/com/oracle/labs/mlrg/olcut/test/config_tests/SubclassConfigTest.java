@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2020, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,21 +26,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.core.tests {
-    requires java.base;
-    requires java.logging;
-    requires java.management;
-    requires java.xml;
+package com.oracle.labs.mlrg.olcut.test.config_tests;
 
-    requires transitive org.junit.jupiter.engine;
-    requires transitive org.junit.jupiter.api;
 
-    requires com.oracle.labs.mlrg.olcut.core;
-    requires com.oracle.labs.mlrg.olcut.core.test;
+import java.io.IOException;
 
-    exports com.oracle.labs.mlrg.olcut.test.config_tests;
-    exports com.oracle.labs.mlrg.olcut.test.provenance_tests;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.test.config.StringleConfigurable;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    opens com.oracle.labs.mlrg.olcut.test.config_tests to com.oracle.labs.mlrg.olcut.core;
-    opens com.oracle.labs.mlrg.olcut.test.provenance_tests to com.oracle.labs.mlrg.olcut.core;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+
+/**
+ *
+ */
+public class SubclassConfigTest {
+
+    @Test
+    public void testStringConfigSubclass() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|subclassConfig.xml");
+        StringleConfigurable scc = (StringleConfigurable) cm.lookup(
+                "stringConfigSubclass");
+        Assertions.assertEquals("a", scc.one);
+        Assertions.assertEquals("b", scc.two);
+        Assertions.assertEquals("c", scc.three);
+        Assertions.assertEquals("d", scc.four);
+        Assertions.assertEquals("e", scc.five);
+    }
+
 }

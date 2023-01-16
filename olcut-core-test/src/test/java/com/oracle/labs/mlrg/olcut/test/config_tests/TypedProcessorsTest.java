@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2020, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,21 +26,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.core.tests {
-    requires java.base;
-    requires java.logging;
-    requires java.management;
-    requires java.xml;
+package com.oracle.labs.mlrg.olcut.test.config_tests;
 
-    requires transitive org.junit.jupiter.engine;
-    requires transitive org.junit.jupiter.api;
 
-    requires com.oracle.labs.mlrg.olcut.core;
-    requires com.oracle.labs.mlrg.olcut.core.test;
+import java.util.List;
 
-    exports com.oracle.labs.mlrg.olcut.test.config_tests;
-    exports com.oracle.labs.mlrg.olcut.test.provenance_tests;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.test.config.TypedProcessorList;
+import org.junit.jupiter.api.Test;
 
-    opens com.oracle.labs.mlrg.olcut.test.config_tests to com.oracle.labs.mlrg.olcut.core;
-    opens com.oracle.labs.mlrg.olcut.test.provenance_tests to com.oracle.labs.mlrg.olcut.core;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+
+public class TypedProcessorsTest {
+
+    @Test
+    public void testStringType() throws Exception {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|typedProcessorsConfig.xml");
+        @SuppressWarnings("unchecked")
+        TypedProcessorList<String, String> tpl = (TypedProcessorList<String, String>) cm.lookup("typedProcessors");
+        List<String> values = tpl.process("Omelet");
+        assertEquals(2, values.size());
+
+        assertEquals("McOmeletFace", values.get(0));
+        assertEquals("telemO-1170105035", values.get(1));
+        cm.close();
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2020, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,21 +26,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.core.tests {
-    requires java.base;
-    requires java.logging;
-    requires java.management;
-    requires java.xml;
+package com.oracle.labs.mlrg.olcut.test.config_tests;
 
-    requires transitive org.junit.jupiter.engine;
-    requires transitive org.junit.jupiter.api;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
+import org.junit.jupiter.api.Test;
 
-    requires com.oracle.labs.mlrg.olcut.core;
-    requires com.oracle.labs.mlrg.olcut.core.test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-    exports com.oracle.labs.mlrg.olcut.test.config_tests;
-    exports com.oracle.labs.mlrg.olcut.test.provenance_tests;
+public class DuplicatePropertyTest {
 
-    opens com.oracle.labs.mlrg.olcut.test.config_tests to com.oracle.labs.mlrg.olcut.core;
-    opens com.oracle.labs.mlrg.olcut.test.provenance_tests to com.oracle.labs.mlrg.olcut.core;
+    @Test
+    public void duplicatePropertyMap() {
+        assertThrows(ConfigLoaderException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyMapConfig.xml");
+        }, "Should have thrown exception on loading");
+    }
+
+    @Test
+    public void duplicatePropertyList() {
+        assertThrows(ConfigLoaderException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyListConfig.xml");
+        }, "Should have thrown exception on loading");
+    }
+
+    @Test
+    public void duplicateProperty() {
+        assertThrows(ConfigLoaderException.class, () -> {
+            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyConfig.xml");
+        }, "Should have thrown exception on loading");
+    }
 }

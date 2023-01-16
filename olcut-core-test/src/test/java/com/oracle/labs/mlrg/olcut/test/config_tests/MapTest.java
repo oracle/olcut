@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2020, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,21 +26,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.core.tests {
-    requires java.base;
-    requires java.logging;
-    requires java.management;
-    requires java.xml;
+package com.oracle.labs.mlrg.olcut.test.config_tests;
 
-    requires transitive org.junit.jupiter.engine;
-    requires transitive org.junit.jupiter.api;
+import java.io.IOException;
+import java.util.Map;
 
-    requires com.oracle.labs.mlrg.olcut.core;
-    requires com.oracle.labs.mlrg.olcut.core.test;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.PropertySheet;
+import com.oracle.labs.mlrg.olcut.test.config.MapConfigurable;
+import org.junit.jupiter.api.Test;
 
-    exports com.oracle.labs.mlrg.olcut.test.config_tests;
-    exports com.oracle.labs.mlrg.olcut.test.provenance_tests;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-    opens com.oracle.labs.mlrg.olcut.test.config_tests to com.oracle.labs.mlrg.olcut.core;
-    opens com.oracle.labs.mlrg.olcut.test.provenance_tests to com.oracle.labs.mlrg.olcut.core;
+
+/**
+ * Tests the extraction of {@link java.util.Map} objects from a {@link PropertySheet}.
+ */
+
+public class MapTest {
+    public MapTest() { }
+
+    @Test
+    public void mapTest() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mapConfig.xml");
+        MapConfigurable m = (MapConfigurable) cm.lookup("mapTest");
+        Map<String,String> map = m.map;
+        assertEquals("stuff",map.get("things"));
+        assertEquals("quux",map.get("foo"));
+        assertNull(map.get("bar"));
+    }
 }

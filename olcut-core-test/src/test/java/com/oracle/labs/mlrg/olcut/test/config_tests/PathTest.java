@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2020, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,21 +26,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-module com.oracle.labs.mlrg.olcut.core.tests {
-    requires java.base;
-    requires java.logging;
-    requires java.management;
-    requires java.xml;
+package com.oracle.labs.mlrg.olcut.test.config_tests;
 
-    requires transitive org.junit.jupiter.engine;
-    requires transitive org.junit.jupiter.api;
 
-    requires com.oracle.labs.mlrg.olcut.core;
-    requires com.oracle.labs.mlrg.olcut.core.test;
+import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.test.config.PathConfigurable;
+import org.junit.jupiter.api.Test;
 
-    exports com.oracle.labs.mlrg.olcut.test.config_tests;
-    exports com.oracle.labs.mlrg.olcut.test.provenance_tests;
+import java.io.IOException;
 
-    opens com.oracle.labs.mlrg.olcut.test.config_tests to com.oracle.labs.mlrg.olcut.core;
-    opens com.oracle.labs.mlrg.olcut.test.provenance_tests to com.oracle.labs.mlrg.olcut.core;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+
+/**
+ *
+ */
+public class PathTest {
+
+    @Test
+    public void test() throws IOException {
+        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|pathConfig.xml");
+        PathConfigurable pc = (PathConfigurable) cm.lookup(
+                "pathTest");
+        String actualPath = pc.getPath().toString();
+        actualPath = actualPath.replace('\\', '/');
+        
+        assertEquals("/this/is/a/test/path", actualPath);
+    }
+
 }
