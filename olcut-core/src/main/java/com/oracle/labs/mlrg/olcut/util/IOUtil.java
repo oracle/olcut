@@ -55,6 +55,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -594,9 +595,15 @@ public final class IOUtil {
      * any.
      */
     public static URL getURLForLocation(String location) {
-        //
-        // First, see if it's a resource on our classpath.
-        URL ret = IOUtil.class.getResource(location);
+        URL ret = null;
+        try {
+            //
+            // First, see if it's a resource on our classpath.
+            ret = IOUtil.class.getResource(location);
+        } catch (InvalidPathException e) {
+            // Swallow exception from invalid path on Windows in an exploded module.
+            // Can be removed when JDK-8300228 is fixed.
+        }
         if (ret == null) {
             try {
                 //
