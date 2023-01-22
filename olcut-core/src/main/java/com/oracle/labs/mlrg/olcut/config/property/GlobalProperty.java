@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 /**
  * A global property of the olcut configuration system.
  */
-public class GlobalProperty {
+public sealed class GlobalProperty permits LazyGlobalProperty {
 
     // this pattern matches strings of the form '${word}'
     public final static Pattern globalSymbolPattern =

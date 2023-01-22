@@ -62,8 +62,7 @@ public final class ListMarshalledProvenance implements FlatMarshalledProvenance,
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ListMarshalledProvenance)) return false;
-        ListMarshalledProvenance that = (ListMarshalledProvenance) o;
+        if (!(o instanceof ListMarshalledProvenance that)) return false;
         return getList().equals(that.getList());
     }
 

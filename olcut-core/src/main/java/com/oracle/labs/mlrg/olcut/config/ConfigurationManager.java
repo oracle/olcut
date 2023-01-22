@@ -801,14 +801,13 @@ public class ConfigurationManager implements Closeable {
             }
             fields = Options.getOptions(o.getClass());
             for (Field f : fields) {
-                boolean accessible = f.isAccessible();
                 f.setAccessible(true);
                 if (f.get(o) != null) {
                     logger.fine("Warning: overwriting Options field.");
                 }
                 f.set(o,f.getType().getDeclaredConstructor().newInstance());
                 objectQueue.add((Options)f.get(o));
-                f.setAccessible(accessible);
+                f.setAccessible(false);
             }
         }
 
@@ -827,7 +826,6 @@ public class ConfigurationManager implements Closeable {
                     arguments.remove(i);
                     consumed = true;
                     if (i < arguments.size()) {
-                        boolean accessible = f.isAccessible();
                         f.setAccessible(true);
                         String param = arguments.get(i);
                         List<String> list = parseStringList(param);
@@ -838,18 +836,18 @@ public class ConfigurationManager implements Closeable {
                             if (genericList.size() == 1) {
                                 f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, ListProperty.createFromStringList(list)));
                             } else {
-                                f.setAccessible(accessible);
+                                f.setAccessible(false);
                                 throw new ArgumentException(curArg,"Unknown generic type in argument");
                             }
                         } else if (list.size() == 1) {
                             f.set(arg.getB(), PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
                         } else {
-                            f.setAccessible(accessible);
+                            f.setAccessible(false);
                             throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
                         }
                         // Consume parameter.
                         arguments.remove(i);
-                        f.setAccessible(accessible);
+                        f.setAccessible(false);
                     } else {
                         throw new ArgumentException(curArg,"No parameter for argument");
                     }
@@ -867,16 +865,15 @@ public class ConfigurationManager implements Closeable {
                         Pair<Field,Object> arg = charNameMap.get(args[j]);
                         if (arg != null) {
                             Field f = arg.getA();
-                            boolean accessible = f.isAccessible();
                             f.setAccessible(true);
                             FieldType ft = FieldType.getFieldType(f);
                             if (FieldType.isBoolean(ft)) {
                                 f.set(arg.getB(),true);
                             } else {
-                                f.setAccessible(accessible);
+                                f.setAccessible(false);
                                 throw new ArgumentException(curArg + " on element " + args[j], "Non boolean argument found where boolean expected");
                             }
-                            f.setAccessible(accessible);
+                            f.setAccessible(false);
                         } else {
                             throw new ArgumentException(curArg + " on element " + args[j], "Unknown argument");
                         }
@@ -885,7 +882,6 @@ public class ConfigurationManager implements Closeable {
                     Pair<Field,Object> arg = charNameMap.get(args[args.length-1]);
                     if (arg != null) {
                         Field f = arg.getA();
-                        boolean accessible = f.isAccessible();
                         f.setAccessible(true);
                         FieldType ft = FieldType.getFieldType(f);
                         if (FieldType.isBoolean(ft)) {
@@ -917,23 +913,23 @@ public class ConfigurationManager implements Closeable {
                                     if (genericList.size() == 1) {
                                         f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, ListProperty.createFromStringList(list)));
                                     } else {
-                                        f.setAccessible(accessible);
+                                        f.setAccessible(false);
                                         throw new ArgumentException(curArg,"Unknown generic type in argument");
                                     }
                                 } else if (list.size() == 1) {
                                     f.set(arg.getB(), PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
                                 } else {
-                                    f.setAccessible(accessible);
+                                    f.setAccessible(false);
                                     throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
                                 }
                                 // Consume parameter.
                                 arguments.remove(i);
                             } else {
-                                f.setAccessible(accessible);
+                                f.setAccessible(false);
                                 throw new ArgumentException(curArg,"No parameter for argument");
                             }
                         }
-                        f.setAccessible(accessible);
+                        f.setAccessible(false);
                     }
                 } else {
                     throw new ArgumentException(curArg, "Empty argument found.");
@@ -1431,8 +1427,7 @@ public class ConfigurationManager implements Closeable {
             configurationNameMap.put(ret, instanceName);
         }
 
-        if (ret instanceof Startable) {
-            Startable stret = (Startable) ret;
+        if (ret instanceof Startable stret) {
             Thread t = new Thread(stret);
             t.setName(instanceName + "_thread");
             stret.setThread(t);
@@ -1838,11 +1833,9 @@ public class ConfigurationManager implements Closeable {
      */
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof ConfigurationManager)) {
+        if(!(obj instanceof ConfigurationManager cm)) {
             return false;
         }
-
-        ConfigurationManager cm = (ConfigurationManager) obj;
 
         Collection<String> setA = new HashSet<>(getComponentNames());
         Collection<String> setB = new HashSet<>(cm.getComponentNames());
@@ -2005,17 +1998,16 @@ public class ConfigurationManager implements Closeable {
         try {
             Set<Field> fields = PropertySheet.getAllFields(configurable.getClass());
             for (Field field : fields) {
-                boolean accessible = field.isAccessible();
                 field.setAccessible(true);
                 ConfigurableName nameAnnotation = field.getAnnotation(ConfigurableName.class);
                 if (nameAnnotation != null) {
                     configName = (String) field.get(configurable);
                     //
                     // break out of loop at the first instance of ConfigurableName.
-                    field.setAccessible(accessible);
+                    field.setAccessible(false);
                     break;
                 }
-                field.setAccessible(accessible);
+                field.setAccessible(false);
             }
         } catch (IllegalAccessException ex) {
             throw new PropertyException(ex, configName, "Failed to read the ConfigurableName field");
@@ -2064,7 +2056,6 @@ public class ConfigurationManager implements Closeable {
         try {
             Set<Field> fields = PropertySheet.getAllFields(confClass);
             for (Field field : fields) {
-                boolean accessible = field.isAccessible();
                 field.setAccessible(true);
                 Config configAnnotation = field.getAnnotation(Config.class);
                 if (configAnnotation != null) {
@@ -2171,7 +2162,7 @@ public class ConfigurationManager implements Closeable {
                                 });
                     }
                 }
-                field.setAccessible(accessible);
+                field.setAccessible(false);
             }
             ConfigurationData rpd = new ConfigurationData(name, confClass.getName(), m);
 
@@ -2227,27 +2218,14 @@ public class ConfigurationManager implements Closeable {
     /**
      * A wrapper for a Configurable that tests for equality. Used in the configuredComponents map.
      */
-    private static class ConfigWrapper {
-
-        public final Configurable config;
-
-        ConfigWrapper(Configurable config) {
-            this.config = config;
-        }
-
+    private record ConfigWrapper(Configurable config) {
         @Override
         public boolean equals(Object other) {
             if (other instanceof ConfigWrapper) {
-                return config == ((ConfigWrapper)other).config;
+                return config == ((ConfigWrapper) other).config;
             } else {
                 return false;
             }
         }
-
-        @Override
-        public int hashCode() {
-            return config.hashCode();
-        }
-
     }
 }

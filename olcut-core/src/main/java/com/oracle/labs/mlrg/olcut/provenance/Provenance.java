@@ -46,4 +46,4 @@ import java.io.Serializable;
  * <p>
  * Provenance implementations should be immutable.
  */
-public interface Provenance extends Serializable { }
+public sealed interface Provenance extends Serializable permits ListProvenance, MapProvenance, ObjectProvenance, PrimitiveProvenance { }

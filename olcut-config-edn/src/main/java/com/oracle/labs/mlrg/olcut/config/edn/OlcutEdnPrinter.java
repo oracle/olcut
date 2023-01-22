@@ -33,7 +33,6 @@ import us.bpsm.edn.printer.Printer;
 import us.bpsm.edn.printer.Printers;
 
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 import java.util.RandomAccess;

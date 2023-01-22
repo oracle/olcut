@@ -262,8 +262,7 @@ public final class ConfigurationData implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ConfigurationData)) return false;
-        ConfigurationData that = (ConfigurationData) o;
+        if (!(o instanceof ConfigurationData that)) return false;
         return exportable == that.exportable &&
                 importable == that.importable &&
                 leaseTime == that.leaseTime &&
@@ -325,17 +324,15 @@ public final class ConfigurationData implements Serializable {
                 Property prop = propertyEntry.getValue();
                 if(prop instanceof SimpleProperty) {
                     this.simpleProperties.put(propName, new DerefedProperty(contextMap, (SimpleProperty) prop, propName, ""));
-                } else if (prop instanceof ListProperty) {
-                    ListProperty listProperty = (ListProperty) prop;
+                } else if (prop instanceof ListProperty listProperty) {
                     this.listProperties.put(propName,
-                            IntStream.range(0, listProperty.getSimpleList().size())
+                            IntStream.range(0, listProperty.simpleList().size())
                                     .mapToObj(i ->
-                                            new DerefedProperty(contextMap, listProperty.getSimpleList().get(i), propName, ", index: " + i))
+                                            new DerefedProperty(contextMap, listProperty.simpleList().get(i), propName, ", index: " + i))
                                     .collect(Collectors.toList()));
-                    this.listClassProperties.put(propName, listProperty.getClassList());
-                } else if (prop instanceof MapProperty) {
-                    MapProperty mapProperty = (MapProperty) prop;
-                    this.mapProperties.put(propName, mapProperty.getMap().entrySet().stream()
+                    this.listClassProperties.put(propName, listProperty.classList());
+                } else if (prop instanceof MapProperty mapProperty) {
+                    this.mapProperties.put(propName, mapProperty.map().entrySet().stream()
                             .collect(Collectors.toMap(Map.Entry::getKey,
                                     e -> new DerefedProperty(contextMap, e.getValue(),
                                             propName, ", PropValue key: " + e.getKey()))));
@@ -374,8 +371,7 @@ public final class ConfigurationData implements Serializable {
 
         @Override
         public boolean equals(Object o) {
-            if (o instanceof StructuralConfigurationData) {
-                StructuralConfigurationData that = (StructuralConfigurationData) o;
+            if (o instanceof StructuralConfigurationData that) {
                 if (this.className.equals(that.className)) {
                     boolean simpleMatch = checkPresenceAllMatch(this.simpleProperties, that.simpleProperties,
                             DerefedProperty::equals);
@@ -458,7 +454,7 @@ public final class ConfigurationData implements Serializable {
         public DerefedProperty(Map<String, ConfigurationData> confs, SimpleProperty prop, String propName, String locationContext) {
             this.propName = propName;
             this.locationContext = locationContext;
-            this.innerValue = prop.getValue();
+            this.innerValue = prop.value();
             // we do it this way because Boolean.parseBoolean doesn't throw like other parse methods
             if(this.innerValue.trim().equalsIgnoreCase("true") || this.innerValue.trim().equalsIgnoreCase("false")) {
                 this.innerBool = Optional.of(Boolean.parseBoolean(this.innerValue));
@@ -480,7 +476,7 @@ public final class ConfigurationData implements Serializable {
             } catch (DateTimeParseException e) {
                 this.innerTime = Optional.empty();
             }
-            Optional<ConfigurationData> maybeDeref = Optional.ofNullable(confs.get(prop.getValue()));
+            Optional<ConfigurationData> maybeDeref = Optional.ofNullable(confs.get(prop.value()));
             isDerefed = maybeDeref.isPresent();
             if(isDerefed) {
                 innerConf = new StructuralConfigurationData(confs, maybeDeref.get());
@@ -530,8 +526,7 @@ public final class ConfigurationData implements Serializable {
          */
         @Override
         public boolean equals(Object o) {
-            if (o instanceof DerefedProperty) {
-                DerefedProperty that = (DerefedProperty) o;
+            if (o instanceof DerefedProperty that) {
                 if(this.isDerefed && that.isDerefed) {
                     return this.innerConf.equals(that.innerConf);
                 } else if(!this.isDerefed && !that.isDerefed) {

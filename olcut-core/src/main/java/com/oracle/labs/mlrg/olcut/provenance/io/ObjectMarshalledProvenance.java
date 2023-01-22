@@ -108,8 +108,7 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ObjectMarshalledProvenance)) return false;
-        ObjectMarshalledProvenance that = (ObjectMarshalledProvenance) o;
+        if (!(o instanceof ObjectMarshalledProvenance that)) return false;
         return map.equals(that.map) &&
                 objectName.equals(that.objectName) &&
                 objectClassName.equals(that.objectClassName) &&

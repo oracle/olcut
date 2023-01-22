@@ -85,8 +85,8 @@ public final class NullConfiguredProvenance implements ConfiguredObjectProvenanc
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof NullConfiguredProvenance) {
-            return className.equals(((NullConfiguredProvenance) obj).className);
+        if (obj instanceof NullConfiguredProvenance nullProv) {
+            return className.equals(nullProv.className);
         } else {
             return false;
         }

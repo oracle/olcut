@@ -104,8 +104,7 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ImmutableGlobalProperties)) return false;
-        ImmutableGlobalProperties entries = (ImmutableGlobalProperties) o;
+        if (!(o instanceof ImmutableGlobalProperties entries)) return false;
         return map.equals(entries.map);
     }
 

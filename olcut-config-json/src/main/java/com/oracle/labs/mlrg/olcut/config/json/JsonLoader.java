@@ -278,11 +278,10 @@ public class JsonLoader implements ConfigLoader {
             while (fieldsItr.hasNext()) {
                 Entry<String, JsonNode> e = fieldsItr.next();
                 String propName = e.getKey();
-                if (e.getValue() instanceof ArrayNode) {
+                if (e.getValue() instanceof ArrayNode listNode) {
                     // Must be list
                     ArrayList<SimpleProperty> listOutput = new ArrayList<>();
                     ArrayList<Class<?>> classListOutput = new ArrayList<>();
-                    ArrayNode listNode = (ArrayNode) e.getValue();
                     for (JsonNode element : listNode) {
                         if (element.size() > 1) {
                             throw new ConfigLoaderException("Too many elements in a propertylist item, found " + element);

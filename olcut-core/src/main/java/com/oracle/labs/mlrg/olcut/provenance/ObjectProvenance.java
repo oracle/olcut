@@ -47,7 +47,7 @@ import java.util.Optional;
  * use hyphens as separators for their name. Provenances which refer to an object field
  * use standard Java camel case.
  */
-public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Provenance>> {
+public non-sealed interface ObjectProvenance extends Provenance, Iterable<Pair<String,Provenance>> {
 
     public static final String CLASS_NAME = "class-name";
     public static final HashType DEFAULT_HASH_TYPE = HashType.SHA256;

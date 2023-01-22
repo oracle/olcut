@@ -36,7 +36,7 @@ package com.oracle.labs.mlrg.olcut.provenance;
  * When adding a new PrimitiveProvenance the ProvenanceUtil and SimpleMarshalledProvenance
  * classes must also be updated to be taught about the new type.
  */
-public interface PrimitiveProvenance<T> extends Provenance {
+public non-sealed interface PrimitiveProvenance<T> extends Provenance {
 
     /**
      * Gets the key associated with this provenance,

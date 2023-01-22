@@ -198,7 +198,6 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
         Set<Field> fields = PropertySheet.getAllFields(hostClass);
         try {
             for (Field f : fields) {
-                boolean accessible = f.isAccessible();
                 f.setAccessible(true);
                 // if configurable and not redacted
                 Config configAnnotation = f.getAnnotation(Config.class);
@@ -228,9 +227,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                             case ATOMIC_INTEGER:
                             case ATOMIC_LONG:
                                 Optional<Provenance> opt = convertPrimitive(ft, f.getType(), f.getName(), f.get(host));
-                                if (opt.isPresent()) {
-                                    map.put(f.getName(), opt.get());
-                                }
+                                opt.ifPresent(provenance -> map.put(f.getName(), provenance));
                                 break;
                             case BYTE_ARRAY:
                             case CHAR_ARRAY:
@@ -273,7 +270,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                         }
                     }
                 }
-                f.setAccessible(accessible);
+                f.setAccessible(false);
             }
         } catch (ClassCastException e) {
             logger.log(Level.SEVERE, "Failed to cast field from host object " + host.toString() + ". Fields not recorded.", e);
@@ -296,7 +293,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
             return new ListProvenance<>();
         }
         String fieldName = f.getName();
-        ArrayList<PrimitiveProvenance> list = new ArrayList<>();
+        ArrayList<PrimitiveProvenance<?>> list = new ArrayList<>();
         switch (ft) {
             case BYTE_ARRAY: {
                 byte[] array = (byte[]) object;
@@ -386,8 +383,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 for (Object o : array) {
                     if (o == null) {
                         lp.add(ConfiguredObjectProvenance.getEmptyProvenance(f.getType().getComponentType().getName()));
-                    } else if (o instanceof Provenancable) {
-                        Provenancable<?> p = (Provenancable<?>) o;
+                    } else if (o instanceof Provenancable<?> p) {
                         lp.add(p.getProvenance());
                     } else {
                         logger.log(Level.WARNING, "Automatic provenance generated for Configurable class, consider opting into provenance by implementing Provenancable on " + o.getClass().toString());
@@ -444,9 +440,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
             for (Map.Entry<?, ?> e : inputMap.entrySet()) {
                 String key = e.getKey().toString();
                 Optional<Provenance> opt = convertPrimitive(genericFieldType, genericType, key, e.getValue());
-                if (opt.isPresent()) {
-                    outputMap.put(key, opt.get());
-                }
+                opt.ifPresent(provenance -> outputMap.put(key, provenance));
             }
 
             return new MapProvenance<>(outputMap);
@@ -533,8 +527,8 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
             case CONFIGURABLE:
                 if (o == null) {
                     return Optional.of(ConfiguredObjectProvenance.getEmptyProvenance(fieldClass.getName()));
-                } else if (o instanceof Provenancable) {
-                    return Optional.of(((Provenancable) o).getProvenance());
+                } else if (o instanceof Provenancable<?> prov) {
+                    return Optional.of(prov.getProvenance());
                 } else {
                     logger.log(Level.WARNING, "Automatic provenance generated for Configurable class, consider opting into provenance by implementing Provenancable on " + o.getClass().toString());
                     return Optional.of(new ConfiguredObjectProvenanceImpl((Configurable)o, fieldName));
@@ -605,8 +599,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SkeletalConfiguredObjectProvenance)) return false;
-        SkeletalConfiguredObjectProvenance pairs = (SkeletalConfiguredObjectProvenance) o;
+        if (!(o instanceof SkeletalConfiguredObjectProvenance pairs)) return false;
         return className.equals(pairs.className) &&
                 hostShortName.equals(pairs.hostShortName) &&
                 configuredParameters.equals(pairs.configuredParameters);

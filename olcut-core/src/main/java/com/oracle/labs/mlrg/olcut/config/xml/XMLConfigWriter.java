@@ -137,21 +137,21 @@ public class XMLConfigWriter implements ConfigWriter {
                 for (Entry<String,Property> property : properties.entrySet()) {
                     String key = property.getKey();
                     Property value = property.getValue();
-                    if (value instanceof ListProperty) {
+                    if (value instanceof ListProperty listProp) {
                         //
                         // Must be a string or component list
                         writer.writeCharacters("\t");
                         writer.writeStartElement(ConfigLoader.PROPERTYLIST);
                         writer.writeAttribute(ConfigLoader.NAME, key);
                         writer.writeCharacters(System.lineSeparator());
-                        for (SimpleProperty s : ((ListProperty) value).getSimpleList()) {
+                        for (SimpleProperty s : listProp.simpleList()) {
                             writer.writeCharacters("\t\t");
                             writer.writeStartElement(ConfigLoader.ITEM);
-                            writer.writeCharacters(s.getValue());
+                            writer.writeCharacters(s.value());
                             writer.writeEndElement();
                             writer.writeCharacters(System.lineSeparator());
                         }
-                        for (Class<?> c : ((ListProperty)value).getClassList()) {
+                        for (Class<?> c : listProp.classList()) {
                             writer.writeCharacters("\t\t");
                             writer.writeStartElement(ConfigLoader.TYPE);
                             writer.writeCharacters(c.getName());
@@ -161,18 +161,18 @@ public class XMLConfigWriter implements ConfigWriter {
                         writer.writeCharacters("\t");
                         writer.writeEndElement();
                         writer.writeCharacters(System.lineSeparator());
-                    } else if (value instanceof MapProperty) {
+                    } else if (value instanceof MapProperty mapProp) {
                         //
                         // Must be a string,string map
                         writer.writeCharacters("\t");
                         writer.writeStartElement(ConfigLoader.PROPERTYMAP);
                         writer.writeAttribute(ConfigLoader.NAME, key);
                         writer.writeCharacters(System.lineSeparator());
-                        for (Map.Entry<String, SimpleProperty> e : ((MapProperty) value).getMap().entrySet()) {
+                        for (Map.Entry<String, SimpleProperty> e : mapProp.map().entrySet()) {
                             writer.writeCharacters("\t\t");
                             writer.writeEmptyElement(ConfigLoader.ENTRY);
                             writer.writeAttribute(ConfigLoader.KEY, e.getKey());
-                            writer.writeAttribute(ConfigLoader.VALUE, e.getValue().getValue());
+                            writer.writeAttribute(ConfigLoader.VALUE, e.getValue().value());
                             writer.writeCharacters(System.lineSeparator());
                         }
                         writer.writeCharacters("\t");

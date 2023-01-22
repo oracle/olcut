@@ -83,8 +83,7 @@ public final class MapProvenance<T extends Provenance> implements Provenance, It
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof MapProvenance)) return false;
-        MapProvenance<?> that = (MapProvenance<?>) o;
+        if (!(o instanceof MapProvenance<?> that)) return false;
         return map.equals(that.map);
     }
 

@@ -249,10 +249,9 @@ public final class DescribeConfigurable {
         Object instance;
         try {
             Constructor<? extends Configurable> constructor = configurableClass.getDeclaredConstructor();
-            boolean isAccessible = constructor.isAccessible();
             constructor.setAccessible(true);
             instance = constructor.newInstance();
-            constructor.setAccessible(isAccessible);
+            constructor.setAccessible(false);
         } catch (NoSuchMethodException ex) {
             throw new IllegalStateException("No-args constructor not found for class " + configurableClass, ex);
         } catch (InvocationTargetException | IllegalAccessException | InstantiationException ex) {
@@ -263,7 +262,6 @@ public final class DescribeConfigurable {
         for (Field f : fieldSet) {
             Config configAnnotation = f.getAnnotation(Config.class);
             if (configAnnotation != null) {
-                boolean accessible = f.isAccessible();
                 f.setAccessible(true);
                 Object extractedField = null;
                 try {
@@ -325,7 +323,7 @@ public final class DescribeConfigurable {
                         map.put(f.getName(), fi);
                     }
                 }
-                f.setAccessible(accessible);
+                f.setAccessible(false);
             }
         }
 

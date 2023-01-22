@@ -38,7 +38,7 @@ import java.util.Map;
 
 public class ClassnameMapper {
 
-    private Map<String, String> prefixes;
+    private final Map<String, String> prefixes;
 
     public ClassnameMapper(Map<String, String> prefixes) {
         this.prefixes = prefixes;

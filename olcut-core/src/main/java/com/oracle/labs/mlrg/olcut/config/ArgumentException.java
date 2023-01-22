@@ -29,7 +29,7 @@
 package com.oracle.labs.mlrg.olcut.config;
 
 /** Indicates that a problem occurred while parsing arguments. */
-public class ArgumentException extends RuntimeException {
+public sealed class ArgumentException extends RuntimeException permits UsageException {
 
     private final String argumentName;
     private final String otherArgumentName;

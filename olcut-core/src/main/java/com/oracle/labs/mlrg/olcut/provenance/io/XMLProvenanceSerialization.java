@@ -374,14 +374,11 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
      * @throws XMLStreamException If the XML is invalid.
      */
     private void dispatchFMP(XMLStreamWriter writer, String key, FlatMarshalledProvenance fmp, int depth) throws XMLStreamException {
-        if (fmp instanceof SimpleMarshalledProvenance) {
-            SimpleMarshalledProvenance smp = (SimpleMarshalledProvenance) fmp;
+        if (fmp instanceof SimpleMarshalledProvenance smp) {
             writeSMP(writer, smp, depth);
-        } else if (fmp instanceof ListMarshalledProvenance) {
-            ListMarshalledProvenance lmp = (ListMarshalledProvenance) fmp;
+        } else if (fmp instanceof ListMarshalledProvenance lmp) {
             writeLMP(writer, key, lmp, depth);
-        } else if (fmp instanceof MapMarshalledProvenance) {
-            MapMarshalledProvenance mmp = (MapMarshalledProvenance) fmp;
+        } else if (fmp instanceof MapMarshalledProvenance mmp) {
             writeMMP(writer, key, mmp, depth);
         } else {
             throw new RuntimeException("Should not reach here, unexpected FlatMarshalledProvenance subclass " + fmp.getClass());
@@ -400,7 +397,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
 
         private Map<String, String> ompAttributeMap;
         private Map<String, FlatMarshalledProvenance> ompProvMap;
-        private Deque<ProvCollection> provenanceChain;
+        private final Deque<ProvCollection> provenanceChain;
 
         private SimpleMarshalledProvenance curSMP;
         private String curKey;

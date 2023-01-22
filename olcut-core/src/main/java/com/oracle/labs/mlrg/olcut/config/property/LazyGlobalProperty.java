@@ -30,7 +30,7 @@ package com.oracle.labs.mlrg.olcut.config.property;
 
 import java.util.function.Supplier;
 
-public class LazyGlobalProperty extends GlobalProperty {
+public final class LazyGlobalProperty extends GlobalProperty {
 
     private final Supplier<String> supplier;
 

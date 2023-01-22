@@ -44,14 +44,14 @@ package com.oracle.labs.mlrg.olcut.config;
  * specific problems.
  * </p>
  */
-public class InternalConfigurationException extends PropertyException {
+public final class InternalConfigurationException extends PropertyException {
 
-    public InternalConfigurationException(String instanceName, String propertyName, String msg) {
+    InternalConfigurationException(String instanceName, String propertyName, String msg) {
         super(instanceName, propertyName, msg);
     }
 
 
-    public InternalConfigurationException(Throwable cause, String instanceName, String propertyName, String msg) {
+    InternalConfigurationException(Throwable cause, String instanceName, String propertyName, String msg) {
         super(cause, instanceName, propertyName, msg);
     }
 }

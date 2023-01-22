@@ -113,37 +113,37 @@ public class EdnConfigWriter implements ConfigWriter {
 
     private Object writeProperty(Property p) throws ConfigWriterException {
         Object res;
-        if(p instanceof MapProperty) {
+        if(p instanceof MapProperty mapP) {
             // map configurable field
             Map<Keyword, String> mRes = new HashMap<>();
-            for(Map.Entry<String, SimpleProperty> e: ((MapProperty) p).getMap().entrySet()) {
+            for(Map.Entry<String, SimpleProperty> e: mapP.map().entrySet()) {
                 if(e.getKey()==null) {
                     throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null keys" + p.toString()));
                 }
                 if(e.getValue()==null) {
                     throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null values: " + p.toString()));
                 }
-                mRes.put(Keyword.newKeyword(e.getKey()), e.getValue().getValue());
+                mRes.put(Keyword.newKeyword(e.getKey()), e.getValue().value());
             }
             res = mRes;
-        } else if(p instanceof ListProperty) {
+        } else if(p instanceof ListProperty listP) {
             // list configurable field
             List<Object> lRes = new ArrayList<>();
-            for (SimpleProperty s : ((ListProperty)p).getSimpleList()) {
+            for (SimpleProperty s : listP.simpleList()) {
                 if(s==null) {
                     throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
                 }
-                lRes.add(s.getValue());
+                lRes.add(s.value());
             }
-            for (Class<?> c : ((ListProperty) p).getClassList()) {
+            for (Class<?> c : listP.classList()) {
                 if(c==null) {
                     throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
                 }
                 lRes.add(cnMapper.write(c.getCanonicalName()));
             }
             res = lRes;
-        } else if(p instanceof SimpleProperty) {
-            res = ((SimpleProperty) p).getValue();
+        } else if(p instanceof SimpleProperty simpleP) {
+            res = simpleP.value();
         } else {
             throw new ConfigWriterException(new IllegalArgumentException("Unexpected type for property value " + p.getClass().toString() + " with value " + p));
         }

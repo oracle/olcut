@@ -125,25 +125,25 @@ public final class ProtoConfigWriter implements ConfigWriter {
         for (Map.Entry<String, Property> property : properties.entrySet()) {
             String key = property.getKey();
             Property value = property.getValue();
-            if (value instanceof ListProperty) {
+            if (value instanceof ListProperty listProp) {
                 //
                 // Must be a string/component list
                 PropertyListProto.Builder listBuilder = PropertyListProto.newBuilder();
                 listBuilder.setName(key);
-                for (SimpleProperty s : ((ListProperty) value).getSimpleList()) {
-                    listBuilder.addItem(s.getValue());
+                for (SimpleProperty s : listProp.simpleList()) {
+                    listBuilder.addItem(s.value());
                 }
-                for (Class<?> c : ((ListProperty) value).getClassList()) {
+                for (Class<?> c : listProp.classList()) {
                     listBuilder.addType(c.getName());
                 }
                 componentBuilder.addListProperty(listBuilder.build());
-            } else if (value instanceof MapProperty) {
+            } else if (value instanceof MapProperty mapProp) {
                 //
                 // Must be a string,string map
                 PropertyMapProto.Builder mapBuilder = PropertyMapProto.newBuilder();
                 mapBuilder.setName(key);
-                for (Map.Entry<String, SimpleProperty> e : ((MapProperty) value).getMap().entrySet()) {
-                    mapBuilder.putElements(e.getKey(), e.getValue().getValue());
+                for (Map.Entry<String, SimpleProperty> e : mapProp.map().entrySet()) {
+                    mapBuilder.putElements(e.getKey(), e.getValue().value());
                 }
                 componentBuilder.addMapProperty(mapBuilder.build());
             } else {

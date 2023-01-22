@@ -80,8 +80,7 @@ public final class ListProvenance<T extends Provenance> implements Provenance, I
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ListProvenance)) return false;
-        ListProvenance<?> that = (ListProvenance<?>) o;
+        if (!(o instanceof ListProvenance<?> that)) return false;
         return list.equals(that.list);
     }
 

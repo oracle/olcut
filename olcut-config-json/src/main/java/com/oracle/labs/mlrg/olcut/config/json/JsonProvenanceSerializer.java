@@ -56,22 +56,19 @@ public class JsonProvenanceSerializer extends StdSerializer<MarshalledProvenance
         Class<?> provClass = marshalledProvenance.getClass();
         jsonGenerator.writeStartObject();
         jsonGenerator.writeStringField(JsonProvenanceModule.MARSHALLED_CLASS,provClass.getName());
-        if (marshalledProvenance instanceof ListMarshalledProvenance) {
-            ListMarshalledProvenance lmp = (ListMarshalledProvenance) marshalledProvenance;
+        if (marshalledProvenance instanceof ListMarshalledProvenance lmp) {
             jsonGenerator.writeArrayFieldStart(JsonProvenanceModule.LIST);
             for (FlatMarshalledProvenance e : lmp) {
                 jsonGenerator.writeObject(e);
             }
             jsonGenerator.writeEndArray();
-        } else if (marshalledProvenance instanceof MapMarshalledProvenance) {
-            MapMarshalledProvenance mmp = (MapMarshalledProvenance) marshalledProvenance;
+        } else if (marshalledProvenance instanceof MapMarshalledProvenance mmp) {
             jsonGenerator.writeObjectFieldStart(JsonProvenanceModule.MAP);
             for (Pair<String, FlatMarshalledProvenance> e : mmp) {
                 jsonGenerator.writeObjectField(e.getA(),e.getB());
             }
             jsonGenerator.writeEndObject();
-        } else if (marshalledProvenance instanceof ObjectMarshalledProvenance) {
-            ObjectMarshalledProvenance omp = (ObjectMarshalledProvenance) marshalledProvenance;
+        } else if (marshalledProvenance instanceof ObjectMarshalledProvenance omp) {
             jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_NAME,omp.getName());
             jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_CLASS_NAME,omp.getObjectClassName());
             jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS,omp.getProvenanceClassName());
@@ -80,8 +77,7 @@ public class JsonProvenanceSerializer extends StdSerializer<MarshalledProvenance
                 jsonGenerator.writeObjectField(e.getKey(),e.getValue());
             }
             jsonGenerator.writeEndObject();
-        } else if (marshalledProvenance instanceof SimpleMarshalledProvenance) {
-            SimpleMarshalledProvenance smp = (SimpleMarshalledProvenance) marshalledProvenance;
+        } else if (marshalledProvenance instanceof SimpleMarshalledProvenance smp) {
             jsonGenerator.writeStringField(JsonProvenanceModule.KEY,smp.getKey());
             jsonGenerator.writeStringField(JsonProvenanceModule.VALUE,smp.getValue());
             jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS,smp.getProvenanceClassName());

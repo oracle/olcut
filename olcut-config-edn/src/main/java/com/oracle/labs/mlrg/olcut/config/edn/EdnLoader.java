@@ -75,36 +75,36 @@ public class EdnLoader implements ConfigLoader {
     }
 
     private static String checkSymbol(Object o) throws ConfigLoaderException {
-        if(o instanceof Symbol) {
-            return ((Symbol) o).getName();
+        if(o instanceof Symbol sym) {
+            return sym.getName();
         } else {
             throw new ConfigLoaderException("Expected Symbol but found " + o.getClass() + " with value " + o.toString());
         }
     }
 
     private static String checkSymbolOrString(Object o) throws ConfigLoaderException {
-        if(o instanceof Symbol) {
-            return ((Symbol) o).getName();
-        } else if(o instanceof String) {
-            return (String) o;
+        if(o instanceof Symbol sym) {
+            return sym.getName();
+        } else if(o instanceof String str) {
+            return str;
         } else {
             throw new ConfigLoaderException("Expected Symbol or String but found " + o.getClass() + " with value " + o.toString());
         }
     }
 
     private static String checkKeyword(Object o) throws ConfigLoaderException {
-        if(o instanceof Keyword) {
-            return ((Keyword) o).getName();
+        if(o instanceof Keyword keyword) {
+            return keyword.getName();
         } else {
             throw new ConfigLoaderException("Expected Keyword but found " + o.getClass() + " with value " + o.toString());
         }
     }
 
     private static String checkKeywordOrString(Object o) throws ConfigLoaderException {
-        if(o instanceof Keyword) {
-            return ((Keyword) o).getName();
-        } else if(o instanceof String) {
-            return (String) o;
+        if(o instanceof Keyword keyword) {
+            return keyword.getName();
+        } else if(o instanceof String str) {
+            return str;
         } else {
             throw new ConfigLoaderException("Expected Keyword or String but found " + o.getClass() + " with value " + o.toString());
         }
@@ -120,18 +120,18 @@ public class EdnLoader implements ConfigLoader {
     }
 
     private static String checkString(Object o) throws ConfigLoaderException {
-        if(o instanceof String) {
-            return (String) o;
+        if(o instanceof String str) {
+            return str;
         } else {
             throw new ConfigLoaderException("Expected String but found " + o.getClass() + " with value " + o.toString());
         }
     }
 
     private static boolean checkBoolean(Object o) throws ConfigLoaderException {
-        if(o instanceof Boolean) {
-            return (boolean) o;
-        } else if(o instanceof String) {
-                return Boolean.parseBoolean((String) o);
+        if(o instanceof Boolean bool) {
+            return bool;
+        } else if(o instanceof String str) {
+            return Boolean.parseBoolean(str);
         } else {
             throw new ConfigLoaderException("Expected boolean or boolean string but found " + o.getClass() + " with value " + o.toString());
         }
@@ -212,12 +212,10 @@ public class EdnLoader implements ConfigLoader {
     private void parseEdn(Parseable in) {
         Parser p = Parsers.newParser(Parsers.defaultConfiguration());
         Object parseValue = p.nextValue(in);
-        if (parseValue instanceof List<?>) {
-            List<?> config = (List<?>) parseValue;
+        if (parseValue instanceof List<?> config) {
             if(checkSymbol(config.get(0)).equals(ConfigLoader.CONFIG)) {
                 for(Object configObj : rest(config)) {
-                    if(configObj instanceof List<?>) {
-                        List<?> configListItem = (List<?>) configObj;
+                    if(configObj instanceof List<?> configListItem) {
                         switch (checkSymbol(configListItem.get(0))) {
                             case FILE:
                                 parseFile(rest(configListItem));

@@ -128,10 +128,9 @@ public class Pair<T1, T2> implements Serializable {
         if(obj == null) {
             return false;
         }
-        if(!(obj instanceof Pair)) {
+        if(!(obj instanceof final Pair<?, ?> other)) {
             return false;
         }
-        final Pair<?,?> other = (Pair<?,?>) obj;
         if(this.a != other.a && (this.a == null || !this.a.equals(other.a))) {
             return false;
         }

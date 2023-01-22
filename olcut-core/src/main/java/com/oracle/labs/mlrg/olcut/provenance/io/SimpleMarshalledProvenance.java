@@ -253,8 +253,7 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SimpleMarshalledProvenance)) return false;
-        SimpleMarshalledProvenance that = (SimpleMarshalledProvenance) o;
+        if (!(o instanceof SimpleMarshalledProvenance that)) return false;
         return isReference == that.isReference &&
                 key.equals(that.key) &&
                 value.equals(that.value) &&

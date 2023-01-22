@@ -327,10 +327,9 @@ public class PropertySheet<T extends Configurable> {
                             T newObj;
                             try {
                                 Constructor<T> constructor = ownerClass.getDeclaredConstructor();
-                                boolean isAccessible = constructor.isAccessible();
                                 constructor.setAccessible(true);
                                 newObj = constructor.newInstance();
-                                constructor.setAccessible(isAccessible);
+                                constructor.setAccessible(false);
                             } catch (NoSuchMethodException ex) {
                                 throw new PropertyException(ex, instanceName, null,
                                         "No-args constructor not found for class " + ownerClass);
@@ -396,7 +395,6 @@ public class PropertySheet<T extends Configurable> {
         Class<? extends Configurable> curClass = o.getClass();
         Set<Field> fields = getAllFields(curClass);
         for (Field f : fields) {
-            boolean accessible = f.isAccessible();
             f.setAccessible(true);
             Config configAnnotation = f.getAnnotation(Config.class);
             ConfigurableName nameAnnotation = f.getAnnotation(ConfigurableName.class);
@@ -432,7 +430,7 @@ public class PropertySheet<T extends Configurable> {
                         ListProperty vals = (ListProperty) ps.propValues.get(f.getName());
                         f.set(o, parseListField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), f.getType(), genericList.get(0), ft, vals));
                     } else {
-                        f.setAccessible(accessible);
+                        f.setAccessible(false);
                         throw new PropertyException(ps.getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
                     }
                 } else if (FieldType.simpleTypes.contains(ft)) {
@@ -453,29 +451,29 @@ public class PropertySheet<T extends Configurable> {
                         MapProperty mapVals = (MapProperty) ps.propValues.get(f.getName());
                         f.set(o, parseMapField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), genericList.get(1), mapVals));
                     } else {
-                        f.setAccessible(accessible);
+                        f.setAccessible(false);
                         throw new PropertyException(ps.getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
                     }
                 } else {
-                    f.setAccessible(accessible);
+                    f.setAccessible(false);
                     throw new PropertyException(ps.getInstanceName(), f.getName(), "Unknown field type " + ft.toString());
                 }
             } else if (nameAnnotation != null) {
                 if (String.class.isAssignableFrom(f.getType())) {
                     f.set(o, ps.getInstanceName());
                 } else {
-                    f.setAccessible(accessible);
+                    f.setAccessible(false);
                     throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigurableName to non-String type " + f.getType().getName());
                 }
             } else if (cmAnnotation != null) {
                 if (ConfigurationManager.class.isAssignableFrom(f.getType())) {
                     f.set(o, ps.getConfigurationManager());
                 } else {
-                    f.setAccessible(accessible);
+                    f.setAccessible(false);
                     throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigManager to non-ConfigurationManager type " + f.getType().getName());
                 }
             }
-            f.setAccessible(accessible);
+            f.setAccessible(false);
         }
     }
 
@@ -483,8 +481,8 @@ public class PropertySheet<T extends Configurable> {
         FieldType genericft = FieldType.getFieldType(genericType);
         if (genericft != null) {
             Map<String,Object> map = new HashMap<>();
-            for (Map.Entry<String, SimpleProperty> e : input.getMap().entrySet()) {
-                String newVal = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, e.getValue().getValue());
+            for (Map.Entry<String, SimpleProperty> e : input.map().entrySet()) {
+                String newVal = cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, e.getValue().value());
                 map.put(e.getKey(), parseSimpleField(cm, instanceName, fieldName, genericType, genericft, newVal));
             }
             return map;
@@ -501,9 +499,9 @@ public class PropertySheet<T extends Configurable> {
         // from the xml file, so we have to check it.
         List<String> replaced = new ArrayList<>();
         List<Class<?>> removeList = new ArrayList<>();
-        List<Class<?>> classVals = new ArrayList<>(input.getClassList());
-        for (SimpleProperty val : input.getSimpleList()) {
-            replaced.add(cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, val.getValue()));
+        List<Class<?>> classVals = new ArrayList<>(input.classList());
+        for (SimpleProperty val : input.simpleList()) {
+            replaced.add(cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, val.value()));
         }
 
         //
@@ -644,9 +642,9 @@ public class PropertySheet<T extends Configurable> {
         // from the xml file, so we have to check it.
         List<String> replaced = new ArrayList<>();
         List<Class<?>> removeList = new ArrayList<>();
-        List<Class<?>> classVals = new ArrayList<>(input.getClassList());
-        for (SimpleProperty val : input.getSimpleList()) {
-            replaced.add(cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, val.getValue()));
+        List<Class<?>> classVals = new ArrayList<>(input.classList());
+        for (SimpleProperty val : input.simpleList()) {
+            replaced.add(cm.getImmutableGlobalProperties().replaceGlobalProperties(instanceName, fieldName, val.value()));
         }
 
         //
