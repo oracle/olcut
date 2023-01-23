@@ -364,7 +364,7 @@ public final class ProvenanceUtil {
      */
     private static void formatProvenance(Provenance innerProv, StringBuilder builder, String tabs, int depth) {
         if (innerProv instanceof PrimitiveProvenance) {
-            builder.append(((PrimitiveProvenance<?>)innerProv).getValue());
+            builder.append(((PrimitiveProvenance<?>)innerProv).getValue().toString());
         } else if (innerProv instanceof ListProvenance) {
             ListProvenance<?> listProv = (ListProvenance<?>) innerProv;
             if (listProv.getList().isEmpty()) {
@@ -435,7 +435,7 @@ public final class ProvenanceUtil {
      */
     private static Object innerConvertToMap(Provenance prov) {
         if (prov instanceof PrimitiveProvenance) {
-            return String.valueOf(((PrimitiveProvenance<?>)prov).getValue());
+            return ((PrimitiveProvenance<?>)prov).getValue().toString();
         } else if (prov instanceof ListProvenance) {
             ListProvenance<?> listProv = (ListProvenance<?>) prov;
             if (listProv.getList().isEmpty()) {

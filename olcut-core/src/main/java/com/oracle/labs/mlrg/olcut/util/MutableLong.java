@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, 2022, Oracle and/or its affiliates.
+ * Copyright (c) 2004-2020, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -28,43 +28,26 @@
 
 package com.oracle.labs.mlrg.olcut.util;
 
-import java.util.Objects;
-
 /**
  * A mutable version of java.lang.Long.
  */
-public final class MutableLong extends MutableNumber implements Comparable<MutableLong> {
+public final class MutableLong extends MutableNumber {
     private static final long serialVersionUID = 1L;
 
     private long value;
 
-    /**
-     * Constructs a mutable boxed long with the supplied value.
-     * @param value The initial value.
-     */
     public MutableLong(long value) {
         this.value = value;
     }
 
-    /**
-     * Constructs a mutable boxed long with initial value zero.
-     */
     public MutableLong() {
         value = 0L;
     }
 
-    /**
-     * Copies the supplied MutableLong.
-     * @param other The value to copy.
-     */
     public MutableLong(MutableLong other) {
         value = other.value;
     }
 
-    /**
-     * Copies the supplied Number using {@link Number#longValue()}.
-     * @param other The value to copy.
-     */
     public MutableLong(Number other) {
         value = other.longValue();
     }
@@ -139,25 +122,7 @@ public final class MutableLong extends MutableNumber implements Comparable<Mutab
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MutableLong that = (MutableLong) o;
-        return value == that.value;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
-    }
-
-    @Override
     public MutableLong copy() {
         return new MutableLong(value);
-    }
-
-    @Override
-    public int compareTo(MutableLong o) {
-        return Long.compare(value,o.value);
     }
 }

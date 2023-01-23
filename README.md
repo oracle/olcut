@@ -23,12 +23,12 @@ Maven:
 <dependency>
     <groupId>com.oracle.labs.olcut</groupId>
     <artifactId>olcut-core</artifactId>
-    <version>5.3.0</version>
+    <version>5.2.1</version>
 </dependency>
 ```
 or from Gradle:
 ```groovy
-implementation 'com.oracle.labs.olcut:olcut-core:5.3.0'
+implementation 'com.oracle.labs.olcut:olcut-core:5.2.1'
 ```
 
 The `olcut-extras` artifact is designed as a small tool for developers, as such you should compile the appropriate 
@@ -228,7 +228,6 @@ Pair | It's a pair class. The fields are final and it has equals and hash code s
 Timers | `StopWatch` and `NanoWatch` provide handy timers, at millisecond or nanosecond granularity.
 Sort Utilities | `SortUtil` rovides a sort function which returns the indices that the input elements should be rearranged. Very useful for finding the original position of a sorted object without zipping it yourself.
 Stream Utilities | In Java 8 the stream API can run inside a Fork-Join Pool to bound the parallelism, but it does not bound the computation of the chunk size correctly. `StreamUtil` provides a bounded stream which knows how many threads are allocated, and so calculates the correct work chunk size. It also has methods for zipping two streams, and a special spliterator (`IOSpliterator`) which chunks work appropriately for reading from a IO system like a DB or a file.
-SubprocessConnection | Provides a simple mechanism for communicating over stdio with a subprocess (e.g. python script or an executable).
 
 ## Contributing
 
