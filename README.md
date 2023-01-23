@@ -23,12 +23,12 @@ Maven:
 <dependency>
     <groupId>com.oracle.labs.olcut</groupId>
     <artifactId>olcut-core</artifactId>
-    <version>5.2.1</version>
+    <version>5.3.0</version>
 </dependency>
 ```
 or from Gradle:
 ```groovy
-implementation 'com.oracle.labs.olcut:olcut-core:5.2.1'
+implementation 'com.oracle.labs.olcut:olcut-core:5.3.0'
 ```
 
 The `olcut-extras` artifact is designed as a small tool for developers, as such you should compile the appropriate 
