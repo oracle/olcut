@@ -5,9 +5,9 @@ name: OLCUT CI (Ubuntu x86_64, OpenJDK 8, 11, 17)
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 jobs:
   build:
