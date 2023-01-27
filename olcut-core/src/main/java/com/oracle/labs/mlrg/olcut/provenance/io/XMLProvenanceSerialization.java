@@ -278,10 +278,10 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
             }
         }
         writer.writeEmptyElement(SIMPLE_MARSHALLED_PROVENANCE);
-        writer.writeAttribute(PROV_KEY, smp.getKey());
-        writer.writeAttribute(PROV_VALUE, smp.getValue());
-        writer.writeAttribute(PROV_ADDITIONAL, smp.getAdditional());
-        writer.writeAttribute(PROVENANCE_CLASS_NAME, smp.getProvenanceClassName());
+        writer.writeAttribute(PROV_KEY, smp.key());
+        writer.writeAttribute(PROV_VALUE, smp.value());
+        writer.writeAttribute(PROV_ADDITIONAL, smp.additional());
+        writer.writeAttribute(PROVENANCE_CLASS_NAME, smp.provenanceClassName());
         writer.writeAttribute(IS_REFERENCE, "" + smp.isReference());
         if (prettyPrint) {
             writer.writeCharacters(System.lineSeparator());
@@ -495,11 +495,11 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
                     if (curSMP != null) {
                         if (provenanceChain.isEmpty()) {
                             // Must be writing to the current ObjectMarshalledProvenance
-                            ompProvMap.put(curSMP.getKey(),curSMP);
+                            ompProvMap.put(curSMP.key(),curSMP);
                         } else {
                             ProvCollection pc = provenanceChain.peekLast();
                             if (pc.isMap()) {
-                                pc.addProvenance(curSMP.getKey(),curSMP);
+                                pc.addProvenance(curSMP.key(),curSMP);
                             } else {
                                 pc.addProvenance(curSMP);
                             }

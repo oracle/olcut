@@ -317,10 +317,10 @@ public final class ProtoProvenanceSerialization implements ProvenanceSerializati
         smpBuilder.setIndex(curIndex);
         counter.increment();
 
-        smpBuilder.setKey(smp.getKey());
-        smpBuilder.setValue(smp.getValue());
-        smpBuilder.setAdditional(smp.getAdditional());
-        smpBuilder.setProvenanceClassName(smp.getProvenanceClassName());
+        smpBuilder.setKey(smp.key());
+        smpBuilder.setValue(smp.value());
+        smpBuilder.setAdditional(smp.additional());
+        smpBuilder.setProvenanceClassName(smp.provenanceClassName());
         smpBuilder.setIsReference(smp.isReference());
 
         builder.addSmp(smpBuilder.build());

@@ -815,7 +815,7 @@ public final class ProvenanceUtil {
     private static Provenance unmarshalFlat(String hostProvName, FlatMarshalledProvenance fmp, Map<String,ObjectProvenance> unmarshalledObjects, Map<String,ObjectMarshalledProvenance> marshalledObjects) {
         if (fmp instanceof SimpleMarshalledProvenance smp) {
             if (smp.isReference()) {
-                String refName = smp.getValue();
+                String refName = smp.value();
                 if (unmarshalledObjects.containsKey(refName)) {
                     return unmarshalledObjects.get(refName);
                 } else if (marshalledObjects.containsKey(refName)) {

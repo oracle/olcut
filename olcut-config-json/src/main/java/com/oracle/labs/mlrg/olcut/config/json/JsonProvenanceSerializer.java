@@ -78,10 +78,10 @@ public class JsonProvenanceSerializer extends StdSerializer<MarshalledProvenance
             }
             jsonGenerator.writeEndObject();
         } else if (marshalledProvenance instanceof SimpleMarshalledProvenance smp) {
-            jsonGenerator.writeStringField(JsonProvenanceModule.KEY,smp.getKey());
-            jsonGenerator.writeStringField(JsonProvenanceModule.VALUE,smp.getValue());
-            jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS,smp.getProvenanceClassName());
-            jsonGenerator.writeStringField(JsonProvenanceModule.ADDITIONAL,smp.getAdditional());
+            jsonGenerator.writeStringField(JsonProvenanceModule.KEY,smp.key());
+            jsonGenerator.writeStringField(JsonProvenanceModule.VALUE,smp.value());
+            jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS,smp.provenanceClassName());
+            jsonGenerator.writeStringField(JsonProvenanceModule.ADDITIONAL,smp.additional());
             jsonGenerator.writeBooleanField(JsonProvenanceModule.IS_REFERENCE,smp.isReference());
         } else {
             throw new IOException("Unexpected provenance class, found " + provClass.getName());
