@@ -48,20 +48,19 @@ public final class DoubleProvenance implements PrimitiveProvenance<Double> {
     }
 
     @Override
-    public String getKey() {
+    public String key() {
         return key;
     }
 
     @Override
-    public Double getValue() {
+    public Double value() {
         return value;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DoubleProvenance)) return false;
-        DoubleProvenance that = (DoubleProvenance) o;
+        if (!(o instanceof DoubleProvenance that)) return false;
         return key.equals(that.key) &&
                 Double.compare(value,that.value) == 0;
     }

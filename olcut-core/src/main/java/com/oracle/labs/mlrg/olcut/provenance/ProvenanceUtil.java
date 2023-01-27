@@ -125,7 +125,9 @@ public final class ProvenanceUtil {
      * The java.xml.bind.DataTypeConverter class was removed in Java 11, so this is a cross version replacement.
      * @param bytes The byte array to convert
      * @return A hexadecimal representation of the byte array.
+     * @deprecated Replace with {@link java.util.HexFormat}.
      */
+    @Deprecated
     public static String bytesToHexString(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
@@ -752,7 +754,7 @@ public final class ProvenanceUtil {
         Map<String,ObjectMarshalledProvenance> marshalledObjects = new HashMap<>();
 
         for (ObjectMarshalledProvenance o : marshalledProvenance) {
-            marshalledObjects.put(o.getName(),o);
+            marshalledObjects.put(o.name(),o);
         }
 
         return unmarshalProvenance(marshalledProvenance.get(0), unmarshalledObjects, marshalledObjects);
@@ -768,7 +770,7 @@ public final class ProvenanceUtil {
      * @throws ProvenanceException If the ObjectProvenance could not be constructed, or if it failed to load the class.
      */
     private static ObjectProvenance unmarshalProvenance(ObjectMarshalledProvenance curProv, Map<String,ObjectProvenance> unmarshalledObjects, Map<String,ObjectMarshalledProvenance> marshalledObjects) throws ProvenanceException {
-        String provenanceClassName = curProv.getProvenanceClassName();
+        String provenanceClassName = curProv.provenanceClassName();
         try {
             Class<?> provenanceClass = Class.forName(provenanceClassName);
 
@@ -777,8 +779,8 @@ public final class ProvenanceUtil {
             }
             Map<String, Provenance> arguments = new HashMap<>();
 
-            for (Map.Entry<String, FlatMarshalledProvenance> e : curProv.getMap().entrySet()) {
-                Provenance extractedProv = unmarshalFlat(curProv.getName(),e.getValue(),unmarshalledObjects,marshalledObjects);
+            for (Map.Entry<String, FlatMarshalledProvenance> e : curProv.map().entrySet()) {
+                Provenance extractedProv = unmarshalFlat(curProv.name(),e.getValue(),unmarshalledObjects,marshalledObjects);
                 arguments.put(e.getKey(),extractedProv);
             }
 

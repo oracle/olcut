@@ -39,15 +39,7 @@ import java.util.Objects;
  * Contains the name of the object, the class name of the provenance's host object,
  * and the class name of the provenance object.
  */
-public final class ObjectMarshalledProvenance implements MarshalledProvenance {
-
-    private final Map<String,FlatMarshalledProvenance> map;
-
-    private final String objectName;
-
-    private final String objectClassName;
-
-    private final String provenanceClassName;
+public record ObjectMarshalledProvenance(String objectName, Map<String, FlatMarshalledProvenance> map, String objectClassName, String provenanceClassName) implements MarshalledProvenance {
 
     /**
      * Constructs an ObjectMarshalledProvenance.
@@ -67,7 +59,7 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
      * Gets the object name.
      * @return The object name.
      */
-    public String getName() {
+    public String name() {
         return objectName;
     }
 
@@ -75,7 +67,7 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
      * The fields of the provenance.
      * @return The provenance fields.
      */
-    public Map<String, FlatMarshalledProvenance> getMap() {
+    public Map<String, FlatMarshalledProvenance> map() {
         return map;
     }
 
@@ -83,7 +75,7 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
      * The class name of the {@link com.oracle.labs.mlrg.olcut.provenance.Provenancable} object.
      * @return The creator class of the provenance.
      */
-    public String getObjectClassName() {
+    public String objectClassName() {
         return objectClassName;
     }
 
@@ -91,7 +83,7 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
      * The class name of the {@link com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance} subclass.
      * @return The provenance class name.
      */
-    public String getProvenanceClassName() {
+    public String provenanceClassName() {
         return provenanceClassName;
     }
 
@@ -103,20 +95,5 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
                 ", objectClassName='" + objectClassName + '\'' +
                 ", provenanceClassName='" + provenanceClassName + '\'' +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ObjectMarshalledProvenance that)) return false;
-        return map.equals(that.map) &&
-                objectName.equals(that.objectName) &&
-                objectClassName.equals(that.objectClassName) &&
-                provenanceClassName.equals(that.provenanceClassName);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(map, objectName, objectClassName, provenanceClassName);
     }
 }

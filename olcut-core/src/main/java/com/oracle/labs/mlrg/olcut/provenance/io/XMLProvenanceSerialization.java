@@ -234,7 +234,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
      * @throws XMLStreamException If the XML is invalid.
      */
     private void writeOMP(XMLStreamWriter writer, ObjectMarshalledProvenance omp) throws XMLStreamException {
-        Map<String, FlatMarshalledProvenance> provMap = omp.getMap();
+        Map<String, FlatMarshalledProvenance> provMap = omp.map();
         if (prettyPrint) {
             writer.writeCharacters("\t");
         }
@@ -243,9 +243,9 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
         } else {
             writer.writeEmptyElement(OBJECT_MARSHALLED_PROVENANCE);
         }
-        writer.writeAttribute(OBJECT_NAME, omp.getName());
-        writer.writeAttribute(OBJECT_CLASS_NAME, omp.getObjectClassName());
-        writer.writeAttribute(PROVENANCE_CLASS_NAME, omp.getProvenanceClassName());
+        writer.writeAttribute(OBJECT_NAME, omp.name());
+        writer.writeAttribute(OBJECT_CLASS_NAME, omp.objectClassName());
+        writer.writeAttribute(PROVENANCE_CLASS_NAME, omp.provenanceClassName());
         if (!provMap.isEmpty()) {
             if (prettyPrint) {
                 writer.writeCharacters(System.lineSeparator());
@@ -302,7 +302,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
                 writer.writeCharacters("\t");
             }
         }
-        if (lmp.getList().isEmpty()) {
+        if (lmp.list().isEmpty()) {
             writer.writeEmptyElement(LIST_MARSHALLED_PROVENANCE);
             writer.writeAttribute(PROV_KEY, key);
         } else {
@@ -311,7 +311,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
             if (prettyPrint) {
                 writer.writeCharacters(System.lineSeparator());
             }
-            for (FlatMarshalledProvenance fmp : lmp.getList()) {
+            for (FlatMarshalledProvenance fmp : lmp.list()) {
                 dispatchFMP(writer, "", fmp, depth + 1);
             }
             if (prettyPrint) {

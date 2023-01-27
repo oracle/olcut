@@ -522,7 +522,9 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 if (o == null) {
                     return Optional.empty();
                 } else {
-                    return Optional.of(new EnumProvenance<>(fieldName, (Enum) o));
+                    @SuppressWarnings({"rawtypes","unchecked"})
+                    EnumProvenance<?> prov = new EnumProvenance<>(fieldName, (Enum) o);
+                    return Optional.of(prov);
                 }
             case CONFIGURABLE:
                 if (o == null) {

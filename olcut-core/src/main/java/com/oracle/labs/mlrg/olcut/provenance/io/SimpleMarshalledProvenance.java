@@ -30,7 +30,6 @@ package com.oracle.labs.mlrg.olcut.provenance.io;
 
 import com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.PrimitiveProvenance;
-import com.oracle.labs.mlrg.olcut.provenance.Provenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceException;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil.HashType;
 import com.oracle.labs.mlrg.olcut.provenance.primitives.BooleanProvenance;
@@ -84,7 +83,7 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
      * @param enumProv The enum provenance to store.
      * @param <E> The type of the enum.
      */
-    public <E extends Enum> SimpleMarshalledProvenance(EnumProvenance<E> enumProv) {
+    public <E extends Enum<E>> SimpleMarshalledProvenance(EnumProvenance<E> enumProv) {
         this(enumProv.getKey(), enumProv.getValue().toString(), enumProv.getClass().getName(), false, enumProv.getEnumClass());
     }
 
@@ -94,7 +93,7 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
      * @param provenance A hash provenance.
      */
     public SimpleMarshalledProvenance(HashProvenance provenance) {
-        this(provenance.getKey(), provenance.getValue(), provenance.getClass().getName(), false, provenance.getType().toString());
+        this(provenance.getKey(), provenance.getValue(), provenance.getClass().getName(), false, provenance.type().toString());
     }
 
     /**
@@ -159,6 +158,7 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
         try {
             Class<?> provClass = Class.forName(provenanceClassName);
 
+            @SuppressWarnings("rawtypes")
             PrimitiveProvenance unmarshalled;
             if (provClass.equals(BooleanProvenance.class)) {
                 unmarshalled = new BooleanProvenance(key,Boolean.parseBoolean(value));
@@ -173,9 +173,13 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
             } else if (provClass.equals(DoubleProvenance.class)) {
                 unmarshalled = new DoubleProvenance(key,Double.parseDouble(value));
             } else if (provClass.equals(EnumProvenance.class)) {
-                Class<? extends Enum> enumClass = (Class<? extends Enum>) Class.forName(additional);
-                Enum<? extends Enum> enumValue = Enum.valueOf(enumClass,value);
-                unmarshalled = new EnumProvenance<>(key,enumValue);
+                @SuppressWarnings("rawtypes")
+                Class<? extends Enum> enumClass = (Class<? extends Enum<?>>) Class.forName(additional);
+                @SuppressWarnings("rawtypes")
+                Enum enumValue = Enum.valueOf(enumClass,value);
+                @SuppressWarnings("rawtypes")
+                PrimitiveProvenance<?> prim = new EnumProvenance<>(key,enumValue);
+                unmarshalled = prim;
             } else if (provClass.equals(FileProvenance.class)) {
                 unmarshalled = new FileProvenance(key,new File(value));
             } else if (provClass.equals(FloatProvenance.class)) {

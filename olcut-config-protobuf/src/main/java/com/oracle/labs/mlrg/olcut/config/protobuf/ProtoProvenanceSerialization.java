@@ -270,11 +270,11 @@ public final class ProtoProvenanceSerialization implements ProvenanceSerializati
         ompBuilder.setIndex(counter.intValue());
         counter.increment();
 
-        ompBuilder.setObjectName(omp.getName());
-        ompBuilder.setObjectClassName(omp.getObjectClassName());
-        ompBuilder.setProvenanceClassName(omp.getProvenanceClassName());
+        ompBuilder.setObjectName(omp.name());
+        ompBuilder.setObjectClassName(omp.objectClassName());
+        ompBuilder.setProvenanceClassName(omp.provenanceClassName());
 
-        for (Map.Entry<String, FlatMarshalledProvenance> e : omp.getMap().entrySet()) {
+        for (Map.Entry<String, FlatMarshalledProvenance> e : omp.map().entrySet()) {
             int count = dispatchFMP(builder, counter, e.getValue());
             ompBuilder.putValues(e.getKey(),count);
         }

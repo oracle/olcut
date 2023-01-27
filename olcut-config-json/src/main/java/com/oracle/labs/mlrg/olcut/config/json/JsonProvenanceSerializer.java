@@ -69,11 +69,11 @@ public class JsonProvenanceSerializer extends StdSerializer<MarshalledProvenance
             }
             jsonGenerator.writeEndObject();
         } else if (marshalledProvenance instanceof ObjectMarshalledProvenance omp) {
-            jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_NAME,omp.getName());
-            jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_CLASS_NAME,omp.getObjectClassName());
-            jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS,omp.getProvenanceClassName());
+            jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_NAME,omp.name());
+            jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_CLASS_NAME,omp.objectClassName());
+            jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS,omp.provenanceClassName());
             jsonGenerator.writeObjectFieldStart(JsonProvenanceModule.MAP);
-            for (Map.Entry<String, FlatMarshalledProvenance> e : omp.getMap().entrySet()) {
+            for (Map.Entry<String, FlatMarshalledProvenance> e : omp.map().entrySet()) {
                 jsonGenerator.writeObjectField(e.getKey(),e.getValue());
             }
             jsonGenerator.writeEndObject();

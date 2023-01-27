@@ -286,10 +286,9 @@ public interface Options {
         Object extractedField = AccessController.doPrivileged((PrivilegedAction<Object>)
                 () -> {
                     try {
-                        boolean accessible = f.isAccessible();
                         f.setAccessible(true);
                         Object fieldVal = f.get(obj);
-                        f.setAccessible(accessible);
+                        f.setAccessible(false);
                         return fieldVal;
                     } catch (IllegalAccessException e) {
                         Logger.getLogger(Options.class.getName()).fine("Failed to read default value from field " + option.longName());

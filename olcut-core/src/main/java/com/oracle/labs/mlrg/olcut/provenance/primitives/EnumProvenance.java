@@ -35,7 +35,7 @@ import java.util.Objects;
 /**
  * A {@link PrimitiveProvenance} which records an enum value.
  */
-public final class EnumProvenance<E extends Enum> implements PrimitiveProvenance<E> {
+public final class EnumProvenance<E extends Enum<E>> implements PrimitiveProvenance<E> {
     private static final long serialVersionUID = 1L;
 
     private final String key;
@@ -51,24 +51,27 @@ public final class EnumProvenance<E extends Enum> implements PrimitiveProvenance
     }
 
     public String getEnumClass() {
+        return enumClass();
+    }
+
+    public String enumClass() {
         return enumClass;
     }
 
     @Override
-    public String getKey() {
+    public String key() {
         return key;
     }
 
     @Override
-    public E getValue() {
+    public E value() {
         return value;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof EnumProvenance)) return false;
-        EnumProvenance that = (EnumProvenance) o;
+        if (!(o instanceof EnumProvenance that)) return false;
         return key.equals(that.key) &&
                 value.equals(that.value) &&
                 enumClass.equals(that.enumClass);

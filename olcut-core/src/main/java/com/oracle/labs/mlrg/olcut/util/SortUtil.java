@@ -328,7 +328,7 @@ public final class SortUtil {
     }
 
     /**
-     * A tuple of an int, a T and a boolean. It wants to be a record. Or a value type.
+     * A tuple of an int, a T and a boolean. It wants to be a value type.
      * <p>
      * Used to provide something comparable for {@link SortUtil#argsort}.
      */
