@@ -63,7 +63,7 @@ public final class OLCUT {
     public static final String TAG_VERSION;
 
     /**
-     * Is this OLCUT build a unreleased snapshot?
+     * Is this OLCUT build an unreleased snapshot?
      */
     public static final boolean IS_SNAPSHOT;
 
