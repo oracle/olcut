@@ -28,6 +28,7 @@
 
 package com.oracle.labs.mlrg.olcut.test.provenance_tests;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -91,7 +92,7 @@ public class ProvenanceUtilTest {
         File tempFile = File.createTempFile("serialized-provenancable", ".ser", new File("target"));
         tempFile.deleteOnExit();
 
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|/com/oracle/labs/mlrg/olcut/test/config_tests/allConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "/com/oracle/labs/mlrg/olcut/test/config_tests/allConfig.xml"));
         AllFieldsConfigurable afc = (AllFieldsConfigurable) cm.lookup("all-config");
         cm.close();
         MyProvenancableClass mpc = new MyProvenancableClass(afc);

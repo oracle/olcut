@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -78,14 +79,14 @@ public class SerializeTest {
 
     @Test
     public void deserializeComponent() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         cm.setGlobalProperty("serFile", serPath.toString());
         StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
         ac.one = "one";
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serPath.toFile()))) {
             oos.writeObject(ac);
         }
-        cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         cm.setGlobalProperty("serFile", serPath.toString());
         ac = (StringConfigurable) cm.lookup("ac");
         Assertions.assertEquals(ac.one, "one");
@@ -99,14 +100,14 @@ public class SerializeTest {
      */
     @Test
     public void deserializeComponentAndReuse() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         cm.setGlobalProperty("serFile", serPath.toString());
         StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
         ac.one = "one";
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(serPath.toFile()))) {
             oos.writeObject(ac);
         }
-        cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         cm.setGlobalProperty("serFile", serPath.toString());
         ac = (StringConfigurable) cm.lookup("ac");
         Assertions.assertEquals(ac.one, "one");
@@ -123,7 +124,7 @@ public class SerializeTest {
 
     @Test
     public void deserializeObject() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         cm.setGlobalProperty("serFile", serPath.toString());
         StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
         ac.one = "one";
@@ -138,7 +139,7 @@ public class SerializeTest {
 
     @Test
     public void deserializeObjectAndReuse() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         cm.setGlobalProperty("serFile", serPath.toString());
         StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
         ac.one = "one";
@@ -160,7 +161,7 @@ public class SerializeTest {
     @Test
     public void checkBadSerialisedClass() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
             cm.setGlobalProperty("serFile", serPath.toString());
             StringConfigurable ac = (StringConfigurable) cm.lookup("ac");
             ac.one = "one";

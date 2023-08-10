@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -52,6 +52,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class AllFieldsConfiguredTest {
 
+    private static final String path = ConfigurationManager.createModuleResourceString(AllFieldsConfiguredTest.class, "allConfig.edn");
+
     private File f;
 
     @BeforeAll
@@ -69,14 +71,14 @@ public class AllFieldsConfiguredTest {
 
     @Test
     public void loadConfig() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|allConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
         assertNotNull(ac, "Failed to load all-config");
     }
 
     @Test
     public void saveConfig() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|allConfig.edn");
+        ConfigurationManager cm1 = new ConfigurationManager(path);
         AllFieldsConfigurable ac1 = (AllFieldsConfigurable) cm1.lookup("all-config");
         cm1.save(f, true);
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));

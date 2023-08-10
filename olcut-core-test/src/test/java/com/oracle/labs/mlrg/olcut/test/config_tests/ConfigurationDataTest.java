@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -48,7 +49,7 @@ public class ConfigurationDataTest {
         // We're going to round-trip this through instantiation and importing once to normalize all the
         // values. Otherwise Windows produces paths rooted at "C:\" while posix platforms use "/".
         final String aName = "all-config";
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|allConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.xml"));
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup(aName);
         cm.close();
         cm = new ConfigurationManager();
@@ -91,7 +92,7 @@ public class ConfigurationDataTest {
 
     @Test
     public void structuralEqualsProvenanceRoundtrip() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|allConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.xml"));
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
 
         cm.close();

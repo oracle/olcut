@@ -37,6 +37,7 @@ import com.oracle.labs.mlrg.olcut.test.config.ArrayConfigurable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -48,7 +49,7 @@ public class ArrayTest {
 
     @Test
     public void arrayTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|arrayConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "arrayConfig.xml"));
         ArrayConfigurable ac = (ArrayConfigurable) cm.lookup("a");
         Assertions.assertArrayEquals(new int[]{1,2,3},ac.intArray, "int array not equal");
         Assertions.assertArrayEquals(new long[]{9223372036854775807L,9223372036854775806L,5L},ac.longArray, "long array not equal");
@@ -59,7 +60,7 @@ public class ArrayTest {
     @Test
     public void invalidArrayTest() throws IOException {
         Assertions.assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|arrayConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "arrayConfig.xml"));
             ArrayConfigurable ac = (ArrayConfigurable) cm.lookup("invalid-char");
         }, "Invalid character array parsed, should have thrown PropertyException.");
     }

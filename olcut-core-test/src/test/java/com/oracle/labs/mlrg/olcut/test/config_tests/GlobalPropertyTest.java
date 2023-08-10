@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -60,7 +61,7 @@ public class GlobalPropertyTest {
 
     @Test
     public void recursive() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("recursive");
         Assertions.assertEquals("ab",sc.one);
         Assertions.assertEquals("abc",sc.two);
@@ -70,7 +71,7 @@ public class GlobalPropertyTest {
     @Test
     public void noProperty() {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
             StringConfigurable sc = (StringConfigurable) cm.lookup("unknown");
         });
     }
@@ -78,19 +79,19 @@ public class GlobalPropertyTest {
     @Test
     public void badlyFormed() {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
             StringConfigurable sc = (StringConfigurable) cm.lookup("badlyformed");
         });
     }
 
     @Test
     public void invalidGlobalProperty() {
-        assertThrows(ConfigLoaderException.class, () -> new ConfigurationManager(this.getClass().getName()+"|invalidGlobalPropertyConfig.xml"));
+        assertThrows(ConfigLoaderException.class, () -> new ConfigurationManager(createModuleResourceString(this.getClass(), "invalidGlobalPropertyConfig.xml")));
     }
 
     @Test
     public void simpleReplacement() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("simple");
         Assertions.assertEquals(sc.one, "alpha");
         Assertions.assertEquals(sc.two, "beta");
@@ -99,7 +100,7 @@ public class GlobalPropertyTest {
 
     @Test
     public void compoundReplacement() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("compound");
         Assertions.assertEquals(sc.one, "alpha/beta");
         Assertions.assertEquals(sc.two, "betacharlie");
@@ -108,7 +109,7 @@ public class GlobalPropertyTest {
     
     @Test
     public void nonGlobals() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("nonglobal");
         Assertions.assertEquals(sc.one, "${a");
         Assertions.assertEquals(sc.two, "$b}");
@@ -117,7 +118,7 @@ public class GlobalPropertyTest {
 
     @Test
     public void recurse() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("recurse");
         Assertions.assertEquals(sc.one, "alpha");
         Assertions.assertEquals(sc.two, "alpha");
@@ -126,7 +127,7 @@ public class GlobalPropertyTest {
     
     @Test
     public void recurse2() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("recurse2");
         Assertions.assertEquals("alpha/bar", sc.one);
         Assertions.assertEquals(sc.two, "x");
@@ -135,7 +136,7 @@ public class GlobalPropertyTest {
     
     @Test
     public void recurse3() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("recurse3");
         Assertions.assertEquals("/tmp/alpha", sc.one);
         Assertions.assertEquals(sc.two, "/tmp/alpha/bpath");
@@ -145,7 +146,7 @@ public class GlobalPropertyTest {
     
     @Test
     public void compoundRecurse() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("compoundrecurse");
         Assertions.assertEquals(sc.one, "one beta/alpha");
         Assertions.assertEquals(sc.two, "two charlie/alpha/beta/alpha");
@@ -154,7 +155,7 @@ public class GlobalPropertyTest {
     
     @Test
     public void distinguishedProps() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("distinguished");
         Assertions.assertEquals(Util.getHostName(), sc.one);
         Assertions.assertEquals(System.getProperty("user.name"), sc.two);
@@ -162,7 +163,7 @@ public class GlobalPropertyTest {
     
     @Test
     public void stringList() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|globalPropertyConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"));
         StringListConfigurable slc = (StringListConfigurable) cm.lookup("listTest");
         Assertions.assertEquals("alpha", slc.strings.get(0));
         Assertions.assertEquals("beta", slc.strings.get(1));

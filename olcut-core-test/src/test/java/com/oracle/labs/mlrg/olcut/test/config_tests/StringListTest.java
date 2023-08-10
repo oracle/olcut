@@ -40,6 +40,7 @@ import com.oracle.labs.mlrg.olcut.test.config.StringListConfigurable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -49,7 +50,7 @@ public class StringListTest {
 
     @Test
     public void getStrings() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringListConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringListConfig.xml"));
         StringListConfigurable slc = (StringListConfigurable) cm.lookup(
                 "listTest");
         Assertions.assertEquals("a", slc.strings.get(0));
@@ -59,7 +60,7 @@ public class StringListTest {
     
     @Test
     public void setStrings() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringListConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringListConfig.xml"));
         ConfigurationData configData = cm.getConfigurationData("listTest").get();
         List<String> l = new ArrayList<>();
         l.add("d");

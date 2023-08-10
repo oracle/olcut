@@ -36,6 +36,7 @@ import com.oracle.labs.mlrg.olcut.test.config.StringleConfigurable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -49,7 +50,7 @@ public class OverrideTest {
 
     @Test
     public void overrideWithSameType() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|overrideConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "overrideConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         Assertions.assertEquals("a", sc.one);
         Assertions.assertEquals("b", sc.two);
@@ -62,7 +63,7 @@ public class OverrideTest {
 
     @Test
     public void doubleOverride() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|overrideConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "overrideConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         Assertions.assertEquals("a", sc.one);
         Assertions.assertEquals("b", sc.two);
@@ -79,7 +80,7 @@ public class OverrideTest {
     
     @Test
     public void overrideWithSubType() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|overrideConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "overrideConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup("a");
         Assertions.assertEquals("a", sc.one);
         Assertions.assertEquals("b", sc.two);

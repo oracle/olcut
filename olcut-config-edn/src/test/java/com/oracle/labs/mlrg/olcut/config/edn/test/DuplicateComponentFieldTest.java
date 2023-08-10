@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -46,21 +46,21 @@ public class DuplicateComponentFieldTest {
     @Test
     public void duplicatePropertyMap() {
         assertThrows(ConfigLoaderException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyMapConfig.edn");
+            ConfigurationManager cm = new ConfigurationManager(ConfigurationManager.createModuleResourceString(this.getClass(),"duplicatePropertyMapConfig.edn"));
         }, "Should have thrown exception on loading");
     }
 
     @Test
     public void duplicatePropertyList() {
         assertThrows(ConfigLoaderException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyListConfig.edn");
+            ConfigurationManager cm = new ConfigurationManager(ConfigurationManager.createModuleResourceString(this.getClass(),"duplicatePropertyListConfig.edn"));
         }, "Should have thrown exception on loading");
     }
 
     @Test
     public void duplicateProperty() {
         assertThrows(ConfigLoaderException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyConfig.edn");
+            ConfigurationManager cm = new ConfigurationManager(ConfigurationManager.createModuleResourceString(this.getClass(),"duplicatePropertyConfig.edn"));
         }, "Should have thrown exception on loading\"");
     }
 }

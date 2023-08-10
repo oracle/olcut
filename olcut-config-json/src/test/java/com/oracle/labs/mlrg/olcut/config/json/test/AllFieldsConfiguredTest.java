@@ -42,6 +42,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -68,14 +69,14 @@ public class AllFieldsConfiguredTest {
 
     @Test
     public void loadConfig() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|allConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.json"));
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
         assertNotNull(ac, "Failed to load all-config");
     }
 
     @Test
     public void saveConfig() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|allConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.json"));
         AllFieldsConfigurable ac1 = (AllFieldsConfigurable) cm1.lookup("all-config");
         cm1.save(f, true);
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));

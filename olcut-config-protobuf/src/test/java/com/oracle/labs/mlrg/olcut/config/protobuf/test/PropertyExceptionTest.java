@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -58,7 +59,7 @@ public class PropertyExceptionTest {
     @Test
     public void unknownPropertyException() throws PropertyException, IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|undefinedPropertyConfig.pbtxt");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "undefinedPropertyConfig.pbtxt"));
             SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simple");
         });
     }
@@ -66,7 +67,7 @@ public class PropertyExceptionTest {
     @Test
     public void unknownPropertyWithKnownPropertyException() throws PropertyException, IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|undefinedPropertyConfig.pbtxt");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "undefinedPropertyConfig.pbtxt"));
             SimpleConfigurable sc = (SimpleConfigurable) cm.lookup("simple2");
         });
     }

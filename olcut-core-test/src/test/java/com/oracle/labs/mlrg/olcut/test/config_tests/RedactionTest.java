@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
+
 public class RedactionTest {
     private File f;
 
@@ -54,7 +56,7 @@ public class RedactionTest {
 
     @Test
     public void redactLoadedOnSave() throws IOException {
-        ConfigurationManager source = new ConfigurationManager(this.getClass().getName()+"|redactionConfig.xml");
+        ConfigurationManager source = new ConfigurationManager(createModuleResourceString(this.getClass(), "redactionConfig.xml"));
         RedactedConfigurable a = (RedactedConfigurable) source.lookup("a");
         Assertions.assertEquals("present-value",a.present);
         Assertions.assertEquals("unredacted-value",a.redacted);

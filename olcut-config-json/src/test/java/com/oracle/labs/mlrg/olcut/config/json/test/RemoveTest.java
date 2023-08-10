@@ -43,6 +43,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -56,7 +57,7 @@ public class RemoveTest {
 
     @Test
     public void testInstantiatedRemove() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "basicConfig.json"));
         BasicConfigurable bc = (BasicConfigurable) cm.lookup("a");
         boolean removed = cm.removeConfigurable("a");
         assertTrue(removed);
@@ -68,7 +69,7 @@ public class RemoveTest {
 
     @Test
     public void testUninstantiatedRemove() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|basicConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "basicConfig.json"));
         boolean removed = cm.removeConfigurable("a");
         assertTrue(removed);
         try{

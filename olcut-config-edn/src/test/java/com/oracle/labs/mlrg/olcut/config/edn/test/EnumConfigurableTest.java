@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -46,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  */
 public class EnumConfigurableTest {
+    private static final String path = ConfigurationManager.createModuleResourceString(EnumConfigurableTest.class, "enumConfig.edn");
 
     @BeforeAll
     public static void setUpClass() throws Exception {
@@ -54,14 +55,14 @@ public class EnumConfigurableTest {
 
     @Test
     public void both() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|enumConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("both");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.B, ec.enum2);
     }
 
     @Test public void set1() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|enumConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("set1");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.B, ec.enum2);
@@ -71,7 +72,7 @@ public class EnumConfigurableTest {
     }
 
     @Test public void defaultSet() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|enumConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("both");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.B, ec.enum2);
@@ -83,14 +84,14 @@ public class EnumConfigurableTest {
     @Test
     public void badSetValue() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|enumConfig.edn");
+            ConfigurationManager cm = new ConfigurationManager(path);
             EnumConfigurable ec = (EnumConfigurable) cm.lookup("badset");
         });
     }
 
     @Test
     public void defaultValue() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|enumConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("default");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.A, ec.enum2);
@@ -99,14 +100,14 @@ public class EnumConfigurableTest {
     @Test
     public void badValue() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|enumConfig.edn");
+            ConfigurationManager cm = new ConfigurationManager(path);
             EnumConfigurable ec = (EnumConfigurable) cm.lookup("badvalue");
         });
     }
 
     @Test
     public void globalValue() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|enumConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         EnumConfigurable ec = (EnumConfigurable) cm.lookup("global");
         assertEquals(EnumConfigurable.Type.A, ec.enum1);
         assertEquals(EnumConfigurable.Type.A, ec.enum2);

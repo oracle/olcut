@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -56,7 +57,7 @@ public class GenericConfigTest {
 
     @Test
     public void correctListConfig() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|genericConfig.pb");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.pb"));
         ListConfig s = (ListConfig) cm.lookup("correctListConfig");
 
         assertEquals(4,s.stringList.size(), "StringList has an incorrect number of values");
@@ -81,14 +82,14 @@ public class GenericConfigTest {
     @Test
     public void incorrectListConfig() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|genericConfig.pb");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.pb"));
             ListConfig l = (ListConfig) cm.lookup("incorrectListConfig");
         });
     }
 
     @Test
     public void correctSetConfig() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|genericConfig.pb");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.pb"));
         SetConfig s = (SetConfig) cm.lookup("correctSetConfig");
 
         assertEquals( 3,s.stringSet.size(), "StringSet has an incorrect number of values");
@@ -112,7 +113,7 @@ public class GenericConfigTest {
     @Test
     public void incorrectSetConfig() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|genericConfig.pb");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.pb"));
             SetConfig s = (SetConfig) cm.lookup("incorrectSetConfig");
         });
     }

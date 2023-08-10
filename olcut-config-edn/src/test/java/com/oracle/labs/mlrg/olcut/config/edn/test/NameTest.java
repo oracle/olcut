@@ -38,6 +38,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -54,7 +55,7 @@ public class NameTest {
 
     @Test
     public void configurableNameTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "componentListConfig.edn"));
         ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearray");
         assertEquals("stringconfigurablearray",lc.getName());
         StringConfigurable[] l = lc.getArray();
@@ -69,7 +70,7 @@ public class NameTest {
 
     @Test
     public void componentNameTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|nameConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "nameConfig.edn"));
         NamedConfigurable nc = (NamedConfigurable) cm.lookup("monkeys");
         assertEquals("monkeys",nc.getName());
     }

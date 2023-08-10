@@ -36,6 +36,7 @@ import com.oracle.labs.mlrg.olcut.test.config.SimpleFieldConfigurable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -45,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class SimpleFieldTest {
     @Test
     public void testCharacterFields() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|simpleFieldConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "simpleFieldConfig.xml"));
         SimpleFieldConfigurable sfc = (SimpleFieldConfigurable) cm.lookup(
                 "fieldTest");
         Assertions.assertEquals('a', sfc.charField);
@@ -55,7 +56,7 @@ public class SimpleFieldTest {
     @Test
     public void testInvalidCharacterFields() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|simpleFieldConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "simpleFieldConfig.xml"));
             SimpleFieldConfigurable sfc = (SimpleFieldConfigurable) cm.lookup(
                     "invalidCharacterFieldTest");
         });

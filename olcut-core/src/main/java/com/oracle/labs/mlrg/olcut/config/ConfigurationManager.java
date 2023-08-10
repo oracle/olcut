@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -503,6 +503,20 @@ public class ConfigurationManager implements Closeable {
     }
 
     /**
+     * Constructs the string for OLCUT to load from a different module.
+     * <p>
+     * At the moment this is the class name plus the {@link #MODULE_SEPARATOR_CHAR} plus the resourcePath.
+     * We need a class in the host module to reference as there's no way to construct the module and lookup
+     * a resource directly.
+     * @param clazz The class in the module where the resource lives.
+     * @param resourcePath The path to the resource in that module. Can either be relative to the class, or fully qualified.
+     * @return The resource path for OLCUT.
+     */
+    public static String createModuleResourceString(Class<?> clazz, String resourcePath) {
+        return clazz.getName() + MODULE_SEPARATOR_CHAR + resourcePath;
+    }
+
+    /**
      * Validates the options, returning the formatted usage String.
      * <p>
      * A valid options implementation forms a tree of Options implementations,
@@ -663,6 +677,7 @@ public class ConfigurationManager implements Closeable {
                             } // else fall through to regular loading
                         } catch (ClassNotFoundException e) {
                             // fall through to regular loading
+                            logger.warning("Failed to load class '" + input.substring(0, modIndex) + "'");
                         }
                     }
                     URL url = ConfigurationManager.class.getResource(input);
@@ -1579,7 +1594,7 @@ public class ConfigurationManager implements Closeable {
         for(Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
             ConfigurationData rpd = e.getValue();
             try {
-                Class pclass = Class.forName(rpd.getClassName());
+                Class<?> pclass = Class.forName(rpd.getClassName());
                 if (!rpd.isImportable() &&
                         ((allowAssignable && c.isAssignableFrom(pclass)) ||
                          (!allowAssignable && rpd.getClassName().equals(c.getName())))) {
@@ -1597,14 +1612,14 @@ public class ConfigurationManager implements Closeable {
             return null;
         }
         if (instanceNames.size() > 1) {
-            String names = instanceNames.stream().collect(Collectors.joining(", "));
+            String names = String.join(", ", instanceNames);
             throw new PropertyException("", "Multiple instances of " + c.getName() + " found in configuration: " + names);
         }
 
         String matchedName = instanceNames.get(0);
         ConfigurationData cd = configurationDataMap.get(matchedName);
         try {
-            Class matchedClass = Class.forName(cd.getClassName());
+            Class<?> matchedClass = Class.forName(cd.getClassName());
             if (!matchedClass.isInterface()) {
                 return (T)lookup(matchedName);
             } else {

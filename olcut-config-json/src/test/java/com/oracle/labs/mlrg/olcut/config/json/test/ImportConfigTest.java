@@ -45,6 +45,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -68,7 +69,7 @@ public class ImportConfigTest {
 
     @Test
     public void importSimple() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|importConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "importConfig.json"));
         StringConfigurable sc1 = (StringConfigurable) cm1.lookup("b");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(sc1, "a");
@@ -82,7 +83,7 @@ public class ImportConfigTest {
 
     @Test
     public void importEnum() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|enumConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "enumConfig.json"));
         EnumConfigurable ec1 = (EnumConfigurable) cm1.lookup("both");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(ec1, "both");
@@ -94,7 +95,7 @@ public class ImportConfigTest {
 
     @Test
     public void importEnumNonDefault() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|enumConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "enumConfig.json"));
         EnumConfigurable ec1 = (EnumConfigurable) cm1.lookup("set1");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(ec1, "set1");
@@ -106,7 +107,7 @@ public class ImportConfigTest {
 
     @Test
     public void importCombo() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|importConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "importConfig.json"));
         ComboConfigurable cc1 = (ComboConfigurable) cm1.lookup("a");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(cc1, "a");
@@ -121,7 +122,7 @@ public class ImportConfigTest {
 
     @Test
     public void importMultiCombo() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|importConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "importConfig.json"));
         L1Configurable l1 = (L1Configurable) cm1.lookup("l1");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(l1, "l1");
@@ -138,7 +139,7 @@ public class ImportConfigTest {
 
     @Test
     public void importMultiNonDefaultCombo() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|importConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "importConfig.json"));
         L1Configurable l1 = (L1Configurable) cm1.lookup("l1");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(l1, "l11");
@@ -155,7 +156,7 @@ public class ImportConfigTest {
 
     @Test
     public void importStringList() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|stringListConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringListConfig.json"));
         StringListConfigurable sl1 = (StringListConfigurable) cm1.lookup(
                 "listTest");
         ConfigurationManager cm2 = new ConfigurationManager();
@@ -172,7 +173,7 @@ public class ImportConfigTest {
 
     @Test
     public void importSimpleComponentList() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|importConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "importConfig.json"));
         ListConfigurable lc1 = (ListConfigurable) cm1.lookup("simpleList");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(lc1, "simpleList");
@@ -192,7 +193,7 @@ public class ImportConfigTest {
 
     @Test
     public void importSingleEmbeddedComponentList() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|importConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "importConfig.json"));
         ListConfigurable lc1 = (ListConfigurable) cm1.lookup("singleEmbeddedList");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(lc1, "singleEmbeddedList");
@@ -217,7 +218,7 @@ public class ImportConfigTest {
 
     @Test
     public void importMultiEmbeddedComponentList() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|importConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "importConfig.json"));
         ListConfigurable lc1 = (ListConfigurable) cm1.lookup("multiEmbeddedList");
         ConfigurationManager cm2 = new ConfigurationManager();
         cm2.importConfigurable(lc1, "multiEmbeddedList");

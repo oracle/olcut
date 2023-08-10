@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -49,6 +49,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,14 +77,14 @@ public class AllFieldsConfiguredTest {
 
     @Test
     public void loadConfig() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|allConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.xml"));
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
         Assertions.assertNotNull(ac, "Failed to load all-config");
     }
 
     @Test
     public void saveConfig() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|allConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.xml"));
         AllFieldsConfigurable ac1 = (AllFieldsConfigurable) cm1.lookup("all-config");
         cm1.save(f, true);
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
@@ -104,7 +105,7 @@ public class AllFieldsConfiguredTest {
 
     @Test
     public void overrideTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|allConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.xml"));
 
         // Override various properties.
         cm.overrideConfigurableProperty("all-config","boolField",new SimpleProperty("false"));

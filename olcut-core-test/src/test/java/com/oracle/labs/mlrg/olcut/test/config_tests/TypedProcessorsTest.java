@@ -35,6 +35,7 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.test.config.TypedProcessorList;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -42,7 +43,7 @@ public class TypedProcessorsTest {
 
     @Test
     public void testStringType() throws Exception {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|typedProcessorsConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "typedProcessorsConfig.xml"));
         @SuppressWarnings("unchecked")
         TypedProcessorList<String, String> tpl = (TypedProcessorList<String, String>) cm.lookup("typedProcessors");
         List<String> values = tpl.process("Omelet");

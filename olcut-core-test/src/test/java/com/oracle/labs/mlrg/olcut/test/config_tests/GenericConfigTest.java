@@ -49,6 +49,7 @@ import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -59,7 +60,7 @@ public class GenericConfigTest {
     @SuppressWarnings("unchecked")//Looking up a specific class via it's full name
     @Test
     public void lookupAllTest() throws ClassNotFoundException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|genericConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.xml"));
 
         Class<Monkey> clazz = (Class<Monkey>) Class.forName("com.oracle.labs.mlrg.olcut.test.config.Monkey");
         List<Monkey> monkeys = cm.lookupAll(clazz);
@@ -75,7 +76,7 @@ public class GenericConfigTest {
     @SuppressWarnings("unchecked")//Looking up a specific class via it's full name
     @Test
     public void lookupAllMapTest() throws ClassNotFoundException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|genericConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.xml"));
 
         Class<Monkey> clazz = (Class<Monkey>) Class.forName("com.oracle.labs.mlrg.olcut.test.config.Monkey");
         Map<String,Monkey> monkeys = cm.lookupAllMap(clazz);
@@ -109,7 +110,7 @@ public class GenericConfigTest {
 
     @Test
     public void correctListConfig() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|genericConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.xml"));
         ListConfig s = (ListConfig) cm.lookup("correctListConfig");
 
         Assertions.assertEquals(4,s.stringList.size(), "StringList has an incorrect number of values");
@@ -133,14 +134,14 @@ public class GenericConfigTest {
     @Test
     public void incorrectListConfig() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|genericConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.xml"));
             ListConfig l = (ListConfig) cm.lookup("incorrectListConfig");
         });
     }
 
     @Test
     public void correctSetConfig() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|genericConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.xml"));
         SetConfig s = (SetConfig) cm.lookup("correctSetConfig");
 
         assertEquals(3,s.stringSet.size(), "StringSet has an incorrect number of values");
@@ -164,14 +165,14 @@ public class GenericConfigTest {
     @Test
     public void incorrectSetConfig() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|genericConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.xml"));
             SetConfig s = (SetConfig) cm.lookup("incorrectSetConfig");
         });
     }
 
     @Test
     public void invalidListConfig() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|invalidGenericConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "invalidGenericConfig.xml"));
         assertThrows(PropertyException.class, () -> {
             InvalidListConfigurable l = (InvalidListConfigurable) cm.lookup("test");
         });

@@ -36,6 +36,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -51,7 +52,7 @@ public class StringListTest {
 
     @Test
     public void getStrings() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringListConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringListConfig.edn"));
         StringListConfigurable slc = (StringListConfigurable) cm.lookup(
                 "listTest");
         assertEquals("a", slc.strings.get(0));

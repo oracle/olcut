@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -105,7 +106,7 @@ public class ArgumentParsingTest {
 
     @Test
     public void testConfigurableOverride() throws IOException {
-        String[] args = new String[]{"-c", this.getClass().getName() + "|stringListConfig.xml", "--@listTest.strings", "alpha,beta,gamma"};
+        String[] args = new String[]{"-c", createModuleResourceString(this.getClass(), "stringListConfig.xml"), "--@listTest.strings", "alpha,beta,gamma"};
         ConfigurationManager cm = new ConfigurationManager(args);
 
         StringListConfigurable slc = (StringListConfigurable) cm.lookup("listTest");
@@ -117,7 +118,7 @@ public class ArgumentParsingTest {
     @Test
     public void testConfigurableGlobalPropertyOverride() throws IOException {
         OverridingOptions o = new OverridingOptions();
-        String[] args = new String[]{"-c", this.getClass().getName() + "|stringListConfig.xml", "-s", "overridingTest"};
+        String[] args = new String[]{"-c", createModuleResourceString(this.getClass(), "stringListConfig.xml"), "-s", "overridingTest"};
         ConfigurationManager cm = new ConfigurationManager(args, o);
 
         Assertions.assertEquals("primates", o.slc.strings.get(0), "Configurable overriding failed.");
@@ -128,7 +129,7 @@ public class ArgumentParsingTest {
     @Test
     public void testConfigurableOverrideAndLoad() throws IOException {
         OverridingOptions o = new OverridingOptions();
-        String[] args = new String[]{"-c", this.getClass().getName() + "|stringListConfig.xml", "--string-list-configurable", "listTest", "--@listTest.strings", "alpha,beta,gamma"};
+        String[] args = new String[]{"-c", createModuleResourceString(this.getClass(), "stringListConfig.xml"), "--string-list-configurable", "listTest", "--@listTest.strings", "alpha,beta,gamma"};
         ConfigurationManager cm = new ConfigurationManager(args, o);
 
         StringListConfigurable slc = o.slc;
@@ -139,7 +140,7 @@ public class ArgumentParsingTest {
 
     @Test
     public void testGlobalOverride() throws IOException {
-        String[] args = new String[]{"-c", this.getClass().getName() + "|globalPropertyConfig.xml", "--@a", "apollo", "--@monkeys", "gibbons"};
+        String[] args = new String[]{"-c", createModuleResourceString(this.getClass(), "globalPropertyConfig.xml"), "--@a", "apollo", "--@monkeys", "gibbons"};
         ConfigurationManager cm = new ConfigurationManager(args);
 
         assertEquals("apollo", cm.getGlobalProperty("a"), "Global property overriding failed.");
@@ -182,7 +183,7 @@ public class ArgumentParsingTest {
     @Test
     public void testDuplicateCharArguments() throws IOException {
         assertThrows(ArgumentException.class, () -> {
-            String[] args = new String[]{"-c", this.getClass().getName() + "|stringListConfig.xml"};
+            String[] args = new String[]{"-c", createModuleResourceString(this.getClass(), "stringListConfig.xml")};
             Options o = new DuplicateCharOptions();
             ConfigurationManager cm = new ConfigurationManager(args, o);
         });
@@ -191,7 +192,7 @@ public class ArgumentParsingTest {
     @Test
     public void testDuplicateLongArguments() throws IOException {
         assertThrows(ArgumentException.class, () -> {
-            String[] args = new String[]{"-c", this.getClass().getName() + "|stringListConfig.xml"};
+            String[] args = new String[]{"-c", createModuleResourceString(this.getClass(), "stringListConfig.xml")};
             Options o = new DuplicateLongOptions();
             ConfigurationManager cm = new ConfigurationManager(args, o);
         });
@@ -227,7 +228,7 @@ public class ArgumentParsingTest {
 
     @Test
     public void testInvalidNoConfigFileOptions() throws IOException {
-        String[] args = new String[]{"-c", this.getClass().getName() + "|stringListConfig.xml", "-s", "listTest"};
+        String[] args = new String[]{"-c", createModuleResourceString(this.getClass(), "stringListConfig.xml"), "-s", "listTest"};
         InvalidNoConfigOptions o = new InvalidNoConfigOptions();
         ConfigurationManager cm;
         cm = new ConfigurationManager(args, o, true);

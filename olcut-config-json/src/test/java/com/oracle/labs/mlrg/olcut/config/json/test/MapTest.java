@@ -38,6 +38,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -54,7 +55,7 @@ public class MapTest {
 
     @Test
     public void mapTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mapConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "mapConfig.json"));
         MapConfigurable m = (MapConfigurable) cm.lookup("mapTest");
         Map<String,String> map = m.map;
         assertEquals("stuff",map.get("things"));

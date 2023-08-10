@@ -36,6 +36,7 @@ import com.oracle.labs.mlrg.olcut.config.PropertySheet;
 import com.oracle.labs.mlrg.olcut.test.config.MapConfigurable;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -49,7 +50,7 @@ public class MapTest {
 
     @Test
     public void mapTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mapConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "mapConfig.xml"));
         MapConfigurable m = (MapConfigurable) cm.lookup("mapTest");
         Map<String,String> map = m.map;
         assertEquals("stuff",map.get("things"));

@@ -34,6 +34,7 @@ import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class DuplicatePropertyTest {
@@ -46,21 +47,21 @@ public class DuplicatePropertyTest {
     @Test
     public void duplicatePropertyMap() {
         assertThrows(ConfigLoaderException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyMapConfig.json");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "duplicatePropertyMapConfig.json"));
         }, "Should have thrown exception on loading");
     }
 
     @Test
     public void duplicatePropertyList() {
         assertThrows(ConfigLoaderException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyListConfig.json");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "duplicatePropertyListConfig.json"));
         }, "Should have thrown exception on loading");
     }
 
     @Test
     public void duplicateProperty() {
         assertThrows(ConfigLoaderException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|duplicatePropertyConfig.json");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "duplicatePropertyConfig.json"));
         }, "Should have thrown exception on loading");
     }
 }

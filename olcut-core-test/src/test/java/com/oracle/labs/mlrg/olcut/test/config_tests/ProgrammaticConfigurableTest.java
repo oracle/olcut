@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -68,7 +69,7 @@ public class ProgrammaticConfigurableTest {
      */
     @Test
     public void addDefaultStringConfigurable() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         cm.addConfiguration(StringConfigurable.class, "c");
         StringConfigurable sc = (StringConfigurable) cm.lookup("c");
         Assertions.assertEquals("", sc.one);
@@ -81,7 +82,7 @@ public class ProgrammaticConfigurableTest {
      */
     @Test
     public void addStringConfigurable() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         Map<String, Property> m = new HashMap<>();
         for(String s : new String[] {"one", "two", "three"}) {
             m.put(s, new SimpleProperty(s));
@@ -99,7 +100,7 @@ public class ProgrammaticConfigurableTest {
      */
     @Test
     public void addPartialStringConfigurable() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         Map<String,Property> m = new HashMap<>();
         for(String s : new String[] {"one"}) {
             m.put(s, new SimpleProperty(s));
@@ -126,7 +127,7 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addConfigurableWithBadProperty() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|basicConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "basicConfig.xml"));
             Map<String,Property> m = new HashMap<>();
             m.put("s", new SimpleProperty("one"));
             m.put("i", new SimpleProperty("two"));
@@ -144,7 +145,7 @@ public class ProgrammaticConfigurableTest {
      */
     @Test
     public void addAlreadyNamedStringConfigurable() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         Map<String,Property> m = new HashMap<>();
         for(String s : new String[] {"one", "two", "three"}) {
             m.put(s, new SimpleProperty(s));
@@ -163,7 +164,7 @@ public class ProgrammaticConfigurableTest {
     @Test
     public void addAlreadyNamedAndInstatiatedStringConfigurable() throws IOException {
         assertThrows(IllegalArgumentException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
             StringConfigurable sc = (StringConfigurable) cm.lookup("a");
             Map<String,Property> m = new HashMap<>();
             for(String s : new String[] {"one", "two", "three"}) {
@@ -178,7 +179,7 @@ public class ProgrammaticConfigurableTest {
     public void testWriting() throws IOException {
         //
         // Add a component.
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|stringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "stringConfig.xml"));
         Map<String, Property> m = new HashMap<>();
         for(String s : new String[]{"one", "two", "three"}) {
             m.put(s, new SimpleProperty(s));

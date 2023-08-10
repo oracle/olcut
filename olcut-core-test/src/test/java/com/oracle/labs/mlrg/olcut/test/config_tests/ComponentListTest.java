@@ -41,6 +41,7 @@ import com.oracle.labs.mlrg.olcut.test.config.SimpleConfigurable;
 import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -58,7 +59,7 @@ public class ComponentListTest {
 
     @Test
     public void componentListTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "componentListConfig.xml"));
         ListConfigurable lc = (ListConfigurable) cm.lookup("simple");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 2);
@@ -70,7 +71,7 @@ public class ComponentListTest {
     @Test
     public void badComponentListTest() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "componentListConfig.xml"));
             ListConfigurable lc = (ListConfigurable) cm.lookup("bad");
             for (Configurable c : lc.getList()) {
                 assertNotNull(c);
@@ -80,7 +81,7 @@ public class ComponentListTest {
 
     @Test
     public void simpleTypedTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "componentListConfig.xml"));
         ListConfigurable lc = (ListConfigurable) cm.lookup("typed");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 3);
@@ -92,7 +93,7 @@ public class ComponentListTest {
 
     @Test
     public void dualTypedTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "componentListConfig.xml"));
         ListConfigurable lc = (ListConfigurable) cm.lookup("dualtyped");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 5);
@@ -115,7 +116,7 @@ public class ComponentListTest {
 
     @Test
     public void comboTypedTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "componentListConfig.xml"));
         ListConfigurable lc = (ListConfigurable) cm.lookup("combotyped");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 4);
@@ -137,7 +138,7 @@ public class ComponentListTest {
 
     @Test
     public void stringConfigurableArrayTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "componentListConfig.xml"));
         ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearray");
         StringConfigurable[] l = lc.getArray();
         assertTrue(l.length == 3);
@@ -152,7 +153,7 @@ public class ComponentListTest {
     @Test
     public void stringConfigurableBrokenArrayTest() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "componentListConfig.xml"));
             ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearraybroken");
         }, "Did not throw PropertyException when asking for unknown element in configurable array.");
     }

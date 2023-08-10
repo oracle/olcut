@@ -37,6 +37,7 @@ import com.oracle.labs.mlrg.olcut.test.config.ListTypeConfigurable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -46,7 +47,7 @@ public class TypeConfigTest {
     
     @Test
     public void defaultValues() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|typeConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "typeConfig.xml"));
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("default");
         Assertions.assertEquals(bc1.s, "default");
         Assertions.assertEquals(bc1.i, 16);
@@ -59,7 +60,7 @@ public class TypeConfigTest {
 
     @Test
     public void configuredTypes() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|typeConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "typeConfig.xml"));
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("type-a");
         Assertions.assertEquals(bc1.s, "one");
         Assertions.assertEquals(bc1.i, 2);
@@ -72,7 +73,7 @@ public class TypeConfigTest {
     
     @Test
     public void listTypes() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|typeConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "typeConfig.xml"));
         ListTypeConfigurable lc1 = (ListTypeConfigurable) cm1.lookup("type-list");
         Configurable[] cl = lc1.getList();
         BasicConfigurable bc1 = (BasicConfigurable) cl[0];

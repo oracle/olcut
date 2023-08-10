@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -56,7 +57,7 @@ public class NestedConfigurablesTest {
 
     @Test
     public void testLoadFromXML() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|nestedConfigurablesConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "nestedConfigurablesConfig.json"));
         FooUserConfigurable user = (FooUserConfigurable) cm.lookup("user");
         assertNotNull(user);
         FooConfigurable foo = user.getFoo();
@@ -67,7 +68,7 @@ public class NestedConfigurablesTest {
 
     @Test
     public void testSave() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|nestedConfigurablesConfig.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "nestedConfigurablesConfig.json"));
         FooUserConfigurable u1 = (FooUserConfigurable) cm1.lookup("user");
         File tmp = mkTmp();
         cm1.save(tmp);

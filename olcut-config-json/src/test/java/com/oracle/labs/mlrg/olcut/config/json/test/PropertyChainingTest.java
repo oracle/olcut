@@ -36,6 +36,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -51,7 +52,7 @@ public class PropertyChainingTest {
 
     @Test
     public void chainLoading() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|propertyChainingConfigA.json");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "propertyChainingConfigA.json"));
         String stringA = cm.getGlobalProperty("stringA");
         String stringB = cm.getGlobalProperty("stringB");
         String stringC = cm.getGlobalProperty("stringC");
@@ -68,7 +69,7 @@ public class PropertyChainingTest {
 
     @Test
     public void overlay() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|propertyChainingConfigA.json");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "propertyChainingConfigA.json"));
         String globalA = cm.getGlobalProperty("a");
         String globalB = cm.getGlobalProperty("b");
         String globalC = cm.getGlobalProperty("c");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -53,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * A set of tests for component lists.
  */
 public class ComponentListTest {
+    private static final String path = ConfigurationManager.createModuleResourceString(ComponentListTest.class, "componentListConfig.edn");
 
     @BeforeAll
     public static void setUpClass() throws Exception {
@@ -61,7 +62,7 @@ public class ComponentListTest {
 
     @Test
     public void componentListTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         ListConfigurable lc = (ListConfigurable) cm.lookup("simple");
         List<Configurable> l = lc.getList();
         assertEquals(2, l.size());
@@ -73,7 +74,7 @@ public class ComponentListTest {
     @Test
     public void badComponentListTest() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.edn");
+            ConfigurationManager cm = new ConfigurationManager(path);
             ListConfigurable lc = (ListConfigurable) cm.lookup("bad");
             for (Configurable c : lc.getList()) {
                 assertNotNull(c);
@@ -83,7 +84,7 @@ public class ComponentListTest {
 
     @Test
     public void simpleTypedTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         ListConfigurable lc = (ListConfigurable) cm.lookup("typed");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 3);
@@ -95,7 +96,7 @@ public class ComponentListTest {
 
     @Test
     public void dualTypedTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         ListConfigurable lc = (ListConfigurable) cm.lookup("dualtyped");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 5);
@@ -118,7 +119,7 @@ public class ComponentListTest {
 
     @Test
     public void comboTypedTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         ListConfigurable lc = (ListConfigurable) cm.lookup("combotyped");
         List<Configurable> l = lc.getList();
         assertTrue(l.size() == 4);
@@ -140,7 +141,7 @@ public class ComponentListTest {
 
     @Test
     public void stringConfigurableArrayTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
         ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearray");
         StringConfigurable[] l = lc.getArray();
         assertTrue(l.length == 3);
@@ -155,7 +156,7 @@ public class ComponentListTest {
     @Test
     public void stringConfigurableBrokenArrayTest() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|componentListConfig.edn");
+            ConfigurationManager cm = new ConfigurationManager(path);
             ArrayStringConfigurable lc = (ArrayStringConfigurable) cm.lookup("stringconfigurablearraybroken");
         }, "Did not throw PropertyException when asking for unknown element in configurable array.");
     }

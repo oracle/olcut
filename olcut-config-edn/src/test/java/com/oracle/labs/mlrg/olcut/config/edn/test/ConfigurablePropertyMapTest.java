@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -45,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  */
 public class ConfigurablePropertyMapTest {
+    private static final String path = ConfigurationManager.createModuleResourceString(ConfigurablePropertyMapTest.class, "configurablePropMap.edn");
 
     public File f;
 
@@ -61,7 +62,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void configurablePropMap() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.edn");
+        ConfigurationManager cm = new ConfigurationManager(path);
 
         FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("fooMap");
 
@@ -74,7 +75,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void saveAllWithInstantiationGeneric() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.edn");
+        ConfigurationManager cm1 = new ConfigurationManager(path);
         FooMapConfigurable s1 = (FooMapConfigurable) cm1.lookup("fooMap");
         cm1.save(f, true);
         assertEquals(3, cm1.getNumInstantiated());
@@ -85,7 +86,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void saveAllWithNoInstantiationGeneric() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.edn");
+        ConfigurationManager cm1 = new ConfigurationManager(path);
         cm1.save(f, true);
         assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));

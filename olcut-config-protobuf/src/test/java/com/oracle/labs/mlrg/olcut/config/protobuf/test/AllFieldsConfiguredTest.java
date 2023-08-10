@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -72,17 +73,17 @@ public class AllFieldsConfiguredTest {
 
     @Test
     public void loadConfig() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|allConfig.pb");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.pb"));
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
         assertNotNull(ac, "Failed to load all-config from binary");
-        cm = new ConfigurationManager(this.getClass().getName()+"|allConfig.pbtxt");
+        cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.pbtxt"));
         ac = (AllFieldsConfigurable) cm.lookup("all-config");
         assertNotNull(ac, "Failed to load all-config from text");
     }
 
     @Test
     public void saveConfig() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|allConfig.pb");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.pb"));
         AllFieldsConfigurable ac1 = (AllFieldsConfigurable) cm1.lookup("all-config");
         cm1.save(binaryFile, true);
         cm1.save(textFile, true);

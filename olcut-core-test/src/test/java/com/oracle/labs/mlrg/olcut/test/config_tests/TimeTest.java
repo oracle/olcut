@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -48,7 +49,7 @@ public class TimeTest {
 
     @Test
     public void testValid() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|timeConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "timeConfig.xml"));
         TimeConfigurable time = (TimeConfigurable) cm.lookup("valid-time");
         Assertions.assertEquals(OffsetTime.parse("12:34+00:00"),time.time);
         Assertions.assertEquals(LocalDate.parse("1066-10-04"),time.date);
@@ -58,7 +59,7 @@ public class TimeTest {
     @Test
     public void testInvalidTime() {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|timeConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "timeConfig.xml"));
             TimeConfigurable time = (TimeConfigurable) cm.lookup("invalid-time");
         });
     }
@@ -66,7 +67,7 @@ public class TimeTest {
     @Test
     public void testInvalidDate() {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|timeConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "timeConfig.xml"));
             TimeConfigurable time = (TimeConfigurable) cm.lookup("invalid-date");
         });
     }
@@ -74,7 +75,7 @@ public class TimeTest {
     @Test
     public void testInvalidDateTime() {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|timeConfig.xml");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "timeConfig.xml"));
             TimeConfigurable time = (TimeConfigurable) cm.lookup("invalid-date-time");
         });
     }

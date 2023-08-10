@@ -36,6 +36,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -50,7 +51,7 @@ public class PostConfigTest {
 
     @Test
     public void postConfigTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|postConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "postConfig.edn"));
         PostConfigurable p = (PostConfigurable) cm.lookup("post");
         assertEquals("Monkeys",p.one);
         assertEquals("Gorillas",p.two);

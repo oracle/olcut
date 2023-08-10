@@ -38,6 +38,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -54,7 +55,7 @@ public class ArrayTest {
 
     @Test
     public void arrayTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|arrayConfig.json");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "arrayConfig.json"));
         ArrayConfigurable ac = (ArrayConfigurable) cm.lookup("a");
         assertArrayEquals(new int[]{1,2,3},ac.intArray, "int array not equal");
         assertArrayEquals(new long[]{9223372036854775807L,9223372036854775806L,5L},ac.longArray, "long array not equal");
@@ -65,7 +66,7 @@ public class ArrayTest {
     @Test
     public void invalidArrayTest() throws IOException {
         assertThrows(PropertyException.class, () -> {
-            ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|arrayConfig.json");
+            ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "arrayConfig.json"));
             ArrayConfigurable ac = (ArrayConfigurable) cm.lookup("invalid-char");
         }, "Invalid character array parsed, should have thrown PropertyException.");
     }

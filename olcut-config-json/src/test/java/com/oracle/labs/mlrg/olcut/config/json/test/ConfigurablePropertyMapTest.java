@@ -38,6 +38,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -61,7 +62,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void configurablePropMap() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.json");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "configurablePropMap.json"));
 
         FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("fooMap");
 
@@ -74,7 +75,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void overriddenPropMap() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.json");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "configurablePropMap.json"));
 
         FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("overriddenMap");
 
@@ -87,7 +88,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void saveAllWithInstantiationGeneric() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "configurablePropMap.json"));
         FooMapConfigurable s1 = (FooMapConfigurable) cm1.lookup("fooMap");
         cm1.save(f, true);
         assertEquals(3, cm1.getNumInstantiated());
@@ -98,7 +99,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void saveAllWithNoInstantiationGeneric() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.json");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "configurablePropMap.json"));
         cm1.save(f, true);
         assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));

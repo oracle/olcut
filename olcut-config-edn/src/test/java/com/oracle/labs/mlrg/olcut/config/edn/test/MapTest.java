@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -54,7 +54,7 @@ public class MapTest {
 
     @Test
     public void mapTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mapConfig.edn");
+        ConfigurationManager cm = new ConfigurationManager(ConfigurationManager.createModuleResourceString(this.getClass(),"mapConfig.edn"));
         MapConfigurable m = (MapConfigurable) cm.lookup("mapTest");
         Map<String,String> map = m.map;
         assertEquals("stuff",map.get("things"));

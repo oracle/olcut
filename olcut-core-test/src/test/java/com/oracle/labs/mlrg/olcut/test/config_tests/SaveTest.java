@@ -47,6 +47,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -65,7 +66,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithInstantiationGeneric() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|genericConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.xml"));
         SetConfig s1 = (SetConfig) cm1.lookup("correctSetConfig");
         cm1.save(f, true);
         assertEquals(3, cm1.getNumInstantiated());
@@ -79,7 +80,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithNoInstantiationGeneric() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|genericConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "genericConfig.xml"));
         cm1.save(f, true);
         assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
@@ -93,7 +94,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithInstantiation() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "basicConfig.xml"));
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         cm1.save(f, true);
         assertEquals(1, cm1.getNumInstantiated());
@@ -107,7 +108,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithNoInstantiation() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "basicConfig.xml"));
         cm1.save(f, true);
         assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));
@@ -121,7 +122,7 @@ public class SaveTest {
     
     @Test
     public void saveAllWithInstantiationAndAddition() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "basicConfig.xml"));
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         Map<String, Property> m = new HashMap<>();
         m.put("s", new SimpleProperty("foo"));
@@ -145,7 +146,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithoutInstantiationAndAddition() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "basicConfig.xml"));
         Map<String, Property> m = new HashMap<>();
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
@@ -171,7 +172,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithInstantiationAndRemoval() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "basicConfig.xml"));
         BasicConfigurable bc1 = (BasicConfigurable) cm1.lookup("a");
         cm1.removeConfigurable("a");
         cm1.save(f, true);
@@ -190,7 +191,7 @@ public class SaveTest {
 
     @Test
     public void saveAllWithoutInstantiationAndRemoval() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "basicConfig.xml"));
         cm1.removeConfigurable("a");
         cm1.save(f, true);
         assertEquals(0, cm1.getNumInstantiated());
@@ -209,7 +210,7 @@ public class SaveTest {
 
     @Test
     public void removeProgramaticallyAddedUninstantiated() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|basicConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "basicConfig.xml"));
         Map<String, Property> m = new HashMap<>();
         m.put("s", new SimpleProperty("foo"));
         m.put("i", new SimpleProperty(""+7));
@@ -245,7 +246,7 @@ public class SaveTest {
 
     @Test
     public void loadNastyStrings() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|nastyStringConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "nastyStringConfig.xml"));
         StringConfigurable sc = (StringConfigurable) cm.lookup(
                 "nastyStringTest");
         Assertions.assertEquals("([^a-z0-9_!#$%&*@＠]|^|RT:?)(@＠+)([a-z0-9_]{1,20})(/[a-z][a-z0-9_\\\\-]{0,24})?", sc.one);

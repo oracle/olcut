@@ -49,6 +49,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -86,7 +87,7 @@ public class MBeanTest {
 
     @Test
     public void registerMBean() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mbeanConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "mbeanConfig.xml"));
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("registerTest");
         Assertions.assertNotNull(smbc,"Couldn't lookup registerTest");
         Assertions.assertEquals(smbc.getValue("a"), "10");
@@ -94,7 +95,7 @@ public class MBeanTest {
 
     @Test
     public void retrieveProperty() throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mbeanConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "mbeanConfig.xml"));
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("registerTest");
         Assertions.assertNotNull(smbc, "Couldn't lookup registerTest");
 
@@ -108,7 +109,7 @@ public class MBeanTest {
     @Test
     public void retrieveList()
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mbeanConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "mbeanConfig.xml"));
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
         Assertions.assertNotNull(smbc, "Couldn't lookup listTest");
 
@@ -123,7 +124,7 @@ public class MBeanTest {
     @Test
     public void modifyProperty() 
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mbeanConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "mbeanConfig.xml"));
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
         Assertions.assertNotNull(smbc, "Couldn't lookup listTest");
 
@@ -141,7 +142,7 @@ public class MBeanTest {
     @Test
     public void modifyList()
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mbeanConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "mbeanConfig.xml"));
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
         Assertions.assertNotNull(smbc, "Couldn't lookup listTest");
 
@@ -160,7 +161,7 @@ public class MBeanTest {
     @Test
     public void modifyAll()
             throws IOException, NullPointerException, MalformedObjectNameException, InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|mbeanConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "mbeanConfig.xml"));
         SimpleMBConfigurable smbc = (SimpleMBConfigurable) cm.lookup("listTest");
         Assertions.assertNotNull(smbc, "Couldn't lookup listTest");
 

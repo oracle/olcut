@@ -48,6 +48,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.SplittableRandom;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static com.oracle.labs.mlrg.olcut.test.provenance.ProvenanceTestUtils.constructProvenance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -76,7 +77,7 @@ public class ProtoProvenanceSerializationTest {
 
     @Test
     public void marshallingTest() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|example-provenance-config.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "example-provenance-config.xml"));
         ExampleProvenancableConfigurable e = (ExampleProvenancableConfigurable) cm1.lookup("example-config");
         assertNotNull(e, "Failed to load example config");
 

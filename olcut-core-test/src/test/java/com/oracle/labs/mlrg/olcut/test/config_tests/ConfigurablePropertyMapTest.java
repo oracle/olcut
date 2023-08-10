@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static com.oracle.labs.mlrg.olcut.util.IOUtil.replaceBackSlashes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -55,7 +56,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void configurablePropMap() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "configurablePropMap.xml"));
 
         FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("fooMap");
 
@@ -68,7 +69,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void overriddenPropMap() {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "configurablePropMap.xml"));
 
         FooMapConfigurable fm = (FooMapConfigurable) cm.lookup("overriddenMap");
 
@@ -81,7 +82,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void saveAllWithInstantiationGeneric() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "configurablePropMap.xml"));
         FooMapConfigurable s1 = (FooMapConfigurable) cm1.lookup("fooMap");
         cm1.save(f, true);
         assertEquals(3, cm1.getNumInstantiated());
@@ -92,7 +93,7 @@ public class ConfigurablePropertyMapTest {
 
     @Test
     public void saveAllWithNoInstantiationGeneric() throws IOException {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName()+"|configurablePropMap.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "configurablePropMap.xml"));
         cm1.save(f, true);
         assertEquals(0, cm1.getNumInstantiated());
         ConfigurationManager cm2 = new ConfigurationManager(replaceBackSlashes(f.toString()));

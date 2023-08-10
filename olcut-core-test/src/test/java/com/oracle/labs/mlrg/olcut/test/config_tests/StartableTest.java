@@ -36,6 +36,7 @@ import com.oracle.labs.mlrg.olcut.test.config.StartableConfigurable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -46,7 +47,7 @@ public class StartableTest {
 
     @Test
     public void simpleTest() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|startableConfig.xml");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "startableConfig.xml"));
         StartableConfigurable sc = (StartableConfigurable) cm.lookup("startme");
         Assertions.assertFalse(sc.isDone());
         sc.join();

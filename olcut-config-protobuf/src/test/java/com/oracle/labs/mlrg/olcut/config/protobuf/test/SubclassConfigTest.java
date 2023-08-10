@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -51,7 +52,7 @@ public class SubclassConfigTest {
 
     @Test
     public void testStringConfigSubclass() throws IOException {
-        ConfigurationManager cm = new ConfigurationManager(this.getClass().getName()+"|subclassConfig.pb");
+        ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "subclassConfig.pb"));
         StringleConfigurable scc = (StringleConfigurable) cm.lookup(
                 "stringConfigSubclass");
         assertEquals("a", scc.one);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -49,6 +49,7 @@ import java.util.SplittableRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.oracle.labs.mlrg.olcut.config.ConfigurationManager.createModuleResourceString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -66,7 +67,7 @@ public class ProvenanceConversionTest {
 
     @Test
     public void conversionTest() {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName() + "|example-provenance-config.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "example-provenance-config.xml"));
         ExampleProvenancableConfigurable e = (ExampleProvenancableConfigurable) cm1.lookup("example-config");
         assertNotNull(e, "Failed to load example config");
 
@@ -84,7 +85,7 @@ public class ProvenanceConversionTest {
 
     @Test
     public void largeConversionTest() {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName() + "|/com/oracle/labs/mlrg/olcut/test/config_tests/allConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "/com/oracle/labs/mlrg/olcut/test/config_tests/allConfig.xml"));
         AllFieldsConfigurable e = (AllFieldsConfigurable) cm1.lookup("all-config");
         assertNotNull(e, "Failed to load example config");
 
@@ -102,7 +103,7 @@ public class ProvenanceConversionTest {
 
     @Test
     public void marshallingTest() {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName() + "|example-provenance-config.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "example-provenance-config.xml"));
         ExampleProvenancableConfigurable e = (ExampleProvenancableConfigurable) cm1.lookup("example-config");
         assertNotNull(e, "Failed to load example config");
 
@@ -118,7 +119,7 @@ public class ProvenanceConversionTest {
 
     @Test
     public void largeMarshallingTest() {
-        ConfigurationManager cm1 = new ConfigurationManager(this.getClass().getName() + "|/com/oracle/labs/mlrg/olcut/test/config_tests/allConfig.xml");
+        ConfigurationManager cm1 = new ConfigurationManager(createModuleResourceString(this.getClass(), "/com/oracle/labs/mlrg/olcut/test/config_tests/allConfig.xml"));
         AllFieldsConfigurable e = (AllFieldsConfigurable) cm1.lookup("all-config");
         assertNotNull(e, "Failed to load example config");
 
