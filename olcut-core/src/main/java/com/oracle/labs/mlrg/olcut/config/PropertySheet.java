@@ -628,7 +628,7 @@ public class PropertySheet<T extends Configurable> {
                 break;
         }
         classVals.removeAll(removeList);
-        if (classVals.size() > 0) {
+        if (!classVals.isEmpty()) {
             throw new PropertyException(instanceName,fieldName,"Found class values in a primitive array");
         }
         return output;
@@ -712,7 +712,7 @@ public class PropertySheet<T extends Configurable> {
                 break;
         }
         classVals.removeAll(removeList);
-        if (classVals.size() > 0) {
+        if (!classVals.isEmpty()) {
             throw new PropertyException(instanceName,fieldName,"Found class values in a primitive array");
         }
         return output;
@@ -843,8 +843,7 @@ public class PropertySheet<T extends Configurable> {
 
         Type genericType = f.getGenericType();
 
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) genericType;
+        if (genericType instanceof ParameterizedType pt) {
             for (Type t : pt.getActualTypeArguments()) {
                 //update the type to the raw type if appropriate
                 if(t instanceof ParameterizedType) {
@@ -936,11 +935,10 @@ public class PropertySheet<T extends Configurable> {
      * expected to be the same.
      */
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof PropertySheet)) {
+        if (!(obj instanceof PropertySheet<?> ps)) {
             return false;
         }
 
-        PropertySheet<?> ps = (PropertySheet<?>) obj;
         return propValues.equals(ps.propValues);
     }
 

@@ -140,7 +140,7 @@ public class CommandInterpreter extends Thread {
 
     private LineReader consoleReader = null;
 
-    private Pattern layeredCommandPattern = Pattern.compile("(.*)\\.([^.]*)");
+    private final Pattern layeredCommandPattern = Pattern.compile("(.*)\\.([^.]*)");
 
 
     /**
@@ -502,8 +502,7 @@ public class CommandInterpreter extends Thread {
         
     }
     
-    private HashSet<Class<?>> supportedMethodParameters =
-            new HashSet<>(Arrays.asList(
+    private final Set<Class<?>> supportedMethodParameters = Set.of(
                     String.class,
                     String[].class,
                     Integer.class,
@@ -518,7 +517,7 @@ public class CommandInterpreter extends Thread {
                     double.class,
                     Boolean.class,
                     boolean.class,
-                    File.class));
+                    File.class);
     
     /**
      * Actually invoke the method for a command.  Tries to parse command
@@ -725,7 +724,7 @@ public class CommandInterpreter extends Thread {
      *
      */
     public synchronized void putResponse(String response) {
-        if(response != null && response.length() > 0) {
+        if(response != null && !response.isEmpty()) {
             out.println(response);
         }
     }
@@ -929,7 +928,7 @@ public class CommandInterpreter extends Thread {
                         out.println("In : " + message);
                     }
                     message = message.trim();
-                    if(message.length() > 0) {
+                    if(!message.isEmpty()) {
                         putResponse(execute(message));
                     }
                 }
@@ -947,12 +946,12 @@ public class CommandInterpreter extends Thread {
         onExit();
     }
     // some history patterns used by getInputLine()
-    private static Pattern historyPush = Pattern.compile("(.+):p");
+    private static final Pattern historyPush = Pattern.compile("(.+):p");
 
-    private static Pattern editPattern
+    private static final Pattern editPattern
             = Pattern.compile("\\^(.+?)\\^(.*?)\\^?");
 
-    private static Pattern bbPattern = Pattern.compile("(!!)");
+    private static final Pattern bbPattern = Pattern.compile("(!!)");
 
     /**
      * Gets the input line. Deals with history. Currently we support simple
@@ -1030,7 +1029,7 @@ public class CommandInterpreter extends Thread {
             return "";
         }
 
-        if(message.length() > 0) {
+        if(!message.isEmpty()) {
             history.add(message);
         }
 
@@ -1151,7 +1150,7 @@ public class CommandInterpreter extends Thread {
 
     class CommandHistory {
 
-        private List<String> history = new ArrayList<>(100);
+        private final List<String> history = new ArrayList<>(100);
 
         /**
          * Adds a command to the history
@@ -1223,11 +1222,11 @@ public class CommandInterpreter extends Thread {
 
     protected static class CommandGroupInternal implements Iterable<String> {
 
-        private String groupName;
+        private final String groupName;
 
-        private String description;
+        private final String description;
 
-        private Set<String> commands;
+        private final Set<String> commands;
 
         public CommandGroupInternal(String groupName, String description, boolean keepSorted) {
             this.groupName = groupName;
@@ -1388,7 +1387,7 @@ public class CommandInterpreter extends Thread {
         public String redirect(CommandInterpreter ci, File outputFile, String[] args) {
             try {
                 PrintStream oldOut = ci.out;
-                ci.out = new PrintStream(outputFile, "utf-8");
+                ci.out = new PrintStream(outputFile, StandardCharsets.UTF_8);
                 ci.putResponse(ci.execute(args));
                 ci.out.close();
                 ci.out = oldOut;
@@ -1490,7 +1489,7 @@ public class CommandInterpreter extends Thread {
 
         @Command(usage="Redirects all subsequent commands to the given file.",completers="filenameCompleters")
         public String setoutput(CommandInterpreter ci, File outputFile) throws Exception {
-            ci.out = new PrintStream(outputFile, "utf-8");
+            ci.out = new PrintStream(outputFile, StandardCharsets.UTF_8);
             return "";
         }
 
@@ -1541,8 +1540,8 @@ public class CommandInterpreter extends Thread {
                     Class.forName(loggerName);
                 } catch (ClassNotFoundException e) {
                     // Not a class - how about package name?
-                    if (!Arrays.stream(Package.getPackages())
-                            .anyMatch(p -> p.getName().startsWith(loggerName) && (p.getName().equals(loggerName) || p.getName().charAt(loggerName.length()) == '.'))) {
+                    if (Arrays.stream(Package.getPackages())
+                            .noneMatch(p -> p.getName().startsWith(loggerName) && (p.getName().equals(loggerName) || p.getName().charAt(loggerName.length()) == '.'))) {
                         // Not a package either
                         ci.out.println("Warning: \"" + loggerName + "\" doesn't appear to be a class or package name");
                     }

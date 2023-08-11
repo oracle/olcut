@@ -895,27 +895,17 @@ public final class ProvenanceUtil {
 
     /**
      * A named tuple representing the extraction order of the {@link ConfiguredObjectProvenance}s discovered in a single {@link ObjectProvenance}.
-     * <p>
-     * It'll be a record one day.
+     * @param traversalOrder The traversal order of the provenances.
+     * @param provenanceTracker The mapping function to an index.
      */
-    public static final class ProvenanceOrdering {
-        /**
-         * The traversal order of the provenances.
-         */
-        public final List<ConfiguredObjectProvenance> traversalOrder;
-        /**
-         * The mapping function to an index.
-         */
-        public final Map<ConfiguredObjectProvenance,Integer> provenanceTracker;
-
+    public static record ProvenanceOrdering(List<ConfiguredObjectProvenance> traversalOrder, Map<ConfiguredObjectProvenance, Integer> provenanceTracker) {
         /**
          * Constructs a ProvenanceOrdering tuple.
          * @param traversalOrder The traversal order of the configured object provenances.
          * @param provenanceTracker The id mapping of the provenances.
          */
-        ProvenanceOrdering(List<ConfiguredObjectProvenance> traversalOrder, IdentityHashMap<ConfiguredObjectProvenance,Integer> provenanceTracker) {
-            this.traversalOrder = Collections.unmodifiableList(traversalOrder);
-            this.provenanceTracker = Collections.unmodifiableMap(provenanceTracker);
+        public ProvenanceOrdering(List<ConfiguredObjectProvenance> traversalOrder, IdentityHashMap<ConfiguredObjectProvenance,Integer> provenanceTracker) {
+            this(Collections.unmodifiableList(traversalOrder), Collections.unmodifiableMap(provenanceTracker));
         }
     }
 }

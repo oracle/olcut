@@ -68,7 +68,7 @@ import java.util.logging.Logger;
  * the validation checks in {@link ConfigurationManager#validateOptions}.
  */
 public interface Options {
-    public static final List<String> header = Collections.unmodifiableList(Arrays.asList("Char","Long Name","Type","Default","Usage"));
+    public static final List<String> header = List.of("Char", "Long Name", "Type", "Default", "Usage");
 
     /**
      * Gets a possibly multi line description of this Options subclass.
@@ -135,7 +135,7 @@ public interface Options {
         ArrayList<List<String>> list = new ArrayList<>();
         ArrayList<List<String>> optionsList = new ArrayList<>();
         Set<Field> fields = getOptionFields(options);
-        if (fields.size() == 0) {
+        if (fields.isEmpty()) {
             return list;
         } else {
             list.add(new ArrayList<>(Collections.singletonList(options.getSimpleName())));

@@ -37,6 +37,7 @@ import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 public record SimpleProperty(String value) implements Property {
     private static final long serialVersionUID = 1L;
 
+    @Override
     public SimpleProperty copy() {
         return new SimpleProperty(value);
     }

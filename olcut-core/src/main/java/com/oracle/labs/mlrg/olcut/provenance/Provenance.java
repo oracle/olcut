@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -32,10 +32,6 @@ import java.io.Serializable;
 
 /**
  * A supertype for Provenance objects.
- * <p>
- * One day it will be sealed, currently it is only
- * extended by {@link ListProvenance}, {@link MapProvenance},
- * {@link ObjectProvenance} and {@link PrimitiveProvenance}.
  * <p>
  * Directly subclassing this will cause the serialisation mechanisms
  * for this package to throw ProvenanceException.

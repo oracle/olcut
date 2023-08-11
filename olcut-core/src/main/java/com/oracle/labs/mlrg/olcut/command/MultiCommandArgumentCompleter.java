@@ -100,10 +100,8 @@ class MultiCommandArgumentCompleter implements Completer {
                 CommandInterface ci = command.getValue();
                 logger.log(Level.FINER, "compMap does not yet contain " + lCommand);
                 final Completer[] compToAdd;
-                if (ci instanceof CompleterCommandInterface) {
+                if (ci instanceof CompleterCommandInterface cci) {
                     logger.log(Level.FINER, "Adding custom completer for " + lCommand);
-                    CompleterCommandInterface cci
-                            = (CompleterCommandInterface) ci;
                     compToAdd = cci.getCompleters();
                 } else {
                     compToAdd = null;
@@ -127,7 +125,7 @@ class MultiCommandArgumentCompleter implements Completer {
                         // remove the non-qualified name as this is an ambiguous entry.
                         Completer[] nonQ = compMap.get(command.getKey());
                         List<String> qualifieds = compMap.keySet().stream().
-                                filter(c -> c.startsWith(command.getKey() + ".")).collect(Collectors.toList());
+                                filter(c -> c.startsWith(command.getKey() + ".")).toList();
                         //
                         // If anybody other than myself is in there, we're ambiguous
                         if (qualifieds.stream().filter(c -> compMap.get(c) == compToAdd).count() > 1) {

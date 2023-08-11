@@ -83,7 +83,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
 
@@ -1640,7 +1639,7 @@ public class ConfigurationManager implements Closeable {
         for(Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
             ConfigurationData rpd = e.getValue();
             try {
-                Class pclass = Class.forName(rpd.getClassName());
+                Class<?> pclass = Class.forName(rpd.getClassName());
                 if (c.isAssignableFrom(pclass)) {
                     ret.add(e.getKey());
                 }
@@ -2013,7 +2012,7 @@ public class ConfigurationManager implements Closeable {
             throw new PropertyException(ex, configName, "Failed to read the ConfigurableName field");
         }
 
-        if (configName.equals("")) {
+        if (configName.isEmpty()) {
             throw new PropertyException("", "Failed to extract name from @ConfigurableName field");
         } else {
             return importConfigurable(configurable, configName);

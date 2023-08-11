@@ -62,13 +62,12 @@ public class CommandCompleter extends StringsCompleter {
         Objects.requireNonNull(cmdMap);
         Objects.requireNonNull(interpreters);
         return () -> {
-            List<String> output = new ArrayList<>();
             // Load in commands
-            output.addAll(cmdMap.keySet());
+            List<String> output = new ArrayList<>(cmdMap.keySet());
             //
             // Load in commands from layered interpreters, producing qualified names for each
             for (LayeredCommandInterpreter lci : interpreters) {
-                output.addAll(lci.commands.keySet().stream().map(c -> c + "." + lci.getLayerTag()).collect(Collectors.toList()));
+                output.addAll(lci.commands.keySet().stream().map(c -> c + "." + lci.getLayerTag()).toList());
             }
             //
             // For each layered name, check if there would be name conflicts. If no conflicts exist, add the

@@ -42,6 +42,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,7 +64,7 @@ public final class DescribeConfigurable {
     /**
      * The description column headers.
      */
-    public static final List<String> HEADER = Collections.unmodifiableList(Arrays.asList("Field Name", "Type", "Mandatory", "Redact", "Default", "Description"));
+    public static final List<String> HEADER = List.of("Field Name", "Type", "Mandatory", "Redact", "Default", "Description");
 
     /**
      * All the configuration relevant field information.
@@ -347,24 +348,13 @@ public final class DescribeConfigurable {
 
             FieldInfo fi = e.getValue();
 
-            String type = fi.className;
-
-            switch (fi.type) {
-                case NORMAL:
-                    break;
-                case ENUM:
-                    type = type + " - " + fi.enumConstants.toString();
-                    break;
-                case LIST:
-                    type = type + "<" + fi.genericListClass + ">";
-                    break;
-                case ENUM_LIST:
-                    type = type + "<" + fi.genericListClass + "> - " + fi.enumConstants.toString();
-                    break;
-                case MAP:
-                    type = type + "<" + fi.genericMapKeyClass + "," + fi.genericMapValueClass + ">";
-                    break;
-            }
+            String type = switch (fi.type) {
+                case NORMAL -> fi.className;
+                case ENUM -> fi.type + " - " + fi.enumConstants.toString();
+                case LIST -> fi.type + "<" + fi.genericListClass + ">";
+                case ENUM_LIST -> fi.type + "<" + fi.genericListClass + "> - " + fi.enumConstants.toString();
+                case MAP -> fi.type + "<" + fi.genericMapKeyClass + "," + fi.genericMapValueClass + ">";
+            };
 
             fieldString.add(fi.name);
             fieldString.add(type);
@@ -410,12 +400,10 @@ public final class DescribeConfigurable {
         for (Map.Entry<String, FieldInfo> e : map.entrySet()) {
             FieldInfo fi = e.getValue();
             switch (fi.type) {
-                case NORMAL:
-                case ENUM:
+                case NORMAL, ENUM:
                     properties.put(e.getKey(), new SimpleProperty(generateDefaultValue(fi)));
                     break;
-                case LIST:
-                case ENUM_LIST:
+                case LIST, ENUM_LIST:
                     properties.put(e.getKey(), new ListProperty(Collections.singletonList(new SimpleProperty(fi.className + "-instance"))));
                     break;
                 case MAP:
@@ -542,7 +530,7 @@ public final class DescribeConfigurable {
 
                     writeExampleConfig(writer, o.extension, configurableClass, map);
 
-                    System.out.println("Example :\n" + writer.toString("UTF-8"));
+                    System.out.println("Example :\n" + writer.toString(StandardCharsets.UTF_8));
                 }
             } else {
                 logger.warning("The supplied class did not implement Configurable, class = " + clazz.getCanonicalName());
