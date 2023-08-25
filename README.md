@@ -13,7 +13,7 @@ be used in concert or independently:
 This toolkit has been used for many projects over the years and has grown to suit
 the needs of a varied user-base.
 
-# Quick Start
+## Getting Started
 
 ## Maven Coordinates
 OLCUT's main components (i.e. `olcut-core`, `olcut-config-json`, `olcut-config-protobuf` and `olcut-config-edn`) are available on Maven Central.
