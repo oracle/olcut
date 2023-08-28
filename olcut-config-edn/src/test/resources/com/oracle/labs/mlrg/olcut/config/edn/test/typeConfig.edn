@@ -1,0 +1,16 @@
+(config
+	(component a [mlrg olcut test config BasicConfigurable]
+		{:import "false" :export "false"}
+		:s "one"
+		:d "3.0"
+		:i "2")
+	(component default [mlrg olcut test config BasicConfigurable]
+		{:import "false" :export "false"})
+	(component b [mlrg olcut test config BasicConfigurable]
+		{:import "false" :export "false"}
+		:s "two"
+		:d "6.3"
+		:i "3")
+	(component l1 [mlrg olcut test config ListTypeConfigurable]
+		{:import "false" :export "false"}
+		:list ["default" "a" "b"]))

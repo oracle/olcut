@@ -1,0 +1,9 @@
+Y
+a8com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable
+sone
+d3.0
+i2Y
+b8com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable
+stwo
+d6.3
+i3

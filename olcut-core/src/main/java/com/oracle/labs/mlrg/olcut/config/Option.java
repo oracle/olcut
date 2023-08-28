@@ -53,7 +53,7 @@ public @interface Option {
 
     String usage();
 
-    public static char EMPTY_CHAR = '\0';
-    public static char SPACE_CHAR = ' ';
+    public static final char EMPTY_CHAR = '\0';
+    public static final char SPACE_CHAR = ' ';
 
 }

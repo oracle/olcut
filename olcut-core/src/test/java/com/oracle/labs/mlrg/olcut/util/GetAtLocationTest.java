@@ -52,7 +52,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * for a file at a location.
  */
 public class GetAtLocationTest {
-    public static final String RESOURCE = "/com/oracle/labs/mlrg/olcut/config/allConfig.xml";
     private static final String TEXT_FILE="/com/oracle/labs/mlrg/olcut/util/textFile.txt";
     private static final String GZIP_FILE="/com/oracle/labs/mlrg/olcut/util/textFile.txt.gz";
 
@@ -75,13 +74,13 @@ public class GetAtLocationTest {
 
     @Test
     public void getResourceURL() throws URISyntaxException {
-        URL url = IOUtil.getURLForLocation(RESOURCE);
+        URL url = IOUtil.getURLForLocation(TEXT_FILE);
         assertTrue(new File(url.toURI()).exists());
     }
 
     @Test
     public void getResourceInputStream() throws IOException {
-        InputStream is = IOUtil.getInputStreamForLocation(RESOURCE);
+        InputStream is = IOUtil.getInputStreamForLocation(TEXT_FILE);
         assertNotNull(is);
     }
 

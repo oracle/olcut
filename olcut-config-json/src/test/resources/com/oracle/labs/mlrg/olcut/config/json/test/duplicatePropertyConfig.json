@@ -1,0 +1,19 @@
+{
+  "config": {
+    "global-properties": {},
+    "components": [
+      {
+        "name": "a",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
+        "export": "false",
+        "import": "false",
+        "properties": {
+          "one": "a",
+          "two": "b",
+          "three": "c",
+          "three": "c"
+        }
+      }
+    ]
+  }
+}

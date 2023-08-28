@@ -1,0 +1,33 @@
+properties {
+  key: "a"
+  value: "angry"
+}
+properties {
+  key: "b"
+  value: "bus"
+}
+properties {
+  key: "c"
+  value: "closing"
+}
+properties {
+  key: "stringC"
+  value: "C3P0"
+}
+components {
+  name: "configC"
+  type: "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "fileC"
+  }
+  properties {
+    key: "three"
+    value: "${c}"
+  }
+  properties {
+    key: "two"
+    value: "${b}"
+  }
+}
+

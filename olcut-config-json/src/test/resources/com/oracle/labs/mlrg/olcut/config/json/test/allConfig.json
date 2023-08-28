@@ -1,0 +1,200 @@
+{
+  "config" : {
+    "global-properties" : {
+      "second-path" : "/tmp/second-path.txt",
+      "third-path" : "/tmp/third-path.txt",
+      "first-path" : "/tmp/first-path.txt",
+      "third-file" : "/tmp/third-file.txt",
+      "first-file" : "/tmp/first-file.txt",
+      "second-file" : "/tmp/second-file.txt"
+    },
+    "components" : [ {
+      "name" : "second-configurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "one" : "alpha",
+        "two" : "beta",
+        "three" : "gamma"
+      }
+    }, {
+      "name" : "first-configurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "one" : "A",
+        "two" : "B",
+        "three" : "C"
+      }
+    }, {
+      "name" : "all-config",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.AllFieldsConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "floatField" : "3.14159",
+        "mapConfigurableSubclassField" : {
+          "third" : "third-configurable",
+          "first" : "first-configurable",
+          "second" : "second-configurable"
+        },
+        "doubleField" : "3.141592653589793",
+        "configurableSubclassField" : "second-configurable",
+        "setPathField" : [ {
+          "item" : "first-path"
+        }, {
+          "item" : "second-path"
+        } ],
+        "mapDoubleField" : {
+          "e" : "2.71828",
+          "pi" : "3.14159"
+        },
+        "byteField" : "123",
+        "listStringField" : [ {
+          "item" : "e"
+        }, {
+          "item" : "pi"
+        } ],
+        "atomicLongField" : "123456789",
+        "pathField" : "/tmp/a-path.txt",
+        "intField" : "12345",
+        "FloatField" : "3.14159",
+        "setDoubleField" : [ {
+          "item" : "2.71828"
+        }, {
+          "item" : "3.14159"
+        } ],
+        "boolField" : "true",
+        "LongField" : "123456789",
+        "listDoubleField" : [ {
+          "item" : "2.71828"
+        }, {
+          "item" : "3.14159"
+        } ],
+        "setConfigurableSubclassField" : [ {
+          "item" : "first-configurable"
+        }, {
+          "item" : "second-configurable"
+        } ],
+        "longArrayField" : [ {
+          "item" : "9223372036854775807"
+        }, {
+          "item" : "9223372036854775806"
+        }, {
+          "item" : "5"
+        } ],
+        "listConfigurableSubclassField" : [ {
+          "item" : "first-configurable"
+        }, {
+          "item" : "second-configurable"
+        } ],
+        "DoubleField" : "3.141592653589793",
+        "BoolField" : "true",
+        "longField" : "123456789",
+        "shortArrayField" : [ {
+          "item" : "12345"
+        }, {
+          "item" : "2345"
+        }, {
+          "item" : "345"
+        } ],
+        "atomicIntegerField" : "1",
+        "doubleArrayField" : [ {
+          "item" : "1e-16"
+        }, {
+          "item" : "2e-16"
+        }, {
+          "item" : "3.16"
+        } ],
+        "stringArrayField" : [ {
+          "item" : "gibbons"
+        }, {
+          "item" : "baboons"
+        }, {
+          "item" : "gorillas"
+        } ],
+        "mapStringField" : {
+          "first" : "A",
+          "second" : "B"
+        },
+        "mapFileField" : {
+          "third" : "third-file",
+          "first" : "first-file",
+          "second" : "second-file"
+        },
+        "intArrayField" : [ {
+          "item" : "123456"
+        }, {
+          "item" : "23456"
+        }, {
+          "item" : "3456"
+        } ],
+        "shortField" : "1234",
+        "configurableField" : "first-configurable",
+        "configurableArrayField" : [ {
+          "item" : "first-configurable"
+        }, {
+          "item" : "second-configurable"
+        } ],
+        "configurableSubclassArrayField" : [ {
+          "item" : "first-configurable"
+        }, {
+          "item" : "second-configurable"
+        } ],
+        "integerField" : "12345",
+        "setStringField" : [ {
+          "item" : "e"
+        }, {
+          "item" : "pi"
+        } ],
+        "ByteField" : "123",
+        "floatArrayField" : [ {
+          "item" : "1.1f"
+        }, {
+          "item" : "2.3"
+        }, {
+          "item" : "3.5"
+        } ],
+        "enumSetField" : [ {
+          "item" : "A"
+        }, {
+          "item" : "C"
+        }, {
+          "item" : "E"
+        } ],
+        "fileField" : "/tmp/a-file.txt",
+        "ShortField" : "1234",
+        "stringField" : "monkeys",
+        "byteArrayField" : [ {
+          "item" : "123"
+        }, {
+          "item" : "23"
+        }, {
+          "item" : "3"
+        } ],
+        "charField" : "a",
+        "characterField" : "a",
+        "charArrayField" : [ {
+          "item" : "1"
+        }, {
+          "item" : "2"
+        }, {
+          "item" : "3"
+        } ],
+        "enumField" : "F"
+      }
+    }, {
+      "name" : "third-configurable",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "one" : "uno",
+        "two" : "dos",
+        "three" : "tres"
+      }
+    } ]
+  }
+}

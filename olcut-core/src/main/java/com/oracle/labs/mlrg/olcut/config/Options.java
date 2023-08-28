@@ -64,7 +64,7 @@ import java.util.logging.Logger;
  * command line arguments processing system.
  * <p>
  * Options implementations should form a tree, with no duplication of classes.
- * Implementions which are not a tree or have duplicate classes will fail
+ * Implementations which are not a tree or have duplicate classes will fail
  * the validation checks in {@link ConfigurationManager#validateOptions}.
  */
 public interface Options {
@@ -175,7 +175,7 @@ public interface Options {
                     throw new ArgumentException(e,"Could not instantiate Options class " + options.getName() + ", it must be public.");
                 }
                 try {
-                    Constructor constructor = options.getDeclaredConstructor();
+                    Constructor<?> constructor = options.getDeclaredConstructor();
                     if (!Modifier.isPublic(constructor.getModifiers())) {
                         throw new ArgumentException(e,"Could not instantiate Options class " + options.getName() + ", its default constructor must be public.");
                     }
@@ -314,10 +314,10 @@ public interface Options {
         return AccessController.doPrivileged((PrivilegedAction<Set<Field>>)
                 () -> {
                     Set<Field> ret = new HashSet<>();
-                    Queue<Class> cq = new ArrayDeque<>();
+                    Queue<Class<?>> cq = new ArrayDeque<>();
                     cq.add(options);
                     while (!cq.isEmpty()) {
-                        Class curr = cq.remove();
+                        Class<?> curr = cq.remove();
                         for (Field f : curr.getDeclaredFields()) {
                             if (f.getAnnotation(Option.class) != null) {
                                 ret.add(f);
@@ -328,7 +328,7 @@ public interface Options {
                                 ret.add(f);
                             }
                         }
-                        Class sc = curr.getSuperclass();
+                        Class<?> sc = curr.getSuperclass();
                         if (sc != null) {
                             cq.add(sc);
                         }
@@ -352,10 +352,10 @@ public interface Options {
         return AccessController.doPrivileged((PrivilegedAction<Set<Field>>)
                 () -> {
                     Set<Field> ret = new HashSet<>();
-                    Queue<Class> cq = new ArrayDeque<>();
+                    Queue<Class<?>> cq = new ArrayDeque<>();
                     cq.add(options);
                     while (!cq.isEmpty()) {
-                        Class curr = cq.remove();
+                        Class<?> curr = cq.remove();
                         for (Field f : curr.getDeclaredFields()) {
                             if (Options.class.isAssignableFrom(f.getType())) {
                                 ret.add(f);
@@ -366,7 +366,7 @@ public interface Options {
                                 ret.add(f);
                             }
                         }
-                        Class sc = curr.getSuperclass();
+                        Class<?> sc = curr.getSuperclass();
                         if (sc != null) {
                             cq.add(sc);
                         }
