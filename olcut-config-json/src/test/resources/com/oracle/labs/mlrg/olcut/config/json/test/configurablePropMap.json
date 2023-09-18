@@ -1,0 +1,55 @@
+{
+  "config" : {
+    "global-properties" : { },
+    "components" : [ {
+      "name" : "fooMap",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.FooMapConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "map" : {
+          "first" : "foo1",
+          "second" : "foo2"
+        }
+      }
+    }, {
+      "name" : "overriddenMap",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.FooMapConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "map" : {
+          "first" : "foo3",
+          "second" : "foo2"
+        }
+      }
+    }, {
+      "name" : "foo1",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.FooConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "name" : "foo1",
+        "value" : "1"
+      }
+    }, {
+      "name" : "foo2",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.FooConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "name" : "foo2",
+        "value" : "2"
+      }
+    }, {
+      "name" : "foo3",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.FooConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "name" : "foo3",
+        "value" : "20"
+      }
+    } ]
+  }
+}

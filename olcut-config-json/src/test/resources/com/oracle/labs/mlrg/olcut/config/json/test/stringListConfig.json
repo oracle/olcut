@@ -1,0 +1,20 @@
+{
+  "config" : {
+    "global-properties" : { },
+    "components" : [ {
+      "name" : "listTest",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringListConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "strings" : [ {
+          "item" : "a"
+        }, {
+          "item" : "b"
+        }, {
+          "item" : "c"
+        } ]
+      }
+    } ]
+  }
+}

@@ -32,15 +32,39 @@ package com.oracle.labs.mlrg.olcut;
  * This class stores the current OLCUT version, along with other compile time information.
  */
 public final class OLCUT {
+    /**
+     * OLCUT version string.
+     */
     public static final String VERSION = "${project.version}";
 
+    /**
+     * OLCUT build timestamp.
+     */
     public static final String BUILD_TIMESTAMP = "${maven.build.timestamp}";
 
+    /**
+     * OLCUT major version number.
+     */
     public static final int MAJOR_VERSION;
+
+    /**
+     * OLCUT minor version number.
+     */
     public static final int MINOR_VERSION;
+
+    /**
+     * OLCUT point release number.
+     */
     public static final int POINT_VERSION;
+
+    /**
+     * OLCUT version tag.
+     */
     public static final String TAG_VERSION;
 
+    /**
+     * Is this OLCUT build an unreleased snapshot?
+     */
     public static final boolean IS_SNAPSHOT;
 
     static {

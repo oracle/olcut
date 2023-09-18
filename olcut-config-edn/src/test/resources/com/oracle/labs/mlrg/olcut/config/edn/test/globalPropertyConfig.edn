@@ -1,0 +1,69 @@
+(config
+
+    (property a "alpha")
+    (property b "beta")
+    (property c "charlie")
+    (property a-prime "${a}")
+    (property adprime "${a-prime}")
+    (property foo "${a}/bar")
+    (property home "${user.home}/Projects,LabsUtil")
+    (property apath "/tmp/${a}")
+
+    (component unknown [mlrg olcut test config StringConfigurable]
+        :one "${d}"
+        :two "${e}"
+        :three "${f}")
+
+    (component badlyformed [mlrg olcut test config StringConfigurable]
+        :one "${a${b}}"
+        :two "${b$}"
+        :three "${a c}")
+
+    (component simple [mlrg olcut test config StringConfigurable]
+        :one "${a}"
+        :two "${b}"
+        :three "${c}")
+
+    (component compound [mlrg olcut test config StringConfigurable]
+        :one "${a}/${b}"
+        :two "${b}${c}"
+        :three "${c}:${a}")
+
+    (component nonglobal [mlrg olcut test config StringConfigurable]
+        :one "${a"
+        :two "$b}"
+        :three "$c")
+
+    (component recurse [mlrg olcut test config StringConfigurable]
+        :one "${a}"
+        :two "${a-prime}"
+        :three "${adprime}")
+
+    (component recurse2 [mlrg olcut test config StringConfigurable]
+        :one "${foo}"
+        :two "x"
+        :three "y")
+
+    (component recurse3 [mlrg olcut test config StringConfigurable]
+        :one "${apath}"
+        :two "${apath}/bpath"
+        :three "y")
+
+    (component compoundrecurse [mlrg olcut test config StringConfigurable]
+        :one "one ${b}/${a-prime}"
+        :two "two ${c}/${a-prime}/${b}/${adprime}"
+        :three "three ${adprime}/${b}/${c}")
+
+    (component sysprops [mlrg olcut test config StringConfigurable]
+        :one "${home}/jini/jsk-all.policy"
+        :two "two"
+        :three "three")
+
+    (component distinguished [mlrg olcut test config StringConfigurable]
+        :one "${gp.hostName}"
+        :two "${user.name}"
+        :three "three")
+
+    (component listTest [mlrg olcut test config StringListConfigurable]
+        :strings ["${a}" "${b}" "${a}/${b}" "intro/${b}" "${a}/extro"])
+)

@@ -1,0 +1,21 @@
+{
+  "config": {
+    "global-properties": {
+      "a": "angry",
+      "b": "bus",
+      "c": "closing",
+      "stringC": "C3P0"
+    },
+    "components": [
+      {
+        "name": "configC",
+        "type": "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
+        "properties": {
+          "one": "fileC",
+          "two": "${b}",
+          "three": "${c}"
+        }
+      }
+    ]
+  }
+}

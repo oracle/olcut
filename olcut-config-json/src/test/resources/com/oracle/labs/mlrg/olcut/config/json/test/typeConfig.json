@@ -1,0 +1,45 @@
+{
+  "config" : {
+    "global-properties" : { },
+    "components" : [ {
+      "name" : "a",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "s" : "one",
+        "d" : "3.0",
+        "i" : "2"
+      }
+    }, {
+      "name" : "default",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable",
+      "export" : "false",
+      "import" : "false"
+    }, {
+      "name" : "b",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.BasicConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "s" : "two",
+        "d" : "6.3",
+        "i" : "3"
+      }
+    }, {
+      "name" : "l1",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListTypeConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "list" : [ {
+          "item" : "default"
+        }, {
+          "item" : "a"
+        }, {
+          "item" : "b"
+        } ]
+      }
+    } ]
+  }
+}

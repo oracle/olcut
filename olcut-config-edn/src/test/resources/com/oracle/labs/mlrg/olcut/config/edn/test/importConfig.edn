@@ -1,0 +1,58 @@
+(config
+	(component a [mlrg olcut test config ComboConfigurable]
+		{:import "false" :export "false"}
+		:sc "b"
+		:alpha "one")
+	(component b [mlrg olcut test config StringConfigurable]
+		{:import "false" :export "false"}
+		:one "d"
+		:two "e"
+		:three "f")
+	(component basic1 [mlrg olcut test config BasicConfigurable]
+		{:import "false" :export "false"}
+		:s "beta"
+		:d "2.71"
+		:i "8")
+	(component l1 [mlrg olcut test config L1Configurable]
+		{:import "false" :export "false"}
+		:c "l2")
+	(component l2 [mlrg olcut test config L2Configurable]
+		{:import "false" :export "false"}
+		:c "l3")
+	(component l3 [mlrg olcut test config L3Configurable]
+		{:import "false" :export "false"}
+		:c "basic")
+	(component l21 [mlrg olcut test config L2Configurable]
+		{:import "false" :export "false"}
+		:s "second-level"
+		:c "l31")
+	(component simple [mlrg olcut test config SimpleConfigurable]
+		{:import "false" :export "false"}
+		:simple "10")
+	(component l31 [mlrg olcut test config L3Configurable]
+		{:import "false" :export "false"}
+		:s "third-level"
+		:c "basic1")
+	(component l11 [mlrg olcut test config L1Configurable]
+		{:import "false" :export "false"}
+		:s "first-level"
+		:c "l21")
+	(component multiEmbeddedList [mlrg olcut test config ListConfigurable]
+		{:import "false" :export "false"}
+		:list ["l1" "l11"])
+	(component strings [mlrg olcut test config StringConfigurable]
+		{:import "false" :export "false"}
+		:one "alpha"
+		:two "beta"
+		:three "charlie")
+	(component simpleList [mlrg olcut test config ListConfigurable]
+		{:import "false" :export "false"}
+		:list ["simple" "strings"])
+	(component basic [mlrg olcut test config BasicConfigurable]
+		{:import "false" :export "false"}
+		:s "alpha"
+		:d "3.14"
+		:i "7")
+	(component singleEmbeddedList [mlrg olcut test config ListConfigurable]
+		{:import "false" :export "false"}
+		:list ["strings" "l1"]))

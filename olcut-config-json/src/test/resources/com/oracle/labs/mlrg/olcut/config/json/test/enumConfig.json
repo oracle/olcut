@@ -1,0 +1,77 @@
+{
+  "config" : {
+    "global-properties" : {
+      "globA" : "A"
+    },
+    "components" : [ {
+      "name" : "default",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.EnumConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "enum1" : "A"
+      }
+    }, {
+      "name" : "set1",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.EnumConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "enum2" : "B",
+        "enumSet1" : [ {
+          "item" : "A"
+        }, {
+          "item" : "B"
+        } ],
+        "enum1" : "A"
+      }
+    }, {
+      "name" : "global",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.EnumConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "enum1" : "${globA}"
+      }
+    }, {
+      "name" : "norequired",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.EnumConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "enum2" : "B"
+      }
+    }, {
+      "name" : "badset",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.EnumConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "enum2" : "B",
+        "enumSet1" : [ {
+          "item" : "A"
+        }, {
+          "item" : "R"
+        } ],
+        "enum1" : "A"
+      }
+    }, {
+      "name" : "badvalue",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.EnumConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "enum1" : "Gargle"
+      }
+    }, {
+      "name" : "both",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.EnumConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "enum2" : "B",
+        "enum1" : "A"
+      }
+    } ]
+  }
+}

@@ -1,0 +1,20 @@
+component {
+  name: "a"
+  type: "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "a"
+  }
+  properties {
+    key: "two"
+    value: "b"
+  }
+  properties {
+    key: "three"
+    value: "c"
+  }
+  properties {
+    key: "three"
+    value: "c"
+  }
+}
