@@ -1,0 +1,20 @@
+components {
+  name: "a"
+  type: "com.oracle.labs.mlrg.olcut.config.StringConfigurable"
+  properties {
+    key: "one"
+    value: "a"
+  }
+  properties {
+    key: "second"
+    value: "b"
+  }
+  properties {
+    key: "three"
+    value: "c"
+  }
+}
+components {
+  name: "bErr",
+  override: "aErr"
+}
