@@ -29,11 +29,14 @@
 package com.oracle.labs.mlrg.olcut.config.json.test;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.config.json.JsonConfigFactory;
 import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.test.config.StringleConfigurable;
 
 import java.io.IOException;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -98,5 +101,14 @@ public class OverrideTest {
         assertEquals("b", sc2.two);
         assertEquals("d", sc2.three);
         assertEquals("e", sc2.four);
+    }
+
+    @Test
+    public void overrideIncorrectName() {
+        Assertions.assertThrows(ConfigLoaderException.class,
+                () -> {
+                    ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(),
+                            "overrideIncorrect.json"));
+                });
     }
 }

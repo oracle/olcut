@@ -248,10 +248,10 @@ public class JsonLoader implements ConfigLoader {
             // just in case.
             ConfigurationData spd = rpdMap.get(override);
             if (spd == null) {
-                spd = existingRPD.get(override);
-                if (spd == null) {
-                    throw new ConfigLoaderException("Override for undefined component: "
-                            + override + ", with name " + curComponent);
+                if (existingRPD == null || !existingRPD.containsKey(override)) {
+                    throw new ConfigLoaderException("Failed to find base component '"+override+"' inherited from '"+curComponent+"'.");
+                } else {
+                    spd = existingRPD.get(override);
                 }
             }
             if (curType != null && !curType.equals(spd.getClassName())) {
