@@ -264,10 +264,10 @@ public class SAXLoader implements ConfigLoader {
                         // just in case.
                         ConfigurationData spd = rpdMap.get(override);
                         if (spd == null) {
-                            spd = existingRPD.get(override);
-                            if (spd == null) {
-                                throw new SAXParseException("Override for undefined component: "
-                                        + override, locator);
+                            if (existingRPD == null || !existingRPD.containsKey(override)) {
+                                throw new SAXParseException("Failed to find base component '"+override+"' inherited from '"+curComponent+"'.", locator);
+                            } else {
+                                spd = existingRPD.get(override);
                             }
                         }
                         if (curType != null && !curType.equals(spd.getClassName())) {

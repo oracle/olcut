@@ -31,6 +31,7 @@ package com.oracle.labs.mlrg.olcut.test.config_tests;
 import java.io.IOException;
 
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
+import com.oracle.labs.mlrg.olcut.config.io.ConfigLoaderException;
 import com.oracle.labs.mlrg.olcut.test.config.StringConfigurable;
 import com.oracle.labs.mlrg.olcut.test.config.StringleConfigurable;
 import org.junit.jupiter.api.Assertions;
@@ -43,10 +44,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  */
 public class OverrideTest {
-
-    public OverrideTest() {
-    }
-
 
     @Test
     public void overrideWithSameType() throws IOException {
@@ -95,5 +92,14 @@ public class OverrideTest {
         Assertions.assertEquals("b", sc2.two);
         Assertions.assertEquals("d", sc2.three);
         Assertions.assertEquals("e", sc2.four);
+    }
+
+    @Test
+    public void overrideIncorrectName() {
+        Assertions.assertThrows(ConfigLoaderException.class,
+                () -> {
+                    ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(),
+                            "overrideIncorrect.xml"));
+                });
     }
 }
