@@ -114,6 +114,6 @@ public class ConfigurationManagerTest {
         Configurable c = cm.lookup("default");
         assertNotNull(c);
 
-        assertEquals(12,cm.getComponentNames().size());
+        assertEquals(13,cm.getComponentNames().size());
     }
 }
