@@ -319,7 +319,7 @@ public final class SubprocessConnection {
 
             //
             // Read until an empty line is returned
-            collectOutputWithTimeout(results::append);
+            collectOutputWithTimeout(line -> results.append(line).append("\n"));
         } finally {
             processLock.unlock();
         }

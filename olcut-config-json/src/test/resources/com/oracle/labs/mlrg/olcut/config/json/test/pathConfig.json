@@ -1,0 +1,14 @@
+{
+  "config" : {
+    "global-properties" : { },
+    "components" : [ {
+      "name" : "pathTest",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.PathConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "test" : "/this/is/a/test/path"
+      }
+    } ]
+  }
+}

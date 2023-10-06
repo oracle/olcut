@@ -1,0 +1,152 @@
+{
+  "config" : {
+    "global-properties" : {
+      "bar" : "quux",
+      "pi" : "3.14"
+    },
+    "components" : [ {
+      "name" : "draconic",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "one" : "dragons",
+        "two" : "wyverns",
+        "three" : "wyrms"
+      }
+    }, {
+      "name" : "mapTest",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.MapConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "map" : {
+          "foo" : "${bar}",
+          "things" : "stuff"
+        }
+      }
+    }, {
+      "name" : "starwars",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.StringConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "one" : "jedi",
+        "two" : "sith",
+        "three" : "scoundrels"
+      }
+    }, {
+      "name" : "correctListConfig",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfig",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "stringConfigurableList" : [ {
+          "item" : "draconic"
+        }, {
+          "item" : "starwars"
+        } ],
+        "stringList" : [ {
+          "item" : "5.5"
+        }, {
+          "item" : "${pi}"
+        }, {
+          "item" : "${pi}"
+        }, {
+          "item" : "2.79"
+        } ],
+        "doubleList" : [ {
+          "item" : "5.5"
+        }, {
+          "item" : "3.14"
+        }, {
+          "item" : "3.14"
+        }, {
+          "item" : "2.79"
+        } ]
+      }
+    }, {
+      "name" : "incorrectSetConfig",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.SetConfig",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "stringConfigurableSet" : [ {
+          "item" : "monkeys"
+        }, {
+          "item" : "sheep"
+        } ],
+        "doubleSet" : [ {
+          "item" : "things"
+        }, {
+          "item" : "wings"
+        }, {
+          "item" : "bings"
+        } ],
+        "stringSet" : [ {
+          "item" : "5.5"
+        }, {
+          "item" : "3.14"
+        }, {
+          "item" : "2.79"
+        } ]
+      }
+    }, {
+      "name" : "incorrectListConfig",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.ListConfig",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "stringConfigurableList" : [ {
+          "item" : "monkeys"
+        }, {
+          "item" : "sheep"
+        } ],
+        "stringList" : [ {
+          "item" : "5.5"
+        }, {
+          "item" : "3.14"
+        }, {
+          "item" : "2.79"
+        } ],
+        "doubleList" : [ {
+          "item" : "things"
+        }, {
+          "item" : "wings"
+        }, {
+          "item" : "bings"
+        } ]
+      }
+    }, {
+      "name" : "correctSetConfig",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.SetConfig",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "stringConfigurableSet" : [ {
+          "item" : "draconic"
+        }, {
+          "item" : "starwars"
+        } ],
+        "doubleSet" : [ {
+          "item" : "5.5"
+        }, {
+          "item" : "3.14"
+        }, {
+          "item" : "3.14"
+        }, {
+          "item" : "2.79"
+        } ],
+        "stringSet" : [ {
+          "item" : "5.5"
+        }, {
+          "item" : "${pi}"
+        }, {
+          "item" : "${pi}"
+        }, {
+          "item" : "2.79"
+        } ]
+      }
+    } ]
+  }
+}

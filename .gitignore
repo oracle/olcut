@@ -27,6 +27,7 @@ manifest.mf
 
 # Subproject files
 olcut-core/target
+olcut-core-test/target
 olcut-config-json/target
 olcut-config-edn/target
 olcut-config-protobuf/target

@@ -1,0 +1,9 @@
+(config
+
+  (components [mlrg olcut test config FooConfigurable]
+    [foo1 :foo1 1]
+    [foo2 :foo2 2])
+
+  (component fooMap [mlrg olcut test config FooMapConfigurable]
+             :map {:first foo1 :second foo2}
+             :map {:first foo1 :second foo2}))

@@ -35,10 +35,11 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <properties>
-        <revision>5.3.0</revision>
+        <revision>6.0.0-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
         <edn.version>0.7.1</edn.version>
         <jackson.version>2.14.1</jackson.version>
         <jackson.databind.version>2.14.1</jackson.databind.version>
@@ -48,6 +49,7 @@
     </properties>
     <modules>
         <module>olcut-core</module>
+        <module>olcut-core-test</module>
         <module>olcut-config-json</module>
         <module>olcut-config-edn</module>
         <module>olcut-config-protobuf</module>
@@ -161,7 +163,6 @@
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
                 <version>${junit.version}</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -184,7 +185,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>enforce-maven</id>
@@ -217,10 +218,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <testSource>1.8</testSource>
-                    <testTarget>1.8</testTarget>
+                    <release>17</release>
+                    <testRelease>17</testRelease>
                     <compilerArgs>
                         <arg>
                             -Xlint:unchecked

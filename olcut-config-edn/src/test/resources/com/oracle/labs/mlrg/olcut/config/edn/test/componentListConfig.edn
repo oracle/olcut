@@ -1,0 +1,44 @@
+(config
+	(component bad [mlrg olcut test config ListConfigurable]
+		{:import "false" :export "false"}
+		:list ["non_existent" "strings"])
+	(component dualtyped [mlrg olcut test config ListConfigurable]
+		{:import "false" :export "false"}
+		:list [[mlrg olcut test config StringConfigurable]
+					 [mlrg olcut test config SimpleConfigurable]])
+	(component combotyped [mlrg olcut test config ListConfigurable]
+		{:import "false" :export "false"}
+		:list ["simp" [mlrg olcut test config StringConfigurable]])
+	(component simple [mlrg olcut test config ListConfigurable]
+		{:import "false" :export "false"}
+		:list ["simp" "strings"])
+	(component simp [mlrg olcut test config SimpleConfigurable]
+		{:import "false" :export "false"}
+		:simple "10")
+	(component strings3 [mlrg olcut test config StringConfigurable]
+		{:import "false" :export "false"}
+		:one "un"
+		:two "deux"
+		:three "trois")
+	(component strings2 [mlrg olcut test config StringConfigurable]
+		{:import "false" :export "false"}
+		:one "one"
+		:two "two"
+		:three "three")
+	(component typed [mlrg olcut test config ListConfigurable]
+		{:import "false" :export "false"}
+		:list [[mlrg olcut test config StringConfigurable]])
+	(component strings [mlrg olcut test config StringConfigurable]
+		{:import "false" :export "false"}
+		:one "alpha"
+		:two "beta"
+		:three "charlie")
+	(component stringconfigurablearray [mlrg olcut test config ArrayStringConfigurable]
+		{:import "false" :export "false"}
+		:stringArray ["strings" "strings2" "strings3"])
+	(component simp2 [mlrg olcut test config SimpleConfigurable]
+		{:import "false" :export "false"}
+		:simple "20")
+	(component stringconfigurablearraybroken [mlrg olcut test config ArrayStringConfigurable]
+		{:import "false" :export "false"}
+		:stringArray ["strings" "monkeys" "gibbons"]))

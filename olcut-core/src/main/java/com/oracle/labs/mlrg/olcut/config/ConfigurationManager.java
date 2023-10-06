@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -97,6 +97,10 @@ import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
 public class ConfigurationManager implements Closeable {
     private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
 
+    /**
+     * Separator character between a JPMS module name and the fully qualified class name.
+     */
+    public static final char MODULE_SEPARATOR_CHAR = '|';
     private static final Pattern WHITESPACE = Pattern.compile("\\s");
 
     public static final Option configFileOption = new Option() {
@@ -499,6 +503,20 @@ public class ConfigurationManager implements Closeable {
     }
 
     /**
+     * Constructs the string for OLCUT to load from a different module.
+     * <p>
+     * At the moment this is the class name plus the {@link #MODULE_SEPARATOR_CHAR} plus the resourcePath.
+     * We need a class in the host module to reference as there's no way to construct the module and lookup
+     * a resource directly.
+     * @param clazz The class in the module where the resource lives.
+     * @param resourcePath The path to the resource in that module. Can either be relative to the class, or fully qualified.
+     * @return The resource path for OLCUT.
+     */
+    public static String createModuleResourceString(Class<?> clazz, String resourcePath) {
+        return clazz.getName() + MODULE_SEPARATOR_CHAR + resourcePath;
+    }
+
+    /**
      * Validates the options, returning the formatted usage String.
      * <p>
      * A valid options implementation forms a tree of Options implementations,
@@ -647,6 +665,21 @@ public class ConfigurationManager implements Closeable {
     private static URL findURL(String input, String argumentName) {
         return AccessController.doPrivileged((PrivilegedAction<URL>)
                 () -> {
+                    int modIndex = input.indexOf(MODULE_SEPARATOR_CHAR);
+                    if (modIndex > 0) {
+                        try {
+                            String witnessClassName = input.substring(0, modIndex);
+                            String classPathName = input.substring(modIndex + 1);
+                            Class<?> witnessClass = Class.forName(witnessClassName);
+                            URL url = witnessClass.getResource(classPathName);
+                            if (url != null) {
+                                return url;
+                            } // else fall through to regular loading
+                        } catch (ClassNotFoundException e) {
+                            // fall through to regular loading
+                            logger.warning("Failed to load class '" + input.substring(0, modIndex) + "'");
+                        }
+                    }
                     URL url = ConfigurationManager.class.getResource(input);
                     if (url == null) {
                         File file = new File(input);
@@ -1561,7 +1594,7 @@ public class ConfigurationManager implements Closeable {
         for(Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
             ConfigurationData rpd = e.getValue();
             try {
-                Class pclass = Class.forName(rpd.getClassName());
+                Class<?> pclass = Class.forName(rpd.getClassName());
                 if (!rpd.isImportable() &&
                         ((allowAssignable && c.isAssignableFrom(pclass)) ||
                          (!allowAssignable && rpd.getClassName().equals(c.getName())))) {
@@ -1579,14 +1612,14 @@ public class ConfigurationManager implements Closeable {
             return null;
         }
         if (instanceNames.size() > 1) {
-            String names = instanceNames.stream().collect(Collectors.joining(", "));
+            String names = String.join(", ", instanceNames);
             throw new PropertyException("", "Multiple instances of " + c.getName() + " found in configuration: " + names);
         }
 
         String matchedName = instanceNames.get(0);
         ConfigurationData cd = configurationDataMap.get(matchedName);
         try {
-            Class matchedClass = Class.forName(cd.getClassName());
+            Class<?> matchedClass = Class.forName(cd.getClassName());
             if (!matchedClass.isInterface()) {
                 return (T)lookup(matchedName);
             } else {
@@ -2184,7 +2217,7 @@ public class ConfigurationManager implements Closeable {
      * @return the current MBean server, or <code>null</code> if there isn't
      * one available.
      */
-    protected MBeanServer getMBeanServer() {
+    public MBeanServer getMBeanServer() {
         if(mbs == null) {
             mbs = ManagementFactory.getPlatformMBeanServer();
         }

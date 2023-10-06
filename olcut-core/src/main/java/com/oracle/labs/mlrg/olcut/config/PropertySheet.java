@@ -885,7 +885,7 @@ public class PropertySheet<T extends Configurable> {
      */
     public void setProp(String key, Property val) {
         // ensure that there is such a property
-        if (!registeredProperties.keySet().contains(key)) {
+        if (!registeredProperties.containsKey(key)) {
             throw new PropertyException(instanceName, "","'" + key + "' is not a registered property");
         }
 
@@ -942,7 +942,7 @@ public class PropertySheet<T extends Configurable> {
             return false;
         }
 
-        PropertySheet ps = (PropertySheet) obj;
+        PropertySheet<?> ps = (PropertySheet<?>) obj;
         return propValues.equals(ps.propValues);
     }
 
@@ -966,13 +966,13 @@ public class PropertySheet<T extends Configurable> {
         return AccessController.doPrivileged((PrivilegedAction<Set<Field>>)
                 () -> {
                     Set<Field> ret = new HashSet<>();
-                    Queue<Class> cq = new ArrayDeque<>();
+                    Queue<Class<?>> cq = new ArrayDeque<>();
                     cq.add(configurable);
                     while (!cq.isEmpty()) {
-                        Class curr = cq.remove();
+                        Class<?> curr = cq.remove();
                         ret.addAll(Arrays.asList(curr.getDeclaredFields()));
                         ret.addAll(Arrays.asList(curr.getFields()));
-                        Class sc = curr.getSuperclass();
+                        Class<?> sc = curr.getSuperclass();
                         if (sc != null) {
                             cq.add(sc);
                         }

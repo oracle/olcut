@@ -1,9 +1,0 @@
-(config
-
-  (components [mlrg olcut config FooConfigurable]
-    [foo1 :foo1 1]
-    [foo2 :foo2 2])
-
-  (component fooMap [mlrg olcut config FooMapConfigurable]
-             :map {:first foo1 :second foo2}
-             :map {:first foo1 :second foo2}))

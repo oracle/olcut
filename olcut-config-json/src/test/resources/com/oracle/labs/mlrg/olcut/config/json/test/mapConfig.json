@@ -1,0 +1,19 @@
+{
+  "config" : {
+    "global-properties" : {
+      "bar" : "quux"
+    },
+    "components" : [ {
+      "name" : "mapTest",
+      "type" : "com.oracle.labs.mlrg.olcut.test.config.MapConfigurable",
+      "export" : "false",
+      "import" : "false",
+      "properties" : {
+        "map" : {
+          "foo" : "${bar}",
+          "things" : "stuff"
+        }
+      }
+    } ]
+  }
+}

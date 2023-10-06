@@ -248,10 +248,10 @@ public final class ProtoLoader implements ConfigLoader {
             // just in case.
             ConfigurationData spd = rpdMap.get(override);
             if (spd == null) {
-                spd = existingRPD.get(override);
-                if (spd == null) {
-                    throw new ConfigLoaderException("Override for undefined component: "
-                            + override + ", with name " + name);
+                if (existingRPD == null || !existingRPD.containsKey(override)) {
+                    throw new ConfigLoaderException("Failed to find base component '"+override+"' inherited from '"+name+"'.");
+                } else {
+                    spd = existingRPD.get(override);
                 }
             }
             if (!type.isEmpty() && !type.equals(spd.getClassName())) {

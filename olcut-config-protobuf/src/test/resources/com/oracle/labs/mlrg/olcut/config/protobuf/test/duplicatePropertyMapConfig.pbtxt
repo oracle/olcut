@@ -1,0 +1,50 @@
+component {
+  name: "a"
+  type: "com.oracle.labs.mlrg.olcut.test.config.FooMapConfigurable"
+  map_property {
+    name: "map"
+    elements {
+      key: "first"
+      value: "foo1"
+    }
+    elements {
+      key: "second"
+      value: "foo2"
+    }
+  }
+  map_property {
+    name: "map"
+    elements {
+      key: "first"
+      value: "foo1"
+    }
+    elements {
+      key: "second"
+      value: "foo2"
+    }
+  }
+}
+component {
+  name: "foo1"
+  type: "com.oracle.labs.mlrg.olcut.test.config.FooConfigurable"
+  properties {
+    key: "name"
+    value: "foo1"
+  }
+  properties {
+    key: "value"
+    value: "1"
+  }
+}
+component {
+  name: "foo2"
+  type: "com.oracle.labs.mlrg.olcut.test.config.FooConfigurable"
+  properties {
+    key: "name"
+    value: "foo2"
+  }
+  properties {
+    key: "value"
+    value: "2"
+  }
+}

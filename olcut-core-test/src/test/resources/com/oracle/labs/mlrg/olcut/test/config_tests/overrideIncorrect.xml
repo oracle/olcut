@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<config>
+
+    <component name="a" type="com.oracle.labs.mlrg.olcut.test.config.StringConfigurable">
+        <property name="one" value="a"/>
+        <property name="two" value="b"/>
+        <property name="three" value="c"/>
+    </component>
+
+    <component name="bErr" inherit="aErr"/>
+</config>
