@@ -66,4 +66,10 @@
         <property name="two" value="e"/>
         <property name="three" value="f"/>
     </component>
+
+    <component name="words" type="com.oracle.labs.mlrg.olcut.config.StringConfigurable">
+        <property name="one" value="rhesus monkey"/>
+        <property name="two" value="-Xmx16g -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"/>
+        <property name="three" value="test/value whitespace"/>
+    </component>
 </config>
