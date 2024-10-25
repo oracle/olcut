@@ -234,6 +234,14 @@ SubprocessConnection | Provides a simple mechanism for communicating over stdio 
 
 This project welcomes contributions from the community. Before submitting a pull request, please [review our contribution guide](./CONTRIBUTING.md)
 
+## Development
+
+To regenerate the protobuf implementations use the following command:
+
+```shell
+protoc --java_out=olcut-config-protobuf/src/main/java/ --proto_path=olcut-config-protobuf/src/main/resources/ olcut-config-protobuf/src/main/resources/olcut_proto.proto
+```
+
 ## Security
 
 Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
