@@ -23,12 +23,12 @@ Maven:
 <dependency>
     <groupId>com.oracle.labs.olcut</groupId>
     <artifactId>olcut-core</artifactId>
-    <version>5.3.0</version>
+    <version>5.3.1</version>
 </dependency>
 ```
 or from Gradle:
 ```groovy
-implementation 'com.oracle.labs.olcut:olcut-core:5.3.0'
+implementation 'com.oracle.labs.olcut:olcut-core:5.3.1'
 ```
 
 The `olcut-extras` artifact is designed as a small tool for developers, as such you should compile the appropriate 
@@ -191,7 +191,7 @@ tab completion, many primitive types as arguments, history, readline-style editi
 optional parameters, and more.
 
 The Command Interpreter is built around [JLine3](https://github.com/jline/jline3) and
-supports the native platforms that JLine3 supports: Solaris, Linux, OS X, FreeBSD, and Windows.
+supports the native platforms that JLine3 supports: Solaris, Linux, macOS, FreeBSD, and Windows.
 
 Read more about the [Command Interpreter](README-Commands.md).
 
