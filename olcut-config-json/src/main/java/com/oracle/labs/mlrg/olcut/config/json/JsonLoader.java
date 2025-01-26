@@ -291,20 +291,26 @@ public class JsonLoader implements ConfigLoader {
                         while (listElementItr.hasNext()) {
                             Entry<String, JsonNode> elementEntry = listElementItr.next();
                             String elementName = elementEntry.getKey();
-                            switch (elementName) {
-                                case ConfigLoader.ITEM:
-                                    listOutput.add(new SimpleProperty(elementEntry.getValue().textValue()));
-                                    break;
-                                case ConfigLoader.TYPE:
-                                    try {
-                                        classListOutput.add(Class.forName(elementEntry.getValue().textValue()));
-                                    } catch (ClassNotFoundException cnfe) {
-                                        throw new ConfigLoaderException("Unable to find class "
-                                                + elementEntry.getValue().textValue() + " in component " + curComponent + ", propertylist " + propName);
-                                    }
-                                    break;
-                                default:
-                                    throw new ConfigLoaderException("Unknown node in component " + curComponent + ", propertylist " + propName + ", node = " + e.getValue().toString());
+                            if (elementEntry.getValue().isTextual()) {
+                                String value = elementEntry.getValue().textValue();
+                                switch (elementName) {
+                                    case ConfigLoader.ITEM:
+                                        listOutput.add(new SimpleProperty(value));
+                                        break;
+                                    case ConfigLoader.TYPE:
+                                        try {
+                                            classListOutput.add(Class.forName(value));
+                                        } catch (ClassNotFoundException cnfe) {
+                                            throw new ConfigLoaderException("Unable to find class "
+                                                    + value + " in component " + curComponent + ", propertylist " + propName);
+                                        }
+                                        break;
+                                    default:
+                                        throw new ConfigLoaderException("Unknown node in component " + curComponent + ", propertylist " + propName + ", node = " + e.getValue().toString());
+                                }
+                            } else {
+                                throw new ConfigLoaderException("Invalid value in component " + curComponent + ", propertylist " + propName + ", node = " + e.getValue().toString() + "" +
+                                        ", all OLCUT values must be strings, numerical types are not parsed.");
                             }
                         }
                     }
@@ -324,13 +330,19 @@ public class JsonLoader implements ConfigLoader {
                         if (mapEntry.getValue().isTextual()) {
                             mapOutput.put(mapEntry.getKey(), new SimpleProperty(mapEntry.getValue().textValue()));
                         } else {
-                            throw new ConfigLoaderException("Unknown node in component " + curComponent + ", propertymap " + propName + ", node = " + e.getValue().toString());
+                            throw new ConfigLoaderException("Invalid value in component " + curComponent + ", propertymap " + propName + ", node = " + e.getValue().toString() +
+                                    ", all OLCUT values must be strings, numerical types are not parsed.");
                         }
                     }
                     rpd.add(propName, new MapProperty(mapOutput));
                 } else {
                     // Generic property.
-                    rpd.add(propName, new SimpleProperty(e.getValue().textValue()));
+                    if (e.getValue().isTextual()) {
+                        rpd.add(propName, new SimpleProperty(e.getValue().textValue()));
+                    } else {
+                        throw new ConfigLoaderException("Invalid value in component " + curComponent + ", property " + propName + ", node = " + e.getValue().toString() +
+                                ", all OLCUT values must be strings, numerical types are not parsed.");
+                    }
                 }
             }
         }
