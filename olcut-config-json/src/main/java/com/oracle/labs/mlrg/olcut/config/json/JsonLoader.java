@@ -310,7 +310,7 @@ public class JsonLoader implements ConfigLoader {
                                 }
                             } else {
                                 throw new ConfigLoaderException("Invalid value in component " + curComponent + ", propertylist " + propName + ", node = " + e.getValue().toString() + "" +
-                                        ", all OLCUT values must be strings, numerical types are not parsed.");
+                                        ", all OLCUT property list values must be strings, other types are not parsed.");
                             }
                         }
                     }
@@ -331,7 +331,7 @@ public class JsonLoader implements ConfigLoader {
                             mapOutput.put(mapEntry.getKey(), new SimpleProperty(mapEntry.getValue().textValue()));
                         } else {
                             throw new ConfigLoaderException("Invalid value in component " + curComponent + ", propertymap " + propName + ", node = " + e.getValue().toString() +
-                                    ", all OLCUT values must be strings, numerical types are not parsed.");
+                                    ", all OLCUT property map values must be strings, other types are not parsed.");
                         }
                     }
                     rpd.add(propName, new MapProperty(mapOutput));
@@ -341,7 +341,7 @@ public class JsonLoader implements ConfigLoader {
                         rpd.add(propName, new SimpleProperty(e.getValue().textValue()));
                     } else {
                         throw new ConfigLoaderException("Invalid value in component " + curComponent + ", property " + propName + ", node = " + e.getValue().toString() +
-                                ", all OLCUT values must be strings, numerical types are not parsed.");
+                                ", all OLCUT property values must be strings, other types are not parsed.");
                     }
                 }
             }
