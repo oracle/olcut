@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -45,7 +45,6 @@ import com.oracle.labs.mlrg.olcut.util.IOUtil;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
 import javax.management.MBeanServer;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -57,10 +56,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,7 +78,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
 
@@ -94,7 +88,7 @@ import static com.oracle.labs.mlrg.olcut.config.PropertySheet.StoredFieldType;
  * @see Configurable
  * @see PropertySheet
  */
-public class ConfigurationManager implements Closeable {
+public final class ConfigurationManager {
     private static final Logger logger = Logger.getLogger(ConfigurationManager.class.getName());
 
     /**
@@ -103,6 +97,9 @@ public class ConfigurationManager implements Closeable {
     public static final char MODULE_SEPARATOR_CHAR = '|';
     private static final Pattern WHITESPACE = Pattern.compile("\\s");
 
+    /**
+     * Default option for configuration file loading.
+     */
     public static final Option configFileOption = new Option() {
         @Override
         public String longName() { return "config-file"; }
@@ -114,6 +111,9 @@ public class ConfigurationManager implements Closeable {
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
+    /**
+     * Option to provide as an error location when loading from a default configuration file.
+     */
     public static final Function<String,Option> defaultConfigOptionFunction = (String path) -> new Option() {
         @Override
         public char charName() { return '\0'; }
@@ -125,6 +125,9 @@ public class ConfigurationManager implements Closeable {
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
+    /**
+     * Option for specifying file format factories.
+     */
     public static final Option fileFormatOption = new Option() {
         @Override
         public String longName() { return "config-file-formats"; }
@@ -136,6 +139,9 @@ public class ConfigurationManager implements Closeable {
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
+    /**
+     * Option for requesting the usage for a CLI application. Equivalent to {@link #helpOption}.
+     */
     public static final Option usageOption = new Option() {
         @Override
         public String longName() { return "usage"; }
@@ -147,6 +153,9 @@ public class ConfigurationManager implements Closeable {
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
+    /**
+     * Option for requesting the help for a CLI application. Equivalent to {@link #usageOption}.
+     */
     public static final Option helpOption = new Option() {
         @Override
         public String longName() { return "help"; }
@@ -158,30 +167,56 @@ public class ConfigurationManager implements Closeable {
         public Class<? extends Option> annotationType() { return Option.class; }
     };
 
+    /**
+     * Delimiter for arguments.
+     */
     public static final char ARG_DELIMITER = ',';
 
+    /**
+     * Escape character in UNIX.
+     */
     public static final char UNIX_ESCAPE_CHAR = '\\';
 
+    /**
+     * Escape character in Windows.
+     */
     public static final char WIN_ESCAPE_CHAR = '^';
 
-    @Deprecated
-    public static final char ESCAPE_CHAR = UNIX_ESCAPE_CHAR;
-
+    /**
+     * Is this JVM running on Windows?
+     */
     public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
+    /**
+     * Escape character for the current JVM.
+     */
     public static final char CUR_ESCAPE_CHAR = IS_WINDOWS ? WIN_ESCAPE_CHAR : UNIX_ESCAPE_CHAR;
 
+    /**
+     * Character prefix for overriding a property in a configuration file.
+     */
     public static final char CONFIGURABLE_CHAR = '@';
 
+    /**
+     * Start sequence for a character argument.
+     */
     public static final String SHORT_ARG = "-";
 
+    /**
+     * Start sequence for a long argument.
+     */
     public static final String LONG_ARG = "--";
 
+    /**
+     * Start sequence for a configuration override argument.
+     */
     public static final String CONFIGURABLE_OVERRIDE = LONG_ARG + CONFIGURABLE_CHAR;
 
+    /**
+     * Default empty options instance.
+     */
     // **WARNING** - do not convert this into a Lambda, it doesn't work due to reflection issues.
     public static final Options EMPTY_OPTIONS = new Options(){ };
-    //public static final Options EMPTY_OPTIONS = () -> "";
 
     /**
      * Used to support new config file formats at runtime.
@@ -287,12 +322,14 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Creates a new configuration manager.
-     *
+     * <p>
      * This constructor performs a sequence of operations:
-     * - It validates the supplied options struct to make sure it does not have duplicate option names.
-     * - Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.
-     * - Parses any configuration overrides and applies them to the configuration manager.
-     * - Parses out options for the supplied struct and writes them into the struct.
+     * <ul>
+     *     <li>It validates the supplied options struct to make sure it does not have duplicate option names.</li>
+     *     <li>Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.</li>
+     *     <li>Parses any configuration overrides and applies them to the configuration manager.</li>
+     *     <li>Parses out options for the supplied struct and writes them into the struct.</li>
+     * </ul>
      * @param arguments An array of command line arguments.
      * @param options An object to write the parsed argument values into.
      * @throws UsageException Thrown when the user requested the usage string.
@@ -306,12 +343,14 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Creates a new configuration manager.
-     *
+     * <p>
      * This constructor performs a sequence of operations:
-     * - It validates the supplied options struct to make sure it does not have duplicate option names.
-     * - Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.
-     * - Parses any configuration overrides and applies them to the configuration manager.
-     * - Parses out options for the supplied struct and writes them into the struct.
+     * <ul>
+     *     <li>It validates the supplied options struct to make sure it does not have duplicate option names.</li>
+     *     <li>Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.</li>
+     *     <li>Parses any configuration overrides and applies them to the configuration manager.</li>
+     *     <li>Parses out options for the supplied struct and writes them into the struct.</li>
+     * </ul>
      * @param arguments An array of command line arguments.
      * @param options An object to write the parsed argument values into.
      * @param useConfigFiles If true, add the config file option. If false ignore the config file option,
@@ -327,12 +366,14 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Creates a new configuration manager.
-     *
+     * <p>
      * This constructor performs a sequence of operations:
-     * - It validates the supplied options struct to make sure it does not have duplicate option names.
-     * - Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.
-     * - Parses any configuration overrides and applies them to the configuration manager.
-     * - Parses out options for the supplied struct and writes them into the struct.
+     * <ul>
+     *     <li>It validates the supplied options struct to make sure it does not have duplicate option names.</li>
+     *     <li>Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.</li>
+     *     <li>Parses any configuration overrides and applies them to the configuration manager.</li>
+     *     <li>Parses out options for the supplied struct and writes them into the struct.</li>
+     * </ul>
      * @param arguments An array of command line arguments.
      * @param options An object to write the parsed argument values into.
      * @param defaultConfigPath The default config path. Set to empty or null to disable.
@@ -349,13 +390,15 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Creates a new configuration manager.
-     *
+     * <p>
      * This constructor performs a sequence of operations:
-     * - It validates the supplied options struct to make sure it does not have duplicate option names.
-     * - Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.
-     * - Loads in the supplied ConfigurationData objects, overwriting things in the files if necessary.
-     * - Parses any configuration overrides and applies them to the configuration manager.
-     * - Parses out options for the supplied struct and writes them into the struct.
+     * <ul>
+     *     <li>It validates the supplied options struct to make sure it does not have duplicate option names.</li>
+     *     <li>Loads any configuration file specified by the {@link ConfigurationManager#configFileOption}.</li>
+     *     <li>Loads in the supplied ConfigurationData objects, overwriting things in the files if necessary.</li>
+     *     <li>Parses any configuration overrides and applies them to the configuration manager.</li>
+     *     <li>Parses out options for the supplied struct and writes them into the struct.</li>
+     * </ul>
      * @param arguments An array of command line arguments.
      * @param configData A list of {@link ConfigurationData} objects.
      * @param options An object to write the parsed argument values into.
@@ -442,33 +485,15 @@ public class ConfigurationManager implements Closeable {
         // *Must* be last as it can cause Configurable instantiation.
         // Throws an exception if there are unknown named arguments at this stage.
         try {
-            unnamedArguments = AccessController.doPrivileged((PrivilegedExceptionAction<String[]>) () -> parseOptionArguments(argumentsList, options));
-        } catch (PrivilegedActionException e) {
-            Exception inner = e.getException();
-            if (inner instanceof IllegalAccessException) {
-                throw new ArgumentException(e, "Failed to write argument into Options");
-            } else if ((inner instanceof InstantiationException) || (inner instanceof NoSuchMethodException) || (inner instanceof InvocationTargetException)) {
+            unnamedArguments = parseOptionArguments(argumentsList, options);
+        } catch (IllegalAccessException e) {
+            throw new ArgumentException(e, "Failed to write argument into Options");
+        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                 throw new ArgumentException(e, "Failed to instantiate a field of Options.");
-            } else {
-                throw new ArgumentException(inner, "Unexpected exception thrown when reading arguments - " + inner.getMessage());
-            }
         } catch (PropertyException e) {
             throw new ArgumentException(e, e.getMessage() + "\n\n" + usage);
-        }
-    }
-
-    private ConfigurationManager(Map<String, ConfigurationData> newrpm, GlobalProperties newgp, Map<String, PropertySheet<? extends Configurable>> newSymbolTable, Map<String, SerializedObject> newSerializedObjects, GlobalProperties newOrigGlobal) {
-        this.configurationDataMap = newrpm;
-        this.configurationNameMap = new IdentityHashMap<>();
-        this.globalProperties = newgp;
-        this.symbolTable = newSymbolTable;
-        this.serializedObjects = newSerializedObjects;
-        this.origGlobal = newOrigGlobal;
-        GlobalProperty sC = globalProperties.get("showCreations");
-        if(sC != null) {
-            this.showCreations = Boolean.parseBoolean(sC.getValue());
-        } else {
-            this.showCreations = false;
+        } catch (Exception e) {
+            throw new ArgumentException(e, "Unexpected exception thrown when reading arguments - " + e.getMessage());
         }
     }
 
@@ -498,8 +523,13 @@ public class ConfigurationManager implements Closeable {
         formatFactoryMap.put(f.getExtension(),f);
     }
 
-    public static FileFormatFactory getFileFormatFactory(String extension) {
-        return formatFactoryMap.get(extension);
+    /**
+     * Gets the file format factory for the supplied extension, or {@link Optional#empty()} if it's unknown.
+     * @param extension The extension to check.
+     * @return The file format factory if known.
+     */
+    public static Optional<FileFormatFactory> getFileFormatFactory(String extension) {
+        return Optional.ofNullable(formatFactoryMap.get(extension));
     }
 
     /**
@@ -608,7 +638,7 @@ public class ConfigurationManager implements Closeable {
                     // Now check the generic type of the list.
                     List<Class<?>> list = PropertySheet.getGenericClass(f);
                     if (list.size() == 1) {
-                        Class<?> genericClazz = list.get(0);
+                        Class<?> genericClazz = list.getFirst();
                         FieldType genericFieldType = FieldType.getFieldType(genericClazz);
                         if (FieldType.configurableTypes.contains(genericFieldType)) {
                             throw new ArgumentException(longName,"Argument has a Configurable type, which requires using a config file.");
@@ -652,7 +682,7 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Checks to see if the input after lowercasing is equal to "false" or "true".
-     *
+     * <p>
      * It's stricter than Boolean.parseBoolean.
      * @param input The input to test
      * @return True if it's a boolean value, false otherwise.
@@ -663,56 +693,52 @@ public class ConfigurationManager implements Closeable {
     }
 
     private static URL findURL(String input, String argumentName) {
-        return AccessController.doPrivileged((PrivilegedAction<URL>)
-                () -> {
-                    int modIndex = input.indexOf(MODULE_SEPARATOR_CHAR);
-                    if (modIndex > 0) {
-                        try {
-                            String witnessClassName = input.substring(0, modIndex);
-                            String classPathName = input.substring(modIndex + 1);
-                            Class<?> witnessClass = Class.forName(witnessClassName);
-                            URL url = witnessClass.getResource(classPathName);
-                            if (url != null) {
-                                return url;
-                            } // else fall through to regular loading
-                        } catch (ClassNotFoundException e) {
-                            // fall through to regular loading
-                            logger.warning("Failed to load class '" + input.substring(0, modIndex) + "'");
-                        }
-                    }
-                    URL url = ConfigurationManager.class.getResource(input);
-                    if (url == null) {
-                        File file = new File(input);
-                        if (file.exists()) {
-                            try {
-                                url = file.toURI().toURL();
-                            } catch (MalformedURLException e) {
-                                throw new ArgumentException(e, argumentName, "Can't load config file: " + input);
-                            }
-                        } else {
-                            try {
-                                url = (new URI(input)).toURL();
-                            } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
-                                throw new ArgumentException(argumentName, "Can't find config file: " + input);
-                            }
-                        }
-                    }
-                    if (IOUtil.isDisallowedProtocol(url)) {
-                        throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
-                    }
+        int modIndex = input.indexOf(MODULE_SEPARATOR_CHAR);
+        if (modIndex > 0) {
+            try {
+                String witnessClassName = input.substring(0, modIndex);
+                String classPathName = input.substring(modIndex + 1);
+                Class<?> witnessClass = Class.forName(witnessClassName);
+                URL url = witnessClass.getResource(classPathName);
+                if (url != null) {
                     return url;
+                } // else fall through to regular loading
+            } catch (ClassNotFoundException e) {
+                // fall through to regular loading
+                logger.warning("Failed to load class '" + input.substring(0, modIndex) + "'");
+            }
+        }
+        URL url = ConfigurationManager.class.getResource(input);
+        if (url == null) {
+            File file = new File(input);
+            if (file.exists()) {
+                try {
+                    url = file.toURI().toURL();
+                } catch (MalformedURLException e) {
+                    throw new ArgumentException(e, argumentName, "Can't load config file: " + input);
                 }
-        );
+            } else {
+                try {
+                    url = (new URI(input)).toURL();
+                } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
+                    throw new ArgumentException(argumentName, "Can't find config file: " + input);
+                }
+            }
+        }
+        if (IOUtil.isDisallowedProtocol(url)) {
+            throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
+        }
+        return url;
     }
 
     /**
      * Parses out arguments which override fields in configured objects.
-     *
+     * <p>
      * Expects arguments of the form --@componentname.propertyname.
-     *
+     * <p>
      * Throws {@link ArgumentException} if the component name does not match a known component,
      * or if the property name is not valid for that class.
-     *
+     * <p>
      * Removes the parsed arguments from the input, and overwrites values in the rpd for each component.
      *
      * @param arguments The command line arguments.
@@ -737,7 +763,7 @@ public class ConfigurationManager implements Closeable {
                                 String param = argsItr.next();
                                 List<String> list = parseStringList(param);
                                 if (list.size() == 1) {
-                                    rpd.add(split[1], new SimpleProperty(list.get(0)));
+                                    rpd.add(split[1], new SimpleProperty(list.getFirst()));
                                 } else {
                                     rpd.add(split[1], ListProperty.createFromStringList(list));
                                 }
@@ -770,7 +796,7 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Parses out the arguments into the supplied {@link Options}.
-     *
+     * <p>
      * Removes the parsed arguments from the input.
      *
      * @param arguments The command line arguments.
@@ -801,14 +827,13 @@ public class ConfigurationManager implements Closeable {
             }
             fields = Options.getOptions(o.getClass());
             for (Field f : fields) {
-                boolean accessible = f.isAccessible();
                 f.setAccessible(true);
                 if (f.get(o) != null) {
                     logger.fine("Warning: overwriting Options field.");
                 }
                 f.set(o,f.getType().getDeclaredConstructor().newInstance());
                 objectQueue.add((Options)f.get(o));
-                f.setAccessible(accessible);
+                f.setAccessible(false);
             }
         }
 
@@ -827,7 +852,6 @@ public class ConfigurationManager implements Closeable {
                     arguments.remove(i);
                     consumed = true;
                     if (i < arguments.size()) {
-                        boolean accessible = f.isAccessible();
                         f.setAccessible(true);
                         String param = arguments.get(i);
                         List<String> list = parseStringList(param);
@@ -838,18 +862,18 @@ public class ConfigurationManager implements Closeable {
                             if (genericList.size() == 1) {
                                 f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, ListProperty.createFromStringList(list)));
                             } else {
-                                f.setAccessible(accessible);
+                                f.setAccessible(false);
                                 throw new ArgumentException(curArg,"Unknown generic type in argument");
                             }
                         } else if (list.size() == 1) {
                             f.set(arg.getB(), PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
                         } else {
-                            f.setAccessible(accessible);
+                            f.setAccessible(false);
                             throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
                         }
                         // Consume parameter.
                         arguments.remove(i);
-                        f.setAccessible(accessible);
+                        f.setAccessible(false);
                     } else {
                         throw new ArgumentException(curArg,"No parameter for argument");
                     }
@@ -867,16 +891,15 @@ public class ConfigurationManager implements Closeable {
                         Pair<Field,Object> arg = charNameMap.get(args[j]);
                         if (arg != null) {
                             Field f = arg.getA();
-                            boolean accessible = f.isAccessible();
                             f.setAccessible(true);
                             FieldType ft = FieldType.getFieldType(f);
                             if (FieldType.isBoolean(ft)) {
                                 f.set(arg.getB(),true);
                             } else {
-                                f.setAccessible(accessible);
+                                f.setAccessible(false);
                                 throw new ArgumentException(curArg + " on element " + args[j], "Non boolean argument found where boolean expected");
                             }
-                            f.setAccessible(accessible);
+                            f.setAccessible(false);
                         } else {
                             throw new ArgumentException(curArg + " on element " + args[j], "Unknown argument");
                         }
@@ -885,7 +908,6 @@ public class ConfigurationManager implements Closeable {
                     Pair<Field,Object> arg = charNameMap.get(args[args.length-1]);
                     if (arg != null) {
                         Field f = arg.getA();
-                        boolean accessible = f.isAccessible();
                         f.setAccessible(true);
                         FieldType ft = FieldType.getFieldType(f);
                         if (FieldType.isBoolean(ft)) {
@@ -917,23 +939,23 @@ public class ConfigurationManager implements Closeable {
                                     if (genericList.size() == 1) {
                                         f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, ListProperty.createFromStringList(list)));
                                     } else {
-                                        f.setAccessible(accessible);
+                                        f.setAccessible(false);
                                         throw new ArgumentException(curArg,"Unknown generic type in argument");
                                     }
                                 } else if (list.size() == 1) {
                                     f.set(arg.getB(), PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
                                 } else {
-                                    f.setAccessible(accessible);
+                                    f.setAccessible(false);
                                     throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
                                 }
                                 // Consume parameter.
                                 arguments.remove(i);
                             } else {
-                                f.setAccessible(accessible);
+                                f.setAccessible(false);
                                 throw new ArgumentException(curArg,"No parameter for argument");
                             }
                         }
-                        f.setAccessible(accessible);
+                        f.setAccessible(false);
                     }
                 } else {
                     throw new ArgumentException(curArg, "Empty argument found.");
@@ -949,7 +971,7 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Parses out the config file argument.
-     *
+     * <p>
      * Removes the parsed arguments from the input.
      * @param arguments The command line arguments.
      * @return A list of URLs pointing to olcut config files.
@@ -1169,7 +1191,7 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Overrides a simple property in a specific configurable in this configuration manager.
-     *
+     * <p>
      * Throws {@link PropertyException} if the configurable/property doesn't exist, has already been instantiated, or doesn't match the field type.
      * @param componentName The name of the component.
      * @param propertyName The name of the property/field.
@@ -1200,12 +1222,6 @@ public class ConfigurationManager implements Closeable {
     }
 
     /**
-     * Shuts down the configuration manager, which is a no-op on the standard version.
-     */
-    @Override
-    public synchronized void close() { }
-
-    /**
      * Get a copy of any unnamed arguments that weren't parsed into an {@link Options}
      * instance, or used to override a {@link Configurable} field.
      * @return A string array of command line arguments.
@@ -1216,7 +1232,7 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Gets the configuration data associated with a given instance.
-     *
+     * <p>
      * Allows the modification of configuration for future objects.
      * @param instanceName the name of the instance whose properties we want
      * @return the associated configuration data, or {@link Optional#empty} if there is no data
@@ -1224,16 +1240,12 @@ public class ConfigurationManager implements Closeable {
      */
     public Optional<ConfigurationData> getConfigurationData(String instanceName) {
         ConfigurationData data = configurationDataMap.get(instanceName);
-        if (data == null) {
-            return Optional.empty();
-        } else {
-            return Optional.of(data);
-        }
+        return Optional.ofNullable(data);
     }
 
     /**
      * Does this ConfigurationManager know about an instance called instanceName.
-     *
+     * <p>
      * Does not trigger class instantiation or configuration.
      * @param instanceName The name to check.
      * @return True if it contains a {@link Configurable} called instanceName.
@@ -1265,7 +1277,7 @@ public class ConfigurationManager implements Closeable {
      * @return the property sheet for the object.
      */
     @SuppressWarnings("unchecked") // Warning suppressed as it's behind an isAssignableFrom check.
-    protected PropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
+    private PropertySheet<? extends Configurable> getPropertySheet(String instanceName) {
         if(!symbolTable.containsKey(instanceName)) {
             // if it is not in the symbol table, so construct
             // it based upon our raw property data
@@ -1291,7 +1303,7 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Gets all instances that are of the given type.
-     *
+     * <p>
      * Only returns the names of the instantiated objects.
      *
      * @param type the desired type of instance
@@ -1431,8 +1443,7 @@ public class ConfigurationManager implements Closeable {
             configurationNameMap.put(ret, instanceName);
         }
 
-        if (ret instanceof Startable) {
-            Startable stret = (Startable) ret;
+        if (ret instanceof Startable stret) {
             Thread t = new Thread(stret);
             t.setName(instanceName + "_thread");
             stret.setThread(t);
@@ -1472,7 +1483,7 @@ public class ConfigurationManager implements Closeable {
             return null;
         }
         Collections.shuffle(comps);
-        return comps.get(0);
+        return comps.getFirst();
     }
 
     /**
@@ -1495,8 +1506,7 @@ public class ConfigurationManager implements Closeable {
         if(!c.isInterface()) {
             String className = c.getName();
             for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
-                if (e.getValue().getClassName().equals(className) &&
-                        !e.getValue().isImportable()) {
+                if (e.getValue().getClassName().equals(className)) {
                     ret.put(e.getKey(),(T)lookup(e.getKey()));
                 }
             }
@@ -1506,8 +1516,8 @@ public class ConfigurationManager implements Closeable {
             // implementing classes and return them.
             for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
                 try {
-                    Class clazz = Class.forName(e.getValue().getClassName());
-                    if (!e.getValue().isImportable() && c.isAssignableFrom(clazz) && !clazz.isInterface()) {
+                    Class<?> clazz = Class.forName(e.getValue().getClassName());
+                    if (c.isAssignableFrom(clazz) && !clazz.isInterface()) {
                         ret.put(e.getKey(),(T)innerLookup(e.getKey(),null,true));
                     }
                 } catch (ClassNotFoundException ex) {
@@ -1531,13 +1541,11 @@ public class ConfigurationManager implements Closeable {
 
         //
         // If the class isn't an interface, then lookup each of the names
-        // in the raw property data with the given class
-        // name, ignoring those things marked as importable.
+        // in the raw property data with the given class name.
         if(!c.isInterface()) {
             String className = c.getName();
             for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
-                if (e.getValue().getClassName().equals(className) &&
-                        !e.getValue().isImportable()) {
+                if (e.getValue().getClassName().equals(className)) {
                     ret.add((T)lookup(e.getKey()));
                 }
             }
@@ -1547,8 +1555,8 @@ public class ConfigurationManager implements Closeable {
             // implementing classes and return them.
             for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
                 try {
-                    Class clazz = Class.forName(e.getValue().getClassName());
-                    if (!e.getValue().isImportable() && c.isAssignableFrom(clazz) && !clazz.isInterface()) {
+                    Class<?> clazz = Class.forName(e.getValue().getClassName());
+                    if (c.isAssignableFrom(clazz) && !clazz.isInterface()) {
                         ret.add((T)innerLookup(e.getKey(),null,true));
                     }
                 } catch (ClassNotFoundException ex) {
@@ -1595,9 +1603,8 @@ public class ConfigurationManager implements Closeable {
             ConfigurationData rpd = e.getValue();
             try {
                 Class<?> pclass = Class.forName(rpd.getClassName());
-                if (!rpd.isImportable() &&
-                        ((allowAssignable && c.isAssignableFrom(pclass)) ||
-                         (!allowAssignable && rpd.getClassName().equals(c.getName())))) {
+                if ((allowAssignable && c.isAssignableFrom(pclass)) ||
+                         (!allowAssignable && rpd.getClassName().equals(c.getName()))) {
                     instanceNames.add(e.getKey());
                 }
             } catch(ClassNotFoundException ex) {
@@ -1616,7 +1623,7 @@ public class ConfigurationManager implements Closeable {
             throw new PropertyException("", "Multiple instances of " + c.getName() + " found in configuration: " + names);
         }
 
-        String matchedName = instanceNames.get(0);
+        String matchedName = instanceNames.getFirst();
         ConfigurationData cd = configurationDataMap.get(matchedName);
         try {
             Class<?> matchedClass = Class.forName(cd.getClassName());
@@ -1645,7 +1652,7 @@ public class ConfigurationManager implements Closeable {
         for(Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
             ConfigurationData rpd = e.getValue();
             try {
-                Class pclass = Class.forName(rpd.getClassName());
+                Class<?> pclass = Class.forName(rpd.getClassName());
                 if (c.isAssignableFrom(pclass)) {
                     ret.add(e.getKey());
                 }
@@ -1701,10 +1708,19 @@ public class ConfigurationManager implements Closeable {
         }
     }
 
+    /**
+     * Adds all the configurations and global properties from the supplied CM to this CM.
+     * @param subCM The CM containing configurations to copy.
+     */
     public void addSubConfiguration(ConfigurationManager subCM) {
         addSubConfiguration(subCM, false);
     }
 
+    /**
+     * Adds all the configurations and global properties from the supplied CM to this CM.
+     * @param subCM The CM containing configurations to copy.
+     * @param overwrite Should elements of this CM be overwritten if they have the same name?
+     */
     public void addSubConfiguration(ConfigurationManager subCM, boolean overwrite) {
         Collection<String> compNames = getComponentNames();
 
@@ -1725,8 +1741,7 @@ public class ConfigurationManager implements Closeable {
 
         globalProperties.putAll(subCM.globalProperties);
         for(Map.Entry<String,PropertySheet<? extends Configurable>> e : subCM.symbolTable.entrySet()) {
-            PropertySheet<? extends Configurable> newPS = e.getValue().copy();
-            newPS.setCM(this);
+            PropertySheet<? extends Configurable> newPS = e.getValue().copy(this);
             symbolTable.put(e.getKey(),newPS);
         }
 
@@ -1753,7 +1768,7 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Adds all the configurations in the list to this ConfigurationManager.
-     *
+     * <p>
      * Does not trigger class loading or validation of the ConfigurationData objects.
      * @param newData The configurations to ingest.
      */
@@ -1819,7 +1834,7 @@ public class ConfigurationManager implements Closeable {
         }
     }
 
-    protected String getStrippedComponentName(String propertyName) {
+    private String getStrippedComponentName(String propertyName) {
         assert propertyName != null;
 
         while(propertyName.startsWith("$")) {
@@ -1838,11 +1853,9 @@ public class ConfigurationManager implements Closeable {
      */
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof ConfigurationManager)) {
+        if(!(obj instanceof ConfigurationManager cm)) {
             return false;
         }
-
-        ConfigurationManager cm = (ConfigurationManager) obj;
 
         Collection<String> setA = new HashSet<>(getComponentNames());
         Collection<String> setB = new HashSet<>(cm.getComponentNames());
@@ -1871,7 +1884,7 @@ public class ConfigurationManager implements Closeable {
 
     /**
      * Saves the current configuration to the given file.
-     *
+     * <p>
      * Only writes out instantiated components, and redacts their fields if required.
      *
      * @param file Place to save the configuration.
@@ -1939,7 +1952,7 @@ public class ConfigurationManager implements Closeable {
      * will be written.
      * @throws ConfigWriterException If an error occurs while writing the configuration.
      */
-    protected void write(ConfigWriter writer, boolean writeAll) throws ConfigWriterException {
+    private void write(ConfigWriter writer, boolean writeAll) throws ConfigWriterException {
         writer.writeStartDocument();
         //
         // Write out the global properties.
@@ -1985,7 +1998,7 @@ public class ConfigurationManager implements Closeable {
         writer.close();
     }
 
-    protected <T extends Configurable> PropertySheet<T> createPropertySheet(T configurable, ConfigurationManager cm, ConfigurationData rpd) {
+    private <T extends Configurable> PropertySheet<T> createPropertySheet(T configurable, ConfigurationManager cm, ConfigurationData rpd) {
         return new PropertySheet<>(configurable,cm,rpd);
     }
 
@@ -2005,23 +2018,22 @@ public class ConfigurationManager implements Closeable {
         try {
             Set<Field> fields = PropertySheet.getAllFields(configurable.getClass());
             for (Field field : fields) {
-                boolean accessible = field.isAccessible();
                 field.setAccessible(true);
                 ConfigurableName nameAnnotation = field.getAnnotation(ConfigurableName.class);
                 if (nameAnnotation != null) {
                     configName = (String) field.get(configurable);
                     //
                     // break out of loop at the first instance of ConfigurableName.
-                    field.setAccessible(accessible);
+                    field.setAccessible(false);
                     break;
                 }
-                field.setAccessible(accessible);
+                field.setAccessible(false);
             }
         } catch (IllegalAccessException ex) {
-            throw new PropertyException(ex, configName, "Failed to read the ConfigurableName field");
+            throw new PropertyException(ex, configName, "Failed to read the @ConfigurableName field");
         }
 
-        if (configName.equals("")) {
+        if (configName.isEmpty()) {
             throw new PropertyException("", "Failed to extract name from @ConfigurableName field");
         } else {
             return importConfigurable(configurable, configName);
@@ -2034,7 +2046,7 @@ public class ConfigurationManager implements Closeable {
      * this configuration manager.  This is useful in situations where you have
      * a configurable component but you don't have the property sheet that
      * generated it (e.g., if it was sent over the network).
-     *
+     * <p>
      * It's best effort, if your object graph is loopy, it will flatten it
      * into a tree by cloning elements.
      *
@@ -2064,7 +2076,6 @@ public class ConfigurationManager implements Closeable {
         try {
             Set<Field> fields = PropertySheet.getAllFields(confClass);
             for (Field field : fields) {
-                boolean accessible = field.isAccessible();
                 field.setAccessible(true);
                 Config configAnnotation = field.getAnnotation(Config.class);
                 if (configAnnotation != null) {
@@ -2171,7 +2182,7 @@ public class ConfigurationManager implements Closeable {
                                 });
                     }
                 }
-                field.setAccessible(accessible);
+                field.setAccessible(false);
             }
             ConfigurationData rpd = new ConfigurationData(name, confClass.getName(), m);
 

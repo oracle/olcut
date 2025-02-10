@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -52,8 +52,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -63,9 +61,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * A {@link ConfigLoader} for configuration data stored in json format.
  */
-public class JsonLoader implements ConfigLoader {
+public final class JsonLoader implements ConfigLoader {
 
     private static final Logger logger = Logger.getLogger(JsonLoader.class.getName());
 
@@ -83,6 +81,15 @@ public class JsonLoader implements ConfigLoader {
 
     private String workingDir;
 
+    /**
+     * Constructs a configuration loader for JSON formatted data.
+     * @param factory The JsonFactory to use.
+     * @param parent The parent URL loader for chaining.
+     * @param rpdMap The current property map.
+     * @param existingRPD Any existing property maps.
+     * @param serializedObjects The existing serialized objects.
+     * @param globalProperties The existing global properties.
+     */
     public JsonLoader(JsonFactory factory, URLLoader parent, Map<String, ConfigurationData> rpdMap, Map<String, ConfigurationData> existingRPD,
                       Map<String, SerializedObject> serializedObjects, GlobalProperties globalProperties) {
         this.factory = factory;
@@ -97,26 +104,21 @@ public class JsonLoader implements ConfigLoader {
      * Loads json configuration data from the location
      */
     @Override
-    public final void load(URL url) throws ConfigLoaderException {
-        AccessController.doPrivileged((PrivilegedAction<Void>)
-                () -> {
-                    if (url.getProtocol().equals("file")) {
-                        workingDir = new File(url.getFile()).getParent();
-                    } else if (IOUtil.isDisallowedProtocol(url)) {
-                        throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
-                    } else {
-                        workingDir = "";
-                    }
-                    try (JsonParser parser = factory.createParser(url)) {
-                        parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
-                        parseJson(parser);
-                    } catch (IOException e) {
-                        String msg = "Error while parsing " + url.toString() + ": " + e.getMessage();
-                        throw new ConfigLoaderException(e, msg);
-                    }
-                    return null;
-                }
-        );
+    public void load(URL url) throws ConfigLoaderException {
+        if (url.getProtocol().equals("file")) {
+            workingDir = new File(url.getFile()).getParent();
+        } else if (IOUtil.isDisallowedProtocol(url)) {
+            throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
+        } else {
+            workingDir = "";
+        }
+        try (JsonParser parser = factory.createParser(url)) {
+            parser.configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
+            parseJson(parser);
+        } catch (IOException e) {
+            String msg = "Error while parsing " + url.toString() + ": " + e.getMessage();
+            throw new ConfigLoaderException(e, msg);
+        }
     }
 
     /**
@@ -133,19 +135,7 @@ public class JsonLoader implements ConfigLoader {
         }
     }
 
-    public Map<String, ConfigurationData> getPropertyMap() {
-        return rpdMap;
-    }
-
-    public Map<String, SerializedObject> getSerializedObjects() {
-        return serializedObjects;
-    }
-
-    public GlobalProperties getGlobalProperties() {
-        return globalProperties;
-    }
-
-    protected void parseJson(JsonParser parser) {
+    private void parseJson(JsonParser parser) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             parser.nextToken(); // now currentToken == START_OBJECT
@@ -194,7 +184,7 @@ public class JsonLoader implements ConfigLoader {
         }
     }
 
-    protected void parseComponent(ObjectNode node) {
+    private void parseComponent(ObjectNode node) {
         boolean overriding = false;
         JsonNode curComponentNode = node.get(ConfigLoader.NAME);
         JsonNode curTypeNode = node.get(ConfigLoader.TYPE);
@@ -209,30 +199,6 @@ public class JsonLoader implements ConfigLoader {
         String curType = curTypeNode != null ? curTypeNode.textValue() : null;
         String override = overrideNode != null ? overrideNode.textValue() : null;
 
-        JsonNode export = node.get(ConfigLoader.EXPORT);
-        boolean exportable = export != null && Boolean.parseBoolean(export.textValue());
-        JsonNode impNode = node.get(ConfigLoader.IMPORT);
-        boolean importable = impNode != null && Boolean.parseBoolean(impNode.textValue());
-        JsonNode lt = node.get(ConfigLoader.LEASETIME);
-        if (export == null && lt != null) {
-            throw new ConfigLoaderException("lease timeout " + lt +
-                    " specified for component that does not have export set, at node " + node.toString());
-        }
-        long leaseTime = ConfigurationData.DEFAULT_LEASE_TIME;
-        if (lt != null) {
-            try {
-                leaseTime = Long.parseLong(lt.textValue());
-                if (leaseTime < 0) {
-                    throw new ConfigLoaderException("lease timeout "
-                            + lt + " must be greater than 0, for component " + curComponent);
-                }
-            } catch (NumberFormatException nfe) {
-                throw new ConfigLoaderException("lease timeout "
-                        + lt + " must be a long, for component " + curComponent);
-            }
-        }
-        JsonNode entriesNameNode = node.get(ConfigLoader.ENTRIES);
-        String entriesName = entriesNameNode != null ? entriesNameNode.textValue() : null;
         JsonNode serializedFormNode = node.get(ConfigLoader.SERIALIZED);
         String serializedForm = serializedFormNode != null ? serializedFormNode.textValue() : null;
 
@@ -261,14 +227,14 @@ public class JsonLoader implements ConfigLoader {
             if (curType == null) {
                 curType = spd.getClassName();
             }
-            rpd = new ConfigurationData(curComponent, curType, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
+            rpd = new ConfigurationData(curComponent, curType, spd.getProperties(), serializedForm);
             overriding = true;
         } else {
             if (rpdMap.get(curComponent) != null) {
                 throw new ConfigLoaderException("duplicate definition for "
                         + curComponent);
             }
-            rpd = new ConfigurationData(curComponent, curType, serializedForm, entriesName, exportable, importable, leaseTime);
+            rpd = new ConfigurationData(curComponent, curType, serializedForm);
         }
 
         ObjectNode properties = (ObjectNode) node.get(ConfigLoader.PROPERTIES);
@@ -278,11 +244,10 @@ public class JsonLoader implements ConfigLoader {
             while (fieldsItr.hasNext()) {
                 Entry<String, JsonNode> e = fieldsItr.next();
                 String propName = e.getKey();
-                if (e.getValue() instanceof ArrayNode) {
+                if (e.getValue() instanceof ArrayNode listNode) {
                     // Must be list
                     ArrayList<SimpleProperty> listOutput = new ArrayList<>();
                     ArrayList<Class<?>> classListOutput = new ArrayList<>();
-                    ArrayNode listNode = (ArrayNode) e.getValue();
                     for (JsonNode element : listNode) {
                         if (element.size() > 1) {
                             throw new ConfigLoaderException("Too many elements in a propertylist item, found " + element);
@@ -349,7 +314,7 @@ public class JsonLoader implements ConfigLoader {
         rpdMap.put(rpd.getName(),rpd);
     }
 
-    protected void parseFile(ObjectNode node) {
+    private void parseFile(ObjectNode node) {
         JsonNode name = node.get(ConfigLoader.NAME);
         JsonNode value = node.get(ConfigLoader.VALUE);
         if (name == null || value == null) {
@@ -372,7 +337,7 @@ public class JsonLoader implements ConfigLoader {
         }
     }
 
-    protected void parseSerializedObject(ObjectNode node) {
+    private void parseSerializedObject(ObjectNode node) {
         JsonNode name = node.get(ConfigLoader.NAME);
         JsonNode type = node.get(ConfigLoader.TYPE);
         JsonNode location = node.get(ConfigLoader.LOCATION);

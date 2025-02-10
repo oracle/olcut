@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -31,8 +31,6 @@ package com.oracle.labs.mlrg.olcut.config.property;
 import com.oracle.labs.mlrg.olcut.config.ConfigurationManager;
 import com.oracle.labs.mlrg.olcut.config.PropertyException;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -63,7 +61,7 @@ public class GlobalProperties extends ImmutableGlobalProperties {
      * Imports the system properties into this GlobalProperties.
      */
     public final void importSystemProperties() {
-        Properties props = AccessController.doPrivileged((PrivilegedAction<Properties>) System::getProperties);
+        Properties props = System.getProperties();
         importProperties(props);
     }
 

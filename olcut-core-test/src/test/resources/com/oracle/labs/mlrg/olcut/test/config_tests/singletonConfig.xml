@@ -18,7 +18,4 @@
     <component name="bornie" type="com.oracle.labs.mlrg.olcut.test.config.Bornean">
     </component>
 
-    <component name="barbie" type="com.oracle.labs.mlrg.olcut.test.config.Barbary" import="true">
-    </component>
-
 </config>

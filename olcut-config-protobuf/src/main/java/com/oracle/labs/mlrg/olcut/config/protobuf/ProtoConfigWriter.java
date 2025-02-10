@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -106,18 +106,6 @@ public final class ProtoConfigWriter implements ConfigWriter {
         ComponentProto.Builder componentBuilder = ComponentProto.newBuilder();
         componentBuilder.setName(attributes.get(ConfigLoader.NAME));
         componentBuilder.setType(attributes.get(ConfigLoader.TYPE));
-        if (attributes.get(ConfigLoader.EXPORT).equalsIgnoreCase("true")) {
-            componentBuilder.setExportable(true);
-        }
-        if (attributes.get(ConfigLoader.IMPORT).equalsIgnoreCase("true")) {
-            componentBuilder.setImportable(true);
-        }
-        if (attributes.containsKey(ConfigLoader.ENTRIES)) {
-            componentBuilder.setEntries(attributes.get(ConfigLoader.ENTRIES));
-        }
-        if (attributes.containsKey(ConfigLoader.LEASETIME)) {
-            componentBuilder.setLeaseTime(Long.parseLong(attributes.get(ConfigLoader.LEASETIME)));
-        }
         if (attributes.containsKey(ConfigLoader.SERIALIZED)) {
             componentBuilder.setSerialized(attributes.get(ConfigLoader.SERIALIZED));
         }

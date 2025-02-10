@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -42,12 +42,14 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -222,8 +224,6 @@ public final class DescribeConfigurable {
                 return "/path/to/a/file";
             case URL:
                 return "file:///path/to/a/file";
-            case RANDOM:
-                return "42";
             case ENUM:
                 try {
                     return Class.forName(fi.className).getEnumConstants()[0].toString();
@@ -249,10 +249,9 @@ public final class DescribeConfigurable {
         Object instance;
         try {
             Constructor<? extends Configurable> constructor = configurableClass.getDeclaredConstructor();
-            boolean isAccessible = constructor.isAccessible();
             constructor.setAccessible(true);
             instance = constructor.newInstance();
-            constructor.setAccessible(isAccessible);
+            constructor.setAccessible(false);
         } catch (NoSuchMethodException ex) {
             throw new IllegalStateException("No-args constructor not found for class " + configurableClass, ex);
         } catch (InvocationTargetException | IllegalAccessException | InstantiationException ex) {
@@ -263,7 +262,6 @@ public final class DescribeConfigurable {
         for (Field f : fieldSet) {
             Config configAnnotation = f.getAnnotation(Config.class);
             if (configAnnotation != null) {
-                boolean accessible = f.isAccessible();
                 f.setAccessible(true);
                 Object extractedField = null;
                 try {
@@ -283,7 +281,7 @@ public final class DescribeConfigurable {
                     if (FieldType.listTypes.contains(ft)) {
                         List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                         if (genericList.size() == 1) {
-                            Class<?> listType = genericList.get(0);
+                            Class<?> listType = genericList.getFirst();
                             FieldInfo fi;
                             if (listType.isEnum()) {
                                 Object[] constants = listType.getEnumConstants();
@@ -325,7 +323,7 @@ public final class DescribeConfigurable {
                         map.put(f.getName(), fi);
                     }
                 }
-                f.setAccessible(accessible);
+                f.setAccessible(false);
             }
         }
 
@@ -394,11 +392,11 @@ public final class DescribeConfigurable {
      * @param map               The field infos for that class.
      */
     public static void writeExampleConfig(OutputStream stream, String fileFormat, Class<? extends Configurable> configurableClass, Map<String, FieldInfo> map) {
-        FileFormatFactory factory = ConfigurationManager.getFileFormatFactory(fileFormat);
-        if (factory == null) {
+        Optional<FileFormatFactory> factory = ConfigurationManager.getFileFormatFactory(fileFormat);
+        if (factory.isEmpty()) {
             throw new IllegalArgumentException("No format factory found for extension '" + fileFormat + "'");
         }
-        ConfigWriter configWriter = factory.getWriter(stream);
+        ConfigWriter configWriter = factory.get().getWriter(stream);
 
         // Generate attributes
         Map<String, String> attributes = new HashMap<>();
@@ -544,7 +542,7 @@ public final class DescribeConfigurable {
 
                     writeExampleConfig(writer, o.extension, configurableClass, map);
 
-                    System.out.println("Example :\n" + writer.toString("UTF-8"));
+                    System.out.println("Example :\n" + writer.toString(StandardCharsets.UTF_8));
                 }
             } else {
                 logger.warning("The supplied class did not implement Configurable, class = " + clazz.getCanonicalName());

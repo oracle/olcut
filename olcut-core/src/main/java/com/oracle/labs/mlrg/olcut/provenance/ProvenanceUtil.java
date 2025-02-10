@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -891,12 +891,11 @@ public final class ProvenanceUtil {
     public static Provenancable<? extends ConfiguredObjectProvenance> readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
         ConfiguredObjectProvenance provenance = (ConfiguredObjectProvenance) inputStream.readObject();
         List<ConfigurationData> configurationData = ProvenanceUtil.extractConfiguration(provenance);
-        String componentName = configurationData.get(0).getName();
+        String componentName = configurationData.getFirst().getName();
         ConfigurationManager cm = new ConfigurationManager();
         cm.addConfiguration(configurationData);
         @SuppressWarnings("unchecked")
         Provenancable<ConfiguredObjectProvenance> provenancable = (Provenancable<ConfiguredObjectProvenance>) cm.lookup(componentName);
-        cm.close();
         return provenancable;
     }
 

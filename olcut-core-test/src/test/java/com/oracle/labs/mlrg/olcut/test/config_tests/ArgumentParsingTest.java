@@ -50,7 +50,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -355,8 +354,6 @@ public class ArgumentParsingTest {
         private File psi;
         @Option(charName = 'x', longName = "omega", usage = "")
         private Path omega;
-        @Option(charName = 'y', longName = "\uD83D\uDE01", usage = "")
-        private Random a;
         @Option(charName = 'z', longName = "\uD83D\uDE00", usage = "")
         private Foo b;
 
@@ -389,7 +386,6 @@ public class ArgumentParsingTest {
                     ",\n chi=" + chi +
                     ",\n psi=" + psi +
                     ",\n omega=" + omega +
-                    ",\n a=" + a +
                     ",\n b=" + b +
                     "}\n";
         }
@@ -423,7 +419,6 @@ public class ArgumentParsingTest {
             o.chi = new AtomicLong(1234567890L);
             o.psi = new File("file.txt");
             o.omega = Paths.get("path.txt");
-            o.a = new Random(1);
             o.b = Foo.BAZ;
 
             return o;
@@ -480,8 +475,6 @@ public class ArgumentParsingTest {
             a.add(psi.getName() + "");
             a.add("-x");
             a.add(omega.getFileName() + "");
-            a.add("-y");
-            a.add(this.a.nextInt() + "");
             a.add("-z");
             a.add(b.toString() + "");
 
@@ -625,7 +618,6 @@ public class ArgumentParsingTest {
             result = 31 * result + (chi != null ? chi.hashCode() : 0);
             result = 31 * result + (psi != null ? psi.hashCode() : 0);
             result = 31 * result + (omega != null ? omega.hashCode() : 0);
-            result = 31 * result + (a != null ? a.hashCode() : 0);
             result = 31 * result + (b != null ? b.hashCode() : 0);
             return result;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -36,10 +36,10 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation that can be added directly to variables that are command line arguments.
- *
+ * <p>
  * Defaults to the value set during construction. Supports all the types supported
  * by the {@link Config} annotation.
- *
+ * <p>
  * Option should not be applied to a static field.
  */
 @Documented
@@ -47,13 +47,32 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Option {
 
+    /**
+     * Character option, allowed to be any single UTF-8 glyph.
+     * @return The character for this option.
+     */
     char charName() default EMPTY_CHAR;
 
+    /**
+     * Long name of the option. Allowed to be any sequence of non-whitespace characters.
+     * @return The long name.
+     */
     String longName();
 
+    /**
+     * Usage field for the option, displayed in the help message.
+     * @return The option's usage text.
+     */
     String usage();
 
+    /**
+     * Empty character.
+     */
     public static final char EMPTY_CHAR = '\0';
+
+    /**
+     * Space character.
+     */
     public static final char SPACE_CHAR = ' ';
 
 }

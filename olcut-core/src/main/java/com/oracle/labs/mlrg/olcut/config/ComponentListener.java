@@ -30,15 +30,13 @@ package com.oracle.labs.mlrg.olcut.config;
 
 /**
  * An interface that can be used for changes to components that have been 
- * looked up in a configuration manager, especially for those components that 
- * have been looked up in a component registry.
+ * looked up in a configuration manager.
  * 
  * @see ConfigurationManager#lookup(String,ComponentListener)
  * @see ConfigurationManager#lookupAll(Class, ComponentListener)
  */
 public interface ComponentListener<T extends Configurable> {
-    
-    
+
     /**
      * Indicates that a component has been added to the configuration.  This
      * method will only be called when a component of a type that the listener

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -59,8 +59,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Path;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -80,13 +78,12 @@ import java.util.logging.Logger;
 
 /**
  * A pile of reflection based magic used to automatically extract the values of configurable
- * fields. Supports all the types used by the configuration system, except for
- * Random as it's impossible to generate a true provenance for a {@link java.util.Random} instance.
- *
+ * fields. Supports all the types used by the configuration system.
+ * <p>
  * This class can be used as the basis for ConfiguredObjectProvenance implementations, it
  * automatically extracts any configured fields from the host object and stores the values
  * in the appropriate provenance type.
- *
+ * <p>
  * It is recommended that subclasses of this class implement a static method which accepts
  * a <code>Map&lt;String,Provenance&gt;</code> and returns a {@link ExtractedInfo}.
  * As with all subclasses of {@link com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance}
@@ -112,7 +109,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
     protected <T extends Configurable> SkeletalConfiguredObjectProvenance(T host, String hostShortName) {
         this.className = host.getClass().getName();
         this.hostShortName = hostShortName;
-        Map<String,Provenance> provMap = AccessController.doPrivileged((PrivilegedAction<Map<String,Provenance>>)() -> getConfiguredFields(host));
+        Map<String,Provenance> provMap = getConfiguredFields(host);
         this.configuredParameters = Collections.unmodifiableMap(provMap);
     }
 
@@ -198,7 +195,6 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
         Set<Field> fields = PropertySheet.getAllFields(hostClass);
         try {
             for (Field f : fields) {
-                boolean accessible = f.isAccessible();
                 f.setAccessible(true);
                 // if configurable and not redacted
                 Config configAnnotation = f.getAnnotation(Config.class);
@@ -266,14 +262,13 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                                 }
                                 break;
                             }
-                            case RANDOM:
                             default:
                                 logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + f.getName() + "' not recorded.");
                                 break;
                         }
                     }
                 }
-                f.setAccessible(accessible);
+                f.setAccessible(false);
             }
         } catch (ClassCastException e) {
             logger.log(Level.SEVERE, "Failed to cast field from host object " + host.toString() + ". Fields not recorded.", e);
@@ -551,9 +546,6 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 } else {
                     return Optional.of(new LongProvenance(fieldName, ((AtomicLong) o).get()));
                 }
-            case RANDOM:
-                logger.log(Level.SEVERE, "Random is deprecated and not supported in the provenance system, field '" + fieldName + "' not recorded.");
-                return Optional.empty();
             case BYTE_ARRAY:
             case CHAR_ARRAY:
             case SHORT_ARRAY:

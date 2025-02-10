@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -56,8 +56,6 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A loader for configuration data stored in protobuf format.
+ * A {@link ConfigLoader} for configuration data stored in protobuf format.
  */
 public final class ProtoLoader implements ConfigLoader {
 
@@ -107,31 +105,26 @@ public final class ProtoLoader implements ConfigLoader {
 
     @Override
     public void load(URL url) throws ConfigLoaderException {
-        AccessController.doPrivileged((PrivilegedAction<Void>)
-                () -> {
-                    String workingDir = "";
-                    if (url.getProtocol().equals("file")) {
-                        workingDir = new File(url.getFile()).getParent();
-                    } else if (IOUtil.isDisallowedProtocol(url)) {
-                        throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
-                    }
-                    try (InputStream is = url.openStream()) {
-                        ConfigProto proto;
-                        if (parseTextFormat) {
-                            ConfigProto.Builder protoBuilder = ConfigProto.newBuilder();
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-                            TextFormat.getParser().merge(reader,protoBuilder);
-                            proto = protoBuilder.build();
-                        } else {
-                            proto = ConfigProto.parseFrom(is);
-                        }
-                        parseConfigProto(workingDir,proto);
-                    } catch (IOException e) {
-                        throw new ConfigLoaderException(e, e.getMessage());
-                    }
-                    return null;
-                }
-        );
+        String workingDir = "";
+        if (url.getProtocol().equals("file")) {
+            workingDir = new File(url.getFile()).getParent();
+        } else if (IOUtil.isDisallowedProtocol(url)) {
+            throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
+        }
+        try (InputStream is = url.openStream()) {
+            ConfigProto proto;
+            if (parseTextFormat) {
+                ConfigProto.Builder protoBuilder = ConfigProto.newBuilder();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+                TextFormat.getParser().merge(reader, protoBuilder);
+                proto = protoBuilder.build();
+            } else {
+                proto = ConfigProto.parseFrom(is);
+            }
+            parseConfigProto(workingDir, proto);
+        } catch (IOException e) {
+            throw new ConfigLoaderException(e, e.getMessage());
+        }
     }
 
     @Override
@@ -223,17 +216,6 @@ public final class ProtoLoader implements ConfigLoader {
                     + "'name' and either 'type' or 'inherit' attributes, found " + component);
         }
 
-        boolean exportable = component.getExportable();
-        boolean importable = component.getImportable();
-        if (!exportable && component.hasLeaseTime()) {
-            throw new ConfigLoaderException("lease timeout " + component.getLeaseTime() +
-                    " specified for component '" + name + "' that does not have export set");
-        } else if (component.hasLeaseTime() && component.getLeaseTime() < 0) {
-                throw new ConfigLoaderException("lease timeout "
-                        + component.getLeaseTime() + " must be greater than 0, for component " + name);
-        }
-        long leaseTime = component.hasLeaseTime() ? component.getLeaseTime() : ConfigurationData.DEFAULT_LEASE_TIME;
-        String entriesName = component.hasEntries() ? component.getEntries() : null;
         String serializedForm = component.hasSerialized() ? component.getSerialized() : null;
 
         ConfigurationData rpd;
@@ -261,13 +243,13 @@ public final class ProtoLoader implements ConfigLoader {
             if (type.isEmpty()) {
                 type = spd.getClassName();
             }
-            rpd = new ConfigurationData(name, type, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
+            rpd = new ConfigurationData(name, type, spd.getProperties(), serializedForm);
         } else {
             if (rpdMap.get(name) != null) {
                 throw new ConfigLoaderException("duplicate definition for "
                         + name);
             }
-            rpd = new ConfigurationData(name, type, serializedForm, entriesName, exportable, importable, leaseTime);
+            rpd = new ConfigurationData(name, type, serializedForm);
         }
 
         // Read out simple properties

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -43,10 +43,6 @@ import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -62,7 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -161,27 +156,40 @@ public class PropertySheet<T extends Configurable> {
         propValues.putAll(rpd.getProperties());
     }
 
+    /**
+     * Copy constructor. Does not copy the instantiated object, and disconnects it from that object.
+     * @param other The property sheet to copy.
+     */
     protected PropertySheet(PropertySheet<T> other) {
+        this(other, other.cm);
+    }
+
+    /**
+     * Copy constructor. Does not copy the instantiated object, and disconnects it from that object.
+     * @param other The property sheet to copy.
+     * @param newCM The new configuration manager.
+     */
+    protected PropertySheet(PropertySheet<T> other, ConfigurationManager newCM) {
         this.ownerClass = other.ownerClass;
-        this.cm = other.cm;
+        this.cm = newCM;
         this.instanceName = other.instanceName;
         this.data = other.data;
         this.propValues.putAll(other.propValues);
         this.redacted.addAll(other.redacted);
     }
 
-    public boolean isExportable() {
-        return data.isExportable();
-    }
-
-    public boolean isImportable() {
-        return data.isImportable();
-    }
-
+    /**
+     * Returns an unmodifiable view on the property names.
+     * @return The property names.
+     */
     public Set<String> getPropertyNames() {
         return Collections.unmodifiableSet(propValues.keySet());
     }
 
+    /**
+     * Returns an unmodifiable view on the field names which should be redacted.
+     * @return The redacted field names.
+     */
     public Set<String> getRedactedFieldNames() {
         return Collections.unmodifiableSet(redacted);
     }
@@ -213,16 +221,12 @@ public class PropertySheet<T extends Configurable> {
         return cm.getImmutableGlobalProperties().replaceGlobalProperties(getInstanceName(), name, value);
     }
 
+    /**
+     * The name of this configured object in the configuration file.
+     * @return The name.
+     */
     public String getInstanceName() {
         return instanceName;
-    }
-
-    public long getLeaseTime() {
-        return data.getLeaseTime();
-    }
-
-    public String getEntriesName() {
-        return data.getEntriesName();
     }
 
     /**
@@ -233,6 +237,10 @@ public class PropertySheet<T extends Configurable> {
         return owner != null;
     }
 
+    /**
+     * The class object for this property sheet's type.
+     * @return The class.
+     */
     public Class<T> getOwnerClass() {
         return ownerClass;
     }
@@ -286,24 +294,20 @@ public class PropertySheet<T extends Configurable> {
                 // Should we load a serialized form?
                 if (data.getSerializedForm() != null) {
                     String actualLocation = flattenString("", data.getSerializedForm());
-                    T obj = AccessController.doPrivileged((PrivilegedAction<T>) () -> {
-                                InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
-                                if (serStream != null) {
-                                    try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
-                                        Object deser = ois.readObject();
-                                        return ownerClass.cast(deser);
-                                    } catch (IOException ex) {
-                                        throw new PropertyException(ex, instanceName, null,
-                                                "Error reading serialized form from " + actualLocation);
-                                    } catch (ClassNotFoundException ex) {
-                                        throw new PropertyException(ex, instanceName, null,
-                                                "Serialized class not found at " + actualLocation);
-                                    }
-                                } else {
-                                    return null;
-                                }
-                            }
-                    );
+                    T obj = null;
+                    InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
+                    if (serStream != null) {
+                        try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
+                            Object deser = ois.readObject();
+                            obj = ownerClass.cast(deser);
+                        } catch (IOException ex) {
+                            throw new PropertyException(ex, instanceName, null,
+                                    "Error reading serialized form from " + actualLocation);
+                        } catch (ClassNotFoundException ex) {
+                            throw new PropertyException(ex, instanceName, null,
+                                    "Serialized class not found at " + actualLocation);
+                        }
+                    }
                     if (obj != null) {
                         owner = obj;
                         return obj;
@@ -323,25 +327,21 @@ public class PropertySheet<T extends Configurable> {
                     logger.info(String.format("Creating %s type %s", instanceName,
                             ownerClass.getName()));
                 }
-                owner = AccessController.doPrivileged((PrivilegedExceptionAction<T>) () -> {
-                            T newObj;
-                            try {
-                                Constructor<T> constructor = ownerClass.getDeclaredConstructor();
-                                boolean isAccessible = constructor.isAccessible();
-                                constructor.setAccessible(true);
-                                newObj = constructor.newInstance();
-                                constructor.setAccessible(isAccessible);
-                            } catch (NoSuchMethodException ex) {
-                                throw new PropertyException(ex, instanceName, null,
-                                        "No-args constructor not found for class " + ownerClass);
-                            } catch (InvocationTargetException ex) {
-                                throw new InternalConfigurationException(ex, instanceName, null,
-                                        "Can't instantiate class " + ownerClass);
-                            }
-                            setConfiguredFields(newObj, this);
-                            return newObj;
-                        }
-                );
+                T newObj;
+                try {
+                    Constructor<T> constructor = ownerClass.getDeclaredConstructor();
+                    constructor.setAccessible(true);
+                    newObj = constructor.newInstance();
+                    constructor.setAccessible(false);
+                } catch (NoSuchMethodException ex) {
+                    throw new PropertyException(ex, instanceName, null,
+                            "No-args constructor not found for class " + ownerClass);
+                } catch (InvocationTargetException ex) {
+                    throw new InternalConfigurationException(ex, instanceName, null,
+                            "Can't instantiate class " + ownerClass);
+                }
+                setConfiguredFields(newObj, this);
+                owner = newObj;
                 try {
                     owner.postConfig();
                 } catch (IOException e) {
@@ -367,17 +367,14 @@ public class PropertySheet<T extends Configurable> {
                     }
                 }
             }
-        } catch (PrivilegedActionException e) {
-            Exception inner = e.getException();
-            if (inner instanceof IllegalAccessException) {
-                throw new InternalConfigurationException(inner, getInstanceName(), null, "Can't access class "
-                        + ownerClass);
-            } else if (inner instanceof InstantiationException) {
-                throw new InternalConfigurationException(inner, getInstanceName(), null, "Can't instantiate class "
-                        + ownerClass);
-            } else {
-                throw new InternalConfigurationException(inner, getInstanceName(), null, "Unexpected exception thrown by " + ownerClass);
-            }
+        } catch (IllegalAccessException e) {
+            throw new InternalConfigurationException(e, getInstanceName(), null, "Can't access class " + ownerClass);
+        } catch (InstantiationException e) {
+            throw new InternalConfigurationException(e, getInstanceName(), null, "Can't instantiate class " + ownerClass);
+        } catch (PropertyException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InternalConfigurationException(e, getInstanceName(), null, "Unexpected exception thrown by " + ownerClass);
         }
 
         return owner;
@@ -396,7 +393,6 @@ public class PropertySheet<T extends Configurable> {
         Class<? extends Configurable> curClass = o.getClass();
         Set<Field> fields = getAllFields(curClass);
         for (Field f : fields) {
-            boolean accessible = f.isAccessible();
             f.setAccessible(true);
             Config configAnnotation = f.getAnnotation(Config.class);
             ConfigurableName nameAnnotation = f.getAnnotation(ConfigurableName.class);
@@ -432,7 +428,7 @@ public class PropertySheet<T extends Configurable> {
                         ListProperty vals = (ListProperty) ps.propValues.get(f.getName());
                         f.set(o, parseListField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), f.getType(), genericList.get(0), ft, vals));
                     } else {
-                        f.setAccessible(accessible);
+                        f.setAccessible(false);
                         throw new PropertyException(ps.getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
                     }
                 } else if (FieldType.simpleTypes.contains(ft)) {
@@ -453,29 +449,29 @@ public class PropertySheet<T extends Configurable> {
                         MapProperty mapVals = (MapProperty) ps.propValues.get(f.getName());
                         f.set(o, parseMapField(ps.getConfigurationManager(), ps.getInstanceName(), f.getName(), genericList.get(1), mapVals));
                     } else {
-                        f.setAccessible(accessible);
+                        f.setAccessible(false);
                         throw new PropertyException(ps.getInstanceName(), f.getName(), "Failed to extract generic type arguments from field. Found: " + genericList.toString());
                     }
                 } else {
-                    f.setAccessible(accessible);
+                    f.setAccessible(false);
                     throw new PropertyException(ps.getInstanceName(), f.getName(), "Unknown field type " + ft.toString());
                 }
             } else if (nameAnnotation != null) {
                 if (String.class.isAssignableFrom(f.getType())) {
                     f.set(o, ps.getInstanceName());
                 } else {
-                    f.setAccessible(accessible);
+                    f.setAccessible(false);
                     throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigurableName to non-String type " + f.getType().getName());
                 }
             } else if (cmAnnotation != null) {
                 if (ConfigurationManager.class.isAssignableFrom(f.getType())) {
                     f.set(o, ps.getConfigurationManager());
                 } else {
-                    f.setAccessible(accessible);
+                    f.setAccessible(false);
                     throw new PropertyException(ps.getInstanceName(), f.getName(), "Assigning ConfigManager to non-ConfigurationManager type " + f.getType().getName());
                 }
             }
-            f.setAccessible(accessible);
+            f.setAccessible(false);
         }
     }
 
@@ -630,7 +626,7 @@ public class PropertySheet<T extends Configurable> {
                 break;
         }
         classVals.removeAll(removeList);
-        if (classVals.size() > 0) {
+        if (!classVals.isEmpty()) {
             throw new PropertyException(instanceName,fieldName,"Found class values in a primitive array");
         }
         return output;
@@ -714,7 +710,7 @@ public class PropertySheet<T extends Configurable> {
                 break;
         }
         classVals.removeAll(removeList);
-        if (classVals.size() > 0) {
+        if (!classVals.isEmpty()) {
             throw new PropertyException(instanceName,fieldName,"Found class values in a primitive array");
         }
         return output;
@@ -808,13 +804,6 @@ public class PropertySheet<T extends Configurable> {
                 } catch (MalformedURLException ex) {
                     throw new PropertyException(ex, instanceName, fieldName, String.format("%s is not a valid URL", val));
                 }
-            case RANDOM:
-                logger.warning("@Config on Random fields is deprecated for removal in a future version.");
-                try {
-                    return new Random(Integer.parseInt(val));
-                } catch (NumberFormatException ex) {
-                    throw new PropertyException(ex, instanceName, fieldName, String.format("The seed %s is not an integer", val));
-                }
             case ENUM:
                 try {
                     return Enum.valueOf((Class<Enum>) fieldClass, val);
@@ -834,7 +823,7 @@ public class PropertySheet<T extends Configurable> {
 
     /**
      * Extracts the classes representing the generic type parameters for the supplied field.
-     *
+     * <p>
      * It ignores types which aren't classes. If you've got those, you're on your own.
      *
      * @param f The field to inspect.
@@ -845,8 +834,7 @@ public class PropertySheet<T extends Configurable> {
 
         Type genericType = f.getGenericType();
 
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) genericType;
+        if (genericType instanceof ParameterizedType pt) {
             for (Type t : pt.getActualTypeArguments()) {
                 //update the type to the raw type if appropriate
                 if(t instanceof ParameterizedType) {
@@ -863,6 +851,9 @@ public class PropertySheet<T extends Configurable> {
         return list;
     }
 
+    /**
+     * Removes the reference to the constructed object.
+     */
     public synchronized void clearOwner() {
         owner = null;
     }
@@ -877,7 +868,7 @@ public class PropertySheet<T extends Configurable> {
 
     /**
      * Sets the raw property to the given name.
-     *
+     * <p>
      * If the owner is instantiated it *does not* change the field in the owner.
      *
      * @param key the simple property name
@@ -903,9 +894,9 @@ public class PropertySheet<T extends Configurable> {
     }
 
     /**
-     * Gets the owning property manager
+     * Gets the owning configuration manager
      *
-     * @return the property manager
+     * @return the configuration manager
      */
     public ConfigurationManager getConfigurationManager() {
         return cm;
@@ -928,21 +919,16 @@ public class PropertySheet<T extends Configurable> {
         return Collections.unmodifiableSet(registeredProperties.keySet());
     }
 
-    public synchronized void setCM(ConfigurationManager cm) {
-        this.cm = cm;
-    }
-
     /**
      * Returns true if two property sheet define the same object in terms of
      * configuration. The owner (and the parent configuration manager) are not
      * expected to be the same.
      */
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof PropertySheet)) {
+        if (!(obj instanceof PropertySheet<?> ps)) {
             return false;
         }
 
-        PropertySheet<?> ps = (PropertySheet<?>) obj;
         return propValues.equals(ps.propValues);
     }
 
@@ -951,37 +937,46 @@ public class PropertySheet<T extends Configurable> {
         return Objects.hash(propValues);
     }
 
+    /**
+     * Copies this property sheet (disconnecting it from the constructed object).
+     * @return A copy of this property sheet.
+     */
     public PropertySheet<T> copy() {
         return new PropertySheet<>(this);
+    }
+
+    /**
+     * Copies this property sheet to a new configuration manager.
+     * @param newCM The new configuration manager.
+     * @return A copy of this property sheet.
+     */
+    public PropertySheet<T> copy(ConfigurationManager newCM) {
+        return new PropertySheet<>(this, newCM);
     }
 
     /**
      * Gets all of the fields associated with a class by walking up the class
      * tree. Handles super classes, as well as interfaces.
      *
-     * @param configurable the class who's fields we wish to walk.
+     * @param configurable the class whose fields we wish to walk.
      * @return all of the fields, so they can be checked for annotations.
      */
     public static Set<Field> getAllFields(Class<? extends Configurable> configurable) {
-        return AccessController.doPrivileged((PrivilegedAction<Set<Field>>)
-                () -> {
-                    Set<Field> ret = new HashSet<>();
-                    Queue<Class<?>> cq = new ArrayDeque<>();
-                    cq.add(configurable);
-                    while (!cq.isEmpty()) {
-                        Class<?> curr = cq.remove();
-                        ret.addAll(Arrays.asList(curr.getDeclaredFields()));
-                        ret.addAll(Arrays.asList(curr.getFields()));
-                        Class<?> sc = curr.getSuperclass();
-                        if (sc != null) {
-                            cq.add(sc);
-                        }
-                        cq.addAll(Arrays.asList(curr.getInterfaces()));
-                    }
-                    ret.removeIf(f -> Modifier.isStatic(f.getModifiers()));
-                    return ret;
-                }
-        );
+        Set<Field> ret = new HashSet<>();
+        Queue<Class<?>> cq = new ArrayDeque<>();
+        cq.add(configurable);
+        while (!cq.isEmpty()) {
+            Class<?> curr = cq.remove();
+            ret.addAll(Arrays.asList(curr.getDeclaredFields()));
+            ret.addAll(Arrays.asList(curr.getFields()));
+            Class<?> sc = curr.getSuperclass();
+            if (sc != null) {
+                cq.add(sc);
+            }
+            cq.addAll(Arrays.asList(curr.getInterfaces()));
+        }
+        ret.removeIf(f -> Modifier.isStatic(f.getModifiers()));
+        return ret;
     }
 
     /**

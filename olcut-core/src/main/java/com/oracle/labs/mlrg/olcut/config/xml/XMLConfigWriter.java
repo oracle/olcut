@@ -121,14 +121,6 @@ public class XMLConfigWriter implements ConfigWriter {
                 writer.writeStartElement(ConfigLoader.COMPONENT);
                 writer.writeAttribute(ConfigLoader.NAME, attributes.get(ConfigLoader.NAME));
                 writer.writeAttribute(ConfigLoader.TYPE, attributes.get(ConfigLoader.TYPE));
-                writer.writeAttribute(ConfigLoader.EXPORT, attributes.get(ConfigLoader.EXPORT));
-                writer.writeAttribute(ConfigLoader.IMPORT, attributes.get(ConfigLoader.IMPORT));
-                if (attributes.containsKey(ConfigLoader.ENTRIES)) {
-                    writer.writeAttribute(ConfigLoader.ENTRIES, attributes.get(ConfigLoader.ENTRIES));
-                }
-                if (attributes.containsKey(ConfigLoader.LEASETIME)) {
-                    writer.writeAttribute(ConfigLoader.LEASETIME, attributes.get(ConfigLoader.LEASETIME));
-                }
                 if (attributes.containsKey(ConfigLoader.SERIALIZED)) {
                     writer.writeAttribute(ConfigLoader.SERIALIZED, attributes.get(ConfigLoader.SERIALIZED));
                 }
@@ -194,14 +186,6 @@ public class XMLConfigWriter implements ConfigWriter {
                 writer.writeEmptyElement(ConfigLoader.COMPONENT);
                 writer.writeAttribute(ConfigLoader.NAME, attributes.get(ConfigLoader.NAME));
                 writer.writeAttribute(ConfigLoader.TYPE, attributes.get(ConfigLoader.TYPE));
-                writer.writeAttribute(ConfigLoader.EXPORT, attributes.get(ConfigLoader.EXPORT));
-                writer.writeAttribute(ConfigLoader.IMPORT, attributes.get(ConfigLoader.IMPORT));
-                if (attributes.containsKey(ConfigLoader.ENTRIES)) {
-                    writer.writeAttribute(ConfigLoader.ENTRIES, attributes.get(ConfigLoader.ENTRIES));
-                }
-                if (attributes.containsKey(ConfigLoader.LEASETIME)) {
-                    writer.writeAttribute(ConfigLoader.LEASETIME, attributes.get(ConfigLoader.LEASETIME));
-                }
                 if (attributes.containsKey(ConfigLoader.SERIALIZED)) {
                     writer.writeAttribute(ConfigLoader.SERIALIZED, attributes.get(ConfigLoader.SERIALIZED));
                 }

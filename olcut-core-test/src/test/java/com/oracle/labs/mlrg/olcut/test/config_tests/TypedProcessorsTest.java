@@ -51,6 +51,5 @@ public class TypedProcessorsTest {
 
         assertEquals("McOmeletFace", values.get(0));
         assertEquals("telemO-1170105035", values.get(1));
-        cm.close();
     }
 }

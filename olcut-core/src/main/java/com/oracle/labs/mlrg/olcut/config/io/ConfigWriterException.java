@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -33,6 +33,10 @@ package com.oracle.labs.mlrg.olcut.config.io;
  */
 public class ConfigWriterException extends RuntimeException {
 
+    /**
+     * Constructs a config writer exception wrapping the supplied exception.
+     * @param e The exception to wrap.
+     */
     public ConfigWriterException(Exception e) {
         super(e);
     }

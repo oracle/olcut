@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -89,9 +89,7 @@ public enum FieldType {
     DATE_TIME(OffsetDateTime.class),
     DATE(LocalDate.class),
     TIME(OffsetTime.class),
-    ENUM(Enum.class),
-    @Deprecated
-    RANDOM(Random.class);
+    ENUM(Enum.class);
 
     private static final Class<?> configurableClass = Configurable.class;
     private static final Class<?> configurableArrayClass = Configurable[].class;
@@ -110,7 +108,7 @@ public enum FieldType {
 
     public final static EnumSet<FieldType> simpleTypes = EnumSet.of(BOOLEAN, BYTE, CHAR, SHORT, INTEGER, LONG, FLOAT, DOUBLE, STRING,
                                                                     CONFIGURABLE, ATOMIC_INTEGER,
-                                                                    ATOMIC_LONG, FILE, PATH, URL, RANDOM, DATE_TIME, DATE, TIME, ENUM);
+                                                                    ATOMIC_LONG, FILE, PATH, URL, DATE_TIME, DATE, TIME, ENUM);
 
     public final static EnumSet<FieldType> mapTypes = EnumSet.of(MAP);
 

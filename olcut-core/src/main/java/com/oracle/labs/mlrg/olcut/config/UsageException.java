@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2017, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -32,10 +32,18 @@ package com.oracle.labs.mlrg.olcut.config;
  * An exception which denotes the usage statement was requested.
  */
 public class UsageException extends ArgumentException {
+    /**
+     * Constructs a UsageException with the specified message.
+     * @param msg The help message for the options.
+     */
     public UsageException(String msg) {
         super("--usage", msg);
     }
 
+    /**
+     * The usage/help message.
+     * @return The usage message.
+     */
     public String getUsage() {
         return msg;
     }

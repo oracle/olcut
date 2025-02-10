@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -71,7 +71,7 @@ public interface ConfigLoader {
 
     /**
      * Loads configuration from the stream.
-     *
+     * <p>
      * Note: does not close the stream.
      * @param stream The stream to load from.
      * @throws ConfigLoaderException Thrown if the configuration is malformed.

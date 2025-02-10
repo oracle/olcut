@@ -2,7 +2,7 @@
  * Copyright 1999-2004 Carnegie Mellon University.
  * Portions Copyright 2004 Sun Microsystems, Inc.
  * Portions Copyright 2004 Mitsubishi Electric Research Laboratories.
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -35,8 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -109,24 +107,19 @@ public class SAXLoader implements ConfigLoader {
      */
     @Override
     public final void load(URL url) throws ConfigLoaderException {
-        AccessController.doPrivileged((PrivilegedAction<Void>)
-                () -> {
-                    if (url.getProtocol().equals("file")) {
-                        String workingDir = new File(url.getFile()).getParent();
-                        handler.setCurWorkingDir(workingDir);
-                    } else if (IOUtil.isDisallowedProtocol(url)) {
-                        throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
-                    } else {
-                        handler.setCurWorkingDir("");
-                    }
-                    try (InputStream is = url.openStream()) {
-                        innerLoad(is, url.toString());
-                    } catch (IOException e) {
-                        throw new ConfigLoaderException(e, e.getMessage());
-                    }
-                    return null;
-                }
-        );
+        if (url.getProtocol().equals("file")) {
+            String workingDir = new File(url.getFile()).getParent();
+            handler.setCurWorkingDir(workingDir);
+        } else if (IOUtil.isDisallowedProtocol(url)) {
+            throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
+        } else {
+            handler.setCurWorkingDir("");
+        }
+        try (InputStream is = url.openStream()) {
+            innerLoad(is, url.toString());
+        } catch (IOException e) {
+            throw new ConfigLoaderException(e, e.getMessage());
+        }
     }
 
     /**
@@ -213,36 +206,7 @@ public class SAXLoader implements ConfigLoader {
                     String curComponent = attributes.getValue(ConfigLoader.NAME);
                     String curType = attributes.getValue(ConfigLoader.TYPE);
                     String override = attributes.getValue(ConfigLoader.INHERIT);
-                    String export = attributes.getValue(ConfigLoader.EXPORT);
-                    String entriesName = attributes.getValue(ConfigLoader.ENTRIES);
                     String serializedForm = attributes.getValue(ConfigLoader.SERIALIZED);
-                    boolean exportable = Boolean.parseBoolean(export);
-                    String imp = attributes.getValue(ConfigLoader.IMPORT);
-                    boolean importable = Boolean.parseBoolean(imp);
-                    String lt = attributes.getValue(ConfigLoader.LEASETIME);
-                    if (export == null && lt != null) {
-                        throw new SAXParseException("lease timeout "
-                                + lt
-                                + " specified for component that"
-                                + " does not have export set",
-                                locator);
-                    }
-                    long leaseTime = ConfigurationData.DEFAULT_LEASE_TIME;
-                    if (lt != null) {
-                        try {
-                            leaseTime = Long.parseLong(lt);
-                            if (leaseTime < 0) {
-                                throw new SAXParseException("lease timeout "
-                                        + lt
-                                        + " must be greater than 0",
-                                        locator);
-                            }
-                        } catch (NumberFormatException nfe) {
-                            throw new SAXParseException("lease timeout "
-                                    + lt + " must be a long",
-                                    locator);
-                        }
-                    }
 
                     //
                     // Check for a badly formed component tag.
@@ -277,13 +241,13 @@ public class SAXLoader implements ConfigLoader {
                         if (curType == null) {
                             curType = spd.getClassName();
                         }
-                        rpd = new ConfigurationData(curComponent, curType, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
+                        rpd = new ConfigurationData(curComponent, curType, spd.getProperties(), serializedForm);
                         overriding = true;
                     } else {
                         if (rpdMap.get(curComponent) != null) {
                             throw new SAXParseException("duplicate definition for " + curComponent, locator);
                         }
-                        rpd = new ConfigurationData(curComponent, curType, serializedForm, entriesName, exportable, importable, leaseTime);
+                        rpd = new ConfigurationData(curComponent, curType, serializedForm);
                     }
                     break;
                 case PROPERTY: {

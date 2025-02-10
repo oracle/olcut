@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -61,13 +61,12 @@ public class OptionsTest {
         assertEquals("input.txt", options.foo.inputFile.getName());
         assertEquals("output.txt", options.foo.outputFile.getFileName().toString());
         assertEquals(Arrays.asList("X", "Y", "Z"), options.foo.baz);
-        assertEquals(-1_170_105_035, options.bar.rng.nextInt());
+        assertEquals(-1_170_105_035, new Random(options.bar.seed).nextInt());
         assertEquals(OptionsEnum.THINGS, options.bar.optEnum);
         assertEquals("ringstay putoutay", options.bar.outputString);
         assertEquals("double bass", options.bar.deepOptions.deepString);
         assertEquals("How low can you go?", options.bar.deepOptions.deeperOptions.deeperString);
-        cm.close();
-        
+
         String[] unparsedArgs = cm.getUnnamedArguments();
         assertEquals(0, unparsedArgs.length);
 
@@ -80,8 +79,6 @@ public class OptionsTest {
         TestOptions options = new TestOptions();
         ConfigurationManager cm = new ConfigurationManager(args,options);
         assertEquals("\\s+", options.bar.deepOptions.deeperOptions.deeperString);
-        cm.close();
-        
     }
 
     public static class CommaOptions implements Options {
@@ -94,7 +91,6 @@ public class OptionsTest {
         String[] args = new String[] {"--my-chars", "a," + ConfigurationManager.CUR_ESCAPE_CHAR + ",,b,c"};
         CommaOptions options = new CommaOptions();
         ConfigurationManager cm = new ConfigurationManager(args, options);
-        cm.close();
         assertEquals(4, options.myChars.length);
         assertEquals('a', options.myChars[0]);
         assertEquals(',', options.myChars[1]);
@@ -224,7 +220,7 @@ class OtherOptions implements Options {
     public DeepOptions deepOptions;
 
     @Option(charName='r', longName="seed", usage="Random seed")
-    public Random rng = new Random(1);
+    public long seed = 1L;
 
     @Option(charName='a', longName="output-string", usage="String to output")
     public String outputString = "";
@@ -234,7 +230,7 @@ class OtherOptions implements Options {
 
     @Override
     public String toString() {
-        return "rngDraw="+rng.nextInt()+",outputString="+outputString+",deepOptions("+deepOptions.toString()+")";
+        return "rngDraw="+new Random(seed)+",outputString="+outputString+",deepOptions("+deepOptions.toString()+")";
     }
 }
 

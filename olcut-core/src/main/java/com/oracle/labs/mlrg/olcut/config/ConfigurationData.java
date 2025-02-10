@@ -66,8 +66,6 @@ public final class ConfigurationData implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final long DEFAULT_LEASE_TIME = -1;
-
     private final String name;
 
     private final String className;
@@ -79,25 +77,6 @@ public final class ConfigurationData implements Serializable {
      * deserialized.
      */
     private final String serializedForm;
-
-    /**
-     * Whether this component is exportable to a service registrar.
-     */
-    private final boolean exportable;
-    
-    private final boolean importable;
-
-    /**
-     * The time to lease this object.
-     */
-    private final long leaseTime;
-
-    /**
-     * The (possibly <code>null</code>) name of a component that has a list
-     * of configuration entries to use when registering this component with
-     * a service registrar.
-     */
-    private final String entriesName;
 
     /**
      * Creates an empty ConfigurationData.
@@ -116,7 +95,7 @@ public final class ConfigurationData implements Serializable {
      * @param properties The properties to apply to that object.
      */
     public ConfigurationData(String name, String className, Map<String, Property> properties) {
-        this(name,className,properties,null,null,false,false,DEFAULT_LEASE_TIME);
+        this(name,className,properties,null);
     }
 
     /**
@@ -124,13 +103,9 @@ public final class ConfigurationData implements Serializable {
      * @param name The name of the configured object.
      * @param className The class name of the configured object.
      * @param serializedForm A path to load the serialised form of this object (or null).
-     * @param entriesName The entries to restrict Jini loading (or null).
-     * @param exportable Is this object exportable via a Jini registry.
-     * @param importable Should this object be imported via a Jini registry.
-     * @param leaseTime How long before the Jini registrar needs to have the object renewed.
      */
-    public ConfigurationData(String name, String className, String serializedForm, String entriesName, boolean exportable, boolean importable, long leaseTime) {
-        this(name,className, Collections.emptyMap(),serializedForm,entriesName,exportable,importable,leaseTime);
+    public ConfigurationData(String name, String className, String serializedForm) {
+        this(name,className,Collections.emptyMap(),serializedForm);
     }
 
     /**
@@ -140,20 +115,12 @@ public final class ConfigurationData implements Serializable {
      * @param className The class name of the configured object.
      * @param properties The properties to apply to that object.
      * @param serializedForm A path to load the serialised form of this object (or null).
-     * @param entriesName The entries to restrict Jini loading (or null).
-     * @param exportable Is this object exportable via a Jini registry.
-     * @param importable Should this object be imported via a Jini registry.
-     * @param leaseTime How long before the Jini registrar needs to have the object renewed.
      */
-    public ConfigurationData(String name, String className, Map<String, Property> properties, String serializedForm, String entriesName, boolean exportable, boolean importable, long leaseTime) {
+    public ConfigurationData(String name, String className, Map<String, Property> properties, String serializedForm) {
         this.name = name;
         this.className = className;
         this.properties = new HashMap<>(properties);
         this.serializedForm = serializedForm;
-        this.entriesName = entriesName;
-        this.exportable = exportable;
-        this.importable = importable;
-        this.leaseTime = leaseTime;
     }
 
     /**
@@ -182,42 +149,6 @@ public final class ConfigurationData implements Serializable {
      */
     public String getSerializedForm() {
         return serializedForm;
-    }
-
-    /**
-     * Should this configuration import a remote object via Jini.
-     * @return Should the configuration import a remote object.
-     */
-    @Deprecated
-    public boolean isImportable() {
-        return importable;
-    }
-
-    /**
-     * Returns the Jini lease time. Defaults to -1, Leases.ANY.
-     * @return The Jini lease time.
-     */
-    @Deprecated
-    public long getLeaseTime() {
-        return leaseTime;
-    }
-
-    /**
-     * Should this configuration export it's object via Jini.
-     * @return Should the configuration export a remote object.
-     */
-    @Deprecated
-    public boolean isExportable() {
-        return exportable;
-    }
-
-    /**
-     * Returns the entries which control Jini lookup.
-     * @return The Jini control entries.
-     */
-    @Deprecated
-    public String getEntriesName() {
-        return entriesName;
     }
 
     /** @return Returns an unmodifiable view on the properties. */
@@ -256,27 +187,22 @@ public final class ConfigurationData implements Serializable {
      * @return A copy of this object.
      */
     public ConfigurationData copy() {
-        return new ConfigurationData(name,className,properties,serializedForm,entriesName,exportable,importable,leaseTime);
+        return new ConfigurationData(name,className,properties,serializedForm);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ConfigurationData)) return false;
-        ConfigurationData that = (ConfigurationData) o;
-        return exportable == that.exportable &&
-                importable == that.importable &&
-                leaseTime == that.leaseTime &&
-                name.equals(that.name) &&
+        if (!(o instanceof ConfigurationData that)) return false;
+        return name.equals(that.name) &&
                 className.equals(that.className) &&
                 properties.equals(that.properties) &&
-                Objects.equals(serializedForm, that.serializedForm) &&
-                Objects.equals(entriesName, that.entriesName);
+                Objects.equals(serializedForm, that.serializedForm);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, className, properties, serializedForm, exportable, importable, leaseTime, entriesName);
+        return Objects.hash(name, className, properties, serializedForm);
     }
 
     @Override
@@ -286,10 +212,6 @@ public final class ConfigurationData implements Serializable {
                 ", className='" + className + '\'' +
                 ", properties=" + properties +
                 ", serializedForm='" + serializedForm + '\'' +
-                ", exportable=" + exportable +
-                ", importable=" + importable +
-                ", leaseTime=" + leaseTime +
-                ", entriesName='" + entriesName + '\'' +
                 ')';
     }
 
@@ -323,24 +245,24 @@ public final class ConfigurationData implements Serializable {
             for(Map.Entry<String, Property> propertyEntry: referencedCD.properties.entrySet()) {
                 String propName = propertyEntry.getKey();
                 Property prop = propertyEntry.getValue();
-                if(prop instanceof SimpleProperty) {
-                    this.simpleProperties.put(propName, new DerefedProperty(contextMap, (SimpleProperty) prop, propName, ""));
-                } else if (prop instanceof ListProperty) {
-                    ListProperty listProperty = (ListProperty) prop;
-                    this.listProperties.put(propName,
-                            IntStream.range(0, listProperty.getSimpleList().size())
-                                    .mapToObj(i ->
-                                            new DerefedProperty(contextMap, listProperty.getSimpleList().get(i), propName, ", index: " + i))
-                                    .collect(Collectors.toList()));
-                    this.listClassProperties.put(propName, listProperty.getClassList());
-                } else if (prop instanceof MapProperty) {
-                    MapProperty mapProperty = (MapProperty) prop;
-                    this.mapProperties.put(propName, mapProperty.getMap().entrySet().stream()
-                            .collect(Collectors.toMap(Map.Entry::getKey,
-                                    e -> new DerefedProperty(contextMap, e.getValue(),
-                                            propName, ", PropValue key: " + e.getKey()))));
-                } else {
-                    logger.fine(String.format("Unknown Property of key: %s with type: %s", propertyEntry.getKey(), prop.getClass()));
+                switch (prop) {
+                    case SimpleProperty simpleProperty ->
+                            this.simpleProperties.put(propName, new DerefedProperty(contextMap, simpleProperty, propName, ""));
+                    case ListProperty listProperty -> {
+                        this.listProperties.put(propName,
+                                IntStream.range(0, listProperty.getSimpleList().size())
+                                        .mapToObj(i ->
+                                                new DerefedProperty(contextMap, listProperty.getSimpleList().get(i), propName, ", index: " + i))
+                                        .collect(Collectors.toList()));
+                        this.listClassProperties.put(propName, listProperty.getClassList());
+                    }
+                    case MapProperty mapProperty ->
+                            this.mapProperties.put(propName, mapProperty.getMap().entrySet().stream()
+                                    .collect(Collectors.toMap(Map.Entry::getKey,
+                                            e -> new DerefedProperty(contextMap, e.getValue(),
+                                                    propName, ", PropValue key: " + e.getKey()))));
+                    case null, default ->
+                            logger.fine(String.format("Unknown Property of key: %s with type: %s", propertyEntry.getKey(), prop.getClass()));
                 }
             }
         }
@@ -374,8 +296,7 @@ public final class ConfigurationData implements Serializable {
 
         @Override
         public boolean equals(Object o) {
-            if (o instanceof StructuralConfigurationData) {
-                StructuralConfigurationData that = (StructuralConfigurationData) o;
+            if (o instanceof StructuralConfigurationData that) {
                 if (this.className.equals(that.className)) {
                     boolean simpleMatch = checkPresenceAllMatch(this.simpleProperties, that.simpleProperties,
                             DerefedProperty::equals);
@@ -530,8 +451,7 @@ public final class ConfigurationData implements Serializable {
          */
         @Override
         public boolean equals(Object o) {
-            if (o instanceof DerefedProperty) {
-                DerefedProperty that = (DerefedProperty) o;
+            if (o instanceof DerefedProperty that) {
                 if(this.isDerefed && that.isDerefed) {
                     return this.innerConf.equals(that.innerConf);
                 } else if(!this.isDerefed && !that.isDerefed) {
@@ -596,28 +516,20 @@ public final class ConfigurationData implements Serializable {
      * Checks whether two ConfigurationData objects are 'structurally equal'. Two objects are structurally
      * equal when their classNames are the same and when all of their properties are equal or, if those
      * properties refer to another ConfigurationData by name, if all of their properties are structurally
-     * equal recursively. It does not compare {@link ConfigurationData#serializedForm}, {@link ConfigurationData#importable},
-     * {@link ConfigurationData#exportable}, {@link ConfigurationData#leaseTime}, or {@link ConfigurationData#entriesName}.
-     * The SerializedForm is not relevant to the equality comparison we are making here, and the remaining fields are
-     * all deprecated.
-     *
+     * equal recursively. It does not compare {@link ConfigurationData#serializedForm} as the serialized form is not
+     * relevant to the equality comparison we are making here.
      * <p>
-     *
      * N.B. Because the serialized configuration format internally represents things as strings with no type information
      * but equality semantics often differ between strings and the types the represent, the method attempts to intuit
      * represented types by attempting to parse the string as that type and treating it as that type if it successfully
      * parses. This means that, eg. ID values that are typed as strings but are fully numerical will be converted to
      * doubles and be compared for equality that way. For more details on the processing see {@link DerefedProperty#equals(Object)}.
-     *
      * <p>
-     *
      * {@code aName} should be the name of an element of {@code a} that is to be compared to {@code bName}
      * in {@code b}. {@code a} and {@code b} should each contain all the ConfigurationData objects
      * needed to instantiate the objects named by {@code aName} and {@code bName} respectively. Objects not
      * instantiated by traversing children of {@code aName} and {@code bName} are ignored.
-     *
      * <p>
-     *
      * At log-level {@link java.util.logging.Level#FINE} this reports the first configuration object where the two
      * instances differ, together with the property values that differ between those instances. Any time this method
      * returns {@code false}, it should also log at least one message.
@@ -646,7 +558,7 @@ public final class ConfigurationData implements Serializable {
     }
 
     /**
-     * Writes out the configuration data, redacting (i.e.\ ignoring) fields if necessary.
+     * Writes out the configuration data, redacting (i.e.,\ ignoring) fields if necessary.
      * @param configWriter The writer to use.
      * @param redactedFields The fields to redact.
      * @throws ConfigWriterException If the writer throws an exception.
@@ -656,16 +568,8 @@ public final class ConfigurationData implements Serializable {
 
         attributes.put(ConfigLoader.NAME,name);
         attributes.put(ConfigLoader.TYPE,className);
-        attributes.put(ConfigLoader.IMPORT,""+isImportable());
-        attributes.put(ConfigLoader.EXPORT,""+isExportable());
-        if (getLeaseTime() > 0) {
-            attributes.put(ConfigLoader.LEASETIME, "" + getLeaseTime());
-        }
         if (getSerializedForm() != null) {
             attributes.put(ConfigLoader.SERIALIZED,getSerializedForm());
-        }
-        if (getEntriesName() != null) {
-            attributes.put(ConfigLoader.ENTRIES,getEntriesName());
         }
 
         Map<String,Property> writtenProperties = new HashMap<>();

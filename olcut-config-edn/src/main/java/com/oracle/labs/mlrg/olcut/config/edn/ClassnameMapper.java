@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -38,7 +38,7 @@ import java.util.Map;
 
 public class ClassnameMapper {
 
-    private Map<String, String> prefixes;
+    private final Map<String, String> prefixes;
 
     public ClassnameMapper(Map<String, String> prefixes) {
         this.prefixes = prefixes;

@@ -51,7 +51,6 @@ public class ConfigurationDataTest {
         final String aName = "all-config";
         ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.xml"));
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup(aName);
-        cm.close();
         cm = new ConfigurationManager();
         cm.importConfigurable(ac);
         List<ConfigurationData> a = cm.getComponentNames().stream()
@@ -60,7 +59,6 @@ public class ConfigurationDataTest {
                 .map(Optional::get)
                 .collect(Collectors.toList());
 
-        cm.close();
         cm = new ConfigurationManager();
         final String bName = cm.importConfigurable(ac);
         List<ConfigurationData> b = cm.getComponentNames().stream()
@@ -76,7 +74,6 @@ public class ConfigurationDataTest {
 
         ac.stringField = "Something different from before";
 
-        cm.close();
         cm = new ConfigurationManager();
 
         String b2Name = cm.importConfigurable(ac);
@@ -95,7 +92,6 @@ public class ConfigurationDataTest {
         ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "allConfig.xml"));
         AllFieldsConfigurable ac = (AllFieldsConfigurable) cm.lookup("all-config");
 
-        cm.close();
         cm = new ConfigurationManager();
 
         String aName = cm.importConfigurable(ac);

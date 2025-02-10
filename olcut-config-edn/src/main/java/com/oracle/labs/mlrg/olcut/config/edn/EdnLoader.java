@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -55,8 +55,6 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,7 +66,7 @@ import java.util.stream.Collectors;
 public class EdnLoader implements ConfigLoader {
 
     private static final Logger logger = Logger.getLogger(EdnLoader.class.getName());
-    private ClassnameMapper cnMapper;
+    private final ClassnameMapper cnMapper;
 
     private static <T> List<T> rest(List<T> l) {
         return l.subList(1, l.size());
@@ -151,7 +149,6 @@ public class EdnLoader implements ConfigLoader {
         }
     }
 
-
     private final URLLoader parent;
     private final Map<String, ConfigurationData> rpdMap;
     private final Map<String, ConfigurationData> existingRPD;
@@ -171,25 +168,20 @@ public class EdnLoader implements ConfigLoader {
 
     @Override
     public final void load(URL url) throws ConfigLoaderException {
-        AccessController.doPrivileged((PrivilegedAction<Void>)
-                () -> {
-                    if (url.getProtocol().equals("file")) {
-                        workingDir = new File(url.getFile()).getParent();
-                    } else if (IOUtil.isDisallowedProtocol(url)) {
-                        throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
-                    } else {
-                        workingDir = "";
-                    }
-                    try {
-                        innerLoad(url.openStream());
-                    } catch (EdnException e) {
-                        throw new ConfigLoaderException(e, "Edn failed to parse url: " + url.toString());
-                    } catch (IOException e) {
-                        throw new ConfigLoaderException(e, "Failed to load url: " + url.toString());
-                    }
-                    return null;
-                }
-        );
+        if (url.getProtocol().equals("file")) {
+            workingDir = new File(url.getFile()).getParent();
+        } else if (IOUtil.isDisallowedProtocol(url)) {
+            throw new ConfigLoaderException("Unable to load configurations from URLs with protocol: " + url.getProtocol());
+        } else {
+            workingDir = "";
+        }
+        try {
+            innerLoad(url.openStream());
+        } catch (EdnException e) {
+            throw new ConfigLoaderException(e, "Edn failed to parse url: " + url.toString());
+        } catch (IOException e) {
+            throw new ConfigLoaderException(e, "Failed to load url: " + url.toString());
+        }
     }
 
     @Override
@@ -212,13 +204,11 @@ public class EdnLoader implements ConfigLoader {
     private void parseEdn(Parseable in) {
         Parser p = Parsers.newParser(Parsers.defaultConfiguration());
         Object parseValue = p.nextValue(in);
-        if (parseValue instanceof List<?>) {
-            List<?> config = (List<?>) parseValue;
-            if(checkSymbol(config.get(0)).equals(ConfigLoader.CONFIG)) {
+        if (parseValue instanceof List<?> config) {
+            if(checkSymbol(config.getFirst()).equals(ConfigLoader.CONFIG)) {
                 for(Object configObj : rest(config)) {
-                    if(configObj instanceof List<?>) {
-                        List<?> configListItem = (List<?>) configObj;
-                        switch (checkSymbol(configListItem.get(0))) {
+                    if(configObj instanceof List<?> configListItem) {
+                        switch (checkSymbol(configListItem.getFirst())) {
                             case FILE:
                                 parseFile(rest(configListItem));
                                 break;
@@ -296,7 +286,7 @@ public class EdnLoader implements ConfigLoader {
     private void parseComponents(List<?> componentsListItem) {
         int i = 1;
         boolean hasMap = false;
-        if(componentsListItem.get(0) instanceof Map<?, ?>) {
+        if(componentsListItem.getFirst() instanceof Map<?, ?>) {
             i++;
             hasMap = true;
         }
@@ -314,15 +304,14 @@ public class EdnLoader implements ConfigLoader {
         }
         for(; i<componentsListItem.size(); i++) {
             Object o = componentsListItem.get(i);
-            if(o instanceof List<?>) {
-                List<?> l = (List<?>) o;
+            if(o instanceof List<?> l) {
                 int lStart = 1;
                 List<Object> formed = new ArrayList<>();
-                formed.add(l.get(0)); // name element
+                formed.add(l.getFirst()); // name element
                 formed.add(componentsListItem.get(hasMap ? 1 : 0)); // type element
                 Map<Object, Object> m = new HashMap<>();
                 if(hasMap) {
-                    m.putAll((Map<?,?>) componentsListItem.get(0));
+                    m.putAll((Map<?,?>) componentsListItem.getFirst());
                 }
                 if(l.size() > 1 && l.get(1) instanceof Map<?, ?>) {
                     m.putAll((Map<?,?>) l.get(1));
@@ -348,11 +337,7 @@ public class EdnLoader implements ConfigLoader {
         int propsStart = 2;
         ConfigurationData rpd = new ConfigurationData(name, type);
 
-        boolean importable = false;
-        boolean exportable = false;
         String override = null;
-        long leaseTime = ConfigurationData.DEFAULT_LEASE_TIME;
-        String entriesName = null;
         String serializedForm = null;
 
         if(componentListItem.get(2) instanceof Map<?, ?>) {
@@ -361,22 +346,6 @@ public class EdnLoader implements ConfigLoader {
                     .collect(Collectors.toMap(e -> checkKeyword(e.getKey()), Map.Entry::getValue));
             if(modMap.containsKey(ConfigLoader.INHERIT)) {
                 override = checkSymbolOrString(modMap.get(ConfigLoader.INHERIT));
-            }
-            if(modMap.containsKey(ConfigLoader.IMPORT)) {
-                importable = checkBoolean(modMap.get(ConfigLoader.IMPORT));
-            }
-            if(modMap.containsKey(ConfigLoader.EXPORT)) {
-                exportable = checkBoolean(modMap.get(ConfigLoader.EXPORT));
-            }
-            if(modMap.containsKey(ConfigLoader.LEASETIME)) {
-                if(!exportable) {
-                    throw new ConfigLoaderException("lease timeout " + leaseTime +
-                            " specified for component that does not have export set, at " + modMap.toString());
-                }
-                leaseTime = checkLong(modMap.get(ConfigLoader.LEASETIME));
-            }
-            if(modMap.containsKey(ConfigLoader.ENTRIES)) {
-                entriesName = modMap.get(ConfigLoader.ENTRIES).toString();
             }
             if(modMap.containsKey(ConfigLoader.SERIALIZED)) {
                 serializedForm = modMap.get(ConfigLoader.SERIALIZED).toString();
@@ -398,13 +367,13 @@ public class EdnLoader implements ConfigLoader {
                     logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
                             spd.getName(), name , type, spd.getClassName()));
                 }
-                rpd = new ConfigurationData(name, type, spd.getProperties(), serializedForm, entriesName, exportable, importable, leaseTime);
+                rpd = new ConfigurationData(name, type, spd.getProperties(), serializedForm);
             } else {
                 if (rpdMap.get(name) != null) {
                     throw new ConfigLoaderException("duplicate definition for "
                             + name);
                 }
-                rpd = new ConfigurationData(name, type, serializedForm, entriesName, exportable, importable, leaseTime);
+                rpd = new ConfigurationData(name, type, serializedForm);
             }
             propsStart = 3;
         }

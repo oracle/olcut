@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -55,10 +55,10 @@ import java.util.Set;
 
 public class EdnConfigWriter implements ConfigWriter {
 
-    private Printer printer;
-    private List<Object> struct;
-    private ClassnameMapper cnMapper;
-    private static final Set<String> COMPONENT_MODIFIERS = new HashSet<>(Arrays.asList(ConfigLoader.IMPORT, ConfigLoader.EXPORT, ConfigLoader.ENTRIES, ConfigLoader.LEASETIME, ConfigLoader.SERIALIZED));
+    private final Printer printer;
+    private final List<Object> struct;
+    private final ClassnameMapper cnMapper;
+    private static final Set<String> COMPONENT_MODIFIERS = new HashSet<>(List.of(ConfigLoader.SERIALIZED));
 
     public EdnConfigWriter(OutputStream os) {
         this.printer = new OlcutEdnPrinter(new OutputStreamWriter(os, StandardCharsets.UTF_8));

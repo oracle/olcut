@@ -640,14 +640,10 @@ public final class IOUtil {
         if (protocol == null) {
             return true;
         }
-        switch (protocol) {
-            case "http":
-            case "https":
-            case "ftp":
-                return true;
-            default:
-                return false;
-        }
+        return switch (protocol) {
+            case "http", "https", "ftp" -> true;
+            default -> false;
+        };
     }
 
     public static class NamesPathIterator implements Iterator<Path>{

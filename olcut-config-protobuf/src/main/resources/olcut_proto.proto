@@ -55,11 +55,11 @@ message ComponentProto {
   repeated PropertyListProto list_property = 4;
   repeated PropertyMapProto map_property = 5;
   optional string override = 6;
-  optional bool exportable = 7;
-  optional bool importable = 8;
-  optional int64 leaseTime = 9;
+  optional bool exportable = 7; // Ignored in OLCUT 6+
+  optional bool importable = 8; // Ignored in OLCUT 6+
+  optional int64 leaseTime = 9; // Ignored in OLCUT 6+
   optional string serialized = 10;
-  optional string entries = 11;
+  optional string entries = 11; // Ignored in OLCUT 6+
 }
 
 /*

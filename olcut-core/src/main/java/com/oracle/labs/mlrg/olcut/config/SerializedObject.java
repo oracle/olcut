@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -34,8 +34,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 /**
  * A class to hold the information for a serialized Object that is defined in a
@@ -53,24 +51,46 @@ public final class SerializedObject<T> {
 
     private T object;
 
+    /**
+     * The configuration for a serialized object.
+     * @param name The name of the object in the config file.
+     * @param location The location of the serialized file.
+     * @param className The class name of the object.
+     */
     public SerializedObject(String name, String location, String className) {
         this.name = name;
         this.location = location;
         this.className = className;
     }
 
-    public void setConfigurationManager(ConfigurationManager configurationManager) {
+    /**
+     * Sets the configuration manager that hosts this serialized object.
+     * @param configurationManager The host configuration manager.
+     */
+    void setConfigurationManager(ConfigurationManager configurationManager) {
         this.configurationManager = configurationManager;
     }
 
+    /**
+     * The name of the serialized object.
+     * @return The name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * The location of the serialized object (either a path on disk or a classpath URL).
+     * @return The location.
+     */
     public String getLocation() {
         return location;
     }
 
+    /**
+     * The class name of the serialized object.
+     * @return The class name.
+     */
     public String getClassName() {
         return className;
     }
@@ -81,30 +101,28 @@ public final class SerializedObject<T> {
      * @throws PropertyException if the object cannot be deserialized.
      */
     @SuppressWarnings("unchecked")// throws PropertyException if the serialised type doesn't match the class name.
-    public final T getObject() throws PropertyException {
+    public T getObject() throws PropertyException {
         if (object == null) {
-            object = AccessController.doPrivileged((PrivilegedAction<T>) () -> {
-                String actualLocation = configurationManager.getImmutableGlobalProperties().replaceGlobalProperties(name, null, location);
-                InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
-                try {
-                    Class<T> objectClass = (Class<T>) Class.forName(className);
-                    if (serStream != null) {
-                        try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
-                            //
-                            // Read the object and cast it into this class for return;
-                            return objectClass.cast(ois.readObject());
-                        } catch (ClassCastException ex) {
-                            throw new PropertyException(ex, name, "Failed to cast object to type " + objectClass.getName());
-                        } catch (IOException ex) {
-                            throw new PropertyException(ex, name, "Error reading serialized form from " + actualLocation);
-                        }
-                    } else {
-                        throw new PropertyException(name, "Failed to open stream from location " + actualLocation);
+            String actualLocation = configurationManager.getImmutableGlobalProperties().replaceGlobalProperties(name, null, location);
+            InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
+            try {
+                Class<T> objectClass = (Class<T>) Class.forName(className);
+                if (serStream != null) {
+                    try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(serStream, 1024 * 1024))) {
+                        //
+                        // Read the object and cast it into this class for return;
+                        object = objectClass.cast(ois.readObject());
+                    } catch (ClassCastException ex) {
+                        throw new PropertyException(ex, name, "Failed to cast object to type " + objectClass.getName());
+                    } catch (IOException ex) {
+                        throw new PropertyException(ex, name, "Error reading serialized form from " + actualLocation);
                     }
-                } catch (ClassNotFoundException ex) {
-                    throw new PropertyException(ex, name, "Serialized class " + className + " not found for " + actualLocation);
+                } else {
+                    throw new PropertyException(name, "Failed to open stream from location " + actualLocation);
                 }
-            });
+            } catch (ClassNotFoundException ex) {
+                throw new PropertyException(ex, name, "Serialized class " + className + " not found for " + actualLocation);
+            }
         }
         return object;
     }
