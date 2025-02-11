@@ -117,27 +117,27 @@ public class EdnConfigWriter implements ConfigWriter {
             case MapProperty mapProperty -> {
                 // map configurable field
                 Map<Keyword, String> mRes = new HashMap<>();
-                for (Map.Entry<String, SimpleProperty> e : mapProperty.getMap().entrySet()) {
+                for (Map.Entry<String, SimpleProperty> e : mapProperty.map().entrySet()) {
                     if (e.getKey() == null) {
                         throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null keys" + p.toString()));
                     }
                     if (e.getValue() == null) {
                         throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null values: " + p.toString()));
                     }
-                    mRes.put(Keyword.newKeyword(e.getKey()), e.getValue().getValue());
+                    mRes.put(Keyword.newKeyword(e.getKey()), e.getValue().value());
                 }
                 res = mRes;
             }
             case ListProperty listProperty -> {
                 // list configurable field
                 List<Object> lRes = new ArrayList<>();
-                for (SimpleProperty s : listProperty.getSimpleList()) {
+                for (SimpleProperty s : listProperty.simpleList()) {
                     if (s == null) {
                         throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
                     }
-                    lRes.add(s.getValue());
+                    lRes.add(s.value());
                 }
-                for (Class<?> c : listProperty.getClassList()) {
+                for (Class<?> c : listProperty.classList()) {
                     if (c == null) {
                         throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
                     }
@@ -145,7 +145,7 @@ public class EdnConfigWriter implements ConfigWriter {
                 }
                 res = lRes;
             }
-            case SimpleProperty simpleProperty -> res = simpleProperty.getValue();
+            case SimpleProperty simpleProperty -> res = simpleProperty.value();
         }
         return res;
     }

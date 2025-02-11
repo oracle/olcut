@@ -40,6 +40,7 @@ import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -129,55 +130,53 @@ public class XMLConfigWriter implements ConfigWriter {
                 for (Entry<String,Property> property : properties.entrySet()) {
                     String key = property.getKey();
                     Property value = property.getValue();
-                    if (value instanceof ListProperty) {
-                        //
-                        // Must be a string or component list
-                        writer.writeCharacters("\t");
-                        writer.writeStartElement(ConfigLoader.PROPERTYLIST);
-                        writer.writeAttribute(ConfigLoader.NAME, key);
-                        writer.writeCharacters(System.lineSeparator());
-                        for (SimpleProperty s : ((ListProperty) value).getSimpleList()) {
-                            writer.writeCharacters("\t\t");
-                            writer.writeStartElement(ConfigLoader.ITEM);
-                            writer.writeCharacters(s.getValue());
+                    switch (value) {
+                        case ListProperty(List<SimpleProperty> simpleList, List<Class<?>> classList) -> {
+                            writer.writeCharacters("\t");
+                            writer.writeStartElement(ConfigLoader.PROPERTYLIST);
+                            writer.writeAttribute(ConfigLoader.NAME, key);
+                            writer.writeCharacters(System.lineSeparator());
+                            for (SimpleProperty s : simpleList) {
+                                writer.writeCharacters("\t\t");
+                                writer.writeStartElement(ConfigLoader.ITEM);
+                                writer.writeCharacters(s.value());
+                                writer.writeEndElement();
+                                writer.writeCharacters(System.lineSeparator());
+                            }
+                            for (Class<?> c : classList) {
+                                writer.writeCharacters("\t\t");
+                                writer.writeStartElement(ConfigLoader.TYPE);
+                                writer.writeCharacters(c.getName());
+                                writer.writeEndElement();
+                                writer.writeCharacters(System.lineSeparator());
+                            }
+                            writer.writeCharacters("\t");
                             writer.writeEndElement();
                             writer.writeCharacters(System.lineSeparator());
                         }
-                        for (Class<?> c : ((ListProperty)value).getClassList()) {
-                            writer.writeCharacters("\t\t");
-                            writer.writeStartElement(ConfigLoader.TYPE);
-                            writer.writeCharacters(c.getName());
+                        case MapProperty(Map<String, SimpleProperty> map) -> {
+                            writer.writeCharacters("\t");
+                            writer.writeStartElement(ConfigLoader.PROPERTYMAP);
+                            writer.writeAttribute(ConfigLoader.NAME, key);
+                            writer.writeCharacters(System.lineSeparator());
+                            for (Map.Entry<String, SimpleProperty> e : map.entrySet()) {
+                                writer.writeCharacters("\t\t");
+                                writer.writeEmptyElement(ConfigLoader.ENTRY);
+                                writer.writeAttribute(ConfigLoader.KEY, e.getKey());
+                                writer.writeAttribute(ConfigLoader.VALUE, e.getValue().value());
+                                writer.writeCharacters(System.lineSeparator());
+                            }
+                            writer.writeCharacters("\t");
                             writer.writeEndElement();
                             writer.writeCharacters(System.lineSeparator());
                         }
-                        writer.writeCharacters("\t");
-                        writer.writeEndElement();
-                        writer.writeCharacters(System.lineSeparator());
-                    } else if (value instanceof MapProperty) {
-                        //
-                        // Must be a string,string map
-                        writer.writeCharacters("\t");
-                        writer.writeStartElement(ConfigLoader.PROPERTYMAP);
-                        writer.writeAttribute(ConfigLoader.NAME, key);
-                        writer.writeCharacters(System.lineSeparator());
-                        for (Map.Entry<String, SimpleProperty> e : ((MapProperty) value).getMap().entrySet()) {
-                            writer.writeCharacters("\t\t");
-                            writer.writeEmptyElement(ConfigLoader.ENTRY);
-                            writer.writeAttribute(ConfigLoader.KEY, e.getKey());
-                            writer.writeAttribute(ConfigLoader.VALUE, e.getValue().getValue());
+                        case SimpleProperty(String valueStr) -> {
+                            writer.writeCharacters("\t");
+                            writer.writeEmptyElement(ConfigLoader.PROPERTY);
+                            writer.writeAttribute(ConfigLoader.NAME, key);
+                            writer.writeAttribute(ConfigLoader.VALUE, valueStr);
                             writer.writeCharacters(System.lineSeparator());
                         }
-                        writer.writeCharacters("\t");
-                        writer.writeEndElement();
-                        writer.writeCharacters(System.lineSeparator());
-                    } else {
-                        //
-                        // Standard property
-                        writer.writeCharacters("\t");
-                        writer.writeEmptyElement(ConfigLoader.PROPERTY);
-                        writer.writeAttribute(ConfigLoader.NAME, key);
-                        writer.writeAttribute(ConfigLoader.VALUE, value.toString());
-                        writer.writeCharacters(System.lineSeparator());
                     }
                 }
 

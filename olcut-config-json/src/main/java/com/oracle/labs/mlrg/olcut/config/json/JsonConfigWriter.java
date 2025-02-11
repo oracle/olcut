@@ -140,12 +140,12 @@ public final class JsonConfigWriter implements ConfigWriter {
                             //
                             // Must be a string or component list
                             writer.writeArrayFieldStart(key);
-                            for (SimpleProperty s : list.getSimpleList()) {
+                            for (SimpleProperty s : list.simpleList()) {
                                 writer.writeStartObject();
-                                writer.writeStringField(ConfigLoader.ITEM,s.getValue());
+                                writer.writeStringField(ConfigLoader.ITEM,s.value());
                                 writer.writeEndObject();
                             }
-                            for (Class<?> c : list.getClassList()) {
+                            for (Class<?> c : list.classList()) {
                                 writer.writeStartObject();
                                 writer.writeStringField(ConfigLoader.TYPE,c.getName());
                                 writer.writeEndObject();
@@ -157,8 +157,8 @@ public final class JsonConfigWriter implements ConfigWriter {
                             //
                             // Must be a string,string map
                             writer.writeObjectFieldStart(key);
-                            for (Map.Entry<String, SimpleProperty> e : map.getMap().entrySet()) {
-                                writer.writeStringField(e.getKey(),e.getValue().getValue());
+                            for (Map.Entry<String, SimpleProperty> e : map.map().entrySet()) {
+                                writer.writeStringField(e.getKey(),e.getValue().value());
                             }
                             writer.writeEndObject();
                         }

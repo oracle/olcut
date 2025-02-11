@@ -250,14 +250,14 @@ public final class ConfigurationData implements Serializable {
                             this.simpleProperties.put(propName, new DerefedProperty(contextMap, simpleProperty, propName, ""));
                     case ListProperty listProperty -> {
                         this.listProperties.put(propName,
-                                IntStream.range(0, listProperty.getSimpleList().size())
+                                IntStream.range(0, listProperty.simpleList().size())
                                         .mapToObj(i ->
-                                                new DerefedProperty(contextMap, listProperty.getSimpleList().get(i), propName, ", index: " + i))
+                                                new DerefedProperty(contextMap, listProperty.simpleList().get(i), propName, ", index: " + i))
                                         .collect(Collectors.toList()));
-                        this.listClassProperties.put(propName, listProperty.getClassList());
+                        this.listClassProperties.put(propName, listProperty.classList());
                     }
                     case MapProperty mapProperty ->
-                            this.mapProperties.put(propName, mapProperty.getMap().entrySet().stream()
+                            this.mapProperties.put(propName, mapProperty.map().entrySet().stream()
                                     .collect(Collectors.toMap(Map.Entry::getKey,
                                             e -> new DerefedProperty(contextMap, e.getValue(),
                                                     propName, ", PropValue key: " + e.getKey()))));
@@ -379,7 +379,7 @@ public final class ConfigurationData implements Serializable {
         public DerefedProperty(Map<String, ConfigurationData> confs, SimpleProperty prop, String propName, String locationContext) {
             this.propName = propName;
             this.locationContext = locationContext;
-            this.innerValue = prop.getValue();
+            this.innerValue = prop.value();
             // we do it this way because Boolean.parseBoolean doesn't throw like other parse methods
             if(this.innerValue.trim().equalsIgnoreCase("true") || this.innerValue.trim().equalsIgnoreCase("false")) {
                 this.innerBool = Optional.of(Boolean.parseBoolean(this.innerValue));
@@ -401,7 +401,7 @@ public final class ConfigurationData implements Serializable {
             } catch (DateTimeParseException e) {
                 this.innerTime = Optional.empty();
             }
-            Optional<ConfigurationData> maybeDeref = Optional.ofNullable(confs.get(prop.getValue()));
+            Optional<ConfigurationData> maybeDeref = Optional.ofNullable(confs.get(prop.value()));
             isDerefed = maybeDeref.isPresent();
             if(isDerefed) {
                 innerConf = new StructuralConfigurationData(confs, maybeDeref.get());
