@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -28,7 +28,6 @@
 
 package com.oracle.labs.mlrg.olcut.provenance.io;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -58,7 +57,7 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
      */
     public ObjectMarshalledProvenance(String objectName, Map<String, FlatMarshalledProvenance> map, String objectClassName, String provenanceClassName) {
         this.objectName = objectName;
-        this.map = Collections.unmodifiableMap(map);
+        this.map = Map.copyOf(map);
         this.objectClassName = objectClassName;
         this.provenanceClassName = provenanceClassName;
     }
@@ -108,8 +107,7 @@ public final class ObjectMarshalledProvenance implements MarshalledProvenance {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ObjectMarshalledProvenance)) return false;
-        ObjectMarshalledProvenance that = (ObjectMarshalledProvenance) o;
+        if (!(o instanceof ObjectMarshalledProvenance that)) return false;
         return map.equals(that.map) &&
                 objectName.equals(that.objectName) &&
                 objectClassName.equals(that.objectClassName) &&

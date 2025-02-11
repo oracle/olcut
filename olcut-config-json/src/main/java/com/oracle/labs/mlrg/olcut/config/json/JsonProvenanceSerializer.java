@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -45,7 +45,7 @@ import java.util.Map;
 /**
  * Serialization class to convert {@link MarshalledProvenance} into JSON.
  */
-public class JsonProvenanceSerializer extends StdSerializer<MarshalledProvenance> {
+public final class JsonProvenanceSerializer extends StdSerializer<MarshalledProvenance> {
 
     public JsonProvenanceSerializer(Class<MarshalledProvenance> provClass) {
         super(provClass);
@@ -56,39 +56,39 @@ public class JsonProvenanceSerializer extends StdSerializer<MarshalledProvenance
         Class<?> provClass = marshalledProvenance.getClass();
         jsonGenerator.writeStartObject();
         jsonGenerator.writeStringField(JsonProvenanceModule.MARSHALLED_CLASS,provClass.getName());
-        if (marshalledProvenance instanceof ListMarshalledProvenance) {
-            ListMarshalledProvenance lmp = (ListMarshalledProvenance) marshalledProvenance;
-            jsonGenerator.writeArrayFieldStart(JsonProvenanceModule.LIST);
-            for (FlatMarshalledProvenance e : lmp) {
-                jsonGenerator.writeObject(e);
+        switch (marshalledProvenance) {
+            case ListMarshalledProvenance lmp -> {
+                jsonGenerator.writeArrayFieldStart(JsonProvenanceModule.LIST);
+                for (FlatMarshalledProvenance e : lmp) {
+                    jsonGenerator.writeObject(e);
+                }
+                jsonGenerator.writeEndArray();
             }
-            jsonGenerator.writeEndArray();
-        } else if (marshalledProvenance instanceof MapMarshalledProvenance) {
-            MapMarshalledProvenance mmp = (MapMarshalledProvenance) marshalledProvenance;
-            jsonGenerator.writeObjectFieldStart(JsonProvenanceModule.MAP);
-            for (Pair<String, FlatMarshalledProvenance> e : mmp) {
-                jsonGenerator.writeObjectField(e.getA(),e.getB());
+            case MapMarshalledProvenance mmp -> {
+                jsonGenerator.writeObjectFieldStart(JsonProvenanceModule.MAP);
+                for (Pair<String, FlatMarshalledProvenance> e : mmp) {
+                    jsonGenerator.writeObjectField(e.getA(), e.getB());
+                }
+                jsonGenerator.writeEndObject();
             }
-            jsonGenerator.writeEndObject();
-        } else if (marshalledProvenance instanceof ObjectMarshalledProvenance) {
-            ObjectMarshalledProvenance omp = (ObjectMarshalledProvenance) marshalledProvenance;
-            jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_NAME,omp.getName());
-            jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_CLASS_NAME,omp.getObjectClassName());
-            jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS,omp.getProvenanceClassName());
-            jsonGenerator.writeObjectFieldStart(JsonProvenanceModule.MAP);
-            for (Map.Entry<String, FlatMarshalledProvenance> e : omp.getMap().entrySet()) {
-                jsonGenerator.writeObjectField(e.getKey(),e.getValue());
+            case ObjectMarshalledProvenance omp -> {
+                jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_NAME, omp.getName());
+                jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_CLASS_NAME, omp.getObjectClassName());
+                jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS, omp.getProvenanceClassName());
+                jsonGenerator.writeObjectFieldStart(JsonProvenanceModule.MAP);
+                for (Map.Entry<String, FlatMarshalledProvenance> e : omp.getMap().entrySet()) {
+                    jsonGenerator.writeObjectField(e.getKey(), e.getValue());
+                }
+                jsonGenerator.writeEndObject();
             }
-            jsonGenerator.writeEndObject();
-        } else if (marshalledProvenance instanceof SimpleMarshalledProvenance) {
-            SimpleMarshalledProvenance smp = (SimpleMarshalledProvenance) marshalledProvenance;
-            jsonGenerator.writeStringField(JsonProvenanceModule.KEY,smp.getKey());
-            jsonGenerator.writeStringField(JsonProvenanceModule.VALUE,smp.getValue());
-            jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS,smp.getProvenanceClassName());
-            jsonGenerator.writeStringField(JsonProvenanceModule.ADDITIONAL,smp.getAdditional());
-            jsonGenerator.writeBooleanField(JsonProvenanceModule.IS_REFERENCE,smp.isReference());
-        } else {
-            throw new IOException("Unexpected provenance class, found " + provClass.getName());
+            case SimpleMarshalledProvenance smp -> {
+                jsonGenerator.writeStringField(JsonProvenanceModule.KEY, smp.getKey());
+                jsonGenerator.writeStringField(JsonProvenanceModule.VALUE, smp.getValue());
+                jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS, smp.getProvenanceClassName());
+                jsonGenerator.writeStringField(JsonProvenanceModule.ADDITIONAL, smp.getAdditional());
+                jsonGenerator.writeBooleanField(JsonProvenanceModule.IS_REFERENCE, smp.isReference());
+            }
+            default -> throw new IOException("Unexpected provenance class, found " + provClass.getName());
         }
         jsonGenerator.writeEndObject();
     }

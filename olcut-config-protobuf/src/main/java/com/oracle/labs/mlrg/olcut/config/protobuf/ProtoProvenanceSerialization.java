@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -189,15 +189,12 @@ public final class ProtoProvenanceSerialization implements ProvenanceSerializati
      */
     private static FlatMarshalledProvenance dispatchMessage(Message[] messages, int index) {
         Message curMessage = messages[index];
-        if (curMessage instanceof SimpleProvenanceProto) {
-            return decodeSMP((SimpleProvenanceProto) curMessage);
-        } else if (curMessage instanceof ListProvenanceProto) {
-            return decodeLMP(messages, (ListProvenanceProto) curMessage);
-        } else if (curMessage instanceof MapProvenanceProto) {
-            return decodeMMP(messages, (MapProvenanceProto) curMessage);
-        } else {
-            throw new IllegalStateException("Invalid protobuf, a message index points to an ObjectMarshalledProvenance");
-        }
+        return switch (curMessage) {
+            case SimpleProvenanceProto simpleProvenanceProto -> decodeSMP(simpleProvenanceProto);
+            case ListProvenanceProto listProvenanceProto -> decodeLMP(messages, listProvenanceProto);
+            case MapProvenanceProto mapProvenanceProto -> decodeMMP(messages, mapProvenanceProto);
+            default -> throw new IllegalStateException("Invalid protobuf, a message index points to an ObjectMarshalledProvenance");
+        };
     }
 
     /**
@@ -289,18 +286,11 @@ public final class ProtoProvenanceSerialization implements ProvenanceSerializati
      * @param fmp The FMP to dispatch on.
      */
     private static int dispatchFMP(RootProvenanceProto.Builder builder, MutableLong counter, FlatMarshalledProvenance fmp) {
-        if (fmp instanceof SimpleMarshalledProvenance) {
-            SimpleMarshalledProvenance smp = (SimpleMarshalledProvenance) fmp;
-            return encodeSMP(builder,counter,smp);
-        } else if (fmp instanceof ListMarshalledProvenance) {
-            ListMarshalledProvenance lmp = (ListMarshalledProvenance) fmp;
-            return encodeLMP(builder,counter,lmp);
-        } else if (fmp instanceof MapMarshalledProvenance) {
-            MapMarshalledProvenance mmp = (MapMarshalledProvenance) fmp;
-            return encodeMMP(builder,counter,mmp);
-        } else {
-            throw new RuntimeException("Should not reach here, unexpected FlatMarshalledProvenance subclass " + fmp.getClass());
-        }
+        return switch (fmp) {
+            case SimpleMarshalledProvenance smp -> encodeSMP(builder, counter, smp);
+            case ListMarshalledProvenance lmp -> encodeLMP(builder, counter, lmp);
+            case MapMarshalledProvenance mmp -> encodeMMP(builder, counter, mmp);
+        };
     }
 
     /**

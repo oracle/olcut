@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -31,37 +31,36 @@ package com.oracle.labs.mlrg.olcut.provenance.io;
 import com.oracle.labs.mlrg.olcut.util.Pair;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 /**
  * A marshalled provenance which contains a map of other {@link FlatMarshalledProvenance} objects.
  * This can recursively include other lists or maps.
  */
-public final class MapMarshalledProvenance implements FlatMarshalledProvenance, Iterable<Pair<String,FlatMarshalledProvenance>> {
-
-    private final Map<String, FlatMarshalledProvenance> map;
+public record MapMarshalledProvenance(Map<String, FlatMarshalledProvenance> map) implements
+        FlatMarshalledProvenance, Iterable<Pair<String, FlatMarshalledProvenance>> {
 
     /**
      * Constructs a MapMarshalledProvenance wrapped around the supplied map.
+     *
      * @param map The map.
      */
     public MapMarshalledProvenance(Map<String, FlatMarshalledProvenance> map) {
-        this.map = Collections.unmodifiableMap(new HashMap<>(map));
+        this.map = Map.copyOf(map);
     }
 
     /**
      * Constructs an empty MapMarshalledProvenance.
      */
-    public MapMarshalledProvenance() {
-        this.map = Collections.emptyMap();
-    }
+     public MapMarshalledProvenance() {
+        this(Collections.emptyMap());
+     }
 
     /**
      * Is this MapMarshalledProvenance empty?
+     *
      * @return True if the provenance contains no other provenances.
      */
     public boolean isEmpty() {
@@ -78,24 +77,11 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
         return "MapMarshalledProvenance" + map.toString();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MapMarshalledProvenance)) return false;
-        MapMarshalledProvenance that = (MapMarshalledProvenance) o;
-        return map.equals(that.map);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(map);
-    }
-
-    private static class MapMarshalledProvenanceIterator implements Iterator<Pair<String, FlatMarshalledProvenance>> {
+    private static final class MapMarshalledProvenanceIterator implements Iterator<Pair<String, FlatMarshalledProvenance>> {
 
         private final Iterator<Entry<String, FlatMarshalledProvenance>> itr;
 
-        public MapMarshalledProvenanceIterator(Iterator<Map.Entry<String, FlatMarshalledProvenance>> itr) {
+        public MapMarshalledProvenanceIterator(Iterator<Entry<String, FlatMarshalledProvenance>> itr) {
             this.itr = itr;
         }
 
@@ -106,8 +92,8 @@ public final class MapMarshalledProvenance implements FlatMarshalledProvenance, 
 
         @Override
         public Pair<String, FlatMarshalledProvenance> next() {
-            Map.Entry<String, FlatMarshalledProvenance> item = itr.next();
-            return new Pair<>(item.getKey(),item.getValue());
+            Entry<String, FlatMarshalledProvenance> item = itr.next();
+            return new Pair<>(item.getKey(), item.getValue());
         }
     }
 

@@ -52,7 +52,7 @@ public final class MapProvenance<T extends Provenance> implements Provenance, It
      * @param map The map of provenances.
      */
     public MapProvenance(Map<String,T> map) {
-        this.map = Collections.unmodifiableMap(new HashMap<>(map));
+        this.map = Map.copyOf(map);
     }
 
     /**

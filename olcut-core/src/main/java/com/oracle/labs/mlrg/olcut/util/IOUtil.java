@@ -445,11 +445,7 @@ public final class IOUtil {
             file.getParentFile().mkdirs();
         }
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file), bufferSize);
-        try {
-            return new PrintStream(bos, false, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 isn't supported. Not sure what's wrong with the world.",e);
-        }
+        return new PrintStream(bos, false, StandardCharsets.UTF_8);
     }
 
     public static OutputStream getOutputStream(String path) throws FileNotFoundException {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -34,10 +34,19 @@ package com.oracle.labs.mlrg.olcut.provenance;
  */
 public class ProvenanceException extends RuntimeException {
 
+    /**
+     * Constructs a provenance exception with the supplied message.
+     * @param message The exception message.
+     */
     public ProvenanceException(String message) {
         super(message);
     }
 
+    /**
+     * Constructs a provenance exception wrapping the supplied exception.
+     * @param message The exception message.
+     * @param cause The wrapped exception.
+     */
     public ProvenanceException(String message, Throwable cause) {
         super(message,cause);
     }

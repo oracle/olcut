@@ -84,7 +84,7 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
      * @param enumProv The enum provenance to store.
      * @param <E> The type of the enum.
      */
-    public <E extends Enum> SimpleMarshalledProvenance(EnumProvenance<E> enumProv) {
+    public <E extends Enum<E>> SimpleMarshalledProvenance(EnumProvenance<E> enumProv) {
         this(enumProv.getKey(), enumProv.getValue().toString(), enumProv.getClass().getName(), false, enumProv.getEnumClass());
     }
 
@@ -151,7 +151,7 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
      * @param <T> The type of the PrimitiveProvenance.
      * @return A PrimitiveProvenance instance.
      */
-    @SuppressWarnings("unchecked")//Suppressing enum casting warnings.
+    @SuppressWarnings({"unchecked","rawtypes"})//Suppressing enum casting warnings.
     public <T> PrimitiveProvenance<T> unmarshallPrimitive() {
         if (isReference) {
             throw new ProvenanceException("Attempted to unmarshall a reference via 'unmarshallPrimitive'");

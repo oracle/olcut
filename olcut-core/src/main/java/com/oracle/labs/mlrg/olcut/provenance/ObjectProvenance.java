@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019-2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -36,18 +36,18 @@ import java.util.Optional;
 
 /**
  * A provenance object which records object fields.
- *
+ * <p>
  * Must record the class name of the host object so it can be recovered.
- *
+ * <p>
  * All classes which implement this interface must expose a public constructor
  * which accepts a Map&lt;String,Provenance&gt; which is used in deserialisation,
  * and have consistent implementations of equals and hashCode.
- *
+ * <p>
  * By convention all provenances which do not refer to an object field
  * use hyphens as separators for their name. Provenances which refer to an object field
  * use standard Java camel case.
  */
-public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Provenance>> {
+public non-sealed interface ObjectProvenance extends Provenance, Iterable<Pair<String,Provenance>> {
 
     public static final String CLASS_NAME = "class-name";
     public static final HashType DEFAULT_HASH_TYPE = HashType.SHA256;
@@ -60,7 +60,7 @@ public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Prove
 
     /**
      * Generates a String representation of this provenance.
-     *
+     * <p>
      * Commonly used to implement toString.
      * @param name The name to give the provenance.
      * @return A string representation.
@@ -94,7 +94,6 @@ public interface ObjectProvenance extends Provenance, Iterable<Pair<String,Prove
      * @return The specified provenance object.
      * @throws ProvenanceException if the key is not found, or the value is not the requested type.
      */
-    @SuppressWarnings("unchecked") // Guarded by isInstance check
     public static <T extends Provenance> T checkAndExtractProvenance(Map<String,Provenance> map, String key, Class<T> type, String provClassName) throws ProvenanceException {
         Optional<T> prov = maybeExtractProvenance(map,key,type,provClassName);
         if (prov.isPresent()) {

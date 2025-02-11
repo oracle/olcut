@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -28,15 +28,36 @@
 
 package com.oracle.labs.mlrg.olcut.provenance;
 
+import com.oracle.labs.mlrg.olcut.provenance.io.SimpleMarshalledProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.BooleanProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.ByteProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.CharProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.DateProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.DateTimeProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.DoubleProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.EnumProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.FileProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.FloatProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.HashProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.IntProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.LongProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.ShortProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.StringProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.TimeProvenance;
+import com.oracle.labs.mlrg.olcut.provenance.primitives.URLProvenance;
+
 /**
  * A supertype for {@link Provenance}s which are well understood
  * by the provenance system, and are expressible as a single {@link String}.
  * These classes form a sealed set and live in {@link com.oracle.labs.mlrg.olcut.provenance.primitives}.
- *
- * When adding a new PrimitiveProvenance the ProvenanceUtil and SimpleMarshalledProvenance
+ * <p>
+ * When adding a new PrimitiveProvenance the {@link ProvenanceUtil} and {@link SimpleMarshalledProvenance}
  * classes must also be updated to be taught about the new type.
  */
-public interface PrimitiveProvenance<T> extends Provenance {
+public sealed interface PrimitiveProvenance<T> extends Provenance permits BooleanProvenance, ByteProvenance,
+        CharProvenance, DateProvenance, DateTimeProvenance, DoubleProvenance, EnumProvenance, FileProvenance,
+        FloatProvenance, HashProvenance, IntProvenance, LongProvenance, ShortProvenance, StringProvenance,
+        TimeProvenance, URLProvenance {
 
     /**
      * Gets the key associated with this provenance,

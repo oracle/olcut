@@ -113,39 +113,39 @@ public class EdnConfigWriter implements ConfigWriter {
 
     private Object writeProperty(Property p) throws ConfigWriterException {
         Object res;
-        if(p instanceof MapProperty) {
-            // map configurable field
-            Map<Keyword, String> mRes = new HashMap<>();
-            for(Map.Entry<String, SimpleProperty> e: ((MapProperty) p).getMap().entrySet()) {
-                if(e.getKey()==null) {
-                    throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null keys" + p.toString()));
+        switch (p) {
+            case MapProperty mapProperty -> {
+                // map configurable field
+                Map<Keyword, String> mRes = new HashMap<>();
+                for (Map.Entry<String, SimpleProperty> e : mapProperty.getMap().entrySet()) {
+                    if (e.getKey() == null) {
+                        throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null keys" + p.toString()));
+                    }
+                    if (e.getValue() == null) {
+                        throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null values: " + p.toString()));
+                    }
+                    mRes.put(Keyword.newKeyword(e.getKey()), e.getValue().getValue());
                 }
-                if(e.getValue()==null) {
-                    throw new ConfigWriterException(new IllegalArgumentException("Can't write a map with null values: " + p.toString()));
-                }
-                mRes.put(Keyword.newKeyword(e.getKey()), e.getValue().getValue());
+                res = mRes;
             }
-            res = mRes;
-        } else if(p instanceof ListProperty) {
-            // list configurable field
-            List<Object> lRes = new ArrayList<>();
-            for (SimpleProperty s : ((ListProperty)p).getSimpleList()) {
-                if(s==null) {
-                    throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
+            case ListProperty listProperty -> {
+                // list configurable field
+                List<Object> lRes = new ArrayList<>();
+                for (SimpleProperty s : listProperty.getSimpleList()) {
+                    if (s == null) {
+                        throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
+                    }
+                    lRes.add(s.getValue());
                 }
-                lRes.add(s.getValue());
-            }
-            for (Class<?> c : ((ListProperty) p).getClassList()) {
-                if(c==null) {
-                    throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
+                for (Class<?> c : listProperty.getClassList()) {
+                    if (c == null) {
+                        throw new ConfigWriterException(new IllegalArgumentException("Can't write a list with null values: " + p.toString()));
+                    }
+                    lRes.add(cnMapper.write(c.getCanonicalName()));
                 }
-                lRes.add(cnMapper.write(c.getCanonicalName()));
+                res = lRes;
             }
-            res = lRes;
-        } else if(p instanceof SimpleProperty) {
-            res = ((SimpleProperty) p).getValue();
-        } else {
-            throw new ConfigWriterException(new IllegalArgumentException("Unexpected type for property value " + p.getClass().toString() + " with value " + p));
+            case SimpleProperty simpleProperty -> res = simpleProperty.getValue();
         }
         return res;
     }
@@ -173,9 +173,7 @@ public class EdnConfigWriter implements ConfigWriter {
     }
 
     @Override
-    public void writeEndComponents() throws ConfigWriterException {
-
-    }
+    public void writeEndComponents() throws ConfigWriterException { }
 
     @Override
     public void close() throws ConfigWriterException {

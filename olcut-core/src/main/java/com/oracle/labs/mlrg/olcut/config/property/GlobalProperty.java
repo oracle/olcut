@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -28,6 +28,7 @@
 
 package com.oracle.labs.mlrg.olcut.config.property;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,13 +84,12 @@ public class GlobalProperty {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof GlobalProperty)) return false;
+        if (!(o instanceof GlobalProperty that)) return false;
 
-        GlobalProperty that = (GlobalProperty) o;
         String tmpValue = getValue();
         String otherValue = that.getValue();
 
-        return tmpValue != null ? tmpValue.equals(otherValue) : otherValue == null;
+        return Objects.equals(tmpValue, otherValue);
     }
 
     /**

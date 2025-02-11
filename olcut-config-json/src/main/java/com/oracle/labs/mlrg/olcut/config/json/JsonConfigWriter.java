@@ -135,33 +135,34 @@ public final class JsonConfigWriter implements ConfigWriter {
                 for (Entry<String, Property> property : properties.entrySet()) {
                     String key = property.getKey();
                     Property value = property.getValue();
-                    if (value instanceof ListProperty) {
-                        //
-                        // Must be a string or component list
-                        writer.writeArrayFieldStart(key);
-                        for (SimpleProperty s : ((ListProperty) value).getSimpleList()) {
-                            writer.writeStartObject();
-                            writer.writeStringField(ConfigLoader.ITEM,s.getValue());
+                    switch (value) {
+                        case ListProperty list -> {
+                            //
+                            // Must be a string or component list
+                            writer.writeArrayFieldStart(key);
+                            for (SimpleProperty s : list.getSimpleList()) {
+                                writer.writeStartObject();
+                                writer.writeStringField(ConfigLoader.ITEM,s.getValue());
+                                writer.writeEndObject();
+                            }
+                            for (Class<?> c : list.getClassList()) {
+                                writer.writeStartObject();
+                                writer.writeStringField(ConfigLoader.TYPE,c.getName());
+                                writer.writeEndObject();
+                            }
+                            writer.writeEndArray();
+
+                        }
+                        case MapProperty map -> {
+                            //
+                            // Must be a string,string map
+                            writer.writeObjectFieldStart(key);
+                            for (Map.Entry<String, SimpleProperty> e : map.getMap().entrySet()) {
+                                writer.writeStringField(e.getKey(),e.getValue().getValue());
+                            }
                             writer.writeEndObject();
                         }
-                        for (Class<?> c : ((ListProperty) value).getClassList()) {
-                            writer.writeStartObject();
-                            writer.writeStringField(ConfigLoader.TYPE,c.getName());
-                            writer.writeEndObject();
-                        }
-                        writer.writeEndArray();
-                    } else if (value instanceof MapProperty) {
-                        //
-                        // Must be a string,string map
-                        writer.writeObjectFieldStart(key);
-                        for (Map.Entry<String, SimpleProperty> e : ((MapProperty) value).getMap().entrySet()) {
-                            writer.writeStringField(e.getKey(),e.getValue().getValue());
-                        }
-                        writer.writeEndObject();
-                    } else {
-                        //
-                        // Standard property
-                        writer.writeStringField(key,value.toString());
+                        case SimpleProperty sp -> writer.writeStringField(key,sp.toString());
                     }
                 }
                 writer.writeEndObject();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -30,6 +30,7 @@ package com.oracle.labs.mlrg.olcut.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -128,17 +129,13 @@ public class Pair<T1, T2> implements Serializable {
         if(obj == null) {
             return false;
         }
-        if(!(obj instanceof Pair)) {
+        if(!(obj instanceof Pair<?, ?> other)) {
             return false;
         }
-        final Pair<?,?> other = (Pair<?,?>) obj;
-        if(this.a != other.a && (this.a == null || !this.a.equals(other.a))) {
+        if(!Objects.equals(this.a, other.a)) {
             return false;
         }
-        if(this.b != other.b && (this.b == null || !this.b.equals(other.b))) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.b, other.b);
     }
 
     @Override

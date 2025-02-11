@@ -40,7 +40,7 @@ import java.util.regex.Matcher;
  *
  * @see ConfigurationManager
  */
-public class GlobalProperties extends ImmutableGlobalProperties {
+public final class GlobalProperties extends ImmutableGlobalProperties {
 
     /**
      * Creates a GlobalProperties which only contains the built in properties.
@@ -60,7 +60,7 @@ public class GlobalProperties extends ImmutableGlobalProperties {
     /**
      * Imports the system properties into this GlobalProperties.
      */
-    public final void importSystemProperties() {
+    public void importSystemProperties() {
         Properties props = System.getProperties();
         importProperties(props);
     }

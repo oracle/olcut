@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -32,13 +32,10 @@ import java.io.Serializable;
 
 /**
  * Tag interface for the types extracted from a configuration file.
- *
+ * <p>
  * Property implementations should be immutable and final.
- *
- * One day this interface will be sealed, at the moment it is implemented
- * by {@link SimpleProperty}, {@link ListProperty}, and {@link MapProperty}.
- * Other subclasses will not be recognised by the configuration processing machinery.
+ * <p>
  */
-public interface Property extends Serializable {
+public sealed interface Property extends Serializable permits ListProperty, MapProperty, SimpleProperty {
     public Property copy();
 }

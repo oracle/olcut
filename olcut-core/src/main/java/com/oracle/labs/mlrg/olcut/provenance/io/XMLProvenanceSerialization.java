@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -302,7 +302,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
                 writer.writeCharacters("\t");
             }
         }
-        if (lmp.getList().isEmpty()) {
+        if (lmp.list().isEmpty()) {
             writer.writeEmptyElement(LIST_MARSHALLED_PROVENANCE);
             writer.writeAttribute(PROV_KEY, key);
         } else {
@@ -311,7 +311,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
             if (prettyPrint) {
                 writer.writeCharacters(System.lineSeparator());
             }
-            for (FlatMarshalledProvenance fmp : lmp.getList()) {
+            for (FlatMarshalledProvenance fmp : lmp.list()) {
                 dispatchFMP(writer, "", fmp, depth + 1);
             }
             if (prettyPrint) {
@@ -374,17 +374,11 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
      * @throws XMLStreamException If the XML is invalid.
      */
     private void dispatchFMP(XMLStreamWriter writer, String key, FlatMarshalledProvenance fmp, int depth) throws XMLStreamException {
-        if (fmp instanceof SimpleMarshalledProvenance) {
-            SimpleMarshalledProvenance smp = (SimpleMarshalledProvenance) fmp;
-            writeSMP(writer, smp, depth);
-        } else if (fmp instanceof ListMarshalledProvenance) {
-            ListMarshalledProvenance lmp = (ListMarshalledProvenance) fmp;
-            writeLMP(writer, key, lmp, depth);
-        } else if (fmp instanceof MapMarshalledProvenance) {
-            MapMarshalledProvenance mmp = (MapMarshalledProvenance) fmp;
-            writeMMP(writer, key, mmp, depth);
-        } else {
-            throw new RuntimeException("Should not reach here, unexpected FlatMarshalledProvenance subclass " + fmp.getClass());
+        switch (fmp) {
+            case SimpleMarshalledProvenance smp -> writeSMP(writer, smp, depth);
+            case ListMarshalledProvenance lmp -> writeLMP(writer, key, lmp, depth);
+            case MapMarshalledProvenance mmp -> writeMMP(writer, key, mmp, depth);
+            default -> throw new RuntimeException("Should not reach here, unexpected FlatMarshalledProvenance subclass " + fmp.getClass());
         }
     }
 
@@ -400,7 +394,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
 
         private Map<String, String> ompAttributeMap;
         private Map<String, FlatMarshalledProvenance> ompProvMap;
-        private Deque<ProvCollection> provenanceChain;
+        private final Deque<ProvCollection> provenanceChain;
 
         private SimpleMarshalledProvenance curSMP;
         private String curKey;

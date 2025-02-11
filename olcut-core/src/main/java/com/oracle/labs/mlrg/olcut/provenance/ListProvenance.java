@@ -49,7 +49,7 @@ public final class ListProvenance<T extends Provenance> implements Provenance, I
      * @param list The input list.
      */
     public ListProvenance(List<T> list) {
-        this.list = Collections.unmodifiableList(new ArrayList<>(list));
+        this.list = List.copyOf(list);
     }
 
     /**

@@ -2,7 +2,7 @@
  * Copyright 1999-2002 Carnegie Mellon University.
  * Portions Copyright 2002 Sun Microsystems, Inc.
  * Portions Copyright 2002 Mitsubishi Electric Research Laboratories.
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -31,7 +31,6 @@
 
 package com.oracle.labs.mlrg.olcut.util;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -43,20 +42,17 @@ import java.util.regex.Pattern;
  * be parsed using a regular expression, so things like 1d300m are allowed and will be
  * parsed correctly.
  */
-public class TimeSpec {
+public final class TimeSpec {
 
-    private static Pattern timepat = Pattern.compile("(?:(\\d+)(d))??(?:(\\d+)(h))??(?:(\\d+)(m))??(?:(\\d+)(s))??(?:(\\d+)(ms))??");
+    private static final Pattern timepat = Pattern.compile("(?:(\\d+)(d))??(?:(\\d+)(h))??(?:(\\d+)(m))??(?:(\\d+)(s))??(?:(\\d+)(ms))??");
 
-    private final static Map<String,TimeUnit> tum;
-
-    static {
-        tum = new HashMap<>();
-        tum.put("d", TimeUnit.DAYS);
-        tum.put("h", TimeUnit.HOURS);
-        tum.put("m", TimeUnit.MINUTES);
-        tum.put("s", TimeUnit.SECONDS);
-        tum.put("ms", TimeUnit.MILLISECONDS);
-    }
+    private static final Map<String,TimeUnit> tum = Map.of(
+            "d", TimeUnit.DAYS,
+            "h", TimeUnit.HOURS,
+            "m", TimeUnit.MINUTES,
+            "s", TimeUnit.SECONDS,
+            "ms", TimeUnit.MINUTES
+    );
 
     public static long parse(String timespec) throws IllegalArgumentException {
         Matcher m = timepat.matcher(timespec);

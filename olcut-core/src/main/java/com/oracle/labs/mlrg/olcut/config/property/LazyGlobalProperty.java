@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -30,7 +30,7 @@ package com.oracle.labs.mlrg.olcut.config.property;
 
 import java.util.function.Supplier;
 
-public class LazyGlobalProperty extends GlobalProperty {
+public final class LazyGlobalProperty extends GlobalProperty {
 
     private final Supplier<String> supplier;
 

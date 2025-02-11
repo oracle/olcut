@@ -77,7 +77,7 @@ import javax.management.ObjectName;
  * A property sheet which defines a collection of properties for a single
  * component in the system.
  */
-public class PropertySheet<T extends Configurable> {
+public final class PropertySheet<T extends Configurable> {
     private static final Logger logger = Logger.getLogger(PropertySheet.class.getName());
 
     /**
@@ -128,13 +128,13 @@ public class PropertySheet<T extends Configurable> {
     protected final ConfigurationData data;
 
     @SuppressWarnings("unchecked")
-    protected PropertySheet(T configurable,
+    PropertySheet(T configurable,
                          ConfigurationManager cm, ConfigurationData rpd) {
         this((Class<T>)configurable.getClass(), cm, rpd);
         owner = configurable;
     }
 
-    protected PropertySheet(Class<T> confClass,
+    PropertySheet(Class<T> confClass,
             ConfigurationManager cm, ConfigurationData rpd) {
         this.ownerClass = confClass;
         this.cm = cm;
@@ -160,7 +160,7 @@ public class PropertySheet<T extends Configurable> {
      * Copy constructor. Does not copy the instantiated object, and disconnects it from that object.
      * @param other The property sheet to copy.
      */
-    protected PropertySheet(PropertySheet<T> other) {
+    PropertySheet(PropertySheet<T> other) {
         this(other, other.cm);
     }
 
@@ -169,7 +169,7 @@ public class PropertySheet<T extends Configurable> {
      * @param other The property sheet to copy.
      * @param newCM The new configuration manager.
      */
-    protected PropertySheet(PropertySheet<T> other, ConfigurationManager newCM) {
+    PropertySheet(PropertySheet<T> other, ConfigurationManager newCM) {
         this.ownerClass = other.ownerClass;
         this.cm = newCM;
         this.instanceName = other.instanceName;
@@ -327,21 +327,7 @@ public class PropertySheet<T extends Configurable> {
                     logger.info(String.format("Creating %s type %s", instanceName,
                             ownerClass.getName()));
                 }
-                T newObj;
-                try {
-                    Constructor<T> constructor = ownerClass.getDeclaredConstructor();
-                    constructor.setAccessible(true);
-                    newObj = constructor.newInstance();
-                    constructor.setAccessible(false);
-                } catch (NoSuchMethodException ex) {
-                    throw new PropertyException(ex, instanceName, null,
-                            "No-args constructor not found for class " + ownerClass);
-                } catch (InvocationTargetException ex) {
-                    throw new InternalConfigurationException(ex, instanceName, null,
-                            "Can't instantiate class " + ownerClass);
-                }
-                setConfiguredFields(newObj, this);
-                owner = newObj;
+                owner = instantiateOwner();
                 try {
                     owner.postConfig();
                 } catch (IOException e) {
@@ -378,6 +364,24 @@ public class PropertySheet<T extends Configurable> {
         }
 
         return owner;
+    }
+
+    private T instantiateOwner() throws InstantiationException, IllegalAccessException {
+        T newObj;
+        try {
+            Constructor<T> constructor = ownerClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            newObj = constructor.newInstance();
+            constructor.setAccessible(false);
+        } catch (NoSuchMethodException ex) {
+            throw new PropertyException(ex, instanceName, null,
+                    "No-args constructor not found for class " + ownerClass);
+        } catch (InvocationTargetException ex) {
+            throw new InternalConfigurationException(ex, instanceName, null,
+                    "Can't instantiate class " + ownerClass);
+        }
+        setConfiguredFields(newObj, this);
+        return newObj;
     }
 
     /**
