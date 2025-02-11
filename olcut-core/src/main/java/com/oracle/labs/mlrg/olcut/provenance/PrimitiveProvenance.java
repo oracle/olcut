@@ -65,12 +65,12 @@ public sealed interface PrimitiveProvenance<T> extends Provenance permits Boolea
      * object.
      * @return The key.
      */
-    public String getKey();
+    public String key();
 
     /**
      * Gets the value of this provenance.
      * @return The value.
      */
-    public T getValue();
+    public T value();
 
 }

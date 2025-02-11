@@ -71,9 +71,9 @@ public non-sealed interface ObjectProvenance extends Provenance, Iterable<Pair<S
         sb.append(name);
         sb.append("(");
         for (Pair<String,Provenance> p : this) {
-            sb.append(p.getA());
+            sb.append(p.a());
             sb.append('=');
-            sb.append(p.getB().toString());
+            sb.append(p.b().toString());
             sb.append(',');
         }
         sb.replace(sb.length()-1,sb.length(),")");

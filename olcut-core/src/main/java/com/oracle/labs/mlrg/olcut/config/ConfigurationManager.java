@@ -453,7 +453,7 @@ public final class ConfigurationManager {
         origGlobal = new GlobalProperties(globalProperties);
 
         for (ConfigurationData cd : configData) {
-            String instanceName = cd.getName();
+            String instanceName = cd.name();
             if (symbolTable.containsKey(instanceName)) {
                 logger.fine("Overwriting " + instanceName + " loaded from file.");
             }
@@ -756,7 +756,7 @@ public final class ConfigurationManager {
                 if (split.length == 2) {
                     ConfigurationData rpd = configurationDataMap.get(split[0]);
                     if (rpd != null) {
-                        if (checkConfigurableField(rpd.getClassName(),split[1])) {
+                        if (checkConfigurableField(rpd.className(),split[1])) {
                             // Found a valid configurable field, consume argument.
                             argsItr.remove();
                             if (argsItr.hasNext()) {
@@ -772,7 +772,7 @@ public final class ConfigurationManager {
                                 throw new ArgumentException(curArg,"No parameter for configurable override argument");
                             }
                         } else {
-                            throw new ArgumentException(curArg,"Failed to find field " + split[1] + " in component " + split[0] + " with class " + rpd.getClassName());
+                            throw new ArgumentException(curArg,"Failed to find field " + split[1] + " in component " + split[0] + " with class " + rpd.className());
                         }
                     } else {
                         throw new ArgumentException(curArg,"Failed to find component " + split[0]);
@@ -846,7 +846,7 @@ public final class ConfigurationManager {
                 String argName = curArg.substring(2);
                 Pair<Field,Object> arg = longNameMap.get(argName);
                 if (arg != null) {
-                    Field f = arg.getA();
+                    Field f = arg.a();
                     FieldType ft = FieldType.getFieldType(f);
                     // Consume argument.
                     arguments.remove(i);
@@ -856,17 +856,17 @@ public final class ConfigurationManager {
                         String param = arguments.get(i);
                         List<String> list = parseStringList(param);
                         if (FieldType.arrayTypes.contains(ft)) {
-                            f.set(arg.getB(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, ListProperty.createFromStringList(list)));
+                            f.set(arg.b(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, ListProperty.createFromStringList(list)));
                         } else if (FieldType.listTypes.contains(ft)) {
                             List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                             if (genericList.size() == 1) {
-                                f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, ListProperty.createFromStringList(list)));
+                                f.set(arg.b(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, ListProperty.createFromStringList(list)));
                             } else {
                                 f.setAccessible(false);
                                 throw new ArgumentException(curArg,"Unknown generic type in argument");
                             }
                         } else if (list.size() == 1) {
-                            f.set(arg.getB(), PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
+                            f.set(arg.b(), PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
                         } else {
                             f.setAccessible(false);
                             throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
@@ -890,11 +890,11 @@ public final class ConfigurationManager {
                     for (int j = 0; j < args.length - 1; j++) {
                         Pair<Field,Object> arg = charNameMap.get(args[j]);
                         if (arg != null) {
-                            Field f = arg.getA();
+                            Field f = arg.a();
                             f.setAccessible(true);
                             FieldType ft = FieldType.getFieldType(f);
                             if (FieldType.isBoolean(ft)) {
-                                f.set(arg.getB(),true);
+                                f.set(arg.b(),true);
                             } else {
                                 f.setAccessible(false);
                                 throw new ArgumentException(curArg + " on element " + args[j], "Non boolean argument found where boolean expected");
@@ -907,7 +907,7 @@ public final class ConfigurationManager {
 
                     Pair<Field,Object> arg = charNameMap.get(args[args.length-1]);
                     if (arg != null) {
-                        Field f = arg.getA();
+                        Field f = arg.a();
                         f.setAccessible(true);
                         FieldType ft = FieldType.getFieldType(f);
                         if (FieldType.isBoolean(ft)) {
@@ -917,14 +917,14 @@ public final class ConfigurationManager {
                                 // It only accepts things which lower case to "false" and "true".
                                 String nextArg = arguments.get(i);
                                 if (parseableAsBoolean(nextArg)) {
-                                    f.set(arg.getB(), Boolean.parseBoolean(nextArg));
+                                    f.set(arg.b(), Boolean.parseBoolean(nextArg));
                                     arguments.remove(i);
                                 } else {
                                     // Next arg is an option or something else, leave unparsed.
-                                    f.set(arg.getB(), true);
+                                    f.set(arg.b(), true);
                                 }
                             } else {
-                                f.set(arg.getB(), true);
+                                f.set(arg.b(), true);
                             }
                         } else {
                             // Now we need to accept the next parameter.
@@ -933,17 +933,17 @@ public final class ConfigurationManager {
                                 String param = arguments.get(i);
                                 List<String> list = parseStringList(param);
                                 if (FieldType.arrayTypes.contains(ft)) {
-                                    f.set(arg.getB(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, ListProperty.createFromStringList(list)));
+                                    f.set(arg.b(), PropertySheet.parseArrayField(this, curArg, f.getName(), f.getType(), ft, ListProperty.createFromStringList(list)));
                                 } else if (FieldType.listTypes.contains(ft)) {
                                     List<Class<?>> genericList = PropertySheet.getGenericClass(f);
                                     if (genericList.size() == 1) {
-                                        f.set(arg.getB(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, ListProperty.createFromStringList(list)));
+                                        f.set(arg.b(), PropertySheet.parseListField(this, curArg, f.getName(), f.getType(), genericList.get(0), ft, ListProperty.createFromStringList(list)));
                                     } else {
                                         f.setAccessible(false);
                                         throw new ArgumentException(curArg,"Unknown generic type in argument");
                                     }
                                 } else if (list.size() == 1) {
-                                    f.set(arg.getB(), PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
+                                    f.set(arg.b(), PropertySheet.parseSimpleField(this,curArg,f.getName(),f.getType(),ft,list.get(0)));
                                 } else {
                                     f.setAccessible(false);
                                     throw new ArgumentException(curArg,"Parsed a list where a single argument was expected. Type = " + f.getType() + ", parsed output = " + list.toString());
@@ -1201,7 +1201,7 @@ public final class ConfigurationManager {
         ConfigurationData rpd = configurationDataMap.get(componentName);
         if (rpd != null) {
             if (!symbolTable.containsKey(componentName)) {
-                StoredFieldType type = getStoredFieldType(rpd.getClassName(), propertyName);
+                StoredFieldType type = getStoredFieldType(rpd.className(), propertyName);
                 if ((type == StoredFieldType.STRING) && (value instanceof SimpleProperty)) {
                     rpd.add(propertyName, value);
                 } else if ((type == StoredFieldType.LIST) && (value instanceof ListProperty)) {
@@ -1209,7 +1209,7 @@ public final class ConfigurationManager {
                 } else if ((type == StoredFieldType.MAP) && (value instanceof MapProperty)) {
                     rpd.add(propertyName, value);
                 } else if (type == StoredFieldType.NONE) {
-                    throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.getClassName());
+                    throw new PropertyException(componentName, propertyName, "Failed to find field " + propertyName + " in component " + componentName + " with class " + rpd.className());
                 } else {
                     throw new PropertyException(componentName, propertyName, "Incompatible field type, found " + type + ", expected " + value.getClass().getSimpleName());
                 }
@@ -1283,17 +1283,17 @@ public final class ConfigurationManager {
             // it based upon our raw property data
             ConfigurationData rpd = configurationDataMap.get(instanceName);
             if(rpd != null) {
-                String className = rpd.getClassName();
+                String className = rpd.className();
                 try {
                     Class<?> confClass = Class.forName(className);
                     if (Configurable.class.isAssignableFrom(confClass)) {
                         PropertySheet<? extends Configurable> propertySheet = new PropertySheet<>((Class<? extends Configurable>)confClass,this,rpd);
                         symbolTable.put(instanceName, propertySheet);
                     } else {
-                        throw new PropertyException(rpd.getName(), "Class " + className + " does not implement Configurable.");
+                        throw new PropertyException(rpd.name(), "Class " + className + " does not implement Configurable.");
                     }
                 } catch (ClassNotFoundException e) {
-                    throw new PropertyException(e, rpd.getName(), "Class " + className + " not found");
+                    throw new PropertyException(e, rpd.name(), "Class " + className + " not found");
                 }
             }
         }
@@ -1506,7 +1506,7 @@ public final class ConfigurationManager {
         if(!c.isInterface()) {
             String className = c.getName();
             for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
-                if (e.getValue().getClassName().equals(className)) {
+                if (e.getValue().className().equals(className)) {
                     ret.put(e.getKey(),(T)lookup(e.getKey()));
                 }
             }
@@ -1516,7 +1516,7 @@ public final class ConfigurationManager {
             // implementing classes and return them.
             for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
                 try {
-                    Class<?> clazz = Class.forName(e.getValue().getClassName());
+                    Class<?> clazz = Class.forName(e.getValue().className());
                     if (c.isAssignableFrom(clazz) && !clazz.isInterface()) {
                         ret.put(e.getKey(),(T)innerLookup(e.getKey(),null,true));
                     }
@@ -1545,7 +1545,7 @@ public final class ConfigurationManager {
         if(!c.isInterface()) {
             String className = c.getName();
             for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
-                if (e.getValue().getClassName().equals(className)) {
+                if (e.getValue().className().equals(className)) {
                     ret.add((T)lookup(e.getKey()));
                 }
             }
@@ -1555,7 +1555,7 @@ public final class ConfigurationManager {
             // implementing classes and return them.
             for (Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
                 try {
-                    Class<?> clazz = Class.forName(e.getValue().getClassName());
+                    Class<?> clazz = Class.forName(e.getValue().className());
                     if (c.isAssignableFrom(clazz) && !clazz.isInterface()) {
                         ret.add((T)innerLookup(e.getKey(),null,true));
                     }
@@ -1602,14 +1602,14 @@ public final class ConfigurationManager {
         for(Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
             ConfigurationData rpd = e.getValue();
             try {
-                Class<?> pclass = Class.forName(rpd.getClassName());
+                Class<?> pclass = Class.forName(rpd.className());
                 if ((allowAssignable && c.isAssignableFrom(pclass)) ||
-                         (!allowAssignable && rpd.getClassName().equals(c.getName()))) {
+                         (!allowAssignable && rpd.className().equals(c.getName()))) {
                     instanceNames.add(e.getKey());
                 }
             } catch(ClassNotFoundException ex) {
                 logger.warning(String.format("No class %s found in ConfigurationManager",
-                        rpd.getClassName()));
+                        rpd.className()));
             }
         }
 
@@ -1626,7 +1626,7 @@ public final class ConfigurationManager {
         String matchedName = instanceNames.getFirst();
         ConfigurationData cd = configurationDataMap.get(matchedName);
         try {
-            Class<?> matchedClass = Class.forName(cd.getClassName());
+            Class<?> matchedClass = Class.forName(cd.className());
             if (!matchedClass.isInterface()) {
                 return (T)lookup(matchedName);
             } else {
@@ -1652,13 +1652,13 @@ public final class ConfigurationManager {
         for(Map.Entry<String, ConfigurationData> e : configurationDataMap.entrySet()) {
             ConfigurationData rpd = e.getValue();
             try {
-                Class<?> pclass = Class.forName(rpd.getClassName());
+                Class<?> pclass = Class.forName(rpd.className());
                 if (c.isAssignableFrom(pclass)) {
                     ret.add(e.getKey());
                 }
             } catch(ClassNotFoundException ex) {
                 logger.warning(String.format("No class %s found in ConfigurationManager",
-                        rpd.getClassName()));
+                        rpd.className()));
             }
         }
 
@@ -1758,7 +1758,7 @@ public final class ConfigurationManager {
      *                                  this configuration manager instance.
      */
     public void addConfiguration(ConfigurationData newData) {
-        String instanceName = newData.getName();
+        String instanceName = newData.name();
         if (symbolTable.containsKey(instanceName)) {
             throw new IllegalArgumentException("tried to override existing instantiated component name");
         }

@@ -351,11 +351,11 @@ public class EdnLoader implements ConfigLoader {
                     throw new ConfigLoaderException("Override for undefined component: "
                             + override + ", with name " + name);
                 }
-                if (!type.equals(spd.getClassName())) {
+                if (!type.equals(spd.className())) {
                     logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
-                            spd.getName(), name , type, spd.getClassName()));
+                            spd.name(), name , type, spd.className()));
                 }
-                rpd = new ConfigurationData(name, type, spd.getProperties(), serializedForm);
+                rpd = new ConfigurationData(name, type, spd.properties(), serializedForm);
             } else {
                 if (rpdMap.get(name) != null) {
                     throw new ConfigLoaderException("duplicate definition for "
@@ -422,7 +422,7 @@ public class EdnLoader implements ConfigLoader {
                 throw new ConfigLoaderException("Unexpected type for property value " + valObj.getClass().toString() + " with value " + valObj);
             }
         }
-        rpdMap.put(rpd.getName(), rpd);
+        rpdMap.put(rpd.name(), rpd);
     }
 
     private void parseSerializedObject(List<?> serializedListItem) {

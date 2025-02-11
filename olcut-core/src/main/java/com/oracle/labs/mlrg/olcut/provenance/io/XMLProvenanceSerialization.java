@@ -350,7 +350,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
                 writer.writeCharacters(System.lineSeparator());
             }
             for (Pair<String, FlatMarshalledProvenance> p : mmp) {
-                dispatchFMP(writer, p.getA(), p.getB(), depth + 1);
+                dispatchFMP(writer, p.a(), p.b(), depth + 1);
             }
             if (prettyPrint) {
                 for (int i = 0; i < depth; i++) {
@@ -512,13 +512,13 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
                         Pair<String,FlatMarshalledProvenance> pair = provenanceChain.pollLast().emitProvenance();
                         if (provenanceChain.isEmpty()) {
                             // Must be in the root node
-                            ompProvMap.put(pair.getA(),pair.getB());
+                            ompProvMap.put(pair.a(),pair.b());
                         } else {
                             ProvCollection pc = provenanceChain.peekLast();
                             if (pc.isMap()) {
-                                pc.addProvenance(pair.getA(),pair.getB());
+                                pc.addProvenance(pair.a(),pair.b());
                             } else {
-                                pc.addProvenance(pair.getB());
+                                pc.addProvenance(pair.b());
                             }
                         }
                     } else {

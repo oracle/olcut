@@ -28,14 +28,11 @@
 
 package com.oracle.labs.mlrg.olcut.config.property;
 
-import java.io.Serializable;
-
 /**
  * Tag interface for the types extracted from a configuration file.
  * <p>
  * Property implementations should be immutable and final.
- * <p>
  */
-public sealed interface Property extends Serializable permits ListProperty, MapProperty, SimpleProperty {
+public sealed interface Property permits ListProperty, MapProperty, SimpleProperty {
     public Property copy();
 }

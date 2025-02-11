@@ -406,8 +406,8 @@ public interface Options {
             for (Map.Entry<Pair<String, String>, Class<? extends Options>> e : tempSet.entrySet()) {
                 if (ret.containsKey(e.getValue())) {
                     Pair<String, String> otherOccurrence = ret.get(e.getValue());
-                    String firstOccurrence = otherOccurrence.getA() + "." + otherOccurrence.getB();
-                    String thisOccurrence = e.getKey().getA() + "." + e.getKey().getB();
+                    String firstOccurrence = otherOccurrence.a() + "." + otherOccurrence.b();
+                    String thisOccurrence = e.getKey().a() + "." + e.getKey().b();
                     throw new ArgumentException(firstOccurrence, thisOccurrence, "There are two instances of " + e.getValue().getName() + " in this Options tree.");
                 } else {
                     ret.put(e.getValue(), e.getKey());

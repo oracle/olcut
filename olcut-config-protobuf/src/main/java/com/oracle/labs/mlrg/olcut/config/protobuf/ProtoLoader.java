@@ -236,14 +236,14 @@ public final class ProtoLoader implements ConfigLoader {
                     spd = existingRPD.get(override);
                 }
             }
-            if (!type.isEmpty() && !type.equals(spd.getClassName())) {
+            if (!type.isEmpty() && !type.equals(spd.className())) {
                 logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
-                        spd.getName(), name, type, spd.getClassName()));
+                        spd.name(), name, type, spd.className()));
             }
             if (type.isEmpty()) {
-                type = spd.getClassName();
+                type = spd.className();
             }
-            rpd = new ConfigurationData(name, type, spd.getProperties(), serializedForm);
+            rpd = new ConfigurationData(name, type, spd.properties(), serializedForm);
         } else {
             if (rpdMap.get(name) != null) {
                 throw new ConfigLoaderException("duplicate definition for "
@@ -293,6 +293,6 @@ public final class ProtoLoader implements ConfigLoader {
             }
             rpd.add(e.getName(), listProp);
         }
-        rpdMap.put(rpd.getName(),rpd);
+        rpdMap.put(rpd.name(),rpd);
     }
 }

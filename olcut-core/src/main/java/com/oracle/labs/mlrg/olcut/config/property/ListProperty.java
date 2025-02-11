@@ -38,8 +38,6 @@ import java.util.List;
  * insert them into the field.
  */
 public record ListProperty(List<SimpleProperty> simpleList, List<Class<?>> classList) implements Property {
-    private static final long serialVersionUID = 1L;
-
     public ListProperty(List<SimpleProperty> simpleList, List<Class<?>> classList) {
         this.simpleList = Collections.unmodifiableList(simpleList);
         this.classList = Collections.unmodifiableList(classList);

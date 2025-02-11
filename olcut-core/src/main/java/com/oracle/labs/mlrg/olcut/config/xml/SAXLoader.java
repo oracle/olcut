@@ -234,14 +234,14 @@ public class SAXLoader implements ConfigLoader {
                                 spd = existingRPD.get(override);
                             }
                         }
-                        if (curType != null && !curType.equals(spd.getClassName())) {
+                        if (curType != null && !curType.equals(spd.className())) {
                             logger.log(Level.FINE, String.format("Overriding component %s with component %s, new type is %s overridden type was %s",
-                                    spd.getName(), curComponent, curType, spd.getClassName()));
+                                    spd.name(), curComponent, curType, spd.className()));
                         }
                         if (curType == null) {
-                            curType = spd.getClassName();
+                            curType = spd.className();
                         }
-                        rpd = new ConfigurationData(curComponent, curType, spd.getProperties(), serializedForm);
+                        rpd = new ConfigurationData(curComponent, curType, spd.properties(), serializedForm);
                         overriding = true;
                     } else {
                         if (rpdMap.get(curComponent) != null) {
@@ -374,7 +374,7 @@ public class SAXLoader implements ConfigLoader {
                 throws SAXParseException {
             switch (qName) {
                 case COMPONENT:
-                    rpdMap.put(rpd.getName(), rpd);
+                    rpdMap.put(rpd.name(), rpd);
                     rpd = null;
                     overriding = false;
                     break;

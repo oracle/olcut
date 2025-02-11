@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -36,41 +36,8 @@ import java.util.Objects;
 /**
  * A {@link PrimitiveProvenance} which records a date/time value with time zone offset.
  */
-public final class DateTimeProvenance implements PrimitiveProvenance<OffsetDateTime> {
+public record DateTimeProvenance(String key, OffsetDateTime value) implements PrimitiveProvenance<OffsetDateTime> {
     private static final long serialVersionUID = 1L;
-
-    private final String key;
-
-    private final OffsetDateTime value;
-
-    public DateTimeProvenance(String key, OffsetDateTime value) {
-        this.key = key;
-        this.value = value;
-    }
-
-    @Override
-    public String getKey() {
-        return key;
-    }
-
-    @Override
-    public OffsetDateTime getValue() {
-        return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DateTimeProvenance)) return false;
-        DateTimeProvenance that = (DateTimeProvenance) o;
-        return key.equals(that.key) &&
-                value.equals(that.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(key, value);
-    }
 
     @Override
     public String toString() {

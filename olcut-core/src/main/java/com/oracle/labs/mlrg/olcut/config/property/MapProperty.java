@@ -36,8 +36,6 @@ import java.util.Map;
  * A MapProperty is a container for a Map from String to Property.
  */
 public record MapProperty(Map<String, SimpleProperty> map) implements Property {
-    private static final long serialVersionUID = 1L;
-
     public MapProperty(Map<String, SimpleProperty> map) {
         this.map = Collections.unmodifiableMap(map);
     }

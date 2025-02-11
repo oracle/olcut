@@ -354,7 +354,7 @@ public final class ProtoProvenanceSerialization implements ProvenanceSerializati
         counter.increment();
 
         for (Pair<String,FlatMarshalledProvenance> p : mmp) {
-            mmpBuilder.putValues(p.getA(),dispatchFMP(builder,counter,p.getB()));
+            mmpBuilder.putValues(p.a(),dispatchFMP(builder,counter,p.b()));
         }
 
         builder.addMmp(mmpBuilder.build());

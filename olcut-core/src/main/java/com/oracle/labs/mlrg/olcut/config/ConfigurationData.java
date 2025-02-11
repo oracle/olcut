@@ -2,7 +2,7 @@
  * Copyright 1999-2004 Carnegie Mellon University.
  * Portions Copyright 2004 Sun Microsystems, Inc.
  * Portions Copyright 2003 Mitsubishi Electric Research Laboratories.
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -39,7 +39,6 @@ import com.oracle.labs.mlrg.olcut.config.property.Property;
 import com.oracle.labs.mlrg.olcut.config.property.SimpleProperty;
 import com.oracle.labs.mlrg.olcut.util.Util;
 
-import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
@@ -60,23 +59,16 @@ import java.util.stream.IntStream;
 /**
  * Carrier for property data. Principally a {@link Map} from {@link String} to {@link Property}, and
  * a class name.
+ *
+ * @param name           The name of the configured object.
+ * @param className      The class name of the configured object.
+ * @param properties     The properties to apply to that object.
+ * @param serializedForm A URL for a resource indicating from where the component can be
+ *                       deserialized.
  */
-public final class ConfigurationData implements Serializable {
+public record ConfigurationData(String name, String className, Map<String, Property> properties,
+                                String serializedForm) {
     private static final Logger logger = Logger.getLogger(ConfigurationData.class.getName());
-
-    private static final long serialVersionUID = 1L;
-
-    private final String name;
-
-    private final String className;
-
-    private final Map<String, Property> properties;
-    
-    /**
-     * A URL for a resource indicating from where the component can be
-     * deserialized.
-     */
-    private final String serializedForm;
 
     /**
      * Creates an empty ConfigurationData.
@@ -111,9 +103,10 @@ public final class ConfigurationData implements Serializable {
     /**
      * Creates a ConfigurationData with the specified properties. The properties are validated elsewhere as
      * this does not trigger class loading.
-     * @param name The name of the configured object.
-     * @param className The class name of the configured object.
-     * @param properties The properties to apply to that object.
+     *
+     * @param name           The name of the configured object.
+     * @param className      The class name of the configured object.
+     * @param properties     The properties to apply to that object.
      * @param serializedForm A path to load the serialised form of this object (or null).
      */
     public ConfigurationData(String name, String className, Map<String, Property> properties, String serializedForm) {
@@ -133,32 +126,18 @@ public final class ConfigurationData implements Serializable {
         properties.put(propName, propValue);
     }
 
-    /** @return Returns the className. */
-    public String getClassName() {
-        return className;
-    }
-
-    /** @return Returns the name. */
-    public String getName() {
-        return name;
-    }
-
     /**
-     * Returns the path to the serialised form.
-     * @return The path to the serialised form.
+     * @return Returns an unmodifiable view on the properties.
      */
-    public String getSerializedForm() {
-        return serializedForm;
-    }
-
-    /** @return Returns an unmodifiable view on the properties. */
-    public Map<String, Property> getProperties() {
+    @Override
+    public Map<String, Property> properties() {
         return Collections.unmodifiableMap(properties);
     }
 
     /**
      * Returns the value associated with that property name, or {@link Optional#empty}
      * if it doesn't exist.
+     *
      * @param propertyName The property name.
      * @return The {@link Optional#of} the property value or optional empty.
      */
@@ -184,25 +163,11 @@ public final class ConfigurationData implements Serializable {
     /**
      * Copies this ConfigurationData. The copy is disconnected from the original as
      * it contains a different map (though all the elements are immutable and the same references).
+     *
      * @return A copy of this object.
      */
     public ConfigurationData copy() {
-        return new ConfigurationData(name,className,properties,serializedForm);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ConfigurationData that)) return false;
-        return name.equals(that.name) &&
-                className.equals(that.className) &&
-                properties.equals(that.properties) &&
-                Objects.equals(serializedForm, that.serializedForm);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, className, properties, serializedForm);
+        return new ConfigurationData(name, className, properties, serializedForm);
     }
 
     @Override
@@ -242,7 +207,7 @@ public final class ConfigurationData implements Serializable {
             this.listProperties = new HashMap<>();
             this.listClassProperties = new HashMap<>();
             this.mapProperties = new HashMap<>();
-            for(Map.Entry<String, Property> propertyEntry: referencedCD.properties.entrySet()) {
+            for (Map.Entry<String, Property> propertyEntry : referencedCD.properties.entrySet()) {
                 String propName = propertyEntry.getKey();
                 Property prop = propertyEntry.getValue();
                 switch (prop) {
@@ -301,8 +266,8 @@ public final class ConfigurationData implements Serializable {
                     boolean simpleMatch = checkPresenceAllMatch(this.simpleProperties, that.simpleProperties,
                             DerefedProperty::equals);
 
-                    if(!simpleMatch) {
-                        logger.fine("SimpleProperties don't match: as: " + this.simpleProperties + " bs: " +that.simpleProperties);
+                    if (!simpleMatch) {
+                        logger.fine("SimpleProperties don't match: as: " + this.simpleProperties + " bs: " + that.simpleProperties);
                     }
 
                     boolean mapMatch = checkPresenceAllMatch(this.mapProperties, that.mapProperties,
@@ -311,27 +276,27 @@ public final class ConfigurationData implements Serializable {
                                             aMap.keySet().stream()
                                                     .allMatch(k -> aMap.get(k).equals(bMap.get(k))));
 
-                    if(!mapMatch) {
+                    if (!mapMatch) {
                         logger.fine("MapProperties don't match: as: " + this.mapProperties + " bs: " + that.mapProperties);
                     }
 
-                    boolean listMatch = checkPresenceAllMatch(this.listProperties,that.listProperties, (as, bs) -> {
-                       boolean eq = Util.bagEquality(as, bs);
-                        if(!eq) {
-                            logger.fine("ListProperties not equal using bag equality:\na: " + as.toString() +  "\nb: " + bs.toString());
+                    boolean listMatch = checkPresenceAllMatch(this.listProperties, that.listProperties, (as, bs) -> {
+                        boolean eq = Util.bagEquality(as, bs);
+                        if (!eq) {
+                            logger.fine("ListProperties not equal using bag equality:\na: " + as.toString() + "\nb: " + bs.toString());
                         }
                         return eq;
                     }) &&
                             checkPresenceAllMatch(this.listClassProperties, that.listClassProperties, (as, bs) -> {
                                 boolean eq = Util.bagEquality(as, bs);
-                                if(!eq) {
-                                    logger.fine("ListClassProperties not equal using bag equality:\na: " + as.toString() +  "\nb: " + bs.toString());
+                                if (!eq) {
+                                    logger.fine("ListClassProperties not equal using bag equality:\na: " + as.toString() + "\nb: " + bs.toString());
                                 }
                                 return eq;
                             });
 
-                    if(!listMatch) {
-                        logger.fine("ListProperties don't match: as: " + this.listProperties+ " bs: " + that.listProperties);
+                    if (!listMatch) {
+                        logger.fine("ListProperties don't match: as: " + this.listProperties + " bs: " + that.listProperties);
                         logger.fine("ListClassProperties don't match: as: " + this.listClassProperties + " bs: " + that.listClassProperties);
                     }
 
@@ -381,7 +346,7 @@ public final class ConfigurationData implements Serializable {
             this.locationContext = locationContext;
             this.innerValue = prop.value();
             // we do it this way because Boolean.parseBoolean doesn't throw like other parse methods
-            if(this.innerValue.trim().equalsIgnoreCase("true") || this.innerValue.trim().equalsIgnoreCase("false")) {
+            if (this.innerValue.trim().equalsIgnoreCase("true") || this.innerValue.trim().equalsIgnoreCase("false")) {
                 this.innerBool = Optional.of(Boolean.parseBoolean(this.innerValue));
             } else {
                 this.innerBool = Optional.empty();
@@ -403,7 +368,7 @@ public final class ConfigurationData implements Serializable {
             }
             Optional<ConfigurationData> maybeDeref = Optional.ofNullable(confs.get(prop.value()));
             isDerefed = maybeDeref.isPresent();
-            if(isDerefed) {
+            if (isDerefed) {
                 innerConf = new StructuralConfigurationData(confs, maybeDeref.get());
             }
         }
@@ -415,18 +380,18 @@ public final class ConfigurationData implements Serializable {
         private String reportString() {
             return String.format("Property Key: %s%s, with value %s %s %s %s %s", propName, locationContext,
                     innerValue, (isDerefed ? "(is a reference)" : "(is not a reference)"),
-                    innerDoubleValue.map(d -> "(parsed as double " + d +")").orElse("(not parsed as double)"),
+                    innerDoubleValue.map(d -> "(parsed as double " + d + ")").orElse("(not parsed as double)"),
                     innerDateTime.map(d -> "(parsed as date " + d + ")").orElse("(not parsed as date)"),
                     innerBool.map(d -> "(parsed as bool " + d + ")").orElse("(not parsed as bool)"));
         }
 
         @Override
         public int hashCode() {
-            if(this.isDerefed) {
+            if (this.isDerefed) {
                 return Objects.hash(this.isDerefed, this.innerConf);
-            } else if(this.innerBool.isPresent()) {
+            } else if (this.innerBool.isPresent()) {
                 return Objects.hash(this.isDerefed, this.innerBool.get());
-            } else if(this.innerDoubleValue.isPresent()){
+            } else if (this.innerDoubleValue.isPresent()) {
                 return Objects.hash(this.isDerefed, this.innerDoubleValue.get());
             } else if (this.innerDateTime.isPresent()) {
                 return Objects.hash(this.isDerefed, this.innerDateTime.get());
@@ -452,14 +417,14 @@ public final class ConfigurationData implements Serializable {
         @Override
         public boolean equals(Object o) {
             if (o instanceof DerefedProperty that) {
-                if(this.isDerefed && that.isDerefed) {
+                if (this.isDerefed && that.isDerefed) {
                     return this.innerConf.equals(that.innerConf);
-                } else if(!this.isDerefed && !that.isDerefed) {
+                } else if (!this.isDerefed && !that.isDerefed) {
                     boolean valueMatch;
 
                     if (this.innerBool.isPresent() && that.innerBool.isPresent()) {
                         valueMatch = this.innerBool.get().booleanValue() == that.innerBool.get().booleanValue();
-                    } else if(this.innerDoubleValue.isPresent() && that.innerDoubleValue.isPresent()) {
+                    } else if (this.innerDoubleValue.isPresent() && that.innerDoubleValue.isPresent()) {
                         valueMatch = Util.doubleEquals(this.innerDoubleValue.get(), that.innerDoubleValue.get());
                     } else if (this.innerDateTime.isPresent() && that.innerDateTime.isPresent()) {
                         valueMatch = this.innerDateTime.get().equals(that.innerDateTime.get());
@@ -468,7 +433,7 @@ public final class ConfigurationData implements Serializable {
                     } else {
                         valueMatch = this.innerValue.equals(that.innerValue);
                     }
-                    if(!valueMatch) {
+                    if (!valueMatch) {
                         logger.fine(String.format("Property Value mismatch: %s and %s", this.reportString(), that.reportString()));
                     }
                     return valueMatch;
@@ -534,52 +499,54 @@ public final class ConfigurationData implements Serializable {
      * instances differ, together with the property values that differ between those instances. Any time this method
      * returns {@code false}, it should also log at least one message.
      *
-     * @param a ConfigurationData List for the first object and its children
-     * @param b ConfigurationData List for the second object and its children
+     * @param a     ConfigurationData List for the first object and its children
+     * @param b     ConfigurationData List for the second object and its children
      * @param aName Name of the first object
      * @param bName Name of the second object
      * @return {@code true} if class and all values of {@code aName} and {@code bName} are the same once
      * they have been dereferenced by name according to {@code a} and {@code b}.
      */
-    public static boolean structuralEquals(List<ConfigurationData> a, List<ConfigurationData> b , String aName, String bName) {
+    public static boolean structuralEquals(List<ConfigurationData> a, List<ConfigurationData> b, String aName, String bName) {
         return innerStructuralEquals(
-                a.stream().collect(Collectors.toMap(ConfigurationData::getName, Function.identity())),
-                b.stream().collect(Collectors.toMap(ConfigurationData::getName, Function.identity())),
+                a.stream().collect(Collectors.toMap(ConfigurationData::name, Function.identity())),
+                b.stream().collect(Collectors.toMap(ConfigurationData::name, Function.identity())),
                 aName, bName);
     }
 
     /**
      * Writes out the configuration data.
+     *
      * @param configWriter The writer to use.
      * @throws ConfigWriterException If the writer throws an exception.
      */
     public void save(ConfigWriter configWriter) throws ConfigWriterException {
-        save(configWriter,Collections.emptySet());
+        save(configWriter, Collections.emptySet());
     }
 
     /**
      * Writes out the configuration data, redacting (i.e.,\ ignoring) fields if necessary.
-     * @param configWriter The writer to use.
+     *
+     * @param configWriter   The writer to use.
      * @param redactedFields The fields to redact.
      * @throws ConfigWriterException If the writer throws an exception.
      */
     public void save(ConfigWriter configWriter, Set<String> redactedFields) {
-        Map<String,String> attributes = new HashMap<>();
+        Map<String, String> attributes = new HashMap<>();
 
-        attributes.put(ConfigLoader.NAME,name);
-        attributes.put(ConfigLoader.TYPE,className);
-        if (getSerializedForm() != null) {
-            attributes.put(ConfigLoader.SERIALIZED,getSerializedForm());
+        attributes.put(ConfigLoader.NAME, name);
+        attributes.put(ConfigLoader.TYPE, className);
+        if (serializedForm() != null) {
+            attributes.put(ConfigLoader.SERIALIZED, serializedForm());
         }
 
-        Map<String,Property> writtenProperties = new HashMap<>();
-        for (Map.Entry<String,Property> p : properties.entrySet()) {
+        Map<String, Property> writtenProperties = new HashMap<>();
+        for (Map.Entry<String, Property> p : properties.entrySet()) {
             if (!redactedFields.contains(p.getKey())) {
-                writtenProperties.put(p.getKey(),p.getValue());
+                writtenProperties.put(p.getKey(), p.getValue());
             }
         }
 
-        configWriter.writeComponent(attributes,writtenProperties);
+        configWriter.writeComponent(attributes, writtenProperties);
     }
 
 }

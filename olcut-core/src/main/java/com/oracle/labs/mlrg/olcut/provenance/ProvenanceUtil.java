@@ -236,7 +236,7 @@ public final class ProvenanceUtil {
         List<T> output = new ArrayList<>();
 
         for (PrimitiveProvenance<T> p : listProvenance) {
-            output.add(p.getValue());
+            output.add(p.value());
         }
 
         return output;
@@ -254,7 +254,7 @@ public final class ProvenanceUtil {
         Map<String,T> output = new HashMap<>();
 
         for (Map.Entry<String,U> p : mapProvenance.getMap().entrySet()) {
-            output.put(p.getKey(),p.getValue().getValue());
+            output.put(p.getKey(),p.getValue().value());
         }
 
         return output;
@@ -342,9 +342,9 @@ public final class ProvenanceUtil {
         for (Pair<String,Provenance> p : prov) {
             builder.append(tabs);
             builder.append('\t');
-            builder.append(p.getA());
+            builder.append(p.a());
             builder.append(" = ");
-            Provenance innerProv = p.getB();
+            Provenance innerProv = p.b();
             formatProvenance(innerProv,builder,tabs,depth);
             builder.append('\n');
         }
@@ -363,7 +363,7 @@ public final class ProvenanceUtil {
      */
     private static void formatProvenance(Provenance innerProv, StringBuilder builder, String tabs, int depth) {
         switch (innerProv) {
-            case PrimitiveProvenance<?> primitiveProvenance -> builder.append(primitiveProvenance.getValue());
+            case PrimitiveProvenance<?> primitiveProvenance -> builder.append(primitiveProvenance.value());
             case ListProvenance<?> listProv -> {
                 if (listProv.getList().isEmpty()) {
                     builder.append("List[]");
@@ -387,9 +387,9 @@ public final class ProvenanceUtil {
                     for (Pair<String, ? extends Provenance> provElem : mapProv) {
                         builder.append(tabs);
                         builder.append("\t\t");
-                        builder.append(provElem.getA());
+                        builder.append(provElem.a());
                         builder.append('=');
-                        formatProvenance(provElem.getB(), builder, tabs, depth + 1);
+                        formatProvenance(provElem.b(), builder, tabs, depth + 1);
                         builder.append('\n');
                     }
                     builder.append(tabs);
@@ -416,8 +416,8 @@ public final class ProvenanceUtil {
         Map<String,Object> output = new HashMap<>();
 
         for (Pair<String,Provenance> p : prov) {
-            String key = p.getA();
-            Provenance innerProv = p.getB();
+            String key = p.a();
+            Provenance innerProv = p.b();
             Object value = innerConvertToMap(innerProv);
             output.put(key,value);
         }
@@ -434,7 +434,7 @@ public final class ProvenanceUtil {
     private static Object innerConvertToMap(Provenance prov) {
         switch (prov) {
             case PrimitiveProvenance<?> primitiveProvenance -> {
-                return String.valueOf(primitiveProvenance.getValue());
+                return String.valueOf(primitiveProvenance.value());
             }
             case ListProvenance<?> listProv -> {
                 if (listProv.getList().isEmpty()) {
@@ -453,8 +453,8 @@ public final class ProvenanceUtil {
                 } else {
                     Map<String, Object> map = new HashMap<>();
                     for (Pair<String, ? extends Provenance> provElem : mapProv) {
-                        String newKey = provElem.getA();
-                        Object newValue = innerConvertToMap(provElem.getB());
+                        String newKey = provElem.a();
+                        Object newValue = innerConvertToMap(provElem.b());
                         map.put(newKey, newValue);
                     }
                     return Collections.unmodifiableMap(map);
@@ -585,14 +585,14 @@ public final class ProvenanceUtil {
                     Map<String, SimpleProperty> propMap = new HashMap<>();
 
                     for (Pair<String, ? extends Provenance> pair : mapProvenance) {
-                        Provenance valueProv = pair.getB();
+                        Provenance valueProv = pair.b();
                         if (valueProv instanceof ConfiguredObjectProvenance confProv) {
                             // skip nulls
                             if (!(confProv instanceof NullConfiguredProvenance)) {
-                                propMap.put(pair.getA(), new SimpleProperty(computeName(confProv, map.get(confProv))));
+                                propMap.put(pair.a(), new SimpleProperty(computeName(confProv, map.get(confProv))));
                             }
                         } else {
-                            propMap.put(pair.getA(), new SimpleProperty(valueProv.toString()));
+                            propMap.put(pair.a(), new SimpleProperty(valueProv.toString()));
                         }
                     }
 
@@ -671,8 +671,8 @@ public final class ProvenanceUtil {
         Map<String, FlatMarshalledProvenance> outputMap = new HashMap<>();
 
         for (Pair<String,Provenance> e : provenance) {
-            String key = e.getA();
-            Provenance prov = e.getB();
+            String key = e.a();
+            Provenance prov = e.b();
             FlatMarshalledProvenance marshalledProvenance = flattenSingleProvenance(prov,key,map);
             outputMap.put(key,marshalledProvenance);
         }
@@ -703,7 +703,7 @@ public final class ProvenanceUtil {
                 Map<String, FlatMarshalledProvenance> propMap = new HashMap<>();
 
                 for (Pair<String, ? extends Provenance> pair : mapProvenance) {
-                    propMap.put(pair.getA(), flattenSingleProvenance(pair.getB(), pair.getA(), map));
+                    propMap.put(pair.a(), flattenSingleProvenance(pair.b(), pair.a(), map));
                 }
 
                 return new MapMarshalledProvenance(propMap);
@@ -733,7 +733,7 @@ public final class ProvenanceUtil {
      */
     private static void extractProvenanceToQueue(Queue<ObjectProvenance> processingQueue, ObjectProvenance curProv) {
         for (Pair<String, Provenance> p : curProv) {
-            Provenance prov = p.getB();
+            Provenance prov = p.b();
             if (prov instanceof ObjectProvenance) {
                 processingQueue.add((ObjectProvenance)prov);
             } else if (prov instanceof ListProvenance) {
@@ -744,8 +744,8 @@ public final class ProvenanceUtil {
                 }
             } else if (prov instanceof MapProvenance) {
                 for (Pair<String,? extends Provenance> mapElement : (MapProvenance<?>) prov) {
-                    if (mapElement.getB() instanceof ObjectProvenance) {
-                        processingQueue.add((ObjectProvenance)mapElement.getB());
+                    if (mapElement.b() instanceof ObjectProvenance) {
+                        processingQueue.add((ObjectProvenance)mapElement.b());
                     }
                 }
             }
@@ -857,7 +857,7 @@ public final class ProvenanceUtil {
             case MapMarshalledProvenance mmp -> {
                 Map<String, Provenance> convertedMap = new HashMap<>();
                 for (Pair<String, FlatMarshalledProvenance> tuple : mmp) {
-                    convertedMap.put(tuple.getA(), unmarshalFlat(hostProvName, tuple.getB(), unmarshalledObjects, marshalledObjects));
+                    convertedMap.put(tuple.a(), unmarshalFlat(hostProvName, tuple.b(), unmarshalledObjects, marshalledObjects));
                 }
                 return new MapProvenance<>(convertedMap);
             }
@@ -898,7 +898,7 @@ public final class ProvenanceUtil {
     public static Provenancable<? extends ConfiguredObjectProvenance> readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
         ConfiguredObjectProvenance provenance = (ConfiguredObjectProvenance) inputStream.readObject();
         List<ConfigurationData> configurationData = ProvenanceUtil.extractConfiguration(provenance);
-        String componentName = configurationData.getFirst().getName();
+        String componentName = configurationData.getFirst().name();
         ConfigurationManager cm = new ConfigurationManager();
         cm.addConfiguration(configurationData);
         @SuppressWarnings("unchecked")

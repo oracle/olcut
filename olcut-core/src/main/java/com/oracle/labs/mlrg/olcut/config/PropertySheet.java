@@ -138,7 +138,7 @@ public final class PropertySheet<T extends Configurable> {
             ConfigurationManager cm, ConfigurationData rpd) {
         this.ownerClass = confClass;
         this.cm = cm;
-        this.instanceName = rpd.getName();
+        this.instanceName = rpd.name();
         this.data = rpd;
 
         processAnnotations(this, confClass);
@@ -146,14 +146,14 @@ public final class PropertySheet<T extends Configurable> {
         //
         // If there were any properties in the XML file that were not annotated,
         // then throw a property exception.
-        for (String propName : rpd.getProperties().keySet()) {
+        for (String propName : rpd.properties().keySet()) {
             if (!propValues.containsKey(propName)) {
                 throw new PropertyException(instanceName, propName,
                         "Unknown property in configuration file.");
             }
         }
 
-        propValues.putAll(rpd.getProperties());
+        propValues.putAll(rpd.properties());
     }
 
     /**
@@ -292,8 +292,8 @@ public final class PropertySheet<T extends Configurable> {
 
                 //
                 // Should we load a serialized form?
-                if (data.getSerializedForm() != null) {
-                    String actualLocation = flattenString("", data.getSerializedForm());
+                if (data.serializedForm() != null) {
+                    String actualLocation = flattenString("", data.serializedForm());
                     T obj = null;
                     InputStream serStream = IOUtil.getInputStreamForLocation(actualLocation);
                     if (serStream != null) {

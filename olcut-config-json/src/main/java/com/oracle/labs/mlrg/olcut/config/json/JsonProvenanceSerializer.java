@@ -67,7 +67,7 @@ public final class JsonProvenanceSerializer extends StdSerializer<MarshalledProv
             case MapMarshalledProvenance mmp -> {
                 jsonGenerator.writeObjectFieldStart(JsonProvenanceModule.MAP);
                 for (Pair<String, FlatMarshalledProvenance> e : mmp) {
-                    jsonGenerator.writeObjectField(e.getA(), e.getB());
+                    jsonGenerator.writeObjectField(e.a(), e.b());
                 }
                 jsonGenerator.writeEndObject();
             }
