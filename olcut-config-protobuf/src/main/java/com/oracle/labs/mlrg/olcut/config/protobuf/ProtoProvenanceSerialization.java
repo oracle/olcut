@@ -267,11 +267,11 @@ public final class ProtoProvenanceSerialization implements ProvenanceSerializati
         ompBuilder.setIndex(counter.intValue());
         counter.increment();
 
-        ompBuilder.setObjectName(omp.getName());
-        ompBuilder.setObjectClassName(omp.getObjectClassName());
-        ompBuilder.setProvenanceClassName(omp.getProvenanceClassName());
+        ompBuilder.setObjectName(omp.objectName());
+        ompBuilder.setObjectClassName(omp.objectClassName());
+        ompBuilder.setProvenanceClassName(omp.provenanceClassName());
 
-        for (Map.Entry<String, FlatMarshalledProvenance> e : omp.getMap().entrySet()) {
+        for (Map.Entry<String, FlatMarshalledProvenance> e : omp.map().entrySet()) {
             int count = dispatchFMP(builder, counter, e.getValue());
             ompBuilder.putValues(e.getKey(),count);
         }
@@ -307,10 +307,10 @@ public final class ProtoProvenanceSerialization implements ProvenanceSerializati
         smpBuilder.setIndex(curIndex);
         counter.increment();
 
-        smpBuilder.setKey(smp.getKey());
-        smpBuilder.setValue(smp.getValue());
-        smpBuilder.setAdditional(smp.getAdditional());
-        smpBuilder.setProvenanceClassName(smp.getProvenanceClassName());
+        smpBuilder.setKey(smp.key());
+        smpBuilder.setValue(smp.value());
+        smpBuilder.setAdditional(smp.additional());
+        smpBuilder.setProvenanceClassName(smp.provenanceClassName());
         smpBuilder.setIsReference(smp.isReference());
 
         builder.addSmp(smpBuilder.build());

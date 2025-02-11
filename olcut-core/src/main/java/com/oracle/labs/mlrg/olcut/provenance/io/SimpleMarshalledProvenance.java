@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -64,18 +64,16 @@ import java.util.Objects;
  * If the {@link PrimitiveProvenance} requires extra information beyond it's
  * key and value, this class must be updated to have a specific constructor
  * for that type.
+ * <p>
+ * The canonical constructor is used for deserialization, code uses should use one of the more specific constructors.
+ * @param key                 The key.
+ * @param value               The value of this provenance.
+ * @param provenanceClassName The class name of the provenance.
+ * @param isReference         Is this object a reference to another provenance in the stream.
+ * @param additional          Any additional information like hash type or enum class.
  */
-public final class SimpleMarshalledProvenance implements FlatMarshalledProvenance {
-
-    private final String key;
-
-    private final String value;
-
-    private final String additional;
-
-    private final String provenanceClassName;
-
-    private final boolean isReference;
+public record SimpleMarshalledProvenance(String key, String value, String provenanceClassName, boolean isReference,
+                                         String additional) implements FlatMarshalledProvenance {
 
     /**
      * Constructs a SimpleMarshalledProvenance from an enum provenance,
@@ -117,22 +115,6 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
         this(key, value, provenance.getClass().getName(), true, "");
     }
 
-    /**
-     * Used for deserialisation.
-     * @param key The key.
-     * @param value The value of this provenance.
-     * @param provenanceClassName The class name of the provenance.
-     * @param isReference Is this object a reference to another provenance in the stream.
-     * @param additional Any additional information like hash type or enum class.
-     */
-    public SimpleMarshalledProvenance(String key, String value, String provenanceClassName, boolean isReference, String additional) {
-        this.key = key;
-        this.value = value;
-        this.provenanceClassName = provenanceClassName;
-        this.isReference = isReference;
-        this.additional = additional;
-    }
-
     @Override
     public String toString() {
         return "SimpleMarshalledProvenance{" +
@@ -147,10 +129,11 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
     /**
      * Only unmarshalls the Provenance if it's a PrimitiveProvenance,
      * throws ProvenanceException if it stores a reference to an ObjectProvenance.
+     *
      * @param <T> The type of the PrimitiveProvenance.
      * @return A PrimitiveProvenance instance.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})//Suppressing enum casting warnings.
+    @SuppressWarnings({"unchecked", "rawtypes"})//Suppressing enum casting warnings.
     public <T> PrimitiveProvenance<T> unmarshallPrimitive() {
         if (isReference) {
             throw new ProvenanceException("Attempted to unmarshall a reference via 'unmarshallPrimitive'");
@@ -160,39 +143,39 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
 
             PrimitiveProvenance unmarshalled;
             if (provClass.equals(BooleanProvenance.class)) {
-                unmarshalled = new BooleanProvenance(key,Boolean.parseBoolean(value));
+                unmarshalled = new BooleanProvenance(key, Boolean.parseBoolean(value));
             } else if (provClass.equals(ByteProvenance.class)) {
-                unmarshalled = new ByteProvenance(key,Byte.parseByte(value));
+                unmarshalled = new ByteProvenance(key, Byte.parseByte(value));
             } else if (provClass.equals(CharProvenance.class)) {
-                unmarshalled = new CharProvenance(key,value.charAt(0));
+                unmarshalled = new CharProvenance(key, value.charAt(0));
             } else if (provClass.equals(DateProvenance.class)) {
                 unmarshalled = new DateProvenance(key, LocalDate.parse(value));
             } else if (provClass.equals(DateTimeProvenance.class)) {
                 unmarshalled = new DateTimeProvenance(key, OffsetDateTime.parse(value));
             } else if (provClass.equals(DoubleProvenance.class)) {
-                unmarshalled = new DoubleProvenance(key,Double.parseDouble(value));
+                unmarshalled = new DoubleProvenance(key, Double.parseDouble(value));
             } else if (provClass.equals(EnumProvenance.class)) {
                 Class<? extends Enum> enumClass = (Class<? extends Enum>) Class.forName(additional);
-                Enum enumValue = Enum.valueOf(enumClass,value);
-                unmarshalled = new EnumProvenance<>(key,enumValue);
+                Enum enumValue = Enum.valueOf(enumClass, value);
+                unmarshalled = new EnumProvenance<>(key, enumValue);
             } else if (provClass.equals(FileProvenance.class)) {
-                unmarshalled = new FileProvenance(key,new File(value));
+                unmarshalled = new FileProvenance(key, new File(value));
             } else if (provClass.equals(FloatProvenance.class)) {
-                unmarshalled = new FloatProvenance(key,Float.parseFloat(value));
+                unmarshalled = new FloatProvenance(key, Float.parseFloat(value));
             } else if (provClass.equals(HashProvenance.class)) {
-                unmarshalled = new HashProvenance(HashType.valueOf(additional),key,value);
+                unmarshalled = new HashProvenance(HashType.valueOf(additional), key, value);
             } else if (provClass.equals(IntProvenance.class)) {
-                unmarshalled = new IntProvenance(key,Integer.parseInt(value));
+                unmarshalled = new IntProvenance(key, Integer.parseInt(value));
             } else if (provClass.equals(LongProvenance.class)) {
-                unmarshalled = new LongProvenance(key,Long.parseLong(value));
+                unmarshalled = new LongProvenance(key, Long.parseLong(value));
             } else if (provClass.equals(ShortProvenance.class)) {
-                unmarshalled = new ShortProvenance(key,Short.parseShort(value));
+                unmarshalled = new ShortProvenance(key, Short.parseShort(value));
             } else if (provClass.equals(StringProvenance.class)) {
-                unmarshalled = new StringProvenance(key,value);
+                unmarshalled = new StringProvenance(key, value);
             } else if (provClass.equals(TimeProvenance.class)) {
                 unmarshalled = new TimeProvenance(key, OffsetTime.parse(value));
             } else if (provClass.equals(URLProvenance.class)) {
-                unmarshalled = new URLProvenance(key,new URL(value));
+                unmarshalled = new URLProvenance(key, new URL(value));
             } else {
                 throw new ProvenanceException("Unknown Provenance subclass, found " + provClass.getName());
             }
@@ -206,58 +189,6 @@ public final class SimpleMarshalledProvenance implements FlatMarshalledProvenanc
         } catch (ClassNotFoundException e) {
             throw new ProvenanceException("Failed to load class for " + provenanceClassName, e);
         }
-    }
-
-    /**
-     * Is this a reference rather than a primitive type.
-     * @return true if it's a reference to an {@link ObjectMarshalledProvenance}.
-     */
-    public boolean isReference() {
-        return isReference;
-    }
-
-    /**
-     * The field name where this provenance was extracted.
-     * @return The field name.
-     */
-    public String getKey() {
-        return key;
-    }
-
-    /**
-     * The value of this provenance.
-     * @return the String representation of the value.
-     */
-    public String getValue() {
-        return value;
-    }
-
-    /**
-     * The name of the provenance class.
-     * @return The provenance class name.
-     */
-    public String getProvenanceClassName() {
-        return provenanceClassName;
-    }
-
-    /**
-     * Any additional information necessary beyond the key and value,
-     * e.g., the hash type.
-     * @return Any additional information necessary to encode the provenance.
-     */
-    public String getAdditional() {
-        return additional;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SimpleMarshalledProvenance)) return false;
-        SimpleMarshalledProvenance that = (SimpleMarshalledProvenance) o;
-        return isReference == that.isReference &&
-                key.equals(that.key) &&
-                value.equals(that.value) &&
-                provenanceClassName.equals(that.provenanceClassName);
     }
 
     @Override

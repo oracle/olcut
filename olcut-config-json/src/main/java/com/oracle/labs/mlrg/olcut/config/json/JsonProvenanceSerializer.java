@@ -72,20 +72,20 @@ public final class JsonProvenanceSerializer extends StdSerializer<MarshalledProv
                 jsonGenerator.writeEndObject();
             }
             case ObjectMarshalledProvenance omp -> {
-                jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_NAME, omp.getName());
-                jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_CLASS_NAME, omp.getObjectClassName());
-                jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS, omp.getProvenanceClassName());
+                jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_NAME, omp.objectName());
+                jsonGenerator.writeStringField(JsonProvenanceModule.OBJECT_CLASS_NAME, omp.objectClassName());
+                jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS, omp.provenanceClassName());
                 jsonGenerator.writeObjectFieldStart(JsonProvenanceModule.MAP);
-                for (Map.Entry<String, FlatMarshalledProvenance> e : omp.getMap().entrySet()) {
+                for (Map.Entry<String, FlatMarshalledProvenance> e : omp.map().entrySet()) {
                     jsonGenerator.writeObjectField(e.getKey(), e.getValue());
                 }
                 jsonGenerator.writeEndObject();
             }
             case SimpleMarshalledProvenance smp -> {
-                jsonGenerator.writeStringField(JsonProvenanceModule.KEY, smp.getKey());
-                jsonGenerator.writeStringField(JsonProvenanceModule.VALUE, smp.getValue());
-                jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS, smp.getProvenanceClassName());
-                jsonGenerator.writeStringField(JsonProvenanceModule.ADDITIONAL, smp.getAdditional());
+                jsonGenerator.writeStringField(JsonProvenanceModule.KEY, smp.key());
+                jsonGenerator.writeStringField(JsonProvenanceModule.VALUE, smp.value());
+                jsonGenerator.writeStringField(JsonProvenanceModule.PROVENANCE_CLASS, smp.provenanceClassName());
+                jsonGenerator.writeStringField(JsonProvenanceModule.ADDITIONAL, smp.additional());
                 jsonGenerator.writeBooleanField(JsonProvenanceModule.IS_REFERENCE, smp.isReference());
             }
             default -> throw new IOException("Unexpected provenance class, found " + provClass.getName());

@@ -766,7 +766,7 @@ public final class ProvenanceUtil {
         Map<String,ObjectMarshalledProvenance> marshalledObjects = new HashMap<>();
 
         for (ObjectMarshalledProvenance o : marshalledProvenance) {
-            marshalledObjects.put(o.getName(),o);
+            marshalledObjects.put(o.objectName(),o);
         }
 
         return unmarshalProvenance(marshalledProvenance.getFirst(), unmarshalledObjects, marshalledObjects);
@@ -782,7 +782,7 @@ public final class ProvenanceUtil {
      * @throws ProvenanceException If the ObjectProvenance could not be constructed, or if it failed to load the class.
      */
     private static ObjectProvenance unmarshalProvenance(ObjectMarshalledProvenance curProv, Map<String,ObjectProvenance> unmarshalledObjects, Map<String,ObjectMarshalledProvenance> marshalledObjects) throws ProvenanceException {
-        String provenanceClassName = curProv.getProvenanceClassName();
+        String provenanceClassName = curProv.provenanceClassName();
         try {
             Class<?> provenanceClass = Class.forName(provenanceClassName);
 
@@ -791,8 +791,8 @@ public final class ProvenanceUtil {
             }
             Map<String, Provenance> arguments = new HashMap<>();
 
-            for (Map.Entry<String, FlatMarshalledProvenance> e : curProv.getMap().entrySet()) {
-                Provenance extractedProv = unmarshalFlat(curProv.getName(),e.getValue(),unmarshalledObjects,marshalledObjects);
+            for (Map.Entry<String, FlatMarshalledProvenance> e : curProv.map().entrySet()) {
+                Provenance extractedProv = unmarshalFlat(curProv.objectName(),e.getValue(),unmarshalledObjects,marshalledObjects);
                 arguments.put(e.getKey(),extractedProv);
             }
 
@@ -828,7 +828,7 @@ public final class ProvenanceUtil {
         switch (fmp) {
             case SimpleMarshalledProvenance smp -> {
                 if (smp.isReference()) {
-                    String refName = smp.getValue();
+                    String refName = smp.value();
                     if (unmarshalledObjects.containsKey(refName)) {
                         return unmarshalledObjects.get(refName);
                     } else if (marshalledObjects.containsKey(refName)) {
