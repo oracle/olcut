@@ -253,7 +253,7 @@ public final class ProvenanceUtil {
     public static <T, U extends PrimitiveProvenance<T>> Map<String,T> unwrap(MapProvenance<U> mapProvenance) {
         Map<String,T> output = new HashMap<>();
 
-        for (Map.Entry<String,U> p : mapProvenance.getMap().entrySet()) {
+        for (Map.Entry<String,U> p : mapProvenance.map().entrySet()) {
             output.put(p.getKey(),p.getValue().value());
         }
 
@@ -365,7 +365,7 @@ public final class ProvenanceUtil {
         switch (innerProv) {
             case PrimitiveProvenance<?> primitiveProvenance -> builder.append(primitiveProvenance.value());
             case ListProvenance<?> listProv -> {
-                if (listProv.getList().isEmpty()) {
+                if (listProv.list().isEmpty()) {
                     builder.append("List[]");
                 } else {
                     builder.append("List[\n");
@@ -380,7 +380,7 @@ public final class ProvenanceUtil {
                 }
             }
             case MapProvenance<?> mapProv -> {
-                if (mapProv.getMap().isEmpty()) {
+                if (mapProv.map().isEmpty()) {
                     builder.append("Map{}");
                 } else {
                     builder.append("Map{\n");
@@ -437,7 +437,7 @@ public final class ProvenanceUtil {
                 return String.valueOf(primitiveProvenance.value());
             }
             case ListProvenance<?> listProv -> {
-                if (listProv.getList().isEmpty()) {
+                if (listProv.list().isEmpty()) {
                     return Collections.emptyList();
                 } else {
                     List<Object> list = new ArrayList<>();
@@ -448,7 +448,7 @@ public final class ProvenanceUtil {
                 }
             }
             case MapProvenance<?> mapProv -> {
-                if (mapProv.getMap().isEmpty()) {
+                if (mapProv.map().isEmpty()) {
                     return Collections.emptyMap();
                 } else {
                     Map<String, Object> map = new HashMap<>();
