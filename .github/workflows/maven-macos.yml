@@ -2,7 +2,7 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
 name: OLCUT CI (macOS arm64, Java SE 17, 21, 25)
-[
+
 on:
   push:
     branches: [ main ]
