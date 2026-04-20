@@ -21,6 +21,8 @@ jobs:
     name: OLCUT - Windows Java SE ${{ matrix.java }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - name: Setup Java Development Kits built by Oracle
         uses: oracle-actions/setup-java@fff43251af9936a0e6a4d5d0946e14f1680e9b6b # v1.5.0
         with:
@@ -32,6 +34,8 @@ jobs:
     name: OLCUT - Windows Java SE 17
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - name: Setup Oracle Java SE
         uses: oracle-actions/setup-java@fff43251af9936a0e6a4d5d0946e14f1680e9b6b # v1.5.0
         with:
