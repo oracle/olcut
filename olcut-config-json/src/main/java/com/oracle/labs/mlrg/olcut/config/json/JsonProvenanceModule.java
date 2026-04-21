@@ -35,7 +35,7 @@ import com.oracle.labs.mlrg.olcut.provenance.io.MarshalledProvenance;
 /**
  * The {@link MarshalledProvenance} serialization module.
  */
-public class JsonProvenanceModule extends SimpleModule {
+public final class JsonProvenanceModule extends SimpleModule {
     static final String MARSHALLED_CLASS = "marshalled-class";
     static final String LIST = "list";
     static final String MAP = "map";

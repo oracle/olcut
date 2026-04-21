@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2023, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -26,6 +26,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * Core OLCUT module containing the command shell, configuration, options, provenance systems and core utilities.
+ * <p>
+ * Code which uses the configuration system should open its module to {@code com.oracle.labs.mlrg.olcut.core}.
+ */
 module com.oracle.labs.mlrg.olcut.core {
     requires java.base;
     requires java.logging;

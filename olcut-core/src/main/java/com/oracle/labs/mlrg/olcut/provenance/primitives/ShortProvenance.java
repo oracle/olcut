@@ -48,20 +48,19 @@ public final class ShortProvenance implements PrimitiveProvenance<Short> {
     }
 
     @Override
-    public String getKey() {
+    public String key() {
         return key;
     }
 
     @Override
-    public Short getValue() {
+    public Short value() {
         return value;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ShortProvenance)) return false;
-        ShortProvenance that = (ShortProvenance) o;
+        if (!(o instanceof ShortProvenance that)) return false;
         return key.equals(that.key) &&
                 value == that.value;
     }

@@ -38,7 +38,6 @@ import com.oracle.labs.mlrg.olcut.config.io.FileFormatFactory;
 import com.oracle.labs.mlrg.olcut.config.io.URLLoader;
 import com.oracle.labs.mlrg.olcut.config.property.GlobalProperties;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 

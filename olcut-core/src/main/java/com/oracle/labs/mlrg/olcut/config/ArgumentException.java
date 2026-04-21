@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2017, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -56,7 +56,6 @@ public class ArgumentException extends RuntimeException {
         this(null, argumentName, otherArgumentName, msg);
     }
 
-
     /**
      * Creates a new argument exception.
      *
@@ -92,12 +91,6 @@ public class ArgumentException extends RuntimeException {
         this.argumentName = argumentName;
         this.otherArgumentName = otherArgumentName;
         this.msg = msg;
-    }
-
-    /** @return Returns the msg. */
-    @Deprecated
-    public String getMsg() {
-        return msg;
     }
 
     @Override

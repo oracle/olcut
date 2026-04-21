@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -42,7 +42,7 @@ import java.util.Queue;
 /**
  * Loads in configurations from URLs. Manages the queue of URLs to be processed.
  */
-public class URLLoader {
+public final class URLLoader {
 
     private final Map<String,ConfigLoader> loaderMap = new HashMap<>();
 
@@ -68,6 +68,10 @@ public class URLLoader {
         this.existingRPD = existingRPD;
     }
 
+    /**
+     * Loads the URLs from the URL queue.
+     * @throws ConfigLoaderException If a URL contained an invalid configuration.
+     */
     public void load() throws ConfigLoaderException {
         URL curURL;
         while (!urlQueue.isEmpty()) {

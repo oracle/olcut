@@ -94,7 +94,6 @@ public class ProvenanceUtilTest {
 
         ConfigurationManager cm = new ConfigurationManager(createModuleResourceString(this.getClass(), "/com/oracle/labs/mlrg/olcut/test/config_tests/allConfig.xml"));
         AllFieldsConfigurable afc = (AllFieldsConfigurable) cm.lookup("all-config");
-        cm.close();
         MyProvenancableClass mpc = new MyProvenancableClass(afc);
         IOUtil.serialize(mpc, tempFile.getPath());
         mpc = IOUtil.deserialize(tempFile.getPath(), MyProvenancableClass.class).get();

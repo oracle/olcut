@@ -48,20 +48,19 @@ public final class BooleanProvenance implements PrimitiveProvenance<Boolean> {
     }
 
     @Override
-    public String getKey() {
+    public String key() {
         return key;
     }
 
     @Override
-    public Boolean getValue() {
+    public Boolean value() {
         return value;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BooleanProvenance)) return false;
-        BooleanProvenance that = (BooleanProvenance) o;
+        if (!(o instanceof BooleanProvenance that)) return false;
         return key.equals(that.key) &&
                 value == that.value;
     }

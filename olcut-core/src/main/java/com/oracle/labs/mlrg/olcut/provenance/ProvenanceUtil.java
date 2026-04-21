@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -236,7 +236,7 @@ public final class ProvenanceUtil {
         List<T> output = new ArrayList<>();
 
         for (PrimitiveProvenance<T> p : listProvenance) {
-            output.add(p.getValue());
+            output.add(p.value());
         }
 
         return output;
@@ -253,8 +253,8 @@ public final class ProvenanceUtil {
     public static <T, U extends PrimitiveProvenance<T>> Map<String,T> unwrap(MapProvenance<U> mapProvenance) {
         Map<String,T> output = new HashMap<>();
 
-        for (Map.Entry<String,U> p : mapProvenance.getMap().entrySet()) {
-            output.put(p.getKey(),p.getValue().getValue());
+        for (Map.Entry<String,U> p : mapProvenance.map().entrySet()) {
+            output.put(p.getKey(),p.getValue().value());
         }
 
         return output;
@@ -264,7 +264,7 @@ public final class ProvenanceUtil {
      * If the url is a file or jar file url, extract the file modified time and return it.
      * If the file modified time of a jar entry is not available then it tries to
      * get the creation time.
-     *
+     * <p>
      * Otherwise return {@link Optional#empty}.
      * @param url The url to check
      * @return The {@link Optional#of} {@link OffsetDateTime} or {@link Optional#empty}.
@@ -281,8 +281,7 @@ public final class ProvenanceUtil {
                 }
             } else if (protocol.equals("jar")) {
                 URLConnection con = url.openConnection();
-                if (con instanceof JarURLConnection) {
-                    JarURLConnection jarCon = (JarURLConnection) con;
+                if (con instanceof JarURLConnection jarCon) {
                     JarEntry entry = jarCon.getJarEntry();
                     if (entry != null) {
                         FileTime modifiedTime = entry.getLastModifiedTime();
@@ -343,9 +342,9 @@ public final class ProvenanceUtil {
         for (Pair<String,Provenance> p : prov) {
             builder.append(tabs);
             builder.append('\t');
-            builder.append(p.getA());
+            builder.append(p.a());
             builder.append(" = ");
-            Provenance innerProv = p.getB();
+            Provenance innerProv = p.b();
             formatProvenance(innerProv,builder,tabs,depth);
             builder.append('\n');
         }
@@ -363,45 +362,44 @@ public final class ProvenanceUtil {
      * @param depth The current object depth.
      */
     private static void formatProvenance(Provenance innerProv, StringBuilder builder, String tabs, int depth) {
-        if (innerProv instanceof PrimitiveProvenance) {
-            builder.append(((PrimitiveProvenance<?>)innerProv).getValue());
-        } else if (innerProv instanceof ListProvenance) {
-            ListProvenance<?> listProv = (ListProvenance<?>) innerProv;
-            if (listProv.getList().isEmpty()) {
-                builder.append("List[]");
-            } else {
-                builder.append("List[\n");
-                for (Provenance provElem : listProv) {
+        switch (innerProv) {
+            case PrimitiveProvenance<?> primitiveProvenance -> builder.append(primitiveProvenance.value());
+            case ListProvenance<?> listProv -> {
+                if (listProv.list().isEmpty()) {
+                    builder.append("List[]");
+                } else {
+                    builder.append("List[\n");
+                    for (Provenance provElem : listProv) {
+                        builder.append(tabs);
+                        builder.append("\t\t");
+                        formatProvenance(provElem, builder, tabs, depth + 1);
+                        builder.append('\n');
+                    }
                     builder.append(tabs);
-                    builder.append("\t\t");
-                    formatProvenance(provElem,builder,tabs,depth+1);
-                    builder.append('\n');
+                    builder.append("\t]");
                 }
-                builder.append(tabs);
-                builder.append("\t]");
             }
-        } else if (innerProv instanceof MapProvenance) {
-            MapProvenance<?> mapProv = (MapProvenance<?>) innerProv;
-            if (mapProv.getMap().isEmpty()) {
-                builder.append("Map{}");
-            } else {
-                builder.append("Map{\n");
-                for (Pair<String,? extends Provenance> provElem : mapProv) {
+            case MapProvenance<?> mapProv -> {
+                if (mapProv.map().isEmpty()) {
+                    builder.append("Map{}");
+                } else {
+                    builder.append("Map{\n");
+                    for (Pair<String, ? extends Provenance> provElem : mapProv) {
+                        builder.append(tabs);
+                        builder.append("\t\t");
+                        builder.append(provElem.a());
+                        builder.append('=');
+                        formatProvenance(provElem.b(), builder, tabs, depth + 1);
+                        builder.append('\n');
+                    }
                     builder.append(tabs);
-                    builder.append("\t\t");
-                    builder.append(provElem.getA());
-                    builder.append('=');
-                    formatProvenance(provElem.getB(),builder,tabs,depth+1);
-                    builder.append('\n');
+                    builder.append("\t}");
                 }
-                builder.append(tabs);
-                builder.append("\t}");
             }
-        } else if (innerProv instanceof ObjectProvenance) {
-            String innerProvString = formattedProvenanceString((ObjectProvenance)innerProv,depth+1);
-            builder.append(innerProvString);
-        } else {
-            throw new IllegalStateException("Unrecognised provenance base type " + innerProv.getClass());
+            case ObjectProvenance pairs -> {
+                String innerProvString = formattedProvenanceString(pairs, depth + 1);
+                builder.append(innerProvString);
+            }
         }
     }
 
@@ -418,8 +416,8 @@ public final class ProvenanceUtil {
         Map<String,Object> output = new HashMap<>();
 
         for (Pair<String,Provenance> p : prov) {
-            String key = p.getA();
-            Provenance innerProv = p.getB();
+            String key = p.a();
+            Provenance innerProv = p.b();
             Object value = innerConvertToMap(innerProv);
             output.put(key,value);
         }
@@ -434,36 +432,37 @@ public final class ProvenanceUtil {
      * @return A structure suitable for display or conversion into JSON.
      */
     private static Object innerConvertToMap(Provenance prov) {
-        if (prov instanceof PrimitiveProvenance) {
-            return String.valueOf(((PrimitiveProvenance<?>)prov).getValue());
-        } else if (prov instanceof ListProvenance) {
-            ListProvenance<?> listProv = (ListProvenance<?>) prov;
-            if (listProv.getList().isEmpty()) {
-                return Collections.emptyList();
-            } else {
-                List<Object> list = new ArrayList<>();
-                for (Provenance provElem : listProv) {
-                    list.add(innerConvertToMap(provElem));
-                }
-                return Collections.unmodifiableList(list);
+        switch (prov) {
+            case PrimitiveProvenance<?> primitiveProvenance -> {
+                return String.valueOf(primitiveProvenance.value());
             }
-        } else if (prov instanceof MapProvenance) {
-            MapProvenance<?> mapProv = (MapProvenance<?>) prov;
-            if (mapProv.getMap().isEmpty()) {
-                return Collections.emptyMap();
-            } else {
-                Map<String,Object> map = new HashMap<>();
-                for (Pair<String,? extends Provenance> provElem : mapProv) {
-                    String newKey = provElem.getA();
-                    Object newValue = innerConvertToMap(provElem.getB());
-                    map.put(newKey,newValue);
+            case ListProvenance<?> listProv -> {
+                if (listProv.list().isEmpty()) {
+                    return Collections.emptyList();
+                } else {
+                    List<Object> list = new ArrayList<>();
+                    for (Provenance provElem : listProv) {
+                        list.add(innerConvertToMap(provElem));
+                    }
+                    return Collections.unmodifiableList(list);
                 }
-                return Collections.unmodifiableMap(map);
             }
-        } else if (prov instanceof ObjectProvenance) {
-            return convertToMap((ObjectProvenance)prov);
-        } else {
-            throw new IllegalStateException("Unrecognised provenance base type " + prov.getClass());
+            case MapProvenance<?> mapProv -> {
+                if (mapProv.map().isEmpty()) {
+                    return Collections.emptyMap();
+                } else {
+                    Map<String, Object> map = new HashMap<>();
+                    for (Pair<String, ? extends Provenance> provElem : mapProv) {
+                        String newKey = provElem.a();
+                        Object newValue = innerConvertToMap(provElem.b());
+                        map.put(newKey, newValue);
+                    }
+                    return Collections.unmodifiableMap(map);
+                }
+            }
+            case ObjectProvenance pairs -> {
+                return convertToMap(pairs);
+            }
         }
     }
 
@@ -514,10 +513,10 @@ public final class ProvenanceUtil {
             ObjectProvenance curProv = processingQueue.poll();
             // skip null provenances
             if (!(curProv instanceof NullConfiguredProvenance)) {
-                if (curProv instanceof ConfiguredObjectProvenance) {
-                    if (!provenanceTracker.containsKey((ConfiguredObjectProvenance) curProv)) {
-                        provenanceTracker.put((ConfiguredObjectProvenance) curProv, counter);
-                        traversalOrder.add((ConfiguredObjectProvenance) curProv);
+                if (curProv instanceof ConfiguredObjectProvenance confProv) {
+                    if (!provenanceTracker.containsKey(confProv)) {
+                        provenanceTracker.put(confProv, counter);
+                        traversalOrder.add(confProv);
                         counter++;
                     }
                 }
@@ -565,44 +564,47 @@ public final class ProvenanceUtil {
 
         for (Map.Entry<String,Provenance> e : obj.getConfiguredParameters().entrySet()) {
             Provenance prov = e.getValue();
-            if (prov instanceof ListProvenance) {
-                List<SimpleProperty> list = new ArrayList<>();
+            switch (prov) {
+                case ListProvenance<?> listProvenance -> {
+                    List<SimpleProperty> list = new ArrayList<>();
 
-                for (Provenance p : (ListProvenance<?>)prov) {
-                   if (p instanceof ConfiguredObjectProvenance) {
-                       // skip nulls
-                       if (!(p instanceof NullConfiguredProvenance)) {
-                           list.add(new SimpleProperty(computeName((ConfiguredObjectProvenance) p, map.get(p))));
-                       }
-                    } else {
-                        list.add(new SimpleProperty(p.toString()));
-                    }
-                }
-
-                data.add(e.getKey(),new ListProperty(list));
-            } else if (prov instanceof MapProvenance) {
-                Map<String, SimpleProperty> propMap = new HashMap<>();
-
-                for (Pair<String, ? extends Provenance> pair : (MapProvenance<?>) prov) {
-                    Provenance valueProv = pair.getB();
-                    if (valueProv instanceof ConfiguredObjectProvenance) {
-                        // skip nulls
-                        if (!(valueProv instanceof NullConfiguredProvenance)) {
-                            propMap.put(pair.getA(), new SimpleProperty(computeName((ConfiguredObjectProvenance) valueProv, map.get(valueProv))));
+                    for (Provenance p : listProvenance) {
+                        if (p instanceof ConfiguredObjectProvenance confProv) {
+                            // skip nulls
+                            if (!(p instanceof NullConfiguredProvenance)) {
+                                list.add(new SimpleProperty(computeName(confProv, map.get(confProv))));
+                            }
+                        } else {
+                            list.add(new SimpleProperty(p.toString()));
                         }
-                    } else {
-                        propMap.put(pair.getA(), new SimpleProperty(valueProv.toString()));
+                    }
+
+                    data.add(e.getKey(), new ListProperty(list));
+                }
+                case MapProvenance<?> mapProvenance -> {
+                    Map<String, SimpleProperty> propMap = new HashMap<>();
+
+                    for (Pair<String, ? extends Provenance> pair : mapProvenance) {
+                        Provenance valueProv = pair.b();
+                        if (valueProv instanceof ConfiguredObjectProvenance confProv) {
+                            // skip nulls
+                            if (!(confProv instanceof NullConfiguredProvenance)) {
+                                propMap.put(pair.a(), new SimpleProperty(computeName(confProv, map.get(confProv))));
+                            }
+                        } else {
+                            propMap.put(pair.a(), new SimpleProperty(valueProv.toString()));
+                        }
+                    }
+
+                    data.add(e.getKey(), new MapProperty(propMap));
+                }
+                case ConfiguredObjectProvenance confProv -> {
+                    // Skip nulls;
+                    if (!(confProv instanceof NullConfiguredProvenance)) {
+                        data.add(e.getKey(), new SimpleProperty(computeName(confProv, map.get(confProv))));
                     }
                 }
-
-                data.add(e.getKey(), new MapProperty(propMap));
-            } else if (prov instanceof ConfiguredObjectProvenance) {
-                // Skip nulls;
-                if (!(prov instanceof NullConfiguredProvenance)) {
-                    data.add(e.getKey(), new SimpleProperty(computeName((ConfiguredObjectProvenance) prov, map.get(prov))));
-                }
-            } else {
-                data.add(e.getKey(),new SimpleProperty(prov.toString()));
+                default -> data.add(e.getKey(), new SimpleProperty(prov.toString()));
             }
         }
 
@@ -669,8 +671,8 @@ public final class ProvenanceUtil {
         Map<String, FlatMarshalledProvenance> outputMap = new HashMap<>();
 
         for (Pair<String,Provenance> e : provenance) {
-            String key = e.getA();
-            Provenance prov = e.getB();
+            String key = e.a();
+            Provenance prov = e.b();
             FlatMarshalledProvenance marshalledProvenance = flattenSingleProvenance(prov,key,map);
             outputMap.put(key,marshalledProvenance);
         }
@@ -687,33 +689,39 @@ public final class ProvenanceUtil {
      * @return A single flattened marshalled provenance.
      */
     private static FlatMarshalledProvenance flattenSingleProvenance(Provenance prov, String key, Map<ObjectProvenance,Integer> map) {
-        if (prov instanceof ListProvenance) {
-            List<FlatMarshalledProvenance> list = new ArrayList<>();
+        switch (prov) {
+            case ListProvenance<?> listProvenance -> {
+                List<FlatMarshalledProvenance> list = new ArrayList<>();
 
-            for (Provenance p : (ListProvenance<?>)prov) {
-                list.add(flattenSingleProvenance(p,key,map));
+                for (Provenance p : listProvenance) {
+                    list.add(flattenSingleProvenance(p, key, map));
+                }
+
+                return new ListMarshalledProvenance(list);
             }
+            case MapProvenance<?> mapProvenance -> {
+                Map<String, FlatMarshalledProvenance> propMap = new HashMap<>();
 
-            return new ListMarshalledProvenance(list);
-        } else if (prov instanceof MapProvenance) {
-            Map<String,FlatMarshalledProvenance> propMap = new HashMap<>();
+                for (Pair<String, ? extends Provenance> pair : mapProvenance) {
+                    propMap.put(pair.a(), flattenSingleProvenance(pair.b(), pair.a(), map));
+                }
 
-            for (Pair<String,? extends Provenance> pair : (MapProvenance<?>)prov) {
-                propMap.put(pair.getA(),flattenSingleProvenance(pair.getB(),pair.getA(),map));
+                return new MapMarshalledProvenance(propMap);
             }
-
-            return new MapMarshalledProvenance(propMap);
-        } else if (prov instanceof ObjectProvenance) {
-            ObjectProvenance objProv = (ObjectProvenance) prov;
-            return new SimpleMarshalledProvenance(key, computeName(objProv, map.get(objProv)), objProv);
-        } else if (prov instanceof HashProvenance) {
-            return new SimpleMarshalledProvenance((HashProvenance) prov);
-        } else if (prov instanceof EnumProvenance) {
-            return new SimpleMarshalledProvenance((EnumProvenance<?>)prov);
-        } else if (prov instanceof PrimitiveProvenance) {
-            return new SimpleMarshalledProvenance((PrimitiveProvenance<?>)prov);
-        } else {
-            throw new ProvenanceException("Unexpected Provenance subclass - found " + prov.getClass().getName() + " expected {ListProvenance, MapProvenance, PrimitiveProvenance, ObjectProvenance}");
+            case ObjectProvenance objProv -> {
+                return new SimpleMarshalledProvenance(key, computeName(objProv, map.get(objProv)), objProv);
+            }
+            case HashProvenance hashProvenance -> {
+                return new SimpleMarshalledProvenance(hashProvenance);
+            }
+            case EnumProvenance<?> enumProvenance -> {
+                @SuppressWarnings("unchecked")
+                var smp = new SimpleMarshalledProvenance(enumProvenance);
+                return smp;
+            }
+            case PrimitiveProvenance<?> primitiveProvenance -> {
+                return new SimpleMarshalledProvenance(primitiveProvenance);
+            }
         }
     }
 
@@ -725,7 +733,7 @@ public final class ProvenanceUtil {
      */
     private static void extractProvenanceToQueue(Queue<ObjectProvenance> processingQueue, ObjectProvenance curProv) {
         for (Pair<String, Provenance> p : curProv) {
-            Provenance prov = p.getB();
+            Provenance prov = p.b();
             if (prov instanceof ObjectProvenance) {
                 processingQueue.add((ObjectProvenance)prov);
             } else if (prov instanceof ListProvenance) {
@@ -736,8 +744,8 @@ public final class ProvenanceUtil {
                 }
             } else if (prov instanceof MapProvenance) {
                 for (Pair<String,? extends Provenance> mapElement : (MapProvenance<?>) prov) {
-                    if (mapElement.getB() instanceof ObjectProvenance) {
-                        processingQueue.add((ObjectProvenance)mapElement.getB());
+                    if (mapElement.b() instanceof ObjectProvenance) {
+                        processingQueue.add((ObjectProvenance)mapElement.b());
                     }
                 }
             }
@@ -758,10 +766,10 @@ public final class ProvenanceUtil {
         Map<String,ObjectMarshalledProvenance> marshalledObjects = new HashMap<>();
 
         for (ObjectMarshalledProvenance o : marshalledProvenance) {
-            marshalledObjects.put(o.getName(),o);
+            marshalledObjects.put(o.objectName(),o);
         }
 
-        return unmarshalProvenance(marshalledProvenance.get(0), unmarshalledObjects, marshalledObjects);
+        return unmarshalProvenance(marshalledProvenance.getFirst(), unmarshalledObjects, marshalledObjects);
     }
 
     /**
@@ -774,7 +782,7 @@ public final class ProvenanceUtil {
      * @throws ProvenanceException If the ObjectProvenance could not be constructed, or if it failed to load the class.
      */
     private static ObjectProvenance unmarshalProvenance(ObjectMarshalledProvenance curProv, Map<String,ObjectProvenance> unmarshalledObjects, Map<String,ObjectMarshalledProvenance> marshalledObjects) throws ProvenanceException {
-        String provenanceClassName = curProv.getProvenanceClassName();
+        String provenanceClassName = curProv.provenanceClassName();
         try {
             Class<?> provenanceClass = Class.forName(provenanceClassName);
 
@@ -783,8 +791,8 @@ public final class ProvenanceUtil {
             }
             Map<String, Provenance> arguments = new HashMap<>();
 
-            for (Map.Entry<String, FlatMarshalledProvenance> e : curProv.getMap().entrySet()) {
-                Provenance extractedProv = unmarshalFlat(curProv.getName(),e.getValue(),unmarshalledObjects,marshalledObjects);
+            for (Map.Entry<String, FlatMarshalledProvenance> e : curProv.map().entrySet()) {
+                Provenance extractedProv = unmarshalFlat(curProv.objectName(),e.getValue(),unmarshalledObjects,marshalledObjects);
                 arguments.put(e.getKey(),extractedProv);
             }
 
@@ -817,43 +825,42 @@ public final class ProvenanceUtil {
      * @return A provenance object.
      */
     private static Provenance unmarshalFlat(String hostProvName, FlatMarshalledProvenance fmp, Map<String,ObjectProvenance> unmarshalledObjects, Map<String,ObjectMarshalledProvenance> marshalledObjects) {
-        if (fmp instanceof SimpleMarshalledProvenance) {
-            SimpleMarshalledProvenance smp = (SimpleMarshalledProvenance) fmp;
-            if (smp.isReference()) {
-                String refName = smp.getValue();
-                if (unmarshalledObjects.containsKey(refName)) {
-                    return unmarshalledObjects.get(refName);
-                } else if (marshalledObjects.containsKey(refName)) {
-                    // Need to recurse into the object as it's not been unmarshalled.
-                    // First remove it from the list (so if we reference it again it will throw ProvenanceException).
-                    ObjectMarshalledProvenance omp = marshalledObjects.remove(refName);
-                    // Recurse into the marshalled object provenance
-                    ObjectProvenance unmarshalled = unmarshalProvenance(omp, unmarshalledObjects, marshalledObjects);
-                    // Put the unmarshalled object provenance into the map and return it.
-                    unmarshalledObjects.put(refName, unmarshalled);
-                    return unmarshalled;
+        switch (fmp) {
+            case SimpleMarshalledProvenance smp -> {
+                if (smp.isReference()) {
+                    String refName = smp.value();
+                    if (unmarshalledObjects.containsKey(refName)) {
+                        return unmarshalledObjects.get(refName);
+                    } else if (marshalledObjects.containsKey(refName)) {
+                        // Need to recurse into the object as it's not been unmarshalled.
+                        // First remove it from the list (so if we reference it again it will throw ProvenanceException).
+                        ObjectMarshalledProvenance omp = marshalledObjects.remove(refName);
+                        // Recurse into the marshalled object provenance
+                        ObjectProvenance unmarshalled = unmarshalProvenance(omp, unmarshalledObjects, marshalledObjects);
+                        // Put the unmarshalled object provenance into the map and return it.
+                        unmarshalledObjects.put(refName, unmarshalled);
+                        return unmarshalled;
+                    } else {
+                        throw new ProvenanceException("Invalid provenance object " + hostProvName + " refers to an object called " + refName + " which is not present (or forms a cycle).");
+                    }
                 } else {
-                    throw new ProvenanceException("Invalid provenance object " + hostProvName + " refers to an object called " + refName + " which is not present (or forms a cycle).");
+                    return smp.unmarshallPrimitive();
                 }
-            } else {
-                return smp.unmarshallPrimitive();
             }
-        } else if (fmp instanceof ListMarshalledProvenance) {
-            ListMarshalledProvenance lmp = (ListMarshalledProvenance) fmp;
-            List<Provenance> convertedList = new ArrayList<>();
-            for (FlatMarshalledProvenance smp : lmp) {
-                convertedList.add(unmarshalFlat(hostProvName,smp,unmarshalledObjects,marshalledObjects));
+            case ListMarshalledProvenance lmp -> {
+                List<Provenance> convertedList = new ArrayList<>();
+                for (FlatMarshalledProvenance smp : lmp) {
+                    convertedList.add(unmarshalFlat(hostProvName, smp, unmarshalledObjects, marshalledObjects));
+                }
+                return new ListProvenance<>(convertedList);
             }
-            return new ListProvenance<>(convertedList);
-        } else if (fmp instanceof MapMarshalledProvenance) {
-            MapMarshalledProvenance mmp = (MapMarshalledProvenance) fmp;
-            Map<String,Provenance> convertedMap = new HashMap<>();
-            for (Pair<String,FlatMarshalledProvenance> tuple : mmp) {
-                convertedMap.put(tuple.getA(), unmarshalFlat(hostProvName,tuple.getB(),unmarshalledObjects,marshalledObjects));
+            case MapMarshalledProvenance mmp -> {
+                Map<String, Provenance> convertedMap = new HashMap<>();
+                for (Pair<String, FlatMarshalledProvenance> tuple : mmp) {
+                    convertedMap.put(tuple.a(), unmarshalFlat(hostProvName, tuple.b(), unmarshalledObjects, marshalledObjects));
+                }
+                return new MapProvenance<>(convertedMap);
             }
-            return new MapProvenance<>(convertedMap);
-        } else {
-            throw new ProvenanceException("Unexpected FlatMarshalledProvenance subclass, found " + fmp.getClass().getName());
         }
     }
     
@@ -891,12 +898,11 @@ public final class ProvenanceUtil {
     public static Provenancable<? extends ConfiguredObjectProvenance> readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
         ConfiguredObjectProvenance provenance = (ConfiguredObjectProvenance) inputStream.readObject();
         List<ConfigurationData> configurationData = ProvenanceUtil.extractConfiguration(provenance);
-        String componentName = configurationData.get(0).getName();
+        String componentName = configurationData.getFirst().name();
         ConfigurationManager cm = new ConfigurationManager();
         cm.addConfiguration(configurationData);
         @SuppressWarnings("unchecked")
         Provenancable<ConfiguredObjectProvenance> provenancable = (Provenancable<ConfiguredObjectProvenance>) cm.lookup(componentName);
-        cm.close();
         return provenancable;
     }
 

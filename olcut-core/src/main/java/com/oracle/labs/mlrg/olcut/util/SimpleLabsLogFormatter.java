@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -29,8 +29,6 @@ package com.oracle.labs.mlrg.olcut.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -102,20 +100,15 @@ public class SimpleLabsLogFormatter extends Formatter {
     }
 
     public static void setAllLogFormatters(Level level) {
-        AccessController.doPrivileged((PrivilegedAction<Void>)
-                () -> {
-                    for (Handler h : Logger.getLogger("").getHandlers()) {
-                        h.setLevel(level);
-                        h.setFormatter(new SimpleLabsLogFormatter());
-                        try {
-                            h.setEncoding("utf-8");
-                        } catch (Exception ex) {
-                            logger.severe("Error setting output encoding");
-                        }
-                    }
-                    return null;
-                }
-        );
+        for (Handler h : Logger.getLogger("").getHandlers()) {
+            h.setLevel(level);
+            h.setFormatter(new SimpleLabsLogFormatter());
+            try {
+                h.setEncoding("utf-8");
+            } catch (Exception ex) {
+                logger.severe("Error setting output encoding");
+            }
+        }
     }
 
 }

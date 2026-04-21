@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -33,14 +33,27 @@ package com.oracle.labs.mlrg.olcut.config.io;
  */
 public class ConfigLoaderException extends RuntimeException {
 
+    /**
+     * Constructs a config loader exception wrapping the supplied exception.
+     * @param e The exception to wrap.
+     */
     public ConfigLoaderException(Exception e) {
         super(e);
     }
 
+    /**
+     * Constructs a config loader exception wrapping the supplied exception with a new message.
+     * @param e The exception to wrap.
+     * @param msg The new message.
+     */
     public ConfigLoaderException(Exception e, String msg) {
         super(msg,e);
     }
 
+    /**
+     * Constructs a config loader exception with the specified message.
+     * @param msg The exception message.
+     */
     public ConfigLoaderException(String msg) {
         super(msg);
     }

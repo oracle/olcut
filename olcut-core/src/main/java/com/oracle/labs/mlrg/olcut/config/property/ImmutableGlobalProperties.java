@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -46,7 +46,7 @@ import java.util.regex.Matcher;
  * preset properties. This set currently includes {@link #HOSTNAME}
  * which lazily resolves to the system hostname.
  */
-public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,GlobalProperty>> {
+public sealed class ImmutableGlobalProperties implements Iterable<Map.Entry<String,GlobalProperty>> permits GlobalProperties {
 
     public static final String HOSTNAME = "gp.hostName";
 
@@ -128,7 +128,7 @@ public class ImmutableGlobalProperties implements Iterable<Map.Entry<String,Glob
                                              String propName, String val) {
         Matcher m = GlobalProperty.globalSymbolPattern.matcher(val);
         boolean matched = false;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while (m.find()) {
             matched = true;
             //

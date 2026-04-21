@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -40,14 +40,34 @@ import java.util.Map;
  */
 public interface FileFormatFactory {
 
+    /**
+     * The file extension this factory supports.
+     * @return The file extension.
+     */
     public String getExtension();
 
+    /**
+     * Constructs a loader for this file format.
+     * @param parent The parent loader for discovering parent components.
+     * @param rpdMap The current property map.
+     * @param existingRPD Any existing configurations.
+     * @param serializedObjects Any serialized objects.
+     * @param globalProperties The global property map.
+     * @return A loader for this file format.
+     * @throws ConfigLoaderException If the loader could not be instantiated.
+     */
     public ConfigLoader getLoader(URLLoader parent,
                                   Map<String, ConfigurationData> rpdMap,
                                   Map<String, ConfigurationData> existingRPD,
                                   Map<String, SerializedObject> serializedObjects,
                                   GlobalProperties globalProperties) throws ConfigLoaderException;
 
+    /**
+     * Constructs a writer for this file format.
+     * @param os The output stream to write to.
+     * @return A writer for this file format.
+     * @throws ConfigWriterException If the writer could not be instantiated.
+     */
     public ConfigWriter getWriter(OutputStream os) throws ConfigWriterException;
 
 }

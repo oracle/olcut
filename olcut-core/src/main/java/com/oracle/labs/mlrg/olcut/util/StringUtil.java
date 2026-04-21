@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2004, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -30,7 +30,6 @@ package com.oracle.labs.mlrg.olcut.util;
 import java.io.PrintWriter;
 import java.text.Normalizer;
 
-
 /**
  * String utilities.
  */
@@ -38,26 +37,6 @@ public final class StringUtil {
 
     // Unconstructable.
     private StringUtil() { }
-
-    /**
-     * Returns a string with the given number of
-     * spaces.
-     *
-     * @param padding the number of spaces in the string
-     * @return a string of length 'padding' containing only the SPACE
-     * char.
-     */
-    public static String pad(int padding) {
-        if (padding > 0) {
-            StringBuilder sb = new StringBuilder(padding);
-            for (int i = 0; i < padding; i++) {
-                sb.append(' ');
-            }
-            return sb.toString();
-        } else {
-            return "";
-        }
-    }
 
     /**
      * Pads with spaces or truncates the given string to guarantee that it is
@@ -72,7 +51,7 @@ public final class StringUtil {
         String result = string;
         int pad = minLength - string.length();
         if (pad > 0) {
-            result = string + pad(minLength - string.length());
+            result = string + " ".repeat(minLength - string.length());
         } else if (pad < 0) {
             result = string.substring(0, minLength);
         }
@@ -105,7 +84,6 @@ public final class StringUtil {
         return pad("" + val, minLength);
     }
 
-
     /**
      * Dumps padded text. This is a simple tool for helping dump text
      * with padding to a Writer.
@@ -115,14 +93,14 @@ public final class StringUtil {
      * @param string  the string to output
      */
     public static void dump(PrintWriter pw, int padding, String string) {
-        pw.print(pad(padding));
+        pw.print(" ".repeat(padding));
         pw.println(string);
     }
 
     public static String normalize(String text) {
         text = Normalizer.normalize(text, Normalizer.Form.NFD);
         text = text.replaceAll("\\p{M}", ""); //assumes unicode data
-//        text = text.replaceAll("[^\\p{ASCII}]", "");
+        //text = text.replaceAll("[^\\p{ASCII}]", "");
         return text;
     }
 

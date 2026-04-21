@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -29,7 +29,7 @@
 /**
  * Provides concrete and skeletal implementations of
  * {@link com.oracle.labs.mlrg.olcut.provenance.ConfiguredObjectProvenance}.
- *
+ * <p>
  * These implementations use reflection to extract the field names and
  * values automatically.
  */

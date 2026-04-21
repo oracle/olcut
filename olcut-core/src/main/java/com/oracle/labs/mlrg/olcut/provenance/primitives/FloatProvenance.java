@@ -48,20 +48,19 @@ public final class FloatProvenance implements PrimitiveProvenance<Float> {
     }
 
     @Override
-    public String getKey() {
+    public String key() {
         return key;
     }
 
     @Override
-    public Float getValue() {
+    public Float value() {
         return value;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof FloatProvenance)) return false;
-        FloatProvenance that = (FloatProvenance) o;
+        if (!(o instanceof FloatProvenance that)) return false;
         return key.equals(that.key) &&
                 Float.compare(value,that.value) == 0;
     }

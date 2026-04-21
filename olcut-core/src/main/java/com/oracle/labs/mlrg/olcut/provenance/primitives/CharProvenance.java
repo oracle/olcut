@@ -48,20 +48,19 @@ public final class CharProvenance implements PrimitiveProvenance<Character> {
     }
 
     @Override
-    public String getKey() {
+    public String key() {
         return key;
     }
 
     @Override
-    public Character getValue() {
+    public Character value() {
         return value;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CharProvenance)) return false;
-        CharProvenance that = (CharProvenance) o;
+        if (!(o instanceof CharProvenance that)) return false;
         return key.equals(that.key) &&
                 value == that.value;
     }

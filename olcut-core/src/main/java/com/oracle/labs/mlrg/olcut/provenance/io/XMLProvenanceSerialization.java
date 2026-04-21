@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -234,7 +234,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
      * @throws XMLStreamException If the XML is invalid.
      */
     private void writeOMP(XMLStreamWriter writer, ObjectMarshalledProvenance omp) throws XMLStreamException {
-        Map<String, FlatMarshalledProvenance> provMap = omp.getMap();
+        Map<String, FlatMarshalledProvenance> provMap = omp.map();
         if (prettyPrint) {
             writer.writeCharacters("\t");
         }
@@ -243,9 +243,9 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
         } else {
             writer.writeEmptyElement(OBJECT_MARSHALLED_PROVENANCE);
         }
-        writer.writeAttribute(OBJECT_NAME, omp.getName());
-        writer.writeAttribute(OBJECT_CLASS_NAME, omp.getObjectClassName());
-        writer.writeAttribute(PROVENANCE_CLASS_NAME, omp.getProvenanceClassName());
+        writer.writeAttribute(OBJECT_NAME, omp.objectName());
+        writer.writeAttribute(OBJECT_CLASS_NAME, omp.objectClassName());
+        writer.writeAttribute(PROVENANCE_CLASS_NAME, omp.provenanceClassName());
         if (!provMap.isEmpty()) {
             if (prettyPrint) {
                 writer.writeCharacters(System.lineSeparator());
@@ -278,10 +278,10 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
             }
         }
         writer.writeEmptyElement(SIMPLE_MARSHALLED_PROVENANCE);
-        writer.writeAttribute(PROV_KEY, smp.getKey());
-        writer.writeAttribute(PROV_VALUE, smp.getValue());
-        writer.writeAttribute(PROV_ADDITIONAL, smp.getAdditional());
-        writer.writeAttribute(PROVENANCE_CLASS_NAME, smp.getProvenanceClassName());
+        writer.writeAttribute(PROV_KEY, smp.key());
+        writer.writeAttribute(PROV_VALUE, smp.value());
+        writer.writeAttribute(PROV_ADDITIONAL, smp.additional());
+        writer.writeAttribute(PROVENANCE_CLASS_NAME, smp.provenanceClassName());
         writer.writeAttribute(IS_REFERENCE, "" + smp.isReference());
         if (prettyPrint) {
             writer.writeCharacters(System.lineSeparator());
@@ -302,7 +302,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
                 writer.writeCharacters("\t");
             }
         }
-        if (lmp.getList().isEmpty()) {
+        if (lmp.list().isEmpty()) {
             writer.writeEmptyElement(LIST_MARSHALLED_PROVENANCE);
             writer.writeAttribute(PROV_KEY, key);
         } else {
@@ -311,7 +311,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
             if (prettyPrint) {
                 writer.writeCharacters(System.lineSeparator());
             }
-            for (FlatMarshalledProvenance fmp : lmp.getList()) {
+            for (FlatMarshalledProvenance fmp : lmp.list()) {
                 dispatchFMP(writer, "", fmp, depth + 1);
             }
             if (prettyPrint) {
@@ -350,7 +350,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
                 writer.writeCharacters(System.lineSeparator());
             }
             for (Pair<String, FlatMarshalledProvenance> p : mmp) {
-                dispatchFMP(writer, p.getA(), p.getB(), depth + 1);
+                dispatchFMP(writer, p.a(), p.b(), depth + 1);
             }
             if (prettyPrint) {
                 for (int i = 0; i < depth; i++) {
@@ -374,17 +374,11 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
      * @throws XMLStreamException If the XML is invalid.
      */
     private void dispatchFMP(XMLStreamWriter writer, String key, FlatMarshalledProvenance fmp, int depth) throws XMLStreamException {
-        if (fmp instanceof SimpleMarshalledProvenance) {
-            SimpleMarshalledProvenance smp = (SimpleMarshalledProvenance) fmp;
-            writeSMP(writer, smp, depth);
-        } else if (fmp instanceof ListMarshalledProvenance) {
-            ListMarshalledProvenance lmp = (ListMarshalledProvenance) fmp;
-            writeLMP(writer, key, lmp, depth);
-        } else if (fmp instanceof MapMarshalledProvenance) {
-            MapMarshalledProvenance mmp = (MapMarshalledProvenance) fmp;
-            writeMMP(writer, key, mmp, depth);
-        } else {
-            throw new RuntimeException("Should not reach here, unexpected FlatMarshalledProvenance subclass " + fmp.getClass());
+        switch (fmp) {
+            case SimpleMarshalledProvenance smp -> writeSMP(writer, smp, depth);
+            case ListMarshalledProvenance lmp -> writeLMP(writer, key, lmp, depth);
+            case MapMarshalledProvenance mmp -> writeMMP(writer, key, mmp, depth);
+            default -> throw new RuntimeException("Should not reach here, unexpected FlatMarshalledProvenance subclass " + fmp.getClass());
         }
     }
 
@@ -400,7 +394,7 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
 
         private Map<String, String> ompAttributeMap;
         private Map<String, FlatMarshalledProvenance> ompProvMap;
-        private Deque<ProvCollection> provenanceChain;
+        private final Deque<ProvCollection> provenanceChain;
 
         private SimpleMarshalledProvenance curSMP;
         private String curKey;
@@ -498,11 +492,11 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
                     if (curSMP != null) {
                         if (provenanceChain.isEmpty()) {
                             // Must be writing to the current ObjectMarshalledProvenance
-                            ompProvMap.put(curSMP.getKey(),curSMP);
+                            ompProvMap.put(curSMP.key(),curSMP);
                         } else {
                             ProvCollection pc = provenanceChain.peekLast();
                             if (pc.isMap()) {
-                                pc.addProvenance(curSMP.getKey(),curSMP);
+                                pc.addProvenance(curSMP.key(),curSMP);
                             } else {
                                 pc.addProvenance(curSMP);
                             }
@@ -518,13 +512,13 @@ public final class XMLProvenanceSerialization implements ProvenanceSerialization
                         Pair<String,FlatMarshalledProvenance> pair = provenanceChain.pollLast().emitProvenance();
                         if (provenanceChain.isEmpty()) {
                             // Must be in the root node
-                            ompProvMap.put(pair.getA(),pair.getB());
+                            ompProvMap.put(pair.a(),pair.b());
                         } else {
                             ProvCollection pc = provenanceChain.peekLast();
                             if (pc.isMap()) {
-                                pc.addProvenance(pair.getA(),pair.getB());
+                                pc.addProvenance(pair.a(),pair.b());
                             } else {
-                                pc.addProvenance(pair.getB());
+                                pc.addProvenance(pair.b());
                             }
                         }
                     } else {

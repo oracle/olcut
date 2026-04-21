@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -39,7 +39,7 @@ import java.util.Map;
 
 /**
  * Provenance for a specific object known to the config system.
- *
+ * <p>
  * By convention all provenances which do not refer to an object field
  * use hyphens as separators. Provenances which refer to an object field
  * use standard Java camel case.

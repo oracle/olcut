@@ -92,6 +92,7 @@ public class StopWatch implements Serializable {
      * @deprecated Ambiguous units, use unit-specific get methods instead. Behavior of this method is undefined in subclasses.
      * @return The number of milliseconds on the timer.
      */
+    @Deprecated
     public long getTime() {
         return time;
     }
@@ -111,6 +112,7 @@ public class StopWatch implements Serializable {
      *
      * @return most recent start/stop time in milliseconds
      */
+    @Deprecated
     public long getLastTime() {
         return lastTime;
     }
@@ -129,6 +131,7 @@ public class StopWatch implements Serializable {
      * @deprecated Ambiguous units, use unit-specific get methods instead. Behavior of this method is undefined in subclasses.
      * @return the last start time
      */
+    @Deprecated
     public long getLastStart() {
         return lastStart;
     }
@@ -147,6 +150,7 @@ public class StopWatch implements Serializable {
      * @deprecated Ambiguous units, use unit-specific get methods instead. Behavior of this method is undefined in subclasses.
      * @return The average time.
      */
+    @Deprecated
     public double getAvgTime() {
         return getTime() / (double) clicks;
     }

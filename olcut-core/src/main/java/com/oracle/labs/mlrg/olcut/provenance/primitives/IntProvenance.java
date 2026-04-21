@@ -48,20 +48,19 @@ public final class IntProvenance implements PrimitiveProvenance<Integer> {
     }
 
     @Override
-    public String getKey() {
+    public String key() {
         return key;
     }
 
     @Override
-    public Integer getValue() {
+    public Integer value() {
         return value;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof IntProvenance)) return false;
-        IntProvenance that = (IntProvenance) o;
+        if (!(o instanceof IntProvenance that)) return false;
         return key.equals(that.key) &&
                 value == that.value;
     }

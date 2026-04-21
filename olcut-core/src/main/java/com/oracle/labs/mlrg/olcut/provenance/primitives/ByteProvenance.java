@@ -48,20 +48,19 @@ public final class ByteProvenance implements PrimitiveProvenance<Byte> {
     }
 
     @Override
-    public String getKey() {
+    public String key() {
         return key;
     }
 
     @Override
-    public Byte getValue() {
+    public Byte value() {
         return value;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ByteProvenance)) return false;
-        ByteProvenance that = (ByteProvenance) o;
+        if (!(o instanceof ByteProvenance that)) return false;
         return key.equals(that.key) &&
                 value == that.value;
     }

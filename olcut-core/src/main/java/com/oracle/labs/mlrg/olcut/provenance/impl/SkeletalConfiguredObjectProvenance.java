@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2021, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -59,8 +59,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.Path;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -80,13 +78,12 @@ import java.util.logging.Logger;
 
 /**
  * A pile of reflection based magic used to automatically extract the values of configurable
- * fields. Supports all the types used by the configuration system, except for
- * Random as it's impossible to generate a true provenance for a {@link java.util.Random} instance.
- *
+ * fields. Supports all the types used by the configuration system.
+ * <p>
  * This class can be used as the basis for ConfiguredObjectProvenance implementations, it
  * automatically extracts any configured fields from the host object and stores the values
  * in the appropriate provenance type.
- *
+ * <p>
  * It is recommended that subclasses of this class implement a static method which accepts
  * a <code>Map&lt;String,Provenance&gt;</code> and returns a {@link ExtractedInfo}.
  * As with all subclasses of {@link com.oracle.labs.mlrg.olcut.provenance.ObjectProvenance}
@@ -112,7 +109,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
     protected <T extends Configurable> SkeletalConfiguredObjectProvenance(T host, String hostShortName) {
         this.className = host.getClass().getName();
         this.hostShortName = hostShortName;
-        Map<String,Provenance> provMap = AccessController.doPrivileged((PrivilegedAction<Map<String,Provenance>>)() -> getConfiguredFields(host));
+        Map<String,Provenance> provMap = getConfiguredFields(host);
         this.configuredParameters = Collections.unmodifiableMap(provMap);
     }
 
@@ -129,7 +126,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
     protected SkeletalConfiguredObjectProvenance(ExtractedInfo info) {
         this.className = info.className;
         this.hostShortName = info.hostShortName;
-        this.configuredParameters = Collections.unmodifiableMap(new HashMap<>(info.configuredParameters));
+        this.configuredParameters = Map.copyOf(info.configuredParameters);
     }
 
     /**
@@ -139,7 +136,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
      * to the {@link SkeletalConfiguredObjectProvenance#SkeletalConfiguredObjectProvenance(ExtractedInfo)}
      * constructor to prevent that constructor from triggering class loading of the
      * host class.
-     *
+     * <p>
      * The class loading would be required to separate out the configured parameters from the instance
      * values, however subclasses of {@link SkeletalConfiguredObjectProvenance} must supply it
      * themselves via an extraction method.
@@ -161,7 +158,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
     /**
      * Extracts the specified Provenance from the supplied info's instance values and returns it. Checks that it's the right type,
      * and casts to it before returning.
-     *
+     * <p>
      * Throws ProvenanceException if it's not found or it's an incorrect type.
      * @param info The ExtractedInfo to check.
      * @param key The key to look up.
@@ -198,7 +195,6 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
         Set<Field> fields = PropertySheet.getAllFields(hostClass);
         try {
             for (Field f : fields) {
-                boolean accessible = f.isAccessible();
                 f.setAccessible(true);
                 // if configurable and not redacted
                 Config configAnnotation = f.getAnnotation(Config.class);
@@ -253,7 +249,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                                 if (genericClasses.size() != 1) {
                                     logger.log(Level.SEVERE, "Invalid configurable field definition, field not recorded - found too many or too few generic type parameters for field " + f.getName());
                                 } else {
-                                    map.put(f.getName(), convertCollection(f, (Collection) f.get(host), genericClasses.get(0)));
+                                    map.put(f.getName(), convertCollection(f, (Collection<?>) f.get(host), genericClasses.getFirst()));
                                 }
                                 break;
                             }
@@ -262,18 +258,17 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                                 if (genericClasses.size() != 2) {
                                     logger.log(Level.SEVERE, "Invalid configurable field definition, field not recorded - found too many or too few generic type parameters for field " + f.getName());
                                 } else {
-                                    map.put(f.getName(), convertMap(f, (Map) f.get(host), genericClasses.get(1)));
+                                    map.put(f.getName(), convertMap(f, (Map<?,?>) f.get(host), genericClasses.get(1)));
                                 }
                                 break;
                             }
-                            case RANDOM:
                             default:
                                 logger.log(Level.SEVERE, "Automatic provenance not supported for field type " + ft + ", field '" + f.getName() + "' not recorded.");
                                 break;
                         }
                     }
                 }
-                f.setAccessible(accessible);
+                f.setAccessible(false);
             }
         } catch (ClassCastException e) {
             logger.log(Level.SEVERE, "Failed to cast field from host object " + host.toString() + ". Fields not recorded.", e);
@@ -296,7 +291,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
             return new ListProvenance<>();
         }
         String fieldName = f.getName();
-        ArrayList<PrimitiveProvenance> list = new ArrayList<>();
+        ArrayList<PrimitiveProvenance<?>> list = new ArrayList<>();
         switch (ft) {
             case BYTE_ARRAY: {
                 byte[] array = (byte[]) object;
@@ -409,7 +404,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
      * @param genericType The generic type bound of the collection.
      * @return A ListProvenance.
      */
-    private static ListProvenance<?> convertCollection(Field f, Collection collection, Class<?> genericType) {
+    private static ListProvenance<?> convertCollection(Field f, Collection<?> collection, Class<?> genericType) {
         if (collection == null) {
             return new ListProvenance<>();
         } else {
@@ -528,13 +523,15 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 if (o == null) {
                     return Optional.empty();
                 } else {
-                    return Optional.of(new EnumProvenance<>(fieldName, (Enum) o));
+                    @SuppressWarnings({"rawtypes","unchecked"})
+                    var e = new EnumProvenance<>(fieldName, (Enum) o);
+                    return Optional.of(e);
                 }
             case CONFIGURABLE:
                 if (o == null) {
                     return Optional.of(ConfiguredObjectProvenance.getEmptyProvenance(fieldClass.getName()));
-                } else if (o instanceof Provenancable) {
-                    return Optional.of(((Provenancable) o).getProvenance());
+                } else if (o instanceof Provenancable<?> prov) {
+                    return Optional.of(prov.getProvenance());
                 } else {
                     logger.log(Level.WARNING, "Automatic provenance generated for Configurable class, consider opting into provenance by implementing Provenancable on " + o.getClass().toString());
                     return Optional.of(new ConfiguredObjectProvenanceImpl((Configurable)o, fieldName));
@@ -551,9 +548,6 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
                 } else {
                     return Optional.of(new LongProvenance(fieldName, ((AtomicLong) o).get()));
                 }
-            case RANDOM:
-                logger.log(Level.SEVERE, "Random is deprecated and not supported in the provenance system, field '" + fieldName + "' not recorded.");
-                return Optional.empty();
             case BYTE_ARRAY:
             case CHAR_ARRAY:
             case SHORT_ARRAY:
@@ -575,7 +569,7 @@ public abstract class SkeletalConfiguredObjectProvenance implements ConfiguredOb
 
     /**
      * Returns the instance parameters for this provenance.
-     *
+     * <p>
      * Subclasses must call this first, before adding additional instance
      * parameters to the returned map.
      * @return A map of provenances.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -106,18 +106,6 @@ public final class ProtoConfigWriter implements ConfigWriter {
         ComponentProto.Builder componentBuilder = ComponentProto.newBuilder();
         componentBuilder.setName(attributes.get(ConfigLoader.NAME));
         componentBuilder.setType(attributes.get(ConfigLoader.TYPE));
-        if (attributes.get(ConfigLoader.EXPORT).equalsIgnoreCase("true")) {
-            componentBuilder.setExportable(true);
-        }
-        if (attributes.get(ConfigLoader.IMPORT).equalsIgnoreCase("true")) {
-            componentBuilder.setImportable(true);
-        }
-        if (attributes.containsKey(ConfigLoader.ENTRIES)) {
-            componentBuilder.setEntries(attributes.get(ConfigLoader.ENTRIES));
-        }
-        if (attributes.containsKey(ConfigLoader.LEASETIME)) {
-            componentBuilder.setLeaseTime(Long.parseLong(attributes.get(ConfigLoader.LEASETIME)));
-        }
         if (attributes.containsKey(ConfigLoader.SERIALIZED)) {
             componentBuilder.setSerialized(attributes.get(ConfigLoader.SERIALIZED));
         }
@@ -130,10 +118,10 @@ public final class ProtoConfigWriter implements ConfigWriter {
                 // Must be a string/component list
                 PropertyListProto.Builder listBuilder = PropertyListProto.newBuilder();
                 listBuilder.setName(key);
-                for (SimpleProperty s : ((ListProperty) value).getSimpleList()) {
-                    listBuilder.addItem(s.getValue());
+                for (SimpleProperty s : ((ListProperty) value).simpleList()) {
+                    listBuilder.addItem(s.value());
                 }
-                for (Class<?> c : ((ListProperty) value).getClassList()) {
+                for (Class<?> c : ((ListProperty) value).classList()) {
                     listBuilder.addType(c.getName());
                 }
                 componentBuilder.addListProperty(listBuilder.build());
@@ -142,8 +130,8 @@ public final class ProtoConfigWriter implements ConfigWriter {
                 // Must be a string,string map
                 PropertyMapProto.Builder mapBuilder = PropertyMapProto.newBuilder();
                 mapBuilder.setName(key);
-                for (Map.Entry<String, SimpleProperty> e : ((MapProperty) value).getMap().entrySet()) {
-                    mapBuilder.putElements(e.getKey(), e.getValue().getValue());
+                for (Map.Entry<String, SimpleProperty> e : ((MapProperty) value).map().entrySet()) {
+                    mapBuilder.putElements(e.getKey(), e.getValue().value());
                 }
                 componentBuilder.addMapProperty(mapBuilder.build());
             } else {

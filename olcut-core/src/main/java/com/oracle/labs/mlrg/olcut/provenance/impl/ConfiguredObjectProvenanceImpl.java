@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -58,9 +58,9 @@ public final class ConfiguredObjectProvenanceImpl extends SkeletalConfiguredObje
 
     /**
      * Constructs a ConfiguredObjectProvenanceImpl from a provenance map.
-     *
+     * <p>
      * This constructor cannot verify that the map contains only configured parameters, as
-     * that could trigger class loading of the host class. Thus it must contain at most
+     * that could trigger class loading of the host class, thus it must contain at most
      * the configured parameters, {@link ObjectProvenance#CLASS_NAME}, and
      * {@link SkeletalConfiguredObjectProvenance#HOST_SHORT_NAME} provenances.
      * @param map The configured parameters map.

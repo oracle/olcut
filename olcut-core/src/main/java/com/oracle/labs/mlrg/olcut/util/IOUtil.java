@@ -445,11 +445,7 @@ public final class IOUtil {
             file.getParentFile().mkdirs();
         }
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file), bufferSize);
-        try {
-            return new PrintStream(bos, false, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 isn't supported. Not sure what's wrong with the world.",e);
-        }
+        return new PrintStream(bos, false, StandardCharsets.UTF_8);
     }
 
     public static OutputStream getOutputStream(String path) throws FileNotFoundException {
@@ -640,14 +636,10 @@ public final class IOUtil {
         if (protocol == null) {
             return true;
         }
-        switch (protocol) {
-            case "http":
-            case "https":
-            case "ftp":
-                return true;
-            default:
-                return false;
-        }
+        return switch (protocol) {
+            case "http", "https", "ftp" -> true;
+            default -> false;
+        };
     }
 
     public static class NamesPathIterator implements Iterator<Path>{

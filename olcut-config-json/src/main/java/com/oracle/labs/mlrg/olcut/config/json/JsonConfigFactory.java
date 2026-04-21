@@ -46,9 +46,9 @@ import java.io.OutputStream;
 import java.util.Map;
 
 /**
- *
+ * Configuration factory for reading and writing json format configuration files.
  */
-public class JsonConfigFactory implements FileFormatFactory {
+public final class JsonConfigFactory implements FileFormatFactory {
 
     private final JsonFactory factory = new JsonFactory();
 

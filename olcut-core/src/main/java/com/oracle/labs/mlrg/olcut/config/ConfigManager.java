@@ -36,9 +36,9 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation that denotes where the ConfigurationManager should be stored.
- *
+ * <p>
  * Use this sparingly.
- *
+ * <p>
  * ConfigManager should not be applied to a static field.
  */
 @Documented

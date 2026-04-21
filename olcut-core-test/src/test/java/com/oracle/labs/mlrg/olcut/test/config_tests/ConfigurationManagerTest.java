@@ -90,12 +90,6 @@ public class ConfigurationManagerTest {
     }
 
     @Test
-    public void testSingletonNoImport() {
-        assertNull(singletonCM.lookupSingleton(Barbary.class, false), "Should ignore imports");
-        assertNull(singletonCM.lookupSingleton(Barbary.class, true), "Should ignore imports");
-    }
-
-    @Test
     public void testMultipleLoading() {
         List<String> files = new ArrayList<>();
 

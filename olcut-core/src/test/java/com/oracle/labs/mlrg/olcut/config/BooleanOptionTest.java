@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -93,8 +93,6 @@ public class BooleanOptionTest {
         assertTrue(o.test);
         assertFalse(o.defaultTrue);
         assertTrue(o.defaultFalse);
-
-        cm.close();
 
         args = new String[]{"-adb","true"};
 

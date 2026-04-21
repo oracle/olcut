@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2020, Oracle and/or its affiliates.
+ * Copyright (c) 2015, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the 2-clause BSD license.
  *
@@ -27,16 +27,11 @@
  */
 package com.oracle.labs.mlrg.olcut.util;
 
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -55,23 +50,6 @@ public final class StreamUtil {
      */
     static final Object NONE = new Object();
 
-    /**
-     * Takes a stream and returns a stream which bounds the parallelism available
-     * based on the size of the {@link ForkJoinPool} it is executing in.
-     * <p>
-     * This is a workaround for code running on Java 8 and 9, as it's fixed in Java 10 which
-     * makes all {@link Stream}s have this property.
-     * <p>
-     * @param inputStream A Stream of T.
-     * @param <T> The type of the Stream.
-     * @return A Stream which bounds the parallelism to the size of the FJP.
-     */
-    public static <T> Stream<T> boundParallelism(Stream<T> inputStream) {
-        Spliterator<T> boundedSpliterator = new BoundedSpliterator<>(inputStream.spliterator());
-
-        return StreamSupport.stream(boundedSpliterator,true);
-    }
-    
     /**
      * Creates a lazy and sequential combined {@link Stream} whose elements are
      * the result of combining the elements of two streams.  The resulting
@@ -239,80 +217,4 @@ public final class StreamUtil {
         }
     }
 
-    /**
-     * A spliterator with bounded parallelism, it calculates the target size
-     * based upon the number of threads available in the ForkJoinPool it executes in.
-     * @param <T> The element type of the spliterator.
-     */
-    private static class BoundedSpliterator<T> implements Spliterator<T> {
-        private static final Logger logger = Logger.getLogger(BoundedSpliterator.class.getName());
-
-        private final Spliterator<T> spliterator;
-        private long targetSize = -1L;
-
-        public BoundedSpliterator(Spliterator<T> spliterator) {
-            this.spliterator = spliterator;
-        }
-
-        public BoundedSpliterator(Spliterator<T> spliterator, long targetSize) {
-            this.spliterator = spliterator;
-            this.targetSize = targetSize;
-        }
-
-        @Override
-        public boolean tryAdvance(Consumer<? super T> action) {
-            return spliterator.tryAdvance(action);
-        }
-
-        @Override
-        public void forEachRemaining(Consumer<? super T> action) {
-            spliterator.forEachRemaining(action);
-        }
-
-        @Override
-        public Spliterator<T> trySplit() {
-            if (targetSize == -1L) {
-                Thread curThread = Thread.currentThread();
-                if (curThread instanceof ForkJoinWorkerThread) {
-                    targetSize = spliterator.estimateSize() / (((ForkJoinWorkerThread) curThread).getPool().getParallelism() << 2);
-                    logger.log(Level.FINEST,"In FJP - setting targetSize to " + targetSize);
-                } else {
-                    targetSize = spliterator.estimateSize() / (ForkJoinPool.getCommonPoolParallelism() << 2);
-                    logger.log(Level.FINEST,"Common pool - setting targetSize to " + targetSize);
-                }
-            }
-            if (targetSize < spliterator.estimateSize()) {
-                Spliterator<T> tmp = spliterator.trySplit();
-                if (tmp != null) {
-                    return new BoundedSpliterator<>(tmp, targetSize);
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public long estimateSize() {
-            return spliterator.estimateSize();
-        }
-
-        @Override
-        public long getExactSizeIfKnown() {
-            return spliterator.getExactSizeIfKnown();
-        }
-
-        @Override
-        public int characteristics() {
-            return spliterator.characteristics();
-        }
-
-        @Override
-        public boolean hasCharacteristics(int characteristics) {
-            return spliterator.hasCharacteristics(characteristics);
-        }
-
-        @Override
-        public Comparator<? super T> getComparator() {
-            return spliterator.getComparator();
-        }
-    }
 }

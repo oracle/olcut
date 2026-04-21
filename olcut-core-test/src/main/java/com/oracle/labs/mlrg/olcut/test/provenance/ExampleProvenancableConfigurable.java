@@ -132,7 +132,7 @@ public final class ExampleProvenancableConfigurable implements Configurable, Pro
 
         @SuppressWarnings("unchecked")
         public ExampleProvenance(Map<String, Provenance> provenances) {
-            this.className = ObjectProvenance.checkAndExtractProvenance(provenances,ObjectProvenance.CLASS_NAME,StringProvenance.class,ExampleProvenance.class.getName()).getValue();
+            this.className = ObjectProvenance.checkAndExtractProvenance(provenances,ObjectProvenance.CLASS_NAME,StringProvenance.class,ExampleProvenance.class.getName()).value();
             this.map = ObjectProvenance.checkAndExtractProvenance(provenances,MAP,MapProvenance.class,ExampleProvenance.class.getName());
             Optional<DoubleProvenance> opt = ObjectProvenance.maybeExtractProvenance(provenances,DOUBLE_FIELD,DoubleProvenance.class,ExampleProvenance.class.getName());
             if (opt.isPresent()) {

@@ -32,64 +32,19 @@ import com.oracle.labs.mlrg.olcut.provenance.PrimitiveProvenance;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil;
 import com.oracle.labs.mlrg.olcut.provenance.ProvenanceUtil.HashType;
 
-import java.util.Objects;
-
 /**
  * A provenance which records the String representation of a hash,
  * along with the type of hash function which generated it.
  */
-public final class HashProvenance implements PrimitiveProvenance<String> {
+public record HashProvenance(HashType type, String key, String value) implements PrimitiveProvenance<String> {
     private static final long serialVersionUID = 1L;
 
-    private final HashType type;
-
-    private final String key;
-
-    private final String value;
-
-    public HashProvenance(HashType type, String key, String value) {
-        this.type = type;
-        this.key = key;
-        this.value = value;
-    }
-
     public HashProvenance(HashType type, String key, byte[] value) {
-        this.type = type;
-        this.key = key;
-        this.value = ProvenanceUtil.bytesToHexString(value);
-    }
-
-    @Override
-    public String getKey() {
-        return key;
-    }
-
-    @Override
-    public String getValue() {
-        return value;
-    }
-
-    public HashType getType() {
-        return type;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof HashProvenance)) return false;
-        HashProvenance that = (HashProvenance) o;
-        return type == that.type &&
-                key.equals(that.key) &&
-                value.equals(that.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(type, key, value);
+        this(type, key, ProvenanceUtil.bytesToHexString(value));
     }
 
     @Override
     public String toString() {
-        return type.name+"["+value+"]";
+        return type.name + "[" + value + "]";
     }
 }
